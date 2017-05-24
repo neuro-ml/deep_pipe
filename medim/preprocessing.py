@@ -16,6 +16,14 @@ def normalize_scan(scan, drop_percentile=2):
     mean = vals.mean()
     std = vals.std()
     
-    scan = np.array(scan, dtype=np.float32)
     scan = (scan - mean) / std
-    return scan 
+    return np.array(scan, dtype=np.float32)
+
+
+def normalize_mscan(mscan, drop_percentile=2):
+    """Normalize mscan to make mean and std equal to (0, 1).
+    We don't use 0-s to esimate stats."""
+    new_mscan = np.zeros(mscan.shape, dtype=np.float32)
+    for i in range(len(mscan)):
+        new_mscan[i] = normalize_scan(mscan[i], drop_percentile)
+    return new_mscan
