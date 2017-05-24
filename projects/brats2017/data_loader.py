@@ -46,8 +46,6 @@ class DataLoader:
         segmentation = np.array(
             load_modality(patient, patient_path, SEGMENTATION_POSTFIX),
             dtype=np.uint8)
-        # Replace 4 with 3, for convenience
-        segmentation[segmentation == 4] = 3
         return segmentation
 
 
