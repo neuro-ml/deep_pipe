@@ -45,7 +45,7 @@ class ResBlock(nn.Module):
 
 
 class Model(torch.nn.Module):
-    def __init__(self, blocks, kernel_size, n_classes):
+    def __init__(self, blocks, n_classes, kernel_size):
         super().__init__()
 
         fe = []
