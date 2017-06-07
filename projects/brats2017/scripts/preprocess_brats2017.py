@@ -6,9 +6,9 @@ import argparse
 import numpy as np
 import pandas as pd
 import nibabel as nib
-from tqdm import tqdm
 
-import medim
+from utils import preprocess, RawDataLoader
+
 
 MODALITIES_POSTFIXES = ['_t1.nii.gz', '_t1ce.nii.gz',
                         '_t2.nii.gz', '_flair.nii.gz']
@@ -21,43 +21,19 @@ def load_modality(patient, patient_path, postfix):
     return data
 
 
-class RawDataLoader:
-    def __init__(self, raw_data_path):
-        self.raw_data_path = raw_data_path
-        hgg_path = join(raw_data_path, 'HGG')
-        lgg_path = join(raw_data_path, 'LGG')
+def load_mscan(patient, patient_path):
+    scans = [load_modality(patient, patient_path, p)
+             for p in MODALITIES_POSTFIXES]
+    return np.array(scans, dtype=np.float32)
 
-        self.hgg_patients = os.listdir(hgg_path)
-        self.lgg_patients = os.listdir(lgg_path)
-        self.patients = self.hgg_patients + self.lgg_patients
 
-        self.patient2path = {patient: join(hgg_path, patient)
-                             for patient in self.hgg_patients}
-        self.patient2path.update({patient: join(lgg_path, patient)
-                                  for patient in self.lgg_patients})
-
-        self.survival_data = pd.read_csv(raw_data_path+'/survival_data.csv',
-                                         index_col='Brats17ID')
-
-    def load_mscan(self, patient):
-        patient_path = self.patient2path[patient]
-        mscan = [load_modality(patient, patient_path, postfix)
-                 for postfix in MODALITIES_POSTFIXES]
-        mscan = np.array(mscan)
-        return mscan
-
-    def load_segmentation(self, patient):
-        patient_path = self.patient2path[patient]
-        segmentation = np.array(
-            load_modality(patient, patient_path, SEGMENTATION_POSTFIX),
-            dtype=np.uint8)
-        return segmentation
+def load_segm(patient, patient_path):
+    segm = load_modality(patient, patient_path, SEGMENTATION_POSTFIX)
+    return np.array(segm, dtype=np.uint8)
 
 
 Patient = namedtuple('Patient', ['id', 'type', 'age', 'survival'])
-
-
-def make_metadata(patients, hgg_patients, survival_data):
+def make_metadata(patients, hgg_patients, survival_data) -> pd.DataFrame:
     print('Building metadata')
     records= []
     for patient_name in patients:
@@ -85,25 +61,6 @@ def encode_msegm(s):
     return r
 
 
-def preprocess(data_loader, processed_path):
-    patients = data_loader.patients
-    print('Preprocessing')
-    for patient in tqdm(patients):
-        mscan = data_loader.load_mscan(patient)
-        segmentation = data_loader.load_segmentation(patient)
-
-        # Extract part with the brain
-        mask = np.any(mscan, axis=0)
-        mscan, segmentation = medim.bb.extract(mscan, segmentation, mask=mask)
-
-        mscan = medim.prep.normalize_mscan(mscan, mean=False)
-        msegm = encode_msegm(segmentation)
-
-        filename = join(processed_path, 'data', patient)
-        np.save(filename+'_mscan', mscan)
-        np.save(filename+'_msegm', msegm)
-
-
 if __name__ == '__main__':
     # Parsing
     parser = argparse.ArgumentParser('BraTS-2017 preprocess')
@@ -114,10 +71,12 @@ if __name__ == '__main__':
     raw_data_path = args.raw_path
     processed_path = args.processed_path
 
-    data_loader = RawDataLoader(raw_data_path)
+    data_loader = RawDataLoader(raw_data_path, load_mscan, load_segm)
 
+    survival_data = pd.read_csv(join(raw_data_path, 'survival_data.csv'),
+                                     index_col='Brats17ID')
     metadata = make_metadata(data_loader.patients, data_loader.hgg_patients,
-                       data_loader.survival_data)
+                             survival_data)
     metadata.to_csv(join(processed_path, 'metadata.csv'))
 
-    preprocess(data_loader, processed_path)
+    preprocess(data_loader, processed_path, encode_msegm)

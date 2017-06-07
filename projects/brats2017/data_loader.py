@@ -16,9 +16,12 @@ class Brats:
 
     def load_mscan(self, patient):
         dataname = self.build_dataname(patient)
-        return np.load(dataname+'_mscan.npy')
+        return np.load(dataname + '_mscan.npy')
 
     def load_msegm(self, patient):
         dataname = self.build_dataname(patient)
-        return np.load(dataname+'_msegm.npy')
+        return np.load(dataname + '_msegm.npy')
 
+    def load_segm(self, patient):
+        dataname = self.build_dataname(patient)
+        return np.load(dataname + '_segm.npy')
