@@ -3,38 +3,56 @@ from itertools import product
 import numpy as np
 
 
-def divide(mscan, padding, n_parts):
-    """Divides padded mscan (should be padded beforehand)
-    into multiple parts of about the same shape according to the n_parts array
+def _get_steps(shape: np.ndarray, n_parts_per_axis):
+    n_parts_per_axis = np.array(n_parts_per_axis)
+    steps = shape // n_parts_per_axis
+    steps += (shape % n_parts_per_axis) > 0
+    return steps
+
+
+def divide(x: np.ndarray, padding, n_parts_per_axis):
+    """Divides padded x (should be padded beforehand)
+    into multiple parts of about the same shape according to
+     n_parts_per_axis list.
     and padding."""
     padding = np.array(padding)
-    n_parts = np.array(n_parts)
-    steps = (np.array(mscan.shape[1:]) - 2 * padding) // n_parts
-    steps += ((np.array(mscan.shape[1:]) - 2 * padding) % n_parts) > 0
+    steps = _get_steps(np.array(x.shape) - 2 * padding, n_parts_per_axis)
 
-    parts = []
-    for idx in product(range(n_parts[0]), range(n_parts[1]), range(n_parts[2])):
+    x_parts = []
+    for idx in product(*map(range, n_parts_per_axis)):
         lb = np.array(idx) * steps
-        slices = list(map(slice, lb, lb + steps + 2 * padding))
-        parts.append(mscan[[...] + slices])
+        slices = [*map(slice, lb, lb + steps + 2 * padding)]
+        x_parts.append(x[slices])
 
-    return parts
+    return x_parts
 
 
-def combine(parts, n_parts):
-    """Combines parts of big mscan into one big mscan, according to n_parts"""
-    parts = list(parts)
-    n_parts = np.array(n_parts)
+def combine(x_parts, n_parts_per_axis):
+    """Combines parts of one big array back into one array, according to
+     n_parts_per_axis."""
+    assert x_parts[0].ndim == len(n_parts_per_axis)
+    shape = _build_shape(x_parts, n_parts_per_axis)
+    x = _combine_with_shape(x_parts, n_parts_per_axis, shape)
+    return x
 
-    xs = []
-    for i in range(n_parts[0]):
-        ys = []
-        for j in range(n_parts[1]):
-            zs = []
-            for k in range(n_parts[2]):
-                zs.append(parts.pop(0))
-            y = np.concatenate(zs, axis=3)
-            ys.append(y)
-        x = np.concatenate(ys, axis=2)
-        xs.append(x)
-    return np.concatenate(xs, axis=1)
+
+def _build_shape(x_parts, n_parts_per_axis):
+    n_dims = len(n_parts_per_axis)
+    n_parts = len(x_parts)
+    shape = []
+    for i in range(n_dims):
+        step = np.prod(n_parts_per_axis[i + 1:], dtype=int)
+        s = sum([x_parts[j*step].shape[i] for j in range(n_parts_per_axis[i])])
+        shape.append(s)
+    return shape
+
+
+def _combine_with_shape(x_parts, n_parts_per_axis, shape):
+    steps = _get_steps(np.array(shape), n_parts_per_axis)
+    x = np.zeros(shape, dtype=x_parts[0].dtype)
+    for i, idx in enumerate(product(*map(range, n_parts_per_axis))):
+        lb = np.array(idx) * steps
+        slices = [*map(slice, lb, lb + steps)]
+        x[slices] = x_parts[i]
+
+    return x
