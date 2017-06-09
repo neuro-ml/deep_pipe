@@ -45,14 +45,18 @@ class Model:
         t = self.x_ph
         with tf.variable_scope('model'):
             for i, n_chans in enumerate(blocks[1:]):
-                t = bottleneck(t, n_chans // 4, n_chans, kernel_size,
+                t = bottleneck(t, n_chans // 2, n_chans, kernel_size,
                                training=self.is_training,
                                scope='bottleneck_{}'.format(i))
 
             t = cb(t, n_classes, 1, scope='predict', training=self.is_training)
 
         self.logits = t
-        self.y_pred = tf.nn.softmax(self.logits, 1)
+        with tf.name_scope('predict_proba'):
+            self.y_pred_proba = tf.nn.softmax(self.logits, 1)
+
+        with tf.name_scope('predict'):
+            self.y_pred = tf.argmax(self.logits, axis=1)
 
         with tf.name_scope('loss'):
             self.loss = tf.losses.sparse_softmax_cross_entropy(
@@ -65,6 +69,7 @@ class Model:
         # Code to use tensorboard
         with tf.name_scope('summaries'):
             tf.summary.scalar('loss', self.loss)
+            tf.summary.scalar('learning_rate', self.lr)
             self.summary_op = tf.summary.merge_all()
 
     @property

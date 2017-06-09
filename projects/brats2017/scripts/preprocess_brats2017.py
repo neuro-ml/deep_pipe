@@ -14,6 +14,7 @@ MODALITIES_POSTFIXES = ['_t1.nii.gz', '_t1ce.nii.gz',
                         '_t2.nii.gz', '_flair.nii.gz']
 SEGMENTATION_POSTFIX = '_seg.nii.gz'
 
+SCAN_SIZE = [157, 189, 149]
 
 def load_modality(patient, patient_path, postfix):
     filepath = join(patient_path, patient + postfix)
@@ -29,7 +30,9 @@ def load_mscan(patient, patient_path):
 
 def load_segm(patient, patient_path):
     segm = load_modality(patient, patient_path, SEGMENTATION_POSTFIX)
-    return np.array(segm, dtype=np.uint8)
+    segm = np.array(segm, dtype=np.uint8)
+    segm[segm == 4] = 3
+    return segm
 
 
 Patient = namedtuple('Patient', ['id', 'type', 'age', 'survival'])
@@ -53,14 +56,6 @@ def make_metadata(patients, hgg_patients, survival_data) -> pd.DataFrame:
     return metadata
 
 
-def encode_msegm(s):
-    r = np.zeros((3, *s.shape), dtype=bool)
-    r[0] = s > 0
-    r[1] = (s == 1) | (s == 4)
-    r[2] = (s == 4)
-    return r
-
-
 if __name__ == '__main__':
     # Parsing
     parser = argparse.ArgumentParser('BraTS-2017 preprocess')
@@ -79,4 +74,4 @@ if __name__ == '__main__':
                              survival_data)
     metadata.to_csv(join(processed_path, 'metadata.csv'))
 
-    preprocess(data_loader, processed_path, encode_msegm)
+    preprocess(data_loader, processed_path, SCAN_SIZE)

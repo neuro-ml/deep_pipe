@@ -35,8 +35,7 @@ class RawDataLoader:
         return self._load_segm(patient, patient_path)
 
 
-def preprocess(raw_data_loader: RawDataLoader, processed_path,
-               encode_msegm=None):
+def preprocess(raw_data_loader: RawDataLoader, processed_path, scan_size):
     patients = raw_data_loader.patients
     print('Preprocessing')
     for patient in tqdm(patients):
@@ -45,14 +44,11 @@ def preprocess(raw_data_loader: RawDataLoader, processed_path,
 
         # Extract part with the brain
         mask = np.any(mscan, axis=0)
-        mscan, segm = medim.bb.extract(mscan, segm, mask=mask)
+        mscan, segm = medim.bb.extract_fixed(mscan, segm, mask=mask,
+                                             size=scan_size)
 
         mscan = medim.prep.normalize_mscan(mscan, mean=False)
 
         filename = join(processed_path, 'data', patient)
         np.save(filename + '_mscan', mscan)
         np.save(filename + '_segm', segm)
-        if encode_msegm:
-            msegm = encode_msegm(segm)
-            np.save(filename + '_msegm', msegm)
-

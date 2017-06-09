@@ -14,6 +14,8 @@ MODALITIES_POSTFIXES = ['XX.O.MR_T1.', 'XX.O.MR_T1c.',
                         'XX.O.MR_T2.', 'XX.O.MR_Flair.']
 SEGMENTATION_POSTFIX = '.OT.'
 
+SCAN_SIZE = [146, 181, 160]
+
 
 def load_modality(patient, patient_path, postfix):
     dirs = os.listdir(patient_path)
@@ -36,14 +38,6 @@ def load_mscan(patient, patient_path):
 def load_segm(patient, patient_path):
     segm = load_modality(patient, patient_path, SEGMENTATION_POSTFIX)
     return np.array(segm, dtype=np.uint8)
-
-
-def encode_msegm(s):
-    r = np.zeros((3, *s.shape), dtype=bool)
-    r[0] = s > 0
-    r[1] = (s == 1) | (s == 3) | (s == 4)
-    r[2] = (s == 4)
-    return r
 
 
 Patient = namedtuple('Patient', ['id', 'type'])
@@ -76,4 +70,4 @@ if __name__ == '__main__':
     metadata = make_metadata(data_loader.patients, data_loader.hgg_patients)
     metadata.to_csv(join(processed_path, 'metadata.csv'))
 
-    preprocess(data_loader, processed_path, encode_msegm)
+    preprocess(data_loader, processed_path, SCAN_SIZE)
