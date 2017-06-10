@@ -31,7 +31,7 @@ def bottleneck(t, int_chans, out_chans, kernel_size, training, scope):
         return tf.nn.relu(t1 + t2)
 
 
-class Model:
+class EEnet:
     def __init__(self, blocks, n_classes, kernel_size):
         self.x_ph = tf.placeholder(tf.float32,
                                    (None, blocks[0], None, None, None),
@@ -40,7 +40,6 @@ class Model:
                                    (None, None, None, None),
                                    name='y_true')
         self.is_training = tf.placeholder(tf.bool, name='is_training')
-        self.lr = tf.placeholder(tf.float32, name='learning_rate')
 
         t = self.x_ph
         with tf.variable_scope('model'):
@@ -62,15 +61,7 @@ class Model:
             self.loss = tf.losses.sparse_softmax_cross_entropy(
                 self.y_ph, tf.transpose(self.logits, [0, 2, 3, 4, 1]))
 
-        with tf.variable_scope('optimization'):
-            opt = tf.train.MomentumOptimizer(self.lr, 0.9, use_nesterov=True)
-            self.train_op = slim.learning.create_train_op(self.loss, opt)
-
-        # Code to use tensorboard
-        with tf.name_scope('summaries'):
-            tf.summary.scalar('loss', self.loss)
-            tf.summary.scalar('learning_rate', self.lr)
-            self.summary_op = tf.summary.merge_all()
+        self.x_phs = [self.x_ph]
 
     @property
     def graph(self):

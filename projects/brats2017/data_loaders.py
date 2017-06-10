@@ -45,6 +45,11 @@ class Brats(ABC):
     def n_classes(self):
         pass
 
+    @property
+    @abstractmethod
+    def spatial_size(self):
+        pass
+
 
 class Brats2015(Brats):
     def segm2msegm(self, segm):
@@ -58,9 +63,13 @@ class Brats2015(Brats):
     def n_classes(self):
         return 5
 
+    @property
+    def spatial_size(self):
+        return [146, 181, 160]
+
 
 class Brats2017(Brats):
-    """Data loader for brats 2017. We replace label 4 to 3."""
+    """Data loader for brats 2017. We have replaced label 4 with 3."""
     def segm2msegm(self, segm):
         r = np.zeros((3, *segm.shape), dtype=bool)
         r[0] = segm > 0
@@ -71,3 +80,7 @@ class Brats2017(Brats):
     @property
     def n_classes(self):
         return 4
+
+    @property
+    def spatial_size(self):
+        return [157, 189, 149]
