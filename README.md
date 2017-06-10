@@ -3,3 +3,4 @@ Repository for tools, useful for medical image analysis, including preprocessing
 
 Data path:
 /mount/export/Brats2017/data/processed
+On neuro-x2, neuro-t1
