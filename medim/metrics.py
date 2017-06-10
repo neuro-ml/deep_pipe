@@ -17,10 +17,6 @@ def dice_score(y_pred, target):
 # pip install Cython
 # cd py-hausdorff
 # python setup.py build && python setup.py install
-
-from hausdorff import weighted_hausdorff
-
-
 def hausdorff(a, b, weights=1, label=1):
     """
     Calculates the Hausdorff distance between two masks.
@@ -41,6 +37,7 @@ def hausdorff(a, b, weights=1, label=1):
     hausdorff(x, y, weights=2) # isotropic, but weighted
     hausdorff(x, y, weights=(1,1,1,5)) # anisotropic
     """
+    from hausdorff import weighted_hausdorff
     
     try:
 #         check if array
