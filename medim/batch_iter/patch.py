@@ -105,9 +105,7 @@ def foreground(xs: list, patch_sizes: list, *, batch_size: int, spatial_dims,
         r_bound = c + patch_sizes[-1] // 2 + patch_sizes[-1]%2
 
         # Remove centers that are too left
-        c = c[np.all(l_bound >= 0, axis=1)]
-        # Remove centers that are too right
-        c = c[np.all(r_bound <= spatial_shapes[i], axis=1)]
+        c = c[np.all((l_bound >= 0) & (r_bound <= spatial_shapes[i]), axis=1)]
         conditional_indices.append(c)
 
     # Create batches variables with the right shape and type
