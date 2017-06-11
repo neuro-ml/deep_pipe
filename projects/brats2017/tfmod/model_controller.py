@@ -4,8 +4,6 @@ from os.path import join
 import numpy as np
 import tensorflow as tf
 
-from . import modules
-
 
 class ModelController:
     def __init__(self, model, log_path, restore_ckpt_path=None):
@@ -13,15 +11,15 @@ class ModelController:
 
         with self.graph.as_default():
 
-            self.optimization = modules.Optimizer(model.loss)
+            self.optimization = tfmod.Optimizer(model.loss)
 
             log_path = join(log_path, timestamp())
             log_writer = tf.summary.FileWriter(log_path, self.graph,
                                                flush_secs=30)
-            self.train_writer = modules.summaries.Scalar(
+            self.train_writer = projects.brats2017.tfmod.summaries.Scalar(
                 {'loss': model.loss, 'lr': self.optimization.lr},
                 'train_summary', log_writer)
-            self.val_writer = modules.summaries.Custom(
+            self.val_writer = projects.brats2017.tfmod.summaries.Custom(
                 'mean_val_loss', log_writer)
 
         self.session = tf.Session(graph=self.graph)
