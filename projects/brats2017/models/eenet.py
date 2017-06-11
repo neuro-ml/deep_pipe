@@ -1,6 +1,6 @@
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
 
+from ..tfmod import SegmentationModel
 from .utils import batch_norm
 
 
@@ -31,7 +31,7 @@ def bottleneck(t, int_chans, out_chans, kernel_size, training, scope):
         return tf.nn.relu(t1 + t2)
 
 
-class EEnet:
+class EEnet(SegmentationModel):
     def __init__(self, blocks, n_classes, kernel_size):
         self.x_ph = tf.placeholder(tf.float32,
                                    (None, blocks[0], None, None, None),
@@ -39,16 +39,16 @@ class EEnet:
         self.y_ph = tf.placeholder(tf.int64,
                                    (None, None, None, None),
                                    name='y_true')
-        self.is_training = tf.placeholder(tf.bool, name='is_training')
+        self._training_ph = tf.placeholder(tf.bool, name='is_training')
 
         t = self.x_ph
         with tf.variable_scope('model'):
             for i, n_chans in enumerate(blocks[1:]):
                 t = bottleneck(t, n_chans // 2, n_chans, kernel_size,
-                               training=self.is_training,
+                               training=self.training_ph,
                                scope='bottleneck_{}'.format(i))
 
-            t = cb(t, n_classes, 1, scope='predict', training=self.is_training)
+            t = cb(t, n_classes, 1, scope='predict', training=self.training_ph)
 
         self.logits = t
         with tf.name_scope('predict_proba'):
@@ -58,11 +58,25 @@ class EEnet:
             self.y_pred = tf.argmax(self.logits, axis=1)
 
         with tf.name_scope('loss'):
-            self.loss = tf.losses.sparse_softmax_cross_entropy(
+            self._loss = tf.losses.sparse_softmax_cross_entropy(
                 self.y_ph, tf.transpose(self.logits, [0, 2, 3, 4, 1]))
-
-        self.x_phs = [self.x_ph]
 
     @property
     def graph(self):
         return tf.get_default_graph()
+
+    @property
+    def x_phs(self):
+        return [self.x_ph]
+
+    @property
+    def y_phs(self):
+        return [self.y_ph]
+
+    @property
+    def training_ph(self):
+        return self._training_ph
+
+    @property
+    def loss(self):
+        return self._loss
