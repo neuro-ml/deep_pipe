@@ -35,6 +35,17 @@ def load_segm(patient, patient_path):
     return segm
 
 
+def get_survival_class(survival):
+    if np.isnan(survival):
+        return None
+    if survival > 18 * 30:
+        return 2
+    elif survival < 6 * 30:
+        return 0
+    else:
+        return 1
+
+
 Patient = namedtuple('Patient', ['id', 'type', 'age', 'survival'])
 def make_metadata(patients, hgg_patients, survival_data) -> pd.DataFrame:
     print('Building metadata')
@@ -53,6 +64,9 @@ def make_metadata(patients, hgg_patients, survival_data) -> pd.DataFrame:
     metadata = pd.DataFrame(records)
     metadata.index = metadata.id
     metadata = metadata.drop(['id'], axis=1)
+
+    metadata['survival_class'] = metadata.survival.apply(get_survival_class)
+
     return metadata
 
 

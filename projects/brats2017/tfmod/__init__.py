@@ -1,3 +1,4 @@
 from . import summaries
 from .optimizer import Optimizer
-from .models import Model, SegmentationModel
+from .model_controller import BasicModelController as ModelController
+from . import models

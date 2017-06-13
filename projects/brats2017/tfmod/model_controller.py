@@ -23,8 +23,8 @@ class BasicModelController:
             self.train_iter_writer = summaries.Scalar(
                 {'loss': model.loss, 'lr': self.optimization.lr},
                 'train_summary', log_writer)
-            self.train_writer = summaries.Custom('avg_losses_train', log_writer)
-            self.val_writer = summaries.Custom('avg_losses_val', log_writer)
+            self.train_writer = summaries.Custom('avg_losses/train', log_writer)
+            self.val_writer = summaries.Custom('avg_losses/val', log_writer)
 
         self.session = tf.Session(graph=self.graph)
         if restore_ckpt_path is None:
@@ -43,8 +43,8 @@ class BasicModelController:
             [model.y_pred, model.loss],
             [*model.x_phs, *model.y_phs, model.training_ph]
         )
-        self.call_pred = self.session.make_callable(
-            model.y_pred,
+        self.call_pred_proba = self.session.make_callable(
+            model.y_pred_proba,
             [*model.x_phs, model.training_ph]
         )
 
@@ -66,11 +66,12 @@ class BasicModelController:
         self.train_writer.write_summary(loss)
         return loss
 
-    def validate(self, batch_iter, n_iter: int=None):
+    def validate(self, inputs, n_iter: int=None):
         y_pred = []
         losses = []
-        for i, inputs in enumerate(batch_iter):
-            y_pred_batch, loss = self.call_val(*inputs, False)
+        for i, inputo in enumerate(inputs):
+            input = [a[None, :] for a in inputo]
+            y_pred_batch, loss = self.call_val(*input, False)
             y_pred.extend(y_pred_batch)
             losses.append(loss)
 
@@ -81,12 +82,11 @@ class BasicModelController:
         self.val_writer.write_summary(loss)
         return y_pred, loss
 
-    def predict(self, xs_iter):
-        y_pred = []
-        for xos in zip(*xs_iter):
-            y_pred_batch = self.call_pred(*xos, False)
-            y_pred.extend(y_pred_batch)
-        return y_pred
+    def predict_proba(self, xos):
+        input = [a[None, :] for a in xos]
+        y_pred_proba = self.call_pred_proba(*input, False)
+
+        return y_pred_proba[0]
 
 
 def timestamp():

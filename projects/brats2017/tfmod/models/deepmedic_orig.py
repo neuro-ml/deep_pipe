@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from ..tfmod import SegmentationModel
+from .models import SegmentationModel
 from .utils import batch_norm
 
 
@@ -97,7 +97,7 @@ class DeepMedic(SegmentationModel):
             self.y_pred_proba = tf.nn.softmax(self.logits, 1)
 
         with tf.name_scope('predict'):
-            self.y_pred = tf.argmax(self.logits, axis=1)
+            self._y_pred = tf.argmax(self.logits, axis=1)
 
         with tf.name_scope('loss'):
             self._loss = tf.losses.sparse_softmax_cross_entropy(
@@ -122,3 +122,7 @@ class DeepMedic(SegmentationModel):
     @property
     def loss(self):
         return self._loss
+
+    @property
+    def y_pred(self):
+        return self._y_pred
