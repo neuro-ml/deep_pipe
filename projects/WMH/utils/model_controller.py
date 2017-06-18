@@ -31,13 +31,13 @@ class Model_controller():
         self.crops_shape = crops_shape
         self.lr_decayer = lr_decayer
 
+
     def _train(self, X_train, y_train):
         self.model.train()
         mean_loss, step = 0, 0
         inputs, targets = random_nonzero_crops(X_train, y_train,
                                                self.num_of_patches,
                                                shape=self.crops_shape)
-        # par_iterate_minibatches
         bar = tqdm(par_iterate_minibatches(inputs, targets, self.batch_size, augment),
                    total=inputs.shape[0] // self.batch_size)
         for x, y_true in bar:
@@ -84,17 +84,17 @@ class Model_controller():
 
     def predict(self, X, zero_padding=[0] * 5, n_parts_per_axis = [1, 1, 4, 4, 2]):
         """
-        Partite X into n_parts_per_axis with padding
+        Divide X into n_parts_per_axis with padding.
         """
 
         a_parts = divide(X, zero_padding, n_parts_per_axis)
         pred = []
-        #### PyTorch only
+        #### TODO PyTorch only
         self.model.eval()
         for i in a_parts:
             i = to_var(i).cuda()
             pred.append(to_numpy(self.model(i)))
-            #### PyTorch only
+        #### PyTorch only
         a_2 = combine(pred, n_parts_per_axis)
         y_pred = np.logical_and(a_2[:, 1, ...] > a_2[:, 0, ...],
                                 a_2[:, 1, ...] > a_2[:, 2, ...])

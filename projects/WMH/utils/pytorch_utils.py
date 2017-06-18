@@ -10,11 +10,17 @@ import torch.nn.functional as F
 
 
 def _pred_reshape(y):
+    """
+    Reshape predictions wrt channels into vector (n_pixels*n_batch, n_classes):
+    each channel represent probability map
+    for corresponding class.
+    """
     x = y.permute(0, 2, 3, 4, 1)
     return x.contiguous().view(-1, x.size()[-1])
 
 
 def loss_cross_entropy(y_pred, y_true):
+    """Log.loss with cropping for predicted shape."""
     true_shape = y_true.size()
     pred_shape = y_pred.size()
     shape_diff = np.array(true_shape)[-3:] - np.array(pred_shape)[-3:]
