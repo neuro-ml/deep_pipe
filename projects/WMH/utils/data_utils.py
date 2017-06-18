@@ -63,21 +63,16 @@ def load_files(PATH: str):
     masks = [_reshape_to(i, new_shape=(256, 256, 84)) for i in masks]
     flairs = [_reshape_to(i, new_shape=(256, 256, 84)) for i in flairs]
     t1 = [_reshape_to(i, new_shape=(256, 256, 84)) for i in t1]
-    
     # add new axis for one channel
     masks = np.array(masks)[:, np.newaxis].astype(int)
-    
     flairs = np.array(flairs)[:, np.newaxis]
-    # v = flairs.max(axis=0).max(axis=0).max(axis=0).max(axis=0)
-    v = flairs.std()
-    # v[v==0] = 1
-    flairs = flairs / v
-    #
     t1 = np.array(t1)[:, np.newaxis]
-    # v = t1.max(axis=0).max(axis=0).max(axis=0).max(axis=0)
-    v = t1.std()
-    # v[v==0] = 1
-    t1 = t1 / v
+    # standartize data
+    flair_std = flairs.std()
+    flairs = flairs / flair_std
+    #
+    t1_std = t1.std()
+    t1 = t1 / t1_std
     #
     return masks, t1, flairs
 
@@ -121,19 +116,15 @@ def random_nonzero_crops(image: np.ndarray, mask: np.ndarray, num_of_patches=5, 
                                             for j in range(3)]
                 sliced_mask = msk[slices]
 
-                if np.sum(sliced_mask) > 5:
+                if np.sum(sliced_mask) > 15:
                     counter+=1
                     patches.append(sliced_image)
                     patches_mask.append(sliced_mask)
     else:
-        raise NotImplementedError() # TODO
+        raise Exception('Empty mask')
     patches_mask = np.array(patches_mask)
     patches = np.array(patches)
-    # if mode == 'half':
-    #     slices = [Ellipsis]+[slice(shape//4, 3*shape//4)
-    #                          for shape in patches_mask.shape[2:]]
-    #     patches_mask = patches_mask[slices]
-        
+    # only not empty masks
     idx = patches_mask.sum(axis=(1,2,3,4)) > 0
     patches = patches[idx]
     patches_mask = patches_mask[idx]
@@ -283,8 +274,6 @@ def combine(x_parts, n_parts_per_axis):
 #         result[idx] = map_coordinates(z, indices, order=1).reshape(z.shape)
 #     return result
 
-
-##########    from medim     ###############
 
 # def divider(X, y, with_shape=(1, 1, 40, 40, 40), mode='half'):
 #     """
