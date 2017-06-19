@@ -44,7 +44,6 @@ def _reshape_to(tmp: np.ndarray, new_shape = None):
     return np.pad(tmp, new_diff, mode='constant', constant_values=0)
 
 
-
 def load_files(PATH: str):
     """
     Using structure from WMHS challenge load FLAIR and T1 scans.
@@ -52,20 +51,26 @@ def load_files(PATH: str):
     masks = []
     t1 = []
     flairs = []
+    clear_flairs = []
     #t = None
     # read data
+    path_to_flairs = '/home/mount/neuro-t01-ssd/home/amir/projects/segm/projects/WMH/data/skull_stripping'
     for i in tqdm(os.listdir(PATH)):
+        tmp_path_to_flairs = os.path.join(path_to_flairs, PATH.split('/')[-2], i, 'brain_mask/brainmask.nii.gz')
         path_for_wmhm = os.path.join(PATH, i, 'wmh.nii.gz')
         masks.append(nib.load(path_for_wmhm).get_data())
         flairs.append(nib.load(os.path.join(PATH, i, 'pre/FLAIR.nii.gz')).get_data())
         t1.append(nib.load(os.path.join(PATH, i, 'pre/T1.nii.gz')).get_data())
+        clear_flairs.append(nib.load(tmp_path_to_flairs).get_data())
         
     masks = [_reshape_to(i, new_shape=(256, 256, 84)) for i in masks]
     flairs = [_reshape_to(i, new_shape=(256, 256, 84)) for i in flairs]
     t1 = [_reshape_to(i, new_shape=(256, 256, 84)) for i in t1]
+    clear_flairs = [_reshape_to(i, new_shape=(256, 256, 84)) for i in clear_flairs]
     # add new axis for one channel
     masks = np.array(masks)[:, np.newaxis].astype(int)
     flairs = np.array(flairs)[:, np.newaxis]
+    clear_flairs = np.array(clear_flairs)[:, np.newaxis]
     t1 = np.array(t1)[:, np.newaxis]
     # standartize data
     flair_std = flairs.std()
@@ -74,8 +79,9 @@ def load_files(PATH: str):
     t1_std = t1.std()
     t1 = t1 / t1_std
     #
-    return masks, t1, flairs
-
+    flair_std = clear_flairs.std()
+    clear_flairs = clear_flairs / flair_std
+    return masks, t1, flairs, clear_flairs
 
 
 def random_nonzero_crops(image: np.ndarray, mask: np.ndarray, num_of_patches=5, shape=(48, 48, 24),
@@ -121,7 +127,7 @@ def random_nonzero_crops(image: np.ndarray, mask: np.ndarray, num_of_patches=5, 
                     patches.append(sliced_image)
                     patches_mask.append(sliced_mask)
     else:
-        raise Exception('Empty mask')
+        raise Exception('Input contains empty mask')
     patches_mask = np.array(patches_mask)
     patches = np.array(patches)
     # only not empty masks
@@ -143,8 +149,8 @@ def augment(x: np.ndarray, y: np.ndarray):
     """
     scipy.random.seed()
     
-    scale = np.random.normal(1, 0.05, size=3)
-    alpha, theta = np.random.normal(0, 5, size=2)
+    scale = np.random.normal(1, 0.1, size=3)
+    alpha, theta = np.random.normal(0, 10, size=2)
     
     def sc(x):
         shape = np.array(x.shape)
@@ -171,20 +177,21 @@ def augment(x: np.ndarray, y: np.ndarray):
             x = np.flip(x, -i)
             y = np.flip(y, -i)
       
-    x = np.array([sc(i) for i in x])
-    y = sc(y[0])[np.newaxis]
+    # x = np.array([sc(i) for i in x])
+    # y = sc(y[0])[np.newaxis]
     
     x = rot(x, 3, theta, alpha)
     y = rot(y, 0, theta, alpha)
     
     if np.random.binomial(1, .5):
-        t = np.random.choice([0, 90])
-        a = np.random.choice([0, 90])
+        t = np.random.choice([-90, 0, 90])
+        a = np.random.choice([-90, 0, 90])
         x = rot(x, 3, t, a)
         y = rot(y, 0, t, a)
 
-    x = np.array([i * np.random.normal(1, 0.2) for i in x])
+    x = np.array([i * np.random.normal(1, 0.5) for i in x])
     return x, y
+
 
 #region from_medim
 
