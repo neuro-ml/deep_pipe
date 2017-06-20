@@ -15,7 +15,10 @@ def _pred_reshape(y):
     each channel represent probability map
     for corresponding class.
     """
-    x = y.permute(0, 2, 3, 4, 1)
+    if len(y.size())==5:
+        x = y.permute(0, 2, 3, 4, 1)
+    else:
+        x = y.permute(0, 2, 3, 1)
     return x.contiguous().view(-1, x.size()[-1])
 
 
@@ -23,10 +26,15 @@ def loss_cross_entropy(y_pred, y_true):
     """Log.loss with cropping for predicted shape."""
     true_shape = y_true.size()
     pred_shape = y_pred.size()
-    shape_diff = np.array(true_shape)[-3:] - np.array(pred_shape)[-3:]
+    l = len(pred_shape) - 2
+    shape_diff = np.array(true_shape)[-l:] - np.array(pred_shape)[-l:]
     if not np.all(shape_diff == 0):
-        slices = [slice(i // 2, -(i // 2 + i % 2)) for i in shape_diff[-3:]]
-        y_true = y_true[..., slices[0], slices[1], slices[2]].contiguous()
+        slices = [slice(i // 2, -(i // 2 + i % 2)) for i in shape_diff[-l:]]
+
+        if l==5:
+            y_true = y_true[..., slices[0], slices[1], slices[2]].contiguous()
+        else:
+            y_true = y_true[..., slices[0], slices[1]].contiguous()
     return F.cross_entropy(_pred_reshape(y_pred), y_true.view(-1))
 
 

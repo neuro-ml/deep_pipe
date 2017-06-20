@@ -84,6 +84,31 @@ def load_files(PATH: str):
     return masks, t1, flairs, clear_flairs
 
 
+def random_slicer(image: np.ndarray, mask: np.ndarray, num_of_slices=35):
+    patches = []
+    patches_mask = []
+    counter = 0
+    if np.sum(mask) > 0:
+        while counter < num_of_slices:
+            for img, msk in zip(image, mask):
+                idx = np.random.randint(0, image.shape[-1])
+                if np.sum(msk[..., idx]) > 1:
+                    patches.append(img[..., idx])
+                    patches_mask.append(msk[..., idx])
+                    counter+=1
+                else:
+                    continue
+
+    patches_mask = np.array(patches_mask)
+    patches = np.array(patches)
+    # only not empty masks
+    idx = patches_mask.sum(axis=(1, 2, 3)) > 0
+    patches = patches[idx]
+    patches_mask = patches_mask[idx]
+
+    return patches, patches_mask
+
+
 def random_nonzero_crops(image: np.ndarray, mask: np.ndarray, num_of_patches=5, shape=(48, 48, 24),
                          mode='same'):
     """
