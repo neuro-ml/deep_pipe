@@ -4,9 +4,9 @@ from os.path import join
 import numpy as np
 import tensorflow as tf
 
+from experiments.experiments.models import SegmentationModel
 from . import summaries
 from .optimizer import Optimizer
-from .models import SegmentationModel
 
 
 class BasicModelController:

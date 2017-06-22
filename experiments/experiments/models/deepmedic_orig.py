@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from .models import SegmentationModel
+from .base import Model
 from .utils import batch_norm
 
 
@@ -51,16 +51,16 @@ def build_path(t, blocks, kernel_size, training, name):
 
 
 def build_model(t_det, t_context, kernel_size, n_classes, training, name,
-                path_blocks=[30, 40, 40, 50], n_chans_common=150):
+                path_blocks=(30, 40, 40, 50), n_chans_common=150):
     with tf.variable_scope(name):
         t_det = build_path(t_det, path_blocks, kernel_size, training,
                            'detailed')
 
         t_context = tf.nn.avg_pool3d(
-            t_context, [1, 1, 3, 3, 3], [1, 1, 3, 3, 3], 'SAME', 'NCDHW')
+            t_context, (1, 1, 3, 3, 3), (1, 1, 3, 3, 3), 'SAME', 'NCDHW')
 
         t_context = build_path(t_context, path_blocks, kernel_size, training,
-                               'conext')
+                               'context')
 
         with tf.variable_scope('upconv'):
             t_context_up = batch_norm(t_context, training=training)
@@ -80,49 +80,31 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
         return logits
 
 
-class DeepMedic(SegmentationModel):
-    def __init__(self, n_chans_in, n_classes):
+class DeepMedic(Model):
+    def __init__(self, n_chans_in, n_chans_out):
+        super().__init__(n_chans_in, n_chans_out)
+
+    def build_model(self):
+        nan = None
         self.x_det_ph = tf.placeholder(
-            tf.float32, (None, n_chans_in, None, None, None), name='x_det')
+            tf.float32, (nan, self.n_chans_in, nan, nan, nan), name='x_det')
         self.x_con_ph = tf.placeholder(
-            tf.float32, (None, n_chans_in, None, None, None), name='x_con')
+            tf.float32, (nan, self.n_chans_in, nan, nan, nan), name='x_con')
         self.y_ph = tf.placeholder(
-            tf.int64, (None, None, None, None), name='y_true')
-        self._training_ph = tf.placeholder(tf.bool, name='is_training')
+            tf.float32, (nan, self.n_chans_out, nan, nan, nan), name='y_true')
+        self.training_ph = tf.placeholder(tf.bool, name='is_training')
 
-        self.logits = build_model(self.x_det_ph, self.x_con_ph, 3, n_classes,
-                                  self.training_ph, 'deep_medic')
+        self.x_phs = [self.x_det_ph, self.x_con_ph]
 
-        with tf.name_scope('predict_proba'):
-            self.y_pred_proba = tf.nn.softmax(self.logits, 1)
+        self.logits = build_model(self.x_det_ph, self.x_con_ph, 3,
+                                  self.n_chans_out, self.training_ph,
+                                  name='deep_medic')
 
-        with tf.name_scope('predict'):
-            self._y_pred = tf.argmax(self.logits, axis=1)
+        self.y_pred = tf.nn.softmax(self.logits, 1, name='y_pred')
 
-        with tf.name_scope('loss'):
-            self._loss = tf.losses.sparse_softmax_cross_entropy(
-                self.y_ph, tf.transpose(self.logits, [0, 2, 3, 4, 1]))
+        self.loss = tf.losses.log_loss(self.y_ph, self.logits, scope='loss')
 
-    @property
-    def graph(self):
-        return tf.get_default_graph()
+    def validate(self):
 
-    @property
-    def x_phs(self):
-        return [self.x_det_ph, self.x_con_ph]
 
-    @property
-    def y_phs(self):
-        return [self.y_ph]
-
-    @property
-    def training_ph(self):
-        return self._training_ph
-
-    @property
-    def loss(self):
-        return self._loss
-
-    @property
-    def y_pred(self):
-        return self._y_pred
+    def predict(self):
