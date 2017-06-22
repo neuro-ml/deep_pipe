@@ -16,22 +16,21 @@ class Isles(Dataset):
 
     def load_mscan(self, patient_id):
         channels = self.metadata.iloc[patient_id][self.modalities]
-        result = []
+        res = []
 
-        for row in channels:
-            res = []
-            for image in row:
-                image = image.replace('data/', self.processed_path)
-                x = nib.load(image).get_data()
-                x = self.adjust(x)
-                x = x.astype('float32')
-                m, M = x.min(), x.max()
-                x = (x - m) / (M - m)
-                res.append(x)
+        print(channels)
+        for image in channels:
+            print(image)
+            image = image.replace('data/', self.processed_path)
+            print(image)
+            x = nib.load(image).get_data()
+            x = self.adjust(x)
+            x = x.astype('float32')
+            m, M = x.min(), x.max()
+            x = (x - m) / (M - m)
+            res.append(x)
 
-            result.append(np.asarray(res))
-
-        return np.asarray(result)
+        return np.asarray(res)
 
     def load_segm(self, patient_id):
         # dunno what to do here
