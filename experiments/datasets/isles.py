@@ -19,9 +19,7 @@ class Isles(Dataset):
         res = []
 
         for image in channels:
-            print(image)
             image = image.replace('data/', self.processed_path)
-            print(image)
             x = nib.load(image).get_data()
             x = self.adjust(x)
             x = x.astype('float32')
@@ -37,17 +35,15 @@ class Isles(Dataset):
 
     def load_msegm(self, patient):
         channels = self.metadata.iloc[patient][self.labels]
-        result = []
+        res = []
 
-        for row in channels:
-            res = []
-            for x in [nib.load(image).get_data() for image in row]:
-                x = self.adjust(x, True)
-                res.append(x)
+        for image in channels:
+            image = image.replace('data/', self.processed_path)
+            x = nib.load(image).get_data()
+            x = self.adjust(x, True)
+            res.append(x)
 
-            result.append(np.asarray(res))
-
-        return np.asarray(result)
+        return np.asarray(res)
 
     def segm2msegm(self, segm):
         #  and here too
