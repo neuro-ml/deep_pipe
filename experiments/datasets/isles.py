@@ -18,7 +18,6 @@ class Isles(Dataset):
         channels = self.metadata.iloc[patient_id][self.modalities]
         res = []
 
-        print(channels)
         for image in channels:
             print(image)
             image = image.replace('data/', self.processed_path)
