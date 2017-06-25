@@ -2,9 +2,7 @@ import random
 
 import numpy as np
 
-
-def extract(l, idx):
-    return [l[i] for i in idx]
+from ..utils import extract
 
 
 def get_spatial_sizes(data, spatial_dims):

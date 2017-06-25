@@ -1,14 +1,11 @@
 from functools import lru_cache
+from random import choice
 
 import numpy as np
 
 import medim
 from bdp import Pipeline, LambdaTransformer, Source, Chunker, pack_args
 from ..datasets import Dataset, config_dataset
-
-
-def config_batch_iter(batch_size, cancer_fraction):
-    pass
 
 
 class Patient:
@@ -21,8 +18,9 @@ class Patient:
         return hash(self.patient_id)
 
 
-def make_batch_iter(patient_iter, dataset: Dataset, *, batch_size, x_patch_sizes,
-                    y_patch_size, cancer_fraction):
+def make_3d_patch_stratified_iter(
+        patient_ids, dataset: Dataset, *, batch_size,
+        x_patch_sizes, y_patch_size, nonzero_fraction):
     x_patch_sizes = [np.array(x_patch_size) for x_patch_size in x_patch_sizes]
     y_patch_size = np.array(y_patch_size)
     spatial_size = np.array(dataset.spatial_size)
@@ -32,16 +30,18 @@ def make_batch_iter(patient_iter, dataset: Dataset, *, batch_size, x_patch_sizes
     n_chans_msegm = dataset.n_chans_msegm
 
     x_shape = np.array([n_chans_msegm, *spatial_size])
-    # y_shape = np.array([n_chans_mscan, *spatial_size])
 
-    @lru_cache()
+    def make_random_seq(l):
+        while True:
+            yield choice(l)
+
     def load_data(patient_name):
         mscan = dataset.load_mscan(patient_name)
         msegm = dataset.load_msegm(patient_name)
 
         return Patient(patient_name, mscan, msegm)
 
-    @lru_cache()
+    @lru_cache(maxsize=len(dataset.patient_ids))
     def find_cancer(patient: Patient):
         conditional_centre_indices = medim.patch.get_conditional_center_indices(
             np.any(patient.msegm, axis=0), patch_size=y_patch_size,
@@ -52,7 +52,7 @@ def make_batch_iter(patient_iter, dataset: Dataset, *, batch_size, x_patch_sizes
     @pack_args
     def extract_patch(mscan, msegm, conditional_center_indices):
         cancer_type = np.random.choice(
-            [True, False], p=[cancer_fraction, 1 - cancer_fraction])
+            [True, False], p=[nonzero_fraction, 1 - nonzero_fraction])
         if cancer_type:
             i = np.random.randint(len(conditional_center_indices))
             center_idx = conditional_center_indices[i]
@@ -85,10 +85,10 @@ def make_batch_iter(patient_iter, dataset: Dataset, *, batch_size, x_patch_sizes
         return outputs
 
     return Pipeline(
-        Source(patient_iter, buffer_size=10),
-        LambdaTransformer(load_data, n_workers=1, buffer_size=20),
+        Source(make_random_seq(patient_ids), buffer_size=10),
+        LambdaTransformer(load_data, n_workers=1, buffer_size=10),
         LambdaTransformer(find_cancer, n_workers=1, buffer_size=50),
-        LambdaTransformer(extract_patch, n_workers=1, buffer_size=batch_size*2),
+        LambdaTransformer(extract_patch, n_workers=4, buffer_size=3*batch_size),
         Chunker(chunk_size=batch_size, buffer_size=2),
         LambdaTransformer(combine_batch, n_workers=1, buffer_size=3)
     )

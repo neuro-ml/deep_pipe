@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def dice_score(y_pred, target, empty_val=1):
+def dice_score(y_pred, target, empty_val=0):
     """Dice score between two binary masks."""
     assert y_pred.dtype == target.dtype == np.bool
 
@@ -11,7 +11,7 @@ def dice_score(y_pred, target, empty_val=1):
     return empty_val if den == 0 else num / den
 
 
-# Before using this module, install the dependecies:
+# Before using this module, install the dependencies:
 
 # git clone https://github.com/mavillan/py-hausdorff.git
 # pip install Cython

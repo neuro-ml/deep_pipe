@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from functools import lru_cache
 
 import numpy as np
 from typing import List
@@ -6,8 +7,8 @@ from typing import List
 
 class Dataset(ABC):
     @abstractmethod
-    def __init__(self, processed_path):
-        pass
+    def __init__(self, data_path):
+        self.data_path = data_path
 
     @abstractmethod
     def load_mscan(self, patient_id) -> np.array:
@@ -49,3 +50,29 @@ class Dataset(ABC):
     @abstractmethod
     def spatial_size(self) -> List[int]:
         pass
+
+
+def make_cached(dataset):
+    n = len(dataset.patient_ids)
+
+    class CachedDataset:
+        def __init__(self, dataset):
+            self.dataset = dataset
+
+        @lru_cache(n)
+        def load_mscan(self, patient_id):
+            return self.dataset.load_mscan(patient_id)
+
+        @lru_cache(n)
+        def load_segm(self, patient_id):
+            return self.dataset.load_segm(patient_id)
+
+        @lru_cache(n)
+        def load_msegm(self, patient_id):
+            return self.dataset.load_msegm(patient_id)
+
+        def __getattr__(self, name):
+            return getattr(self.dataset, name)
+
+    return CachedDataset(dataset)
+

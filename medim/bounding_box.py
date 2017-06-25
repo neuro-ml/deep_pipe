@@ -30,8 +30,8 @@ def extract(*arrays, mask: np.ndarray):
 
 
 def extract_fixed(*arrays, mask: np.array, size):
-    """Extract bounding boxes of size=size from the last dims of all arrays according to the
-    mask."""
+    """Extract bounding boxes of size=size from the last dims of all arrays
+    according to the mask."""
     size = np.array(size)
     limits = get_idx(mask)
 

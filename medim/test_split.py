@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from .utils import _combine_with_shape, _build_shape, combine, divide
+from .split import _combine_with_shape, _build_shape, combine, divide
 
 
 class TestDivide(unittest.TestCase):

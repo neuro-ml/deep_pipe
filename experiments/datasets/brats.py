@@ -7,15 +7,14 @@ import pandas as pd
 
 
 class Brats(Dataset):
-    def __init__(self, processed_path):
-        super().__init__(processed_path)
-        self.processed_path = processed_path
-        self.metadata = pd.read_csv(join(processed_path, 'metadata.csv'),
+    def __init__(self, data_path):
+        super().__init__(data_path)
+        self.metadata = pd.read_csv(join(data_path, 'metadata.csv'),
                                     index_col='id')
         self._patient_ids = self.metadata.index.values
 
     def build_data_name(self, patient_id):
-        return join(self.processed_path, 'data', patient_id)
+        return join(self.data_path, 'data', patient_id)
 
     def load_mscan(self, patient_id):
         dataname = self.build_data_name(patient_id)
