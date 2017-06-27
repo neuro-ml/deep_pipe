@@ -20,19 +20,21 @@ class Model_controller():
 
     def init_train_procedure(self, batch_size=20, lr=0.01, net='3D',
                              num_of_patches=500, crops_shape=(52, 52, 44),
-                             lr_decayer=lambda x: x * 0.95):
+                             lr_decayer=lambda x: x * 0.5,
+                             decay_every_epoch=20):
         """
         Init params.
         """
         self.initialized = True
+        assert net == '2D' or net == '3D'
         self.lr = lr
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
         self.batch_size = batch_size
         self.num_of_patches = num_of_patches
         self.crops_shape = crops_shape
         self.lr_decayer = lr_decayer
+        self.decay_every_epoch = decay_every_epoch
         self.res = dict()
-        assert net=='2D' or net=='3D'
         self.net_dim = net
         self.neg_minig_storage = []
 
@@ -127,13 +129,18 @@ class Model_controller():
         #### TODO not PyTorch only
         self.model.eval()
         for i in a_parts:
+            if self.net_dim=='2D':
+                i = i[np.newaxis]
             i = to_var(i).cuda()
             pred.append(to_numpy(self.model(i)))
         #### PyTorch only
         if self.net_dim == '3D':
             a_2 = combine(pred, n_parts_per_axis)
         else:
-            a_2 = np.array(pred).reshape(*shape)
+            shape_ = list(shape)
+            shape_[1:4] = list(np.array(pred).shape)[2:5]
+
+            a_2 = np.array(pred).reshape(*shape_)
         y_pred = np.logical_and(a_2[:, 1, ...] > a_2[:, 0, ...],
                                 a_2[:, 1, ...] > a_2[:, 2, ...])
         return y_pred
@@ -144,9 +151,17 @@ class Model_controller():
     def _train(self, X_train, y_train, hard_neg_mining = False):
         self.model.train()
         mean_loss, step = 0, 0
-        inputs, targets = random_nonzero_crops(X_train, y_train,
-                                               self.num_of_patches,
-                                               shape=self.crops_shape)
+        # inputs, targets = random_nonzero_crops(X_train, y_train,
+        #                                        self.num_of_patches,
+        #                                        shape=self.crops_shape)
+        if self.net_dim == '3D':
+            inputs, targets = random_nonzero_crops(X_train, y_train,
+                                                   self.num_of_patches,
+                                                   shape=self.crops_shape)
+        else:
+            inputs, targets = random_slicer(X_train, y_train,
+                                            num_of_slices=self.num_of_patches)
+
         if hard_neg_mining and len(self.neg_minig_storage) > 0:
             prev_inp = self.neg_minig_storage[0]
             prev_targ = self.neg_minig_storage[1]
@@ -154,8 +169,7 @@ class Model_controller():
             inputs = np.concatenate([inputs, prev_inp])
             targets = np.concatenate([targets, prev_targ])
 
-        bar = tqdm(par_iterate_minibatches(inputs, targets, self.batch_size,
-                                           augment),
+        bar = tqdm(par_iterate_minibatches(inputs, targets, self.batch_size, augment),
                    total=inputs.shape[0] // self.batch_size)
         for x, y_true in bar:
             batch_loss_val = stochastic_step(x, y_true, self.model, self.optimizer)
@@ -172,9 +186,13 @@ class Model_controller():
         mean_loss, step = 0, 0
 
         if not hard_neg_mining:
-            inputs, targets = random_nonzero_crops(X_val, y_val,
-                                                   self.num_of_patches // 4,
-                                                   shape=self.crops_shape)
+            if self.net_dim == '3D':
+                inputs, targets = random_nonzero_crops(X_val, y_val,
+                                                       self.num_of_patches // 4,
+                                                       shape=self.crops_shape)
+            else:
+                inputs, targets = random_slicer(X_val, y_val,
+                                        num_of_slices=self.num_of_patches // 4)
             batch_size_ = self.batch_size
         else:
             batch_size_ = 1
@@ -202,7 +220,9 @@ class Model_controller():
         if not self.initialized:
             self.init_train_procedure()
         for epoch in range(epoches):
-            tr_loss = self._train(X_train, y_train, hard_neg_mining=epoch>=1 and epoch%10!=0)
+            tr_loss = self._train(X_train, y_train, hard_neg_mining=False)
+            #tr_loss = self._train(X_train, y_train, hard_neg_mining=epoch>=1 and epoch%7!=0 and epoch<=37)
+            self._add_statistics(**{'train_loss': tr_loss})
             if verbose:
                 print(str(epoch)+' epoch: \ntrain loss', tr_loss)
             if not X_val is None:
@@ -210,8 +230,12 @@ class Model_controller():
                 self._add_statistics(**{'val_loss': val_loss})
                 if verbose:
                     print('val loss', val_loss)
-            if epoch % 8 == 0:
+            if epoch % self.decay_every_epoch == 0:
                 self.lr = self.lr_decayer(self.lr)
                 self.optimizer = torch.optim.Adamax(self.model.parameters(), lr=self.lr)
-            self._add_statistics(**{'train_loss': tr_loss, 'lr': self.lr})
+            for i in self.optimizer.param_groups:
+                self._add_statistics(**{'lr': i['lr']})
+                break
+
+
 #endregion

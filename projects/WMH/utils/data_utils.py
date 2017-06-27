@@ -17,8 +17,6 @@ from scipy.ndimage import rotate
 from scipy.ndimage.interpolation import zoom, map_coordinates
 from scipy.ndimage.filters import gaussian_filter
 
-
-
 def _reshape_to(tmp: np.ndarray, new_shape = None):
     """
     Reshape ND array to new shapes.
@@ -51,27 +49,30 @@ def load_files(PATH: str):
     masks = []
     t1 = []
     flairs = []
-    clear_flairs = []
-    #t = None
+    brain_mask = []
+    # t = None
     # read data
-    path_to_flairs = '/home/mount/neuro-t01-ssd/home/amir/projects/segm/projects/WMH/data/skull_stripping'
+    print('INFO: brain mask from hardcoded path ../data/skull_stripping!')
+    path_br_mask = '../data/skull_stripping'
     for i in tqdm(os.listdir(PATH)):
-        tmp_path_to_flairs = os.path.join(path_to_flairs, PATH.split('/')[-2], i, 'brain_mask/brainmask.nii.gz')
+        path_to_brain_mask = os.path.join(path_br_mask, PATH.split('/')[-2], i, 'brain_mask/brainmask_mask.nii.gz')
         path_for_wmhm = os.path.join(PATH, i, 'wmh.nii.gz')
         masks.append(nib.load(path_for_wmhm).get_data())
         flairs.append(nib.load(os.path.join(PATH, i, 'pre/FLAIR.nii.gz')).get_data())
         t1.append(nib.load(os.path.join(PATH, i, 'pre/T1.nii.gz')).get_data())
-        clear_flairs.append(nib.load(tmp_path_to_flairs).get_data())
-        
+        brain_mask.append(nib.load(path_to_brain_mask).get_data())
+    print('INFO: data reshape to hardcoded shapes new_shape=(256, 256, 84)!')
     masks = [_reshape_to(i, new_shape=(256, 256, 84)) for i in masks]
     flairs = [_reshape_to(i, new_shape=(256, 256, 84)) for i in flairs]
     t1 = [_reshape_to(i, new_shape=(256, 256, 84)) for i in t1]
-    clear_flairs = [_reshape_to(i, new_shape=(256, 256, 84)) for i in clear_flairs]
+    brain_mask = [_reshape_to(i, new_shape=(256, 256, 84)) for i in brain_mask]
     # add new axis for one channel
     masks = np.array(masks)[:, np.newaxis].astype(int)
+    brain_mask = np.array(brain_mask)[:, np.newaxis]
     flairs = np.array(flairs)[:, np.newaxis]
-    clear_flairs = np.array(clear_flairs)[:, np.newaxis]
+    flairs[brain_mask!=1]=0
     t1 = np.array(t1)[:, np.newaxis]
+    # t1[brain_mask != 1] = 0
     # standartize data
     flair_std = flairs.std()
     flairs = flairs / flair_std
@@ -79,12 +80,10 @@ def load_files(PATH: str):
     t1_std = t1.std()
     t1 = t1 / t1_std
     #
-    flair_std = clear_flairs.std()
-    clear_flairs = clear_flairs / flair_std
-    return masks, t1, flairs, clear_flairs
+    return masks, t1, flairs, brain_mask
 
 
-def random_slicer(image: np.ndarray, mask: np.ndarray, num_of_slices=35):
+def random_slicer(image: np.ndarray, mask: np.ndarray, num_of_slices=35, delta=2):
     patches = []
     patches_mask = []
     counter = 0
@@ -93,7 +92,7 @@ def random_slicer(image: np.ndarray, mask: np.ndarray, num_of_slices=35):
             for img, msk in zip(image, mask):
                 idx = np.random.randint(0, image.shape[-1])
                 if np.sum(msk[..., idx]) > 1:
-                    patches.append(img[..., idx])
+                    patches.append(img[..., idx-delta:idx+delta])
                     patches_mask.append(msk[..., idx])
                     counter+=1
                 else:
@@ -101,6 +100,10 @@ def random_slicer(image: np.ndarray, mask: np.ndarray, num_of_slices=35):
 
     patches_mask = np.array(patches_mask)
     patches = np.array(patches)
+    shape = list(patches.shape)
+    shape[1] = shape[1] * shape[-1]
+    shape = shape[:-1]
+    patches = patches.reshape(*shape)
     # only not empty masks
     idx = patches_mask.sum(axis=(1, 2, 3)) > 0
     patches = patches[idx]
@@ -197,22 +200,22 @@ def augment(x: np.ndarray, y: np.ndarray):
         x = rotate(x, theta, axes=(len(x.shape) - 2, len(x.shape) - 3), reshape=False, order=order)
         return rotate(x, alpha, axes=(len(x.shape) - 2, len(x.shape) - 1), reshape=False, order=order)
     
-    for i in range(1, 4):
+    for i in range(1, len(x.shape)-2):
         if np.random.binomial(1, .5):
             x = np.flip(x, -i)
             y = np.flip(y, -i)
       
     # x = np.array([sc(i) for i in x])
     # y = sc(y[0])[np.newaxis]
-    
-    x = rot(x, 3, theta, alpha)
-    y = rot(y, 0, theta, alpha)
-    
-    if np.random.binomial(1, .5):
-        t = np.random.choice([-90, 0, 90])
-        a = np.random.choice([-90, 0, 90])
-        x = rot(x, 3, t, a)
-        y = rot(y, 0, t, a)
+
+    # x = rot(x, 3, theta, alpha)
+    # y = rot(y, 0, theta, alpha)
+
+    # if np.random.binomial(1, .5):
+    #     t = np.random.choice([-90, 0, 90])
+    #     a = np.random.choice([-90, 0, 90])
+    #     x = rot(x, 3, t, a)
+    #     y = rot(y, 0, t, a)
 
     x = np.array([i * np.random.normal(1, 0.5) for i in x])
     return x, y
@@ -226,6 +229,7 @@ def _get_steps(shape: np.ndarray, n_parts_per_axis):
     steps += (shape % n_parts_per_axis) > 0
     return steps
 
+
 def _build_shape(x_parts, n_parts_per_axis):
     n_dims = len(n_parts_per_axis)
     n_parts = len(x_parts)
@@ -236,6 +240,7 @@ def _build_shape(x_parts, n_parts_per_axis):
         shape.append(s)
     return shape
 
+
 def _combine_with_shape(x_parts, n_parts_per_axis, shape):
     steps = _get_steps(np.array(shape), n_parts_per_axis)
     x = np.zeros(shape, dtype=x_parts[0].dtype)
@@ -244,6 +249,7 @@ def _combine_with_shape(x_parts, n_parts_per_axis, shape):
         slices = [*map(slice, lb, lb + steps)]
         x[slices] = x_parts[i]
     return x
+
 
 def divide(x: np.ndarray, padding, n_parts_per_axis):
     """
@@ -259,6 +265,7 @@ def divide(x: np.ndarray, padding, n_parts_per_axis):
         slices = [*map(slice, lb, lb + steps + 2 * padding)]
         x_parts.append(x[slices])
     return x_parts
+
 
 def combine(x_parts, n_parts_per_axis):
     """
