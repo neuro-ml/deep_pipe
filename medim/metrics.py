@@ -11,6 +11,11 @@ def dice_score(y_pred, target, empty_val=0):
     return empty_val if den == 0 else num / den
 
 
+def multichannel_dice_score(a, b, empty_val=0):
+    dices = [dice_score(x, y, empty_val=empty_val) for x, y in zip(a, b)]
+    return dices
+
+
 # Before using this module, install the dependencies:
 
 # git clone https://github.com/mavillan/py-hausdorff.git

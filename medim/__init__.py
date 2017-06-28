@@ -4,3 +4,4 @@ from . import batch_iter
 from . import utils
 from . import metrics
 from . import patch
+from . import split
