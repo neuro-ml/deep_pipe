@@ -38,6 +38,13 @@ def loss_cross_entropy(y_pred, y_true):
     return F.cross_entropy(_pred_reshape(y_pred), y_true.view(-1))
 
 
+def symmetric_difference(input, target):
+    target = target.view(len(target), -1)
+    input = input.view(len(input), -1)
+    input = F.sigmoid(input)
+
+    return (target * (1 - input) + input * (1 - target)).mean()
+
 def to_var(x, volatile=False):
     return Variable(torch.from_numpy(x), volatile=volatile).cuda()
 
@@ -66,6 +73,8 @@ def stochastic_step(x, y_true, model, optimizer, train=True):
     y_true = to_var(np.array(y_true)).cuda()
     y_pred = model(x)
     batch_loss = loss_cross_entropy(y_pred, y_true).cpu()
+    # batch_loss = symmetric_difference(y_pred, y_true).cpu()
+
     if train:
         optimizer.zero_grad()
         batch_loss.backward()
