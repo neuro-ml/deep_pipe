@@ -88,19 +88,15 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
 
 class DeepMedic(Model):
     def __init__(self, optimizer: Optimizer, n_chans_in, n_chans_out, n_parts):
-        super().__init__(optimizer)
-
-        self.n_chans_in = n_chans_in
-        self.n_chans_out = n_chans_out
+        super().__init__(optimizer, n_chans_in=n_chans_in,
+                         n_chans_out=n_chans_out)
         self.kernel_size = 3
-
         self.n_parts = np.array(n_parts)
         assert np.all((self.n_parts == 1) | (self.n_parts == 2))
 
         self._build()
 
-    def _build(self):
-        self.graph = tf.get_default_graph()
+    def _build_model(self):
         nan = None
         x_det_ph = tf.placeholder(
             tf.float32, (nan, self.n_chans_in, nan, nan, nan), name='x_det')
@@ -108,7 +104,6 @@ class DeepMedic(Model):
             tf.float32, (nan, self.n_chans_in, nan, nan, nan), name='x_con')
         y_ph = tf.placeholder(
             tf.float32, (nan, self.n_chans_out, nan, nan, nan), name='y_true')
-        self.training_ph = tf.placeholder(tf.bool, name='is_training')
 
         self.train_input_phs = [x_det_ph, x_con_ph, y_ph]
         self.inference_input_phs = [x_det_ph, x_con_ph]
@@ -120,15 +115,6 @@ class DeepMedic(Model):
         self.y_pred = tf.nn.sigmoid(logits, name='y_pred')
 
         self.loss = tf.losses.log_loss(y_ph, self.y_pred, scope='loss')
-        self.train_op = self.optimizer.build_train_op(self.loss)
-
-        with tf.name_scope('train_summary'):
-            tf.summary.scalar('lr', self.optimizer.lr)
-            tf.summary.scalar('loss', self.loss)
-
-            self.train_summary_op = tf.summary.merge_all()
-
-        self.finalize_build()
 
     def validate_object(self, x, y):
         x_shape = np.array(x.shape)
@@ -141,12 +127,13 @@ class DeepMedic(Model):
 
         y_pred_parts, weights, losses = [], [], []
         for x_det, x_con, y_part in zip(x_det_parts, x_con_parts, y_parts):
-            y_pred, loss = self.do_val_step(x_det, x_con, y_part)
-            y_pred_parts.append(y_pred)
+            y_pred, loss = self.do_val_step(x_det[None, :], x_con[None, :],
+                                            y_part[None, :])
+            y_pred_parts.append(y_pred[0])
             losses.append(loss)
             weights.append(y_pred.size)
 
-        loss = np.average(losses, weights)
+        loss = np.average(losses, weights=weights)
         y_pred = medim.split.combine(y_pred_parts, [1, *self.n_parts])
         y_pred = restore_y(y_pred, y_padding, self.n_parts)
         return y_pred, loss
@@ -161,7 +148,7 @@ class DeepMedic(Model):
 
         y_pred_parts = []
         for x_det, x_con in zip(x_det_parts, x_con_parts):
-            y_pred = self.do_inf_step(x_det, x_con)
+            y_pred = self.do_inf_step(x_det[None, :], x_con[None, :])[0]
             y_pred_parts.append(y_pred)
 
         y_pred = medim.split.combine(y_pred_parts, [1, *self.n_parts])
@@ -191,7 +178,7 @@ def prepare_x(x, x_det_padding, x_con_padding, n_parts):
     x_det_parts = medim.split.divide(x_det, [0, 8, 8, 8],
                                      n_parts_per_axis=[1, *n_parts])
 
-    x_con_parts = medim.split.divide(x_det, [0, 24, 24, 24],
+    x_con_parts = medim.split.divide(x_con, [0, 24, 24, 24],
                                      n_parts_per_axis=[1, *n_parts])
     return x_det_parts, x_con_parts
 

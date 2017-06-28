@@ -1,4 +1,3 @@
-from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
 
@@ -22,12 +21,8 @@ class ModelController:
         self.avg_val_summary = CustomSummaryWriter(
             'avg_losses/val', self.file_writer)
 
-        if self.restore_model_path is None:
-            self.session.run(self.model.init_op)
-        else:
-            self.model.saver.restore(self.session, self.restore_model_path)
-
-        self.model.prepare(self.session, self.file_writer)
+        self.model.prepare(self.session, self.file_writer,
+                           restore_ckpt_path=self.restore_model_path)
 
     def train(self, batch_iter, lr, n_iter: int=None):
         losses = []
@@ -56,7 +51,7 @@ class ModelController:
         self.avg_val_summary.write(loss)
         return ys_pred, loss
 
-    def predict(self, x):
+    def predict_object(self, x):
         return self.model.predict_object(x)
 
     def _stop(self):
@@ -66,6 +61,8 @@ class ModelController:
 
     def __enter__(self):
         self._start()
+
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._stop()

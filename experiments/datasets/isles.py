@@ -8,10 +8,10 @@ from .base import Dataset
 
 
 class Isles(Dataset):
-    def __init__(self, processed_path):
-        super().__init__(processed_path)
-        self.processed_path = processed_path
-        self.metadata = pd.read_csv(join(processed_path, self.filename))
+    def __init__(self, data_path):
+        super().__init__(data_path)
+        self.data_path = data_path
+        self.metadata = pd.read_csv(join(data_path, self.filename))
         self._patient_ids = self.metadata.index.values
 
     def load_mscan(self, patient_id):
@@ -19,7 +19,7 @@ class Isles(Dataset):
         res = []
 
         for image in channels:
-            image = image.replace('data/', self.processed_path)
+            image = image.replace('data/', self.data_path)
             x = nib.load(image).get_data()
             x = self.adjust(x)
             x = x.astype('float32')
@@ -38,12 +38,12 @@ class Isles(Dataset):
         res = []
 
         for image in channels:
-            image = image.replace('data/', self.processed_path)
+            image = image.replace('data/', self.data_path)
             x = nib.load(image).get_data()
             x = self.adjust(x, True)
             res.append(x)
 
-        return np.asarray(res)
+        return np.array(res, dtype=bool)
 
     def segm2msegm(self, segm):
         #  and here too

@@ -52,7 +52,7 @@ class Dataset(ABC):
         pass
 
 
-def make_cached(dataset):
+def make_cached(dataset) -> Dataset:
     n = len(dataset.patient_ids)
 
     class CachedDataset:

@@ -11,7 +11,7 @@ class Brats(Dataset):
         super().__init__(data_path)
         self.metadata = pd.read_csv(join(data_path, 'metadata.csv'),
                                     index_col='id')
-        self._patient_ids = self.metadata.index.values
+        self._patient_ids = sorted(self.metadata.index.values)
 
     def build_data_name(self, patient_id):
         return join(self.data_path, 'data', patient_id)

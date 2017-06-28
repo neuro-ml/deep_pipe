@@ -1,6 +1,6 @@
-from .base import Dataset
 from .brats import Brats2015, Brats2017
 from .isles import siss_factory, spes_factory
+
 
 dataset_name2dataset = {
     'brats2015': Brats2015,
@@ -13,20 +13,20 @@ dataset_name2dataset = {
     'isles_spes_augmented_penumbra': spes_factory('augmented_spes_penumbra.csv'),
 }
 
-dataset_name2default_path = {
-    'brats2015': '/home/mount/neuro-x02-ssd/brats2015/processed',
-    'brats2017': '/home/mount/neuro-x02-ssd/brats2017/processed',
+dataset_name2default_params = {
+    'brats2015': {
+        'data_path': '/home/mount/neuro-x02-ssd/brats2015/processed'},
+    'brats2017': {
+        'data_path': '/home/mount/neuro-x02-ssd/brats2017/processed'},
 
-    'isles_siss': '/home/mount/neuro-x04-hdd/ISLES/',
-    'isles_siss_augmented': '/home/mount/neuro-x04-hdd/ISLES/',
-    'isles_spes': '/home/mount/neuro-x04-hdd/ISLES/',
-    'isles_spes_augmented_core': '/home/mount/neuro-x04-hdd/ISLES/',
-    'isles_spes_augmented_penumbra': '/home/mount/neuro-x04-hdd/ISLES/',
+    'isles_siss': {
+        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
+    'isles_siss_augmented': {
+        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
+    'isles_spes': {
+        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
+    'isles_spes_augmented_core': {
+        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
+    'isles_spes_augmented_penumbra': {
+        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
 }
-
-
-def config_dataset(dataset_name: str, dataset_path=None) -> Dataset:
-    if dataset_path is None:
-        dataset_path = dataset_name2default_path[dataset_name]
-    dataset = dataset_name2dataset[dataset_name](dataset_path)
-    return dataset

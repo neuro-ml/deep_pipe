@@ -16,13 +16,11 @@ class TestDeepMedic(unittest.TestCase):
         self.model = DeepMedic(optimizer, self.n_chans_in, self.n_chans_out,
                                n_parts=self.n_parts)
 
-        writer = tf.summary.FileWriter('/tmp/')
-        self.model.build(writer)
-
         self.session = tf.Session()
-        self.session.run(tf.global_variables_initializer())
+        self.session.run(self.model.init_op)
 
-        self.model.prepare(self.session)
+        self.writer = tf.summary.FileWriter('/tmp/')
+        self.model.prepare(self.session, self.writer)
 
         x_det_shape = np.array([self.n_chans_in, 25, 25, 25])
         self.x_det = np.arange(np.product(x_det_shape), dtype=np.float32)\
