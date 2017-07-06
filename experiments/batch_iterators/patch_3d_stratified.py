@@ -18,9 +18,9 @@ class Patient:
         return hash(self.patient_id)
 
 
-def _make_3d_patch_stratified_iter(
-        patient_ids, dataset: Dataset, *, batch_size,
-        x_patch_sizes, y_patch_size, nonzero_fraction):
+def make_3d_patch_stratified_iter(
+        patient_ids, dataset: Dataset, *,
+        batch_size, x_patch_sizes, y_patch_size, nonzero_fraction):
     x_patch_sizes = [np.array(x_patch_size) for x_patch_size in x_patch_sizes]
     y_patch_size = np.array(y_patch_size)
     spatial_size = np.array(dataset.spatial_size)
@@ -92,10 +92,3 @@ def _make_3d_patch_stratified_iter(
         Chunker(chunk_size=batch_size, buffer_size=2),
         LambdaTransformer(combine_batch, n_workers=1, buffer_size=3)
     )
-
-
-def make_3d_patch_stratified_iter(*, batch_size, x_patch_sizes, y_patch_size,
-                                  nonzero_fraction):
-    return partial(_make_3d_patch_stratified_iter, batch_size=batch_size,
-                   x_patch_sizes=x_patch_sizes, y_patch_size=y_patch_size,
-                   nonzero_fraction=nonzero_fraction)
