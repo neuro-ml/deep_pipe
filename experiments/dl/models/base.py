@@ -17,6 +17,8 @@ class Model(ABC):
         self.loss = self.y_pred = None
         self.train_op = self.train_summary_op = None
 
+        self._build()
+
         # Gets initialized during model preparation
         self.global_step = None
         self.file_writer = None

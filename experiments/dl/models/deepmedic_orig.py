@@ -89,13 +89,12 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
 class DeepMedic(Model):
     def __init__(self, optimizer: Optimizer, *,
                  n_chans_in, n_chans_out, n_parts):
-        super().__init__(optimizer, n_chans_in=n_chans_in,
-                         n_chans_out=n_chans_out)
         self.kernel_size = 3
         self.n_parts = np.array(n_parts)
         assert np.all((self.n_parts == 1) | (self.n_parts == 2))
 
-        self._build()
+        super().__init__(optimizer, n_chans_in=n_chans_in,
+                         n_chans_out=n_chans_out)
 
     def _build_model(self):
         nan = None
