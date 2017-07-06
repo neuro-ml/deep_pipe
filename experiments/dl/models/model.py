@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from experiments.dl import ModelCore
+from .base import ModelCore
 
 
 class Model:

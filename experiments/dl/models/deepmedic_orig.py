@@ -3,7 +3,7 @@ import tensorflow as tf
 
 import medim
 
-from .base import Model
+from .base import ModelCore
 from ..optimizer import Optimizer
 from .utils import batch_norm
 
@@ -86,7 +86,7 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
         return logits
 
 
-class DeepMedic(Model):
+class DeepMedic(ModelCore):
     def __init__(self, optimizer: Optimizer, *,
                  n_chans_in, n_chans_out, n_parts):
         self.kernel_size = 3

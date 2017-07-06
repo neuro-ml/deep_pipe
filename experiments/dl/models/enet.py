@@ -3,7 +3,7 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 from experiments.batch_iterators.utils import iterate_slices
-from .base import ModelCore, ModelCore
+from .base import ModelCore
 
 
 def init_block(input, name, training, kernel_size=3):
