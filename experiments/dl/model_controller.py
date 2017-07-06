@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from .summaries import CustomSummaryWriter
-from .models import Model
+from .model import Model
 
 
 class ModelController:
@@ -24,7 +24,7 @@ class ModelController:
         self.model.prepare(self.session, self.file_writer,
                            restore_ckpt_path=self.restore_model_path)
 
-    def train(self, batch_iter, lr, n_iter: int=None):
+    def train(self, batch_iter, lr, n_iter: int = None):
         losses = []
         for i, inputs in enumerate(batch_iter):
             loss = self.model.do_train_step(*inputs, lr=lr)
@@ -36,7 +36,7 @@ class ModelController:
         self.avg_train_summary.write(loss)
         return loss
 
-    def validate(self, xs, ys, n_iter: int=None):
+    def validate(self, xs, ys, n_iter: int = None):
         ys_pred = []
         losses = []
         for i, (x, y) in enumerate(zip(xs, ys)):

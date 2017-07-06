@@ -59,7 +59,6 @@ if __name__ == '__main__':
 
         mscans_val = [dataset.load_mscan(p) for p in val]
         msegms_val = [dataset.load_msegm(p) for p in val]
-        print(msegms_val[0], msegms_val[0].dtype)
 
         result = []
 
