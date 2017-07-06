@@ -2,7 +2,7 @@ White matter hyperintensity segmentation.
 
 This Project Organization
 
--------------------------
+-------------------------------
 ```
 ├─ data                           <- folder contain link to data [readme](data/README.md)
 ├
@@ -10,16 +10,17 @@ This Project Organization
 ├
 ├─ utils                          <- folder contain additional code
 ├──── __init__.py
-├──── data_utils.py               <- functions for Data loading, Augmentation, splitting/combining and etc
-├──── metrics.py                  <- functions for metric computing
+├──── data_utils.py               <- functions for Data loading, Augmentation, splitting/combining and etc.
+├──── metrics.py                  <- functions for diff. metrics
 ├──── mulptiprocessing.py         <- functions for parallel batch iterating
 ├──── nn_utils.py                 <- functions for batch iteration
-├──── pytorch_utils.py            <- Usefull functions for pytorch
-├──── mulptiprocessing_utils.py   <- functions for incapsulate train/val steps of model
+├──── pytorch_utils.py            <- functions for pytorch: to-var, to-numpy etc
+├──── mulptiprocessing_utils.py   <- functions for parallel batch iterating
+├──── model_controller.py         <- incapsulate train, validation, test methods for given segmentation model
 ├
 ├─ reports                        <- folder contain explanation, figures, reports
 ├──── intro.pdf                   <- Slides about competition
-├──── logs
+├──── logs                        <- ...
 ├──── figures                     <- Segmentation results
 ├
 ├─ models                         <- folder contain models for experiments (DL architectures)
