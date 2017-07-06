@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from .summaries import CustomSummaryWriter
-from .models import Model
+from .model import Model
 
 
 class ModelController:

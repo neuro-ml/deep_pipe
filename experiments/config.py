@@ -5,7 +5,7 @@ from experiments.datasets.base import make_cached, Dataset
 from experiments.dl import Optimizer, Model
 from experiments.datasets.config import dataset_name2dataset
 from experiments.splitters.config import splitter_name2splitter
-from experiments.dl.models.config import model_name2model
+from experiments.dl.model_cores.config import model_name2model
 from experiments.batch_iterators.config import batch_iter_name2batch_iter
 
 __all__ = ['config_dataset', 'config_splitter', 'config_optimizer',
