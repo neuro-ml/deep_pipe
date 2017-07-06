@@ -8,8 +8,6 @@ from experiments.splitters.config import splitter_name2splitter
 from experiments.dl.models.config import model_name2model
 from experiments.batch_iterators.config import batch_iter_name2batch_iter
 
-
-
 __all__ = ['config_dataset', 'config_splitter', 'config_optimizer',
            'config_model', 'config_batch_iter', 'config_model']
 
@@ -27,7 +25,6 @@ default_config = {
     "batch_iter_factory__params": {},
     "results_path": None,
 }
-
 
 module_type2module_constructor_mapping = {
     'dataset': dataset_name2dataset,
@@ -64,8 +61,9 @@ def config_optimizer(config) -> Optimizer:
 
 
 def config_model(config, *, optimizer, n_chans_in, n_chans_out) -> Model:
-    return config_object('model', config, optimizer=optimizer,
-                         n_chans_in=n_chans_in, n_chans_out=n_chans_out)
+    model_core = config_object('model', config, optimizer=optimizer,
+                               n_chans_in=n_chans_in, n_chans_out=n_chans_out)
+    return Model(model_core)
 
 
 def config_batch_iter_factory(config) -> Iterable:
