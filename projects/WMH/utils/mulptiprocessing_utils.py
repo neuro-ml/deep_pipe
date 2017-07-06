@@ -13,7 +13,7 @@ def __process__(q_in, q_out, function):
     
 
 def par_iterate_minibatches(inputs, targets, batchsize, function, shuffle=True):
-    nprocs = multiprocessing.cpu_count() - 1
+    nprocs = max(multiprocessing.cpu_count() - 2, 1)
     q_in = multiprocessing.Queue()
     q_out = multiprocessing.Queue()
 
@@ -43,3 +43,5 @@ def par_iterate_minibatches(inputs, targets, batchsize, function, shuffle=True):
         q_in.put(None)
     for p in proc:
         p.join()
+
+    # TODO catch exception and kill zombie proc

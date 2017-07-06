@@ -24,17 +24,16 @@ def _pred_reshape(y):
 
 def loss_cross_entropy(y_pred, y_true):
     """Log.loss with cropping for predicted shape."""
-    true_shape = y_true.size()
-    pred_shape = y_pred.size()
-    l = len(pred_shape) - 2
-    shape_diff = np.array(true_shape)[-l:] - np.array(pred_shape)[-l:]
-    if not np.all(shape_diff == 0):
-        slices = [slice(i // 2, -(i // 2 + i % 2)) for i in shape_diff[-l:]]
-
-        if l==5:
-            y_true = y_true[..., slices[0], slices[1], slices[2]].contiguous()
-        else:
-            y_true = y_true[..., slices[0], slices[1]].contiguous()
+    # true_shape = y_true.size()
+    # pred_shape = y_pred.size()
+    # l = len(pred_shape) - 2
+    # shape_diff = np.array(true_shape)[-l:] - np.array(pred_shape)[-l:]
+    # if not np.all(shape_diff == 0): #cropping if predicted larger than true
+    #     slices = [slice(i // 2, -(i // 2 + i % 2)) for i in shape_diff[-l:]]
+    #     if l==5:
+    #         y_true = y_true[..., slices[0], slices[1], slices[2]].contiguous()
+    #     else:
+    #         y_true = y_true[..., slices[0], slices[1]].contiguous()
     return F.cross_entropy(_pred_reshape(y_pred), y_true.view(-1))
 
 
@@ -69,8 +68,8 @@ def stochastic_step(x, y_true, model, optimizer, train=True):
     batch_loss_val: float
         CE Loss on this data.
     """
-    x = to_var(np.array(x)).cuda()
-    y_true = to_var(np.array(y_true)).cuda()
+    x = to_var(np.array(x))
+    y_true = to_var(np.array(y_true))
     y_pred = model(x)
     batch_loss = loss_cross_entropy(y_pred, y_true).cpu()
     # batch_loss = symmetric_difference(y_pred, y_true).cpu()
