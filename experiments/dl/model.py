@@ -42,14 +42,16 @@ class Model:
 
         self.call_train = session.make_callable(
             [self.train_op, self.model.loss, self.train_summary_op],
-            [*self.model.train_input_phs, self.model.optimizer.lr, self.training_ph])
+            [*self.model.train_input_phs, self.model.optimizer.lr,
+             self.training_ph])
 
         self.call_val = session.make_callable(
             [self.model.y_pred, self.model.loss],
             [*self.model.train_input_phs, self.training_ph])
 
         self.call_pred = session.make_callable(
-            self.model.y_pred, [*self.model.inference_input_phs, self.training_ph])
+            self.model.y_pred, [*self.model.inference_input_phs,
+                                self.training_ph])
 
         if restore_ckpt_path is None:
             session.run(self.init_op)
