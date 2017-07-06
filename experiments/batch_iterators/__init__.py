@@ -1,1 +1,0 @@
-from .patch_3d_stratified import make_3d_patch_stratified_iter

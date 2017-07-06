@@ -1,9 +1,14 @@
+from functools import partial
+from typing import Iterable
+
 from experiments.datasets.base import make_cached, Dataset
 from experiments.dl import Optimizer, Model
 from experiments.datasets.config import dataset_name2dataset
 from experiments.splitters.config import splitter_name2splitter
 from experiments.dl.models.config import model_name2model
 from experiments.batch_iterators.config import batch_iter_name2batch_iter
+
+
 
 __all__ = ['config_dataset', 'config_splitter', 'config_optimizer',
            'config_model', 'config_batch_iter', 'config_model']
@@ -18,8 +23,8 @@ default_config = {
     "optimizer__params": {},
     "model": None,
     "model__params": {},
-    "batch_iter": None,
-    "batch_iter__params": {},
+    "batch_iter_factory": None,
+    "batch_iter_factory__params": {},
     "results_path": None,
 }
 
@@ -63,6 +68,14 @@ def config_model(config, *, optimizer, n_chans_in, n_chans_out) -> Model:
                          n_chans_in=n_chans_in, n_chans_out=n_chans_out)
 
 
-def config_batch_iter(config) -> callable:
-    return config_object('batch_iter', config)
+def config_batch_iter_factory(config) -> Iterable:
+    module_type = 'batch_iter_factory'
+    name = config[module_type]
+    params = config[f'{module_type}__params']
 
+    batch_iter_factory = partial(
+        module_type2module_constructor_mapping[module_type][name],
+        **params
+    )
+
+    return batch_iter_factory
