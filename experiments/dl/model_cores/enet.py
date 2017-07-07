@@ -102,7 +102,7 @@ def build_model(input, classes, name, training):
 
 
 class ENet2D(ModelCore):
-    def build(self, training):
+    def build(self, training_ph):
         x_ph = tf.placeholder(
             tf.float32, (None, self.n_chans_in, None, None), name='input'
         )
@@ -113,7 +113,7 @@ class ENet2D(ModelCore):
         self.train_input_phs = [x_ph, y_ph]
         self.inference_input_phs = [x_ph]
 
-        model = build_model(x_ph, self.n_chans_out, 'enet_2d', training)
+        model = build_model(x_ph, self.n_chans_out, 'enet_2d', training_ph)
         self.y_pred = tf.nn.sigmoid(model, name='y_pred')
 
         self.loss = tf.losses.log_loss(y_ph, self.y_pred, scope='loss')

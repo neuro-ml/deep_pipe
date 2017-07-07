@@ -1,18 +1,17 @@
 import tensorflow as tf
 
 
-class ScalarSummaryWriter:
-    def __init__(self, name, writer, stats: dict):
+class SummaryLogger:
+    def __init__(self, name, stats: dict):
         self.name = name
-        self.writer = writer
         self.iter = 0
 
         with tf.variable_scope(self.name):
             summaries = [tf.summary.scalar(k, v) for k, v in stats.items()]
             self.summary_op = tf.summary.merge(summaries)
 
-    def write(self, summary):
-        self.writer.add_summary(summary, self.iter)
+    def write(self, summary, file_writer):
+        file_writer.add_summary(summary, self.iter)
         self.iter += 1
 
 

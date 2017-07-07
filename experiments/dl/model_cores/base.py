@@ -1,11 +1,8 @@
 from abc import ABC, abstractmethod
 
-from ..optimizer import Optimizer
-
 
 class ModelCore(ABC):
-    def __init__(self, optimizer: Optimizer, n_chans_in, n_chans_out):
-        self.optimizer = optimizer
+    def __init__(self, n_chans_in, n_chans_out):
         self.n_chans_in = n_chans_in
         self.n_chans_out = n_chans_out
 
@@ -14,8 +11,9 @@ class ModelCore(ABC):
         self.loss = self.y_pred = None
 
     @abstractmethod
-    def build(self, training):
-        """Method defines placeholders and tensors, necessary for the model."""
+    def build(self, training_ph):
+        """Method defines placeholders and tensors, necessary for the
+         model_core."""
         pass
 
     @abstractmethod
