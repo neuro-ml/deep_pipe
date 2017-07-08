@@ -7,7 +7,7 @@ from experiments.config import default_config
 from experiments.datasets.config import dataset_name2default_params
 import re
 
-__all__ = ['parse_config', 'default_parser']
+__all__ = ['parse_config', 'get_default_parser']
 
 # TODO Add info about arguments vs config settings differences after discussion
 description = """
@@ -33,12 +33,9 @@ def parse_config(parser):
             config = json.load(f)
 
     # batch_size is the only exception
-    try:
-        if args.batch_size is not None:
-            config['batch_iter__params']['batch_size'] = args.batch_size
-            args.batch_size = None
-    except AttributeError:
-        pass
+    if 'batch_size' in args and args.batch_size is not None:
+        config['batch_iter__params']['batch_size'] = args.batch_size
+        args.batch_size = None
 
     # console arguments:
     for arg, value in args._get_kwargs():
@@ -103,7 +100,7 @@ def _merge_configs(destination: dict, source: dict):
                 _merge_configs(destination[key], value)
 
 
-def default_parser():
+def get_default_parser():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-cp', '--config', dest='config_path')
     return parser
@@ -123,4 +120,4 @@ def default_parser():
 # default_parser.add_argument('-s', '--splitter')
 
 if __name__ == '__main__':
-    pprint.pprint(parse_config(default_parser()))
+    pprint.pprint(parse_config(get_default_parser()))
