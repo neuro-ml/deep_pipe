@@ -1,5 +1,4 @@
 import os
-import copy
 import json
 import pprint
 import argparse
@@ -24,33 +23,35 @@ module_type2default_params_mapping = {
 }
 
 
-def parse_config(parser, config_path):
-    config = {}
-
-    # config file:
-    if config_path is not None:
-        with open(config_path, 'r') as f:
-            config = json.load(f)
-
+def parse_config(parser):
     args, unknown = parser.parse_known_args()
 
+    config = {}
+    # config file:
+    if args.config_path is not None:
+        with open(args.config_path, 'r') as f:
+            config = json.load(f)
+
     # batch_size is the only exception
-    if args.batch_size is not None:
-        config['batch_iter__params']['batch_size'] = args.batch_size
-        args.batch_size = None
+    try:
+        if args.batch_size is not None:
+            config['batch_iter__params']['batch_size'] = args.batch_size
+            args.batch_size = None
+    except AttributeError:
+        pass
 
     # console arguments:
     for arg, value in args._get_kwargs():
         if value is not None:
             config[arg] = value
-    parse_unknown(unknown, config)
+    _parse_unknown(unknown, config)
 
     # default values
-    merge_configs(config, default_config)
+    _merge_configs(config, default_config)
     # module-specific:
     for module, params in module_type2default_params_mapping.items():
         field_name = f'{module}__params'
-        merge_configs(config[field_name], params[config[module]])
+        _merge_configs(config[field_name], params[config[module]])
 
     results_path = config['results_path']
     os.makedirs(results_path, exist_ok=True)
@@ -61,7 +62,7 @@ def parse_config(parser, config_path):
     return config
 
 
-def parse_unknown(unknown, config):
+def _parse_unknown(unknown, config):
     i = 0
     argument = re.compile('^--((\w+__)+\w+)$')
     while i < len(unknown):
@@ -93,31 +94,33 @@ def parse_unknown(unknown, config):
         temp[names[-1]] = value
 
 
-def merge_configs(destination: dict, source: dict):
+def _merge_configs(destination: dict, source: dict):
     for key, value in source.items():
         if key not in destination:
             destination[key] = value
         else:
             if type(value) is dict:
-                merge_configs(destination[key], value)
+                _merge_configs(destination[key], value)
 
 
-default_parser = argparse.ArgumentParser(description=description)
-default_parser.add_argument('-bi', '--iter', dest='batch_iter',
-                            help='the batch iterator')
-default_parser.add_argument('-bs', '--batch_size', type=int,
-                            help='the batch size')
-default_parser.add_argument('-ds', '--dataset')
-default_parser.add_argument('--chached', action='store_true',
-                            dest='dataset_cached', default=False,
-                            help='whether the dataset is chached')
-default_parser.add_argument('-m', '--model')
-default_parser.add_argument('-p', '--path', dest='results_path',
-                            help='results path')
-default_parser.add_argument('-s', '--splitter')
+def default_parser():
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-cp', '--config', dest='config_path')
+    return parser
+
+
+# default_parser.add_argument('-bi', '--iter', dest='batch_iter',
+#                             help='the batch iterator')
+# default_parser.add_argument('-bs', '--batch_size', type=int,
+#                             help='the batch size')
+# default_parser.add_argument('-ds', '--dataset')
+# default_parser.add_argument('--chached', action='store_true',
+#                             dest='dataset_cached', default=False,
+#                             help='whether the dataset is chached')
+# default_parser.add_argument('-m', '--model')
+# default_parser.add_argument('-p', '--path', dest='results_path',
+#                             help='results path')
+# default_parser.add_argument('-s', '--splitter')
 
 if __name__ == '__main__':
-    pprint.pprint(parse_config(
-        default_parser,
-        '../scripts/brats.config.json')
-    )
+    pprint.pprint(parse_config(default_parser()))
