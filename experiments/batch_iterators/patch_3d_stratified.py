@@ -62,9 +62,9 @@ def make_3d_patch_stratified_iter(
                 spatial_dims=spatial_dims)
 
         xs = [medim.patch.extract_patch(
-                  mscan, center_idx=center_idx, spatial_dims=spatial_dims,
-                  patch_size=patch_size)
-              for patch_size in x_patch_sizes]
+            mscan, center_idx=center_idx, spatial_dims=spatial_dims,
+            patch_size=patch_size)
+            for patch_size in x_patch_sizes]
 
         y = medim.patch.extract_patch(
             msegm, center_idx=center_idx, patch_size=y_patch_size,
@@ -73,7 +73,7 @@ def make_3d_patch_stratified_iter(
         return (*xs, y)
 
     outputs = [np.zeros((batch_size, n_chans_mscan, *ps), dtype=np.float32)
-               for ps in x_patch_sizes] +\
+               for ps in x_patch_sizes] + \
               [np.zeros((batch_size, n_chans_msegm, *y_patch_size),
                         dtype=np.float32)]
 
@@ -88,7 +88,8 @@ def make_3d_patch_stratified_iter(
         Source(make_random_seq(patient_ids), buffer_size=10),
         LambdaTransformer(load_data, n_workers=1, buffer_size=10),
         LambdaTransformer(find_cancer, n_workers=1, buffer_size=50),
-        LambdaTransformer(extract_patch, n_workers=4, buffer_size=3*batch_size),
+        LambdaTransformer(extract_patch, n_workers=4,
+                          buffer_size=3 * batch_size),
         Chunker(chunk_size=batch_size, buffer_size=2),
         LambdaTransformer(combine_batch, n_workers=1, buffer_size=3)
     )

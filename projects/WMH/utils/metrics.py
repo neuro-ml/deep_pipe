@@ -1,16 +1,19 @@
 import numpy as np
-from hausdorff import weighted_hausdorff
-
+try:
+    from hausdorff import weighted_hausdorff
+except ImportError as e:
+    print(e)
+    s = ''' You need to do the next steps:
+    git clone https://github.com/mavillan/py-hausdorff.git \n
+    pip install Cython
+    cd py-hausdorff
+    python setup.py build && python setup.py install'''
+    print(s)
 
 def hausdorff(a, b, weights=1, label=1):
     """
     Calculates the Hausdorff distance between two masks.
-    
-    git clone https://github.com/mavillan/py-hausdorff.git
-    pip install Cython
-    cd py-hausdorff
-    python setup.py build && python setup.py install
-       
+
     Parameters
     ----------
     

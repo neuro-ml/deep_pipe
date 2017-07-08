@@ -1,15 +1,17 @@
 import tensorflow as tf
 
 from .model_cores import ModelCore
+from .optimizer import Optimizer
+from .summaries import SummaryLogger
 
 
 class Model:
-    def __init__(self, model: ModelCore):
-        self.model = model
+    def __init__(self, model_core: ModelCore, optimizer: Optimizer):
+        self.model_core = model_core
+        self.optimizer = optimizer
         self._build()
 
         # Gets initialized during model preparation
-        self.global_step = None
         self.file_writer = None
         self.call_train = self.call_val = self.call_pred = None
 
@@ -19,17 +21,15 @@ class Model:
 
     def _build(self):
         self._start_build()
-        self.model.build(self.training_ph)
+        self.model_core.build(self.training_ph)
         self._finalize_build()
 
     def _finalize_build(self):
-        self.train_op = self.model.optimizer.build_train_op(self.model.loss)
+        self.train_op = self.optimizer.build_train_op(self.model_core.loss)
 
-        with tf.name_scope('train_summary'):
-            tf.summary.scalar('lr', self.model.optimizer.lr)
-            tf.summary.scalar('loss', self.model.loss)
-
-            self.train_summary_op = tf.summary.merge_all()
+        self.summary_logger = SummaryLogger('training_summary',
+                                            {'lr': self.optimizer.lr,
+                                             'loss': self.model_core.loss})
 
         self.init_op = tf.global_variables_initializer()
         self.saver = tf.train.Saver()
@@ -41,15 +41,18 @@ class Model:
         self.file_writer = file_writer
 
         self.call_train = session.make_callable(
-            [self.train_op, self.model.loss, self.train_summary_op],
-            [*self.model.train_input_phs, self.model.optimizer.lr, self.training_ph])
+            [self.train_op, self.model_core.loss,
+             self.summary_logger.summary_op],
+            [*self.model_core.train_input_phs, self.optimizer.lr,
+             self.training_ph])
 
         self.call_val = session.make_callable(
-            [self.model.y_pred, self.model.loss],
-            [*self.model.train_input_phs, self.training_ph])
+            [self.model_core.y_pred, self.model_core.loss],
+            [*self.model_core.train_input_phs, self.training_ph])
 
         self.call_pred = session.make_callable(
-            self.model.y_pred, [*self.model.inference_input_phs, self.training_ph])
+            self.model_core.y_pred, [*self.model_core.inference_input_phs,
+                                     self.training_ph])
 
         if restore_ckpt_path is None:
             session.run(self.init_op)
@@ -58,8 +61,7 @@ class Model:
 
     def do_train_step(self, *train_inputs, lr):
         _, loss, summary = self.call_train(*train_inputs, lr, True)
-        self.file_writer.add_summary(summary, self.global_step)
-        self.global_step += 1
+        self.summary_logger.write(summary, self.file_writer)
 
         return loss
 
@@ -70,7 +72,7 @@ class Model:
         return self.call_pred(*inference_inputs, False)
 
     def validate_object(self, x, y):
-        return self.model.validate_object(x, y, self.do_val_step)
+        return self.model_core.validate_object(x, y, self.do_val_step)
 
     def predict_object(self, x):
-        return self.model.predict_object(x, self.do_inf_step)
+        return self.model_core.predict_object(x, self.do_inf_step)

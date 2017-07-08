@@ -4,7 +4,6 @@ import tensorflow as tf
 import medim
 
 from .base import ModelCore
-from ..optimizer import Optimizer
 from .utils import batch_norm
 
 
@@ -87,16 +86,14 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
 
 
 class DeepMedic(ModelCore):
-    def __init__(self, optimizer: Optimizer, *,
-                 n_chans_in, n_chans_out, n_parts):
+    def __init__(self, *, n_chans_in, n_chans_out, n_parts):
+        super().__init__(n_chans_in=n_chans_in, n_chans_out=n_chans_out)
+
         self.kernel_size = 3
         self.n_parts = np.array(n_parts)
         assert np.all((self.n_parts == 1) | (self.n_parts == 2))
 
-        super().__init__(optimizer, n_chans_in=n_chans_in,
-                         n_chans_out=n_chans_out)
-
-    def _build_model(self):
+    def build(self, training_ph):
         nan = None
         x_det_ph = tf.placeholder(
             tf.float32, (nan, self.n_chans_in, nan, nan, nan), name='x_det')
@@ -110,13 +107,13 @@ class DeepMedic(ModelCore):
 
         logits = build_model(
             x_det_ph, x_con_ph, self.kernel_size, self.n_chans_out,
-            self.training_ph, name='deep_medic')
+            training_ph, name='deep_medic')
 
         self.y_pred = tf.nn.sigmoid(logits, name='y_pred')
 
         self.loss = tf.losses.log_loss(y_ph, self.y_pred, scope='loss')
 
-    def validate_object(self, x, y):
+    def validate_object(self, x, y, do_val_step):
         x_shape = np.array(x.shape)
         x_det_padding, x_con_padding, y_padding = find_padding(
             x_shape, self.n_parts)
@@ -127,8 +124,8 @@ class DeepMedic(ModelCore):
 
         y_pred_parts, weights, losses = [], [], []
         for x_det, x_con, y_part in zip(x_det_parts, x_con_parts, y_parts):
-            y_pred, loss = self.do_val_step(x_det[None, :], x_con[None, :],
-                                            y_part[None, :])
+            y_pred, loss = do_val_step(x_det[None, :], x_con[None, :],
+                                       y_part[None, :])
             y_pred_parts.append(y_pred[0])
             losses.append(loss)
             weights.append(y_pred.size)
@@ -138,7 +135,7 @@ class DeepMedic(ModelCore):
         y_pred = restore_y(y_pred, y_padding, self.n_parts)
         return y_pred, loss
 
-    def predict_object(self, x):
+    def predict_object(self, x, do_inf_step):
         x_shape = np.array(x.shape)
         x_det_padding, x_con_padding, y_padding = find_padding(
             x_shape, self.n_parts)
@@ -148,7 +145,7 @@ class DeepMedic(ModelCore):
 
         y_pred_parts = []
         for x_det, x_con in zip(x_det_parts, x_con_parts):
-            y_pred = self.do_inf_step(x_det[None, :], x_con[None, :])[0]
+            y_pred = do_inf_step(x_det[None, :], x_con[None, :])[0]
             y_pred_parts.append(y_pred)
 
         y_pred = medim.split.combine(y_pred_parts, [1, *self.n_parts])
