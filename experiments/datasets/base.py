@@ -51,6 +51,12 @@ class Dataset(ABC):
     def spatial_size(self) -> List[int]:
         pass
 
+    def load_x(self, patient_id):
+        return self.load_mscan(patient_id)
+
+    def load_y(self, patient_id):
+        return self.load_msegm(patient_id)
+
 
 def make_cached(dataset) -> Dataset:
     n = len(dataset.patient_ids)
@@ -60,16 +66,12 @@ def make_cached(dataset) -> Dataset:
             self.dataset = dataset
 
         @lru_cache(n)
-        def load_mscan(self, patient_id):
-            return self.dataset.load_mscan(patient_id)
+        def load_x(self, patient_id):
+            return self.dataset.load_x(patient_id)
 
         @lru_cache(n)
-        def load_segm(self, patient_id):
-            return self.dataset.load_segm(patient_id)
-
-        @lru_cache(n)
-        def load_msegm(self, patient_id):
-            return self.dataset.load_msegm(patient_id)
+        def load_y(self, patient_id):
+            return self.dataset.load_y(patient_id)
 
         def __getattr__(self, name):
             return getattr(self.dataset, name)

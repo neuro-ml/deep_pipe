@@ -19,8 +19,8 @@ class Patient:
 
 
 def make_3d_patch_stratified_iter(
-        patient_ids, dataset: Dataset, *,
-        batch_size, x_patch_sizes, y_patch_size, nonzero_fraction):
+        ids, dataset: Dataset, *, batch_size, x_patch_sizes, y_patch_size,
+        nonzero_fraction):
     x_patch_sizes = [np.array(x_patch_size) for x_patch_size in x_patch_sizes]
     y_patch_size = np.array(y_patch_size)
     spatial_size = np.array(dataset.spatial_size)
@@ -36,8 +36,8 @@ def make_3d_patch_stratified_iter(
             yield choice(l)
 
     def load_data(patient_name):
-        mscan = dataset.load_mscan(patient_name)
-        msegm = dataset.load_msegm(patient_name)
+        mscan = dataset.load_x(patient_name)
+        msegm = dataset.load_y(patient_name)
 
         return Patient(patient_name, mscan, msegm)
 
@@ -85,7 +85,7 @@ def make_3d_patch_stratified_iter(
         return outputs
 
     return Pipeline(
-        Source(make_random_seq(patient_ids), buffer_size=10),
+        Source(make_random_seq(ids), buffer_size=10),
         LambdaTransformer(load_data, n_workers=1, buffer_size=10),
         LambdaTransformer(find_cancer, n_workers=1, buffer_size=50),
         LambdaTransformer(extract_patch, n_workers=4,

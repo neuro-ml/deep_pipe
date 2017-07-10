@@ -24,28 +24,21 @@ class ModelController:
         self.model.prepare(self.session, self.file_writer,
                            restore_ckpt_path=self.restore_model_path)
 
-    def train(self, batch_iter, lr, n_iter: int=None):
-        losses = []
-        for i, inputs in enumerate(batch_iter):
-            loss = self.model.do_train_step(*inputs, lr=lr)
-            losses.append(loss)
-            if n_iter is not None and i >= n_iter:
-                break
+    def train(self, batch_iter, *, lr):
+        losses = [self.model.do_train_step(*inputs, lr=lr)
+                  for inputs in batch_iter]
 
         loss = np.mean(losses)
         self.avg_train_summary.write(loss)
         return loss
 
-    def validate(self, xs, ys, n_iter: int=None):
+    def validate(self, xs, ys, n_iters: int = None):
         ys_pred = []
         losses = []
         for i, (x, y) in enumerate(zip(xs, ys)):
             y_pred, loss = self.model.validate_object(x, y)
             ys_pred.append(y_pred)
             losses.append(loss)
-
-            if n_iter is not None and i >= n_iter:
-                break
 
         loss = np.mean(losses)
         self.avg_val_summary.write(loss)

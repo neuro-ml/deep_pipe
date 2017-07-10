@@ -19,7 +19,6 @@ description = """
     if they were not provided before.
     Command arguments are not supported yet."""
 
-
 module_type2default_params_mapping = {
     'dataset': dataset_name2default_params
 }
