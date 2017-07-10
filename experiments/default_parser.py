@@ -23,7 +23,7 @@ module_type2default_params_mapping = {
 }
 
 
-def parse_config(parser):
+def parse_config(parser: argparse.ArgumentParser) -> dict:
     args, unknown = parser.parse_known_args()
 
     config = {}
@@ -39,8 +39,7 @@ def parse_config(parser):
 
     # console arguments:
     for arg, value in args._get_kwargs():
-        if value is not None:
-            config[arg] = value
+        config[arg] = value
     _parse_unknown(unknown, config)
 
     # default values
@@ -48,7 +47,14 @@ def parse_config(parser):
     # module-specific:
     for module, params in module_type2default_params_mapping.items():
         field_name = f'{module}__params'
+        if config[module] is None:
+            raise ValueError(f'"{module}" parameter not specified')
         _merge_configs(config[field_name], params[config[module]])
+
+    # final checks
+    for arg, value in args._get_kwargs():
+        if value is None and config.get(arg) is None and arg != 'config_path':
+            raise ValueError(f'"{arg}" parameter not specified')
 
     results_path = config['results_path']
     os.makedirs(results_path, exist_ok=True)
@@ -100,9 +106,9 @@ def _merge_configs(destination: dict, source: dict):
                 _merge_configs(destination[key], value)
 
 
-def get_default_parser():
+def get_default_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-cp', '--config', dest='config_path')
+    parser.add_argument('-cf', '--config', dest='config_path')
     return parser
 
 

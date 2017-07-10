@@ -9,7 +9,7 @@ from experiments.dl.model_cores.config import model_name2model
 from experiments.batch_iterators.config import batch_iter_name2batch_iter
 
 __all__ = ['config_dataset', 'config_splitter', 'config_optimizer',
-           'config_model', 'config_batch_iter', 'config_model']
+           'config_model', 'config_batch_iter_factory', 'config_model']
 
 default_config = {
     "dataset": None,
@@ -61,12 +61,12 @@ def config_optimizer(config) -> Optimizer:
 
 
 def config_model(config, *, optimizer, n_chans_in, n_chans_out) -> Model:
-    model_core = config_object('model', config, optimizer=optimizer,
+    model_core = config_object('model', config,
                                n_chans_in=n_chans_in, n_chans_out=n_chans_out)
-    return Model(model_core)
+    return Model(model_core, optimizer=optimizer)
 
 
-def config_batch_iter_factory(config) -> Iterable:
+def config_batch_iter_factory(config):
     module_type = 'batch_iter_factory'
     name = config[module_type]
     params = config[f'{module_type}__params']
