@@ -10,7 +10,7 @@ from experiments.batch_iterators import build_batch_iter
 from experiments.batch_iterators.config import batch_iter_name2batch_iter
 
 __all__ = ['config_dataset', 'config_splitter', 'config_optimizer',
-           'config_model', 'config_batch_iter', 'config_model']
+           'config_model', 'config_batch_iter_factory', 'config_model']
 
 default_config = {
     "dataset": None,
@@ -69,9 +69,9 @@ def config_trainer(config) -> callable:
 
 
 def config_model(config, *, optimizer, n_chans_in, n_chans_out) -> Model:
-    model_core = config_object('model_core', config, optimizer=optimizer,
-                               n_chans_in=n_chans_in, n_chans_out=n_chans_out)
-    return Model(model_core)
+    model_core = config_object('model_core', config, n_chans_in=n_chans_in,
+                               n_chans_out=n_chans_out)
+    return Model(model_core, optimizer=optimizer)
 
 
 def config_dataset(config) -> Dataset:
@@ -80,6 +80,12 @@ def config_dataset(config) -> Dataset:
         dataset = make_cached(dataset)
 
     return dataset
+
+
+def config_batch_iter_factory(config):
+    module_type = 'batch_iter_factory'
+    name = config[module_type]
+    params = config[f'{module_type}__params']
 
 
 def config_batch_iter(ids, dataset, config) -> Iterable:

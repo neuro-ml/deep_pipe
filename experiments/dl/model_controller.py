@@ -32,10 +32,10 @@ class ModelController:
         self.avg_train_summary.write(loss)
         return loss
 
-    def validate(self, xs, ys, n_iters: int = None):
+    def validate(self, xs, ys):
         ys_pred = []
         losses = []
-        for i, (x, y) in enumerate(zip(xs, ys)):
+        for x, y in zip(xs, ys):
             y_pred, loss = self.model.validate_object(x, y)
             ys_pred.append(y_pred)
             losses.append(loss)

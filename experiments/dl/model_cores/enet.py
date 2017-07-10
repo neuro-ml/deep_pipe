@@ -24,9 +24,10 @@ def init_block(input, name, training, kernel_size=3):
 
 
 def conv_block(input, channels, kernel_size, strides, training, padding='same',
-               activation=tf.nn.relu, layer=tf.layers.conv2d):
+               activation=tf.nn.relu, layer=tf.layers.conv2d, name=None):
     conv = layer(input, channels, kernel_size=kernel_size, strides=strides,
-                 padding=padding, use_bias=False, data_format='channels_first')
+                 padding=padding, use_bias=False, data_format='channels_first',
+                 name=name)
     conv = slim.batch_norm(conv, decay=0.9, scale=True, is_training=training,
                            data_format='NCHW', fused=True)
     return activation(conv)
@@ -46,18 +47,18 @@ def res_block(input, name, output_channels, training, kernel_size=3,
         # conv path
         # TODO: use prelu
         conv = conv_block(input, internal_channels, kernel_size=input_stride,
-                          strides=input_stride, training=training)
+                          strides=input_stride, training=training, name='conv1')
 
         if upsample:
             conv = conv_block(conv, internal_channels, kernel_size,
                               strides=2, training=training,
-                              layer=tf.layers.conv2d_transpose)
+                              layer=tf.layers.conv2d_transpose, name='upsample')
         else:
             # TODO: use dilated and asymmetric convolutions
             conv = conv_block(conv, internal_channels, kernel_size, strides=1,
-                              training=training)
+                              training=training, name='no_upsample')
         conv = conv_block(conv, output_channels, kernel_size=1, strides=1,
-                          training=training)
+                          training=training, name='conv3')
         conv = tf.layers.dropout(conv, dropout_prob, training=training)
 
         # main path
@@ -68,11 +69,13 @@ def res_block(input, name, output_channels, training, kernel_size=3,
                 padding='same', data_format='channels_first')
         if output_channels != input_channels:
             main = conv_block(main, output_channels, kernel_size=1, strides=1,
-                              activation=tf.identity, training=training)
+                              activation=tf.identity, training=training,
+                              name='justify')
         if upsample:
             main = tf.layers.conv2d_transpose(
                 main, output_channels, kernel_size, strides=2, padding='same',
-                use_bias=False, data_format='channels_first')
+                use_bias=False, data_format='channels_first',
+                name='justify_upsample')
         return tf.nn.relu(conv + main)
 
 

@@ -8,8 +8,7 @@ import medim
 from experiments.dl import ModelController
 from experiments.config import config_dataset, config_splitter, config_model, \
     config_optimizer, config_batch_iter
-from experiments.parser import parse_config
-
+from experiments.default_parser import parse_config
 
 n_epoch = 50
 n_iter_per_epoch = 100
@@ -39,6 +38,7 @@ def get_dice_threshold(msegms_prob, msegms_true):
 def extract(x, idx):
     return [x[i] for i in idx]
 
+
 if __name__ == '__main__':
     config = parse_config()
     results_path = config['results_path']
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     train_val_test = splitter(dataset)
 
     for i, (train, val, test) in enumerate(train_val_test):
-        log_path = os.path.join(results_path, str(i+1))
+        log_path = os.path.join(results_path, str(i + 1))
 
         mscans_val = [dataset.load_mscan(p) for p in val]
         msegms_val = [dataset.load_msegm(p) for p in val]
@@ -100,5 +100,3 @@ if __name__ == '__main__':
         print(np.mean(result, axis=0))
         with open('result', 'w') as f:
             f.write(str(np.mean(result, axis=0)))
-
-
