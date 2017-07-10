@@ -28,7 +28,7 @@ if __name__ == '__main__':
     ids = config['ids_path']
     ids = np.loadtxt(ids, int, delimiter='\n')
 
-    with ModelController(model, results_path) as mc:
+    with ModelController(model, results_path, model_path) as mc:
         for id in ids:
             x = dataset.load_mscan(id)
             y = mc.predict_object(x)
