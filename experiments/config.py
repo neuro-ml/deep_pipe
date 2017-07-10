@@ -13,7 +13,6 @@ __all__ = ['config_dataset', 'config_splitter', 'config_optimizer',
            'config_model', 'config_batch_iter_factory', 'config_model']
 
 default_config = {
-    "dataset": None,
     "dataset_cached": False,
     "dataset__params": {},
 
@@ -56,40 +55,37 @@ def config_object(module_type, config, **kwargs):
     return config_module_getter(module_type, config, **kwargs)()
 
 
-def config_splitter(config) -> callable:
-    return config_object('splitter', config)
+class Configurator:
+    def __init__(self, config):
+        self.config = config
+
+    def config_splitter(self) -> callable:
+        return config_object('splitter', self.config)
+
+    def config_optimizer(self) -> Optimizer:
+        return config_object('optimizer', self.config)
+
+    def config_trainer(self) -> callable:
+        return config_object('trainer', self.config)
+
+    def config_model(self, *, optimizer, n_chans_in, n_chans_out) -> Model:
+        model_core = config_object('model_core', self.config,
+                                   n_chans_in=n_chans_in,
+                                   n_chans_out=n_chans_out)
+        return Model(model_core, optimizer=optimizer)
+
+    def config_dataset(self) -> Dataset:
+        dataset = config_object('dataset', self.config)
+        if self.config['dataset_cached']:
+            dataset = make_cached(dataset)
+
+        return dataset
+
+    def config_batch_iter(self, ids, dataset) -> Iterable:
+        get_batch_iter = config_module_getter(
+            'batch_iter', self.config, ids=ids, dataset=dataset)
+
+        return build_batch_iter(get_batch_iter,
+                                self.config['n_iters_per_epoch'])
 
 
-def config_optimizer(config) -> Optimizer:
-    return config_object('optimizer', config)
-
-
-def config_trainer(config) -> callable:
-    return config_object('trainer', config)
-
-
-def config_model(config, *, optimizer, n_chans_in, n_chans_out) -> Model:
-    model_core = config_object('model_core', config, n_chans_in=n_chans_in,
-                               n_chans_out=n_chans_out)
-    return Model(model_core, optimizer=optimizer)
-
-
-def config_dataset(config) -> Dataset:
-    dataset = config_object('dataset', config)
-    if config['dataset_cached']:
-        dataset = make_cached(dataset)
-
-    return dataset
-
-
-def config_batch_iter_factory(config):
-    module_type = 'batch_iter_factory'
-    name = config[module_type]
-    params = config[f'{module_type}__params']
-
-
-def config_batch_iter(ids, dataset, config) -> Iterable:
-    get_batch_iter = config_module_getter(
-        'batch_iter', config, ids=ids, dataset=dataset)
-
-    return build_batch_iter(get_batch_iter, config['n_iters_per_epoch'])
