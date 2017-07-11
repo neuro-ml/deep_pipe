@@ -3,7 +3,7 @@ import json
 import pprint
 import argparse
 
-from experiments.config import default_config
+from experiments.config import default_config, Configurator
 from experiments.datasets.config import dataset_name2default_params
 import re
 
@@ -23,7 +23,7 @@ module_type2default_params_mapping = {
 }
 
 
-def parse_config(parser: argparse.ArgumentParser) -> dict:
+def parse_config(parser: argparse.ArgumentParser) -> Configurator:
     args, unknown = parser.parse_known_args()
 
     config = {}
