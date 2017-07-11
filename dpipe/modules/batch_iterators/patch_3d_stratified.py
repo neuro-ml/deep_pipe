@@ -1,10 +1,9 @@
+from functools import lru_cache
 from random import choice
-from functools import lru_cache, partial
 
 import numpy as np
-
-import medim
 from bdp import Pipeline, LambdaTransformer, Source, Chunker, pack_args
+
 from ..datasets import Dataset
 
 
@@ -43,7 +42,7 @@ def make_3d_patch_stratified_iter(
 
     @lru_cache(maxsize=len(dataset.patient_ids))
     def find_cancer(patient: Patient):
-        conditional_centre_indices = medim.patch.get_conditional_center_indices(
+        conditional_centre_indices = deep_pipe.medim.patch.get_conditional_center_indices(
             np.any(patient.msegm, axis=0), patch_size=y_patch_size,
             spatial_dims=spatial_dims)
 
@@ -57,16 +56,16 @@ def make_3d_patch_stratified_iter(
             i = np.random.randint(len(conditional_center_indices))
             center_idx = conditional_center_indices[i]
         else:
-            center_idx = medim.patch.get_uniform_center_index(
+            center_idx = deep_pipe.medim.patch.get_uniform_center_index(
                 x_shape=x_shape, patch_size=y_patch_size,
                 spatial_dims=spatial_dims)
 
-        xs = [medim.patch.extract_patch(
+        xs = [deep_pipe.medim.patch.extract_patch(
             mscan, center_idx=center_idx, spatial_dims=spatial_dims,
             patch_size=patch_size)
             for patch_size in x_patch_sizes]
 
-        y = medim.patch.extract_patch(
+        y = deep_pipe.medim.patch.extract_patch(
             msegm, center_idx=center_idx, patch_size=y_patch_size,
             spatial_dims=spatial_dims)
 

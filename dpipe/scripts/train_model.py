@@ -1,9 +1,9 @@
 import numpy as np
 
-from experiments.config import config_dataset, config_optimizer, \
-    config_batch_iter, config_model, config_train
-from experiments.default_parser import parse_config, get_default_parser
-from experiments.dl import ModelController
+from dpipe.config import parse_config, get_default_parser
+from dpipe.config import config_dataset, config_optimizer, config_batch_iter, \
+    config_model, config_train
+from dpipe.modules.dl import ModelController
 
 if __name__ == '__main__':
     # parser

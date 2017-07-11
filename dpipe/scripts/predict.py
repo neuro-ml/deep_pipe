@@ -2,10 +2,9 @@ import os
 
 import numpy as np
 
-from experiments.config import config_dataset, config_model
-from experiments.default_parser import parse_config, get_default_parser
-from experiments.dl import ModelController, Optimizer
-from medim.metrics import dice_score as dice
+from dpipe.config import parse_config, get_default_parser
+from dpipe.config import config_dataset, config_model
+from dpipe.modules.dl import ModelController, Optimizer
 
 # not sure if I need main
 if __name__ == '__main__':
@@ -27,24 +26,10 @@ if __name__ == '__main__':
     ids = config['ids_path']
     ids = np.loadtxt(ids, str, delimiter='\n')
 
-    channels = dataset.n_chans_msegm
-    dices = [[] for _ in range(channels)]
-    thresholds = np.linspace(0, 1, 20)
     with ModelController(model, results_path, model_path) as mc:
         for id in ids:
             x = dataset.load_mscan(id)
-            y_true = dataset.load_msegm(id)
             y = mc.predict_object(x)
-
-            # get dice with individual threshold for each channel
-            for i in range(channels):
-                dices[i].append([dice(y[i] > thr, y_true[i])
-                                 for thr in thresholds])
-
+            np.save(os.path.join(results_path, str(id)), y)
             # saving some memory
-            del x, y, y_true
-    dices = np.asarray(dices)
-    idx = dices.mean(axis=1).argmax(axis=1)
-    final = thresholds[idx]
-
-    np.save(results_path, final)
+            del x, y

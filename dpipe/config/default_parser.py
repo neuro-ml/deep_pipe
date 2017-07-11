@@ -1,11 +1,11 @@
-import os
-import json
-import pprint
 import argparse
-
-from experiments.config import default_config, Configurator
-from experiments.datasets.config import dataset_name2default_params
+import json
+import os
+import pprint
 import re
+
+from dpipe.config.config import default_config
+from dpipe.modules.datasets.config import dataset_name2default_params
 
 __all__ = ['parse_config', 'get_default_parser']
 
@@ -23,7 +23,7 @@ module_type2default_params_mapping = {
 }
 
 
-def parse_config(parser: argparse.ArgumentParser) -> Configurator:
+def parse_config(parser: argparse.ArgumentParser) -> dict:
     args, unknown = parser.parse_known_args()
 
     config = {}

@@ -1,18 +1,15 @@
-from typing import Iterable
 from functools import partial
+from typing import Iterable
 
-from experiments.splits.config import get_split_name2get_split
+from dpipe.modules.batch_iterators import build_batch_iter
+from dpipe.modules.batch_iterators.config import batch_iter_name2batch_iter
+from dpipe.modules.datasets.base import make_cached, Dataset
+from dpipe.modules.dl import Optimizer, Model
+from dpipe.modules.dl.model_cores.config import model_core_name2model_core
+from dpipe.modules.splits.config import get_split_name2get_split
+from dpipe.modules.trainers.config import train_name2train
 
-from experiments.datasets.base import make_cached, Dataset
-from experiments.datasets.config import dataset_name2dataset
-
-from experiments.dl import Optimizer, Model
-from experiments.dl.model_cores.config import model_core_name2model_core
-
-from experiments.batch_iterators import build_batch_iter
-from experiments.batch_iterators.config import batch_iter_name2batch_iter
-
-from experiments.trainers.config import train_name2train
+from dpipe.modules.datasets.config import dataset_name2dataset
 
 __all__ = ['config_dataset', 'config_split', 'config_optimizer',
            'config_model', 'config_batch_iter', 'config_train']
