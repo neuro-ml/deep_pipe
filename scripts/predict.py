@@ -12,8 +12,6 @@ if __name__ == '__main__':
     parser = get_default_parser()
     parser.add_argument('-rp', '--results', dest='results_path')
     parser.add_argument('-i', '--ids_path')
-    parser.add_argument('-d', '--dataset')
-    parser.add_argument('-m', '--model')
     parser.add_argument('-mp', '--model_path')
     config = parse_config(parser)
 
@@ -26,7 +24,7 @@ if __name__ == '__main__':
                          n_chans_out=dataset.n_chans_msegm)
     model_path = config['model_path']
     ids = config['ids_path']
-    ids = np.loadtxt(ids, int, delimiter='\n')
+    ids = np.loadtxt(ids, str, delimiter='\n')
 
     with ModelController(model, results_path, model_path) as mc:
         for id in ids:

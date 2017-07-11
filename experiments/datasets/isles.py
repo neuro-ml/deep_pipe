@@ -12,6 +12,7 @@ class Isles(Dataset):
         super().__init__(data_path)
         self.data_path = data_path
         self.metadata = pd.read_csv(join(data_path, self.filename))
+        self.metadata['id'] = self.metadata.id.astype(str)
         self._patient_ids = self.metadata.index.values
 
     def load_mscan(self, patient_id):
@@ -51,7 +52,7 @@ class Isles(Dataset):
 
     @property
     def patient_ids(self):
-        return list(range(len(self.metadata)))
+        return self.metadata.id.as_matrix()
 
     @property
     def n_chans_mscan(self):
