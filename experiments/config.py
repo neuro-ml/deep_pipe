@@ -1,7 +1,7 @@
 from typing import Iterable
 from functools import partial
 
-from experiments.splitters.config import splitter_name2splitter
+from experiments.splits.config import get_split_name2get_split
 
 from experiments.datasets.base import make_cached, Dataset
 from experiments.datasets.config import dataset_name2dataset
@@ -14,15 +14,15 @@ from experiments.batch_iterators.config import batch_iter_name2batch_iter
 
 from experiments.trainers.config import train_name2train
 
-__all__ = ['config_dataset', 'config_splitter', 'config_optimizer',
+__all__ = ['config_dataset', 'config_split', 'config_optimizer',
            'config_model', 'config_batch_iter', 'config_train']
 
 default_config = {
     "dataset_cached": False,
     "dataset__params": {},
 
-    "splitter": None,
-    "splitter__params": {},
+    "split": None,
+    "split__params": {},
 
     "optimizer": "optimizer",
     "optimizer__params": {},
@@ -41,7 +41,7 @@ default_config = {
 
 module_type2module_constructor_mapping = {
     'dataset': dataset_name2dataset,
-    'splitter': splitter_name2splitter,
+    'split': get_split_name2get_split,
     'optimizer': {'optimizer': Optimizer},
     'model_core': model_core_name2model_core,
     'batch_iter': batch_iter_name2batch_iter,
@@ -69,8 +69,8 @@ def config_dataset(config) -> Dataset:
     return dataset
 
 
-def config_splitter(config) -> callable:
-    return config_object('splitter', config)
+def config_split(config, dataset: Dataset) -> Iterable:
+    return config_object('split', config, dataset=dataset)
 
 
 def config_optimizer(config) -> Optimizer:
@@ -87,7 +87,7 @@ def config_model(config, *, optimizer, n_chans_in, n_chans_out) -> Model:
     return Model(model_core, optimizer=optimizer)
 
 
-def config_batch_iter(ids, dataset, config) -> Iterable:
+def config_batch_iter(config, *, ids, dataset) -> Iterable:
     get_batch_iter = config_module_builder('batch_iter', config, ids=ids,
                                            dataset=dataset)
 

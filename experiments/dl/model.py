@@ -12,7 +12,7 @@ class Model:
         self._build()
 
         # Gets initialized during model preparation
-        self.file_writer = None
+        self.session = self.file_writer = None
         self.call_train = self.call_val = self.call_pred = None
 
     def _start_build(self):
@@ -37,7 +37,7 @@ class Model:
 
     def prepare(self, session: tf.Session, file_writer: tf.summary.FileWriter,
                 restore_ckpt_path=None):
-        self.global_step = 0
+        self.session = session
         self.file_writer = file_writer
 
         self.call_train = session.make_callable(
@@ -76,3 +76,6 @@ class Model:
 
     def predict_object(self, x):
         return self.model_core.predict_object(x, self.do_inf_step)
+
+    def save(self, save_path):
+        self.saver.save(self.session, save_path)
