@@ -33,7 +33,7 @@ class BatchIterInf(BatchIter):
 
     def __enter__(self):
         with suppress(AttributeError):
-            self.batch_iter.__enter()
+            self.batch_iter.__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         with suppress(AttributeError):

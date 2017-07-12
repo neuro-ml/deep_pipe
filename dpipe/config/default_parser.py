@@ -56,12 +56,6 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
         if value is None and config.get(arg) is None and arg != 'config_path':
             raise ValueError(f'"{arg}" parameter not specified')
 
-    results_path = config['results_path']
-    os.makedirs(results_path, exist_ok=True)
-
-    with open(os.path.join(results_path, 'config.json'), 'w') as f:
-        json.dump(config, f, indent=2, sort_keys=True)
-
     return config
 
 
@@ -108,7 +102,7 @@ def _merge_configs(destination: dict, source: dict):
 
 def get_default_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-cf', '--config', dest='config_path')
+    parser.add_argument('-cp', '--config', dest='config_path')
     return parser
 
 

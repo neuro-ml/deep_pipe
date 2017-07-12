@@ -1,4 +1,5 @@
 import math
+from functools import partial
 
 from ..dl.model_controller import ModelController
 from ..datasets import Dataset
@@ -38,14 +39,15 @@ def make_find_next_lr(lr, decrease_lr: callable, get_check: callable):
 
 def train_with_lr_decrease(
         model_controller: ModelController, train_batch_iter: BatchIter, val_ids,
-        dataset: Dataset, *, n_iters_per_epoch, n_epochs, lr_init,
-        lr_dec_mul=0.5, patience, rtol=0, atol=0):
+        dataset: Dataset, *, n_epochs, lr_init, lr_dec_mul=0.5, patience: int,
+        rtol=0, atol=0):
     x_val = [dataset.load_x(p) for p in val_ids]
     y_val = [dataset.load_y(p) for p in val_ids]
 
     find_next_lr = make_find_next_lr(
         lr_init, lambda lr: lr * lr_dec_mul,
-        make_check_loss_decrease(patience, rtol, atol))
+        partial(make_check_loss_decrease, patience=patience,
+                rtol=rtol, atol=atol))
 
     lr = find_next_lr(math.inf)
     with train_batch_iter:

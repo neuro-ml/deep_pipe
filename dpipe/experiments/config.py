@@ -1,5 +1,5 @@
 from . import flat_experiment
 
-experiment_builder_name2experiment_builder = {
-    'flat': flat_experiment.build
+splitter_name2build_experiment = {
+    'cv_111': flat_experiment.build
 }

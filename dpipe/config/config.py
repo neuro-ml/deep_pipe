@@ -4,36 +4,32 @@ from typing import Iterable
 from dpipe.modules.batch_iterators import build_batch_iter
 from dpipe.modules.batch_iterators.config import batch_iter_name2batch_iter
 from dpipe.modules.datasets.base import make_cached, Dataset
+from dpipe.modules.datasets.config import dataset_name2dataset
 from dpipe.modules.dl import Optimizer, Model
 from dpipe.modules.dl.model_cores.config import model_core_name2model_core
 from dpipe.modules.splits.config import get_split_name2get_split
-from dpipe.modules.trainers.config import train_name2train
+from dpipe.modules.trains.config import train_name2train
+from dpipe.experiments.config import splitter_name2build_experiment
 
-from dpipe.modules.datasets.config import dataset_name2dataset
 
 __all__ = ['config_dataset', 'config_split', 'config_optimizer',
-           'config_model', 'config_batch_iter', 'config_train']
+           'config_model', 'config_batch_iter', 'config_train',
+           'config_build_experiment']
 
 default_config = {
-    "dataset_cached": False,
+    "dataset_cached": True,
     "dataset__params": {},
 
-    "split": None,
     "split__params": {},
 
     "optimizer": "optimizer",
     "optimizer__params": {},
 
-    "model_core": None,
     "model_core__params": {},
-
-    "batch_iter": None,
     "batch_iter__params": {},
 
     "train": None,
     "train__params": {},
-
-    "n_iters_per_epoch": None,
 }
 
 module_type2module_constructor_mapping = {
@@ -42,7 +38,7 @@ module_type2module_constructor_mapping = {
     'optimizer': {'optimizer': Optimizer},
     'model_core': model_core_name2model_core,
     'batch_iter': batch_iter_name2batch_iter,
-    'train': train_name2train
+    'train': train_name2train,
 }
 
 
@@ -68,6 +64,11 @@ def config_dataset(config) -> Dataset:
 
 def config_split(config, dataset: Dataset) -> Iterable:
     return config_object('split', config, dataset=dataset)
+
+
+def config_build_experiment(config):
+    build_experiment = splitter_name2build_experiment[config['split']]
+    return build_experiment
 
 
 def config_optimizer(config) -> Optimizer:

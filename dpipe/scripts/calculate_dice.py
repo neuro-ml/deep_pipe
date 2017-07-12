@@ -10,9 +10,9 @@ if __name__ == '__main__':
     # parser
     parser = get_default_parser()
     parser.add_argument('-rp', '--results', dest='results_path')
-    parser.add_argument('-i', '--ids_path')
+    parser.add_argument('-ip', '--ids_path')
     parser.add_argument('-mp', '--model_path')
-    parser.add_argument('-th', '--thresholds_path')
+    parser.add_argument('-thp', '--thresholds_path')
     config = parse_config(parser)
 
     # building objects
