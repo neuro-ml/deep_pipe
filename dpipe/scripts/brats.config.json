@@ -25,7 +25,7 @@
 
   "train": "train_with_lr_decrease",
   "train__params": {
-    "n_epochs": 120,
+    "n_epochs": 3,
     "lr_init": 0.1,
     "lr_dec_mul": 0.5,
     "patience": 5,
