@@ -6,8 +6,9 @@ from data_utils import random_nonzero_crops, random_slicer, divide, combine, \
     augment
 from data_utils import _reshape_to, divider, combiner
 from nn_utils import iterate_minibatches
-from pytorch_utils import stochastic_step, to_numpy, to_var
+from pytorch_utils import stochastic_step, to_numpy, to_var, loss_cross_entropy
 from mulptiprocessing_utils import par_iterate_minibatches
+from metrics import dice
 
 
 class Model_controller():
@@ -22,7 +23,7 @@ class Model_controller():
     controller.train(X_train, Y_train, epoches=100,
                      hard_negative = lambda epoch: epoch>=1 and epoch%7!=0)
     y = controller.predict(X_test)
-    np.savez('y_dump.npy', y)
+    np.savez('y_dump.npy.npz', y)
     """
 
     def __init__(self, model):
@@ -58,6 +59,26 @@ class Model_controller():
             else:
                 self.res[name] = []
 
+    def train_step(self, x, y):
+        mean_loss, step = 0, 0
+        inputs, targets = random_nonzero_crops(x, y, self.num_of_patches,
+                                               targ_shape=self.context_shape,
+                                               context_shape=self.crops_shape)
+        total_steps = inputs.shape[0] // self.batch_size
+        bar = tqdm(
+            par_iterate_minibatches(inputs, targets, self.batch_size, augment),
+            total=total_steps)
+        for x_batch, y_batch in bar:
+            batch_loss_val = stochastic_step(x, y_batch, self.model,
+                                             self.optimizer)
+            bar.set_description(str(batch_loss_val)[:6])
+            mean_loss += batch_loss_val
+            step += 1
+        return mean_loss / step
+
+    def validation_step(self, x, y):
+        pass
+
     def _train(self, X_train, y_train, hard_neg_mining=False):
         self.model.train()
         mean_loss, step = 0, 0
@@ -75,7 +96,6 @@ class Model_controller():
             print('added', len(prev_inp), 'examples')
             inputs = np.concatenate([inputs, prev_inp])
             targets = np.concatenate([targets, prev_targ])
-
         bar = tqdm(
             par_iterate_minibatches(inputs, targets, self.batch_size, augment),
             total=inputs.shape[0] // self.batch_size)
@@ -88,6 +108,13 @@ class Model_controller():
         if hard_neg_mining:
             _ = self._validate(inputs, targets, hard_neg_mining=True)
         return mean_loss / step
+
+    def _validate_nuts(self, X, y):
+        y_pred = self.predict(X)
+        y_pred = np.logical_and(y_pred[:, 1, ...] > y_pred[:, 0, ...],
+                                y_pred[:, 1, ...] > y_pred[:, 2, ...])
+        dice_ = [dice(y1, y2) for y1, y2, in zip(y_pred, y)]
+        return dice_
 
     def _validate(self, X_val, y_val, hard_neg_mining=False):
         self.model.eval()
@@ -130,21 +157,24 @@ class Model_controller():
         for epoch in range(epoches):
             tr_loss = self._train(X_train, y_train,
                                   hard_neg_mining=hard_negative(epoch))
-            self._add_statistics(**{'train_loss': tr_loss})
+            self._add_statistics(train_loss=tr_loss)
             if verbose:
                 print(str(epoch) + ' epoch: \ntrain loss', tr_loss)
             if not X_val is None:
                 val_loss = self._validate(X_val, y_val)
                 self._add_statistics(**{'val_loss': val_loss})
+                dices = self._validate_nuts(X_val, y_val)
+                self._add_statistics(val_dices=np.mean(dices))
                 if verbose:
                     print('val loss', val_loss)
+                    print('dices', dices)
             if epoch % self.decay_every_epoch == 0:
                 self.lr = self.lr_decayer(self.lr)
                 # TODO not only pytorch
                 self.optimizer = torch.optim.Adamax(self.model.parameters(),
                                                     lr=self.lr)
             for i in self.optimizer.param_groups:
-                self._add_statistics(**{'lr': i['lr']})
+                self._add_statistics(lr=i['lr'])
                 break
 
     def predict(self, X, zero_padding=[0] * 5,

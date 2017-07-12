@@ -1,4 +1,3 @@
-
 import torch
 from torch import nn
 
@@ -34,7 +33,6 @@ class ResBottleNec(nn.Module):
 
 
 class UResNet(torch.nn.Module):
-
     def __init__(self):
         super().__init__()
         self.down_sample = nn.Sequential(nn.Conv3d(16, 32, 2, stride=2),
@@ -56,14 +54,12 @@ class UResNet(torch.nn.Module):
     def _unconv(self, inp_channels, out_channels):
         return nn.Sequential(
             nn.ConvTranspose3d(inp_channels, out_channels, 3, padding=1,
-                               bias=False),
-            nn.Tanh())
+                               bias=False), nn.Tanh())
 
     def _conv(self, inp_channels, out_channels):
         return nn.Sequential(
             nn.Conv3d(inp_channels, out_channels, 3, bias=False),
-            nn.ReLU(inplace=True),
-            nn.BatchNorm3d(out_channels))
+            nn.ReLU(inplace=True), nn.BatchNorm3d(out_channels))
 
     def forward(self, input):
         """-"""
@@ -97,67 +93,63 @@ class UResNet(torch.nn.Module):
 
 
 class UNet(torch.nn.Module):
-
     def __init__(self):
         super().__init__()
-        self.down_sample = nn.Sequential(nn.Conv3d(32, 32, 2, stride=2), 
-                                    nn.Tanh())
-        
-        self.up_sample = nn.Sequential(nn.ConvTranspose3d(48, 32, 2, stride=2), 
-                                    nn.ReLU(inplace=True))
-        
-        self.layers_down = nn.ModuleList([self._conv(2, 16),
-                        self._bottle_neck_block(16, 16, 32),
-                        self.down_sample, 
-                        self._bottle_neck_block(32, 32, 64),
-                        self._bottle_neck_block(64, 56, 64),
-                        self._bottle_neck_block(64, 56, 86),
-                        ])
-        
-        self.layers_up = nn.ModuleList([self._unconv(86, 64),
-                    self._unconv(128, 64),
-                    self._unconv(128, 16),
-                    self.up_sample,
-                    self._unconv(64, 8),
-                    nn.ConvTranspose3d(24, 3, 3)
-                    ])
+        self.down_sample = nn.Sequential(nn.Conv3d(32, 32, 2, stride=2),
+                                         nn.Tanh())
+
+        self.up_sample = nn.Sequential(nn.ConvTranspose3d(48, 32, 2, stride=2),
+                                       nn.ReLU(inplace=True))
+
+        self.layers_down = nn.ModuleList(
+            [self._conv(2, 16), self._bottle_neck_block(16, 16, 32),
+             self.down_sample, self._bottle_neck_block(32, 32, 64),
+             self._bottle_neck_block(64, 56, 64), ])
+
+        self.layers_inside = nn.ModuleList([self._bottle_neck_block(64, 56, 86),
+                                            # nn.Sequential(
+                                            #     nn.ConvTranspose3d(86, 86, 3,
+                                            #                        padding=1),
+                                            #     nn.BatchNorm3d(86),
+                                            #     nn.ReLU(inplace=True)),
+                                            self._unconv(86, 64), ])
+
+        self.layers_up = nn.ModuleList(
+            [self._unconv(128, 64), self._unconv(128, 16),
+             self.up_sample, self._unconv(64, 8), nn.ConvTranspose3d(24, 3, 3)])
 
     def _bottle_neck_block(self, inp_channels, hid_channels, out_channels):
         """ ^_^ """
-        return nn.Sequential(
-                            torch.nn.Conv3d(inp_channels, hid_channels, 1),
-                            nn.ReLU(inplace=True),
-                            nn.BatchNorm3d(hid_channels),
-                            torch.nn.Conv3d(hid_channels, hid_channels, 3),
-                            nn.ReLU(inplace=True),
-                            nn.BatchNorm3d(hid_channels),
-                            torch.nn.Conv3d(hid_channels, out_channels, 1),
-                            nn.ReLU(inplace=True),
-                            nn.BatchNorm3d(out_channels)
-                            )
-    
+        return nn.Sequential(torch.nn.Conv3d(inp_channels, hid_channels, 1),
+                             nn.BatchNorm3d(hid_channels),
+                             nn.ReLU(inplace=True),
+                             torch.nn.Conv3d(hid_channels, hid_channels, 3),
+                             nn.BatchNorm3d(hid_channels),
+                             nn.ReLU(inplace=True),
+                             torch.nn.Conv3d(hid_channels, out_channels, 1),
+                             nn.BatchNorm3d(out_channels),
+                             nn.ReLU(inplace=True), )
+
     def _unconv(self, inp_channels, out_channels):
         return nn.Sequential(nn.ConvTranspose3d(inp_channels, out_channels, 3),
                              nn.Tanh())
 
     def _conv(self, inp_channels, out_channels):
         return nn.Sequential(nn.Conv3d(inp_channels, out_channels, 3),
-                             nn.ReLU(inplace=True), 
+                             nn.ReLU(inplace=True),
                              nn.BatchNorm3d(out_channels))
 
     def forward(self, input):
         tensors = [input]
         for apply_layer in self.layers_down:
             tensors.append(apply_layer(tensors[-1]))
-        counter = len(tensors) - 1
-        for apply_layer in self.layers_up:
-            if counter == len(tensors) - 1:
-                tensors.append(apply_layer(tensors[-1]))
-            else:
-                tensors.append(
-                    apply_layer(torch.cat((tensors[counter], tensors[-1]), 1)))
-            counter -= 1
-        return tensors[-1]
+        x = tensors[-1]
+        for apply_layer in self.layers_inside:
+            x = apply_layer(x)
+        for apply_layer, left in zip(self.layers_up, reversed(tensors)):
+            x = torch.cat((left, x), 1)
+            x = apply_layer(x)
+        return x
 
         # x0 = self.layers_down[0](input)
         # x1 = self.layers_down[1](x0)  # [5, x, 26, 26, 16]
