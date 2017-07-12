@@ -72,13 +72,12 @@ def make_3d_patch_stratified_iter(
 
         return (*xs, y)
 
-    outputs = [np.zeros((batch_size, n_chans_mscan, *ps), dtype=np.float32)
-               for ps in x_patch_sizes] + \
-              [np.zeros((batch_size, n_chans_msegm, *y_patch_size),
-                        dtype=np.float32)]
-
     def combine_batch(inputs):
         n_sources = len(inputs[0])
+        outputs = [np.zeros((batch_size, n_chans_mscan, *ps), dtype=np.float32)
+                   for ps in x_patch_sizes] + \
+                  [np.zeros((batch_size, n_chans_msegm, *y_patch_size),
+                            dtype=np.float32)]
         for s in range(n_sources):
             for b in range(batch_size):
                 outputs[s][b] = inputs[b][s]
@@ -88,7 +87,7 @@ def make_3d_patch_stratified_iter(
         Source(make_random_seq(ids), buffer_size=10),
         LambdaTransformer(load_data, n_workers=1, buffer_size=10),
         LambdaTransformer(find_cancer, n_workers=1, buffer_size=50),
-        LambdaTransformer(extract_patch, n_workers=4,
+        LambdaTransformer(extract_patch, n_workers=1,
                           buffer_size=3 * batch_size),
         Chunker(chunk_size=batch_size, buffer_size=2),
         LambdaTransformer(combine_batch, n_workers=1, buffer_size=3)
