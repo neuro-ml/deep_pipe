@@ -30,6 +30,7 @@
     "lr_dec_mul": 0.5,
     "patience": 5,
     "rtol": 0.03,
-    "atol": 0.01
+    "atol": 0.01,
+    "buffer_size": 100
   }
 }
