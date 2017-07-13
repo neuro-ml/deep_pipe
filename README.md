@@ -1,2 +1,3 @@
-# MedIm
-Repository for tools, useful for medical image analysis, including preprocessing, data augmentation, performance validation and final prediction
+# Deep pipe
+
+Repository for deep learning experiments, primarily for 3d image segmentation
