@@ -6,16 +6,22 @@ from dpipe.config import config_dataset, config_split, config_build_experiment
 
 if __name__ == '__main__':
     parser = get_default_parser()
-    parser.add_argument('-ed', '--experiment_dir')
+    parser.add_argument('-ep', '--experiments_path')
+    parser.add_argument('-sp', '--scripts_path')
     config = parse_config(parser)
 
-    experiment_dir = config['experiment_dir']
+    experiments_path = config['experiments_path']
+    scripts_path = config['scripts_path']
 
     dataset = config_dataset(config)
     split = config_split(config, dataset)
     build_experiment = config_build_experiment(config)
 
-    build_experiment(split, experiment_dir)
-    #os.makedirs(results_path, exist_ok=True)
-    with open(os.path.join(experiment_dir, 'config.json'), 'w') as f:
+    build_experiment(split, experiments_path)
+
+    with open(os.path.join(experiments_path, 'config.json'), 'w') as f:
         json.dump(config, f, indent=2, sort_keys=True)
+
+    with open(os.path.join(experiments_path, 'paths.json'), 'w') as f:
+        json.dump({'scripts_path': scripts_path},
+                  f, indent=2, sort_keys=True)
