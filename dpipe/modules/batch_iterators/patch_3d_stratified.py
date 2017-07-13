@@ -4,6 +4,7 @@ from random import choice
 import numpy as np
 
 from ..datasets import Dataset
+from .utils import combine_batch
 from dpipe import medim
 from bdp import Pipeline, LambdaTransformer, Source, Chunker, pack_args
 
@@ -70,12 +71,6 @@ def make_3d_patch_stratified_iter(
             spatial_dims=spatial_dims)
 
         return (*xs, y)
-
-    def combine_batch(inputs):
-        n_sources = len(inputs[0])
-        outputs = [[np.array(o[s], dtype=np.float32) for o in inputs]
-                   for s in range(n_sources)]
-        return outputs
 
     return Pipeline(
         Source(make_random_seq(ids), buffer_size=3),
