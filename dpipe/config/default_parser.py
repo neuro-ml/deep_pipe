@@ -47,14 +47,14 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
     # module-specific:
     for module, params in module_type2default_params_mapping.items():
         field_name = f'{module}__params'
-        if config[module] is None:
-            raise ValueError(f'"{module}" parameter not specified')
-        _merge_configs(config[field_name], params[config[module]])
+        if config.get(module, None) is not None:
+            # raise ValueError(f'"{module}" parameter not specified')
+            _merge_configs(config[field_name], params[config[module]])
 
     # final checks
-    for arg, value in args._get_kwargs():
-        if value is None and config.get(arg) is None and arg != 'config_path':
-            raise ValueError(f'"{arg}" parameter not specified')
+    # for arg, value in args._get_kwargs():
+    #     if value is None and config.get(arg) is None and arg != 'config_path':
+    #         raise ValueError(f'"{arg}" parameter not specified')
 
     return config
 
