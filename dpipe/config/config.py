@@ -11,12 +11,13 @@ from dpipe.modules.splits.config import get_split_name2get_split
 from dpipe.modules.trains.config import train_name2train
 from dpipe.experiments.config import splitter_name2build_experiment
 
-
 __all__ = ['config_dataset', 'config_split', 'config_optimizer',
            'config_model', 'config_batch_iter', 'config_train',
            'config_build_experiment']
 
 default_config = {
+    "n_iters_per_epoch": None,
+
     "dataset_cached": True,
     "dataset__params": {},
 
