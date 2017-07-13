@@ -10,7 +10,7 @@ if __name__ == '__main__':
     parser.add_argument('-sp', '--scripts_path')
     config = parse_config(parser)
 
-    experiments_path = config['experiments_path']
+    experiments_path = os.path.abspath(config['experiments_path'])
     scripts_path = config['scripts_path']
 
     dataset = config_dataset(config)

@@ -1,5 +1,5 @@
-from . import flat_experiment
+from . import flat
 
 splitter_name2build_experiment = {
-    'cv_111': flat_experiment.build
+    'cv_111': flat.build
 }

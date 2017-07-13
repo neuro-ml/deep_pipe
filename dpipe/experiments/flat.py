@@ -5,20 +5,17 @@ import re
 
 import numpy as np
 
-pattern = re.compile('^(.+)_experiment.py$')
-
 
 def build(split: Iterable, experiment_dir: str):
-    name = os.path.basename(__file__)
-    name = pattern.match(name).group(1)
+    name = os.path.basename(__file__).split('.')[0]
     base_dir = os.path.dirname(__file__)
-    rule = os.path.join(base_dir, name + '.rule')
+    rule_path = os.path.join(base_dir, name + '.rule')
 
     for i, ids in enumerate(split):
         local = os.path.join(experiment_dir, f'experiment_{i}')
         os.makedirs(local)
-        shutil.copyfile(rule, os.path.join(local, 'train_eval.rule'))
+        shutil.copyfile(rule_path, os.path.join(local, f'{name}.rule'))
 
         for val, file in zip(ids, ('train', 'val', 'test')):
-            file = os.path.join(local, file + '.ids')
+            file = os.path.join(local, file + '_ids')
             np.savetxt(file, val, delimiter='\n', fmt='%s')
