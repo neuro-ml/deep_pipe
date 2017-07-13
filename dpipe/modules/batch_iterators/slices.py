@@ -25,5 +25,5 @@ def make_slices_iter(
     return Pipeline(
         Source(slicer(ids), buffer_size=10),
         Chunker(chunk_size=batch_size, buffer_size=2),
-        LambdaTransformer(transpose, n_workers=1, buffer_size=3)
+        LambdaTransformer(combine_batch, n_workers=1, buffer_size=3)
     )
