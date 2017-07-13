@@ -1,4 +1,4 @@
-from dpipe.config import parse_config, get_default_parser
+from dpipe.config import parse_config, get_parser
 from dpipe.config import config_dataset, config_optimizer, config_batch_iter, \
     config_model, config_train
 from dpipe.modules.dl import ModelController
@@ -7,7 +7,7 @@ from utils import read_lines
 
 if __name__ == '__main__':
     # parser
-    parser = get_default_parser()
+    parser = get_parser()
     parser.add_argument('-tid', '--train_ids_path')
     parser.add_argument('-vid', '--val_ids_path')
     parser.add_argument('-ld', '--log_dir')

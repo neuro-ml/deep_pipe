@@ -1,13 +1,12 @@
 import argparse
 import json
-import os
 import pprint
 import re
 
 from dpipe.config.config import default_config
 from dpipe.modules.datasets.config import dataset_name2default_params
 
-__all__ = ['parse_config', 'get_default_parser']
+__all__ = ['parse_config', 'get_parser', 'get_config']
 
 # TODO Add info about arguments vs config settings differences after discussion
 description = """
@@ -39,7 +38,8 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
 
     # console arguments:
     for arg, value in args._get_kwargs():
-        config[arg] = value
+        if value is not None:
+            config[arg] = value
     _parse_unknown(unknown, config)
 
     # default values
@@ -47,14 +47,14 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
     # module-specific:
     for module, params in module_type2default_params_mapping.items():
         field_name = f'{module}__params'
-        if config[module] is None:
-            raise ValueError(f'"{module}" parameter not specified')
-        _merge_configs(config[field_name], params[config[module]])
+        if config.get(module, None) is not None:
+            # raise ValueError(f'"{module}" parameter not specified')
+            _merge_configs(config[field_name], params[config[module]])
 
     # final checks
-    for arg, value in args._get_kwargs():
-        if value is None and config.get(arg) is None and arg != 'config_path':
-            raise ValueError(f'"{arg}" parameter not specified')
+    # for arg, value in args._get_kwargs():
+    #     if value is None and config.get(arg) is None and arg != 'config_path':
+    #         raise ValueError(f'"{arg}" parameter not specified')
 
     return config
 
@@ -100,24 +100,49 @@ def _merge_configs(destination: dict, source: dict):
                 _merge_configs(destination[key], value)
 
 
-def get_default_parser() -> argparse.ArgumentParser:
+def get_parser(*additional_params) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-cp', '--config', dest='config_path')
+
+    for param in additional_params:
+        kwargs = available_params[param]
+        if type(kwargs) is dict:
+            args = kwargs.pop('names')
+        else:
+            args, kwargs = kwargs, {}
+        kwargs['dest'] = param
+        if '--' + param not in args:
+            args = args + ['--' + param]
+        parser.add_argument(*args, **kwargs)
     return parser
 
 
-# default_parser.add_argument('-bi', '--iter', dest='batch_iter',
-#                             help='the batch iterator')
-# default_parser.add_argument('-bs', '--batch_size', type=int,
-#                             help='the batch size')
-# default_parser.add_argument('-ds', '--dataset')
-# default_parser.add_argument('--chached', action='store_true',
-#                             dest='dataset_cached', default=False,
-#                             help='whether the dataset is chached')
-# default_parser.add_argument('-m', '--model')
-# default_parser.add_argument('-p', '--path', dest='results_path',
-#                             help='results path')
-# default_parser.add_argument('-s', '--splitter')
+def get_config(*additional_params) -> dict:
+    return parse_config(get_parser(*additional_params))
+
+
+available_params = {
+    'batch_iter': ['-bi', '--iter'],
+    'batch_size': dict(names=['-bs', '--batch_size'], type=int),
+
+    'dataset': ['-ds', '--dataset'],
+    'dataset_cached': dict(names=['--chached'], action='store_true',
+                           default=False,
+                           help='whether the dataset is chached'),
+
+    'model': ['-m', '--model'],
+    'model_path': ['-mp', '--model_path'],
+    'save_model_path': ['-smp', '--save_model_path'],
+    'predictions_path': ['-pp', '--predictions_path'],
+
+    'train_ids_path': ['-tid', '--train_ids_path'],
+    'val_ids_path': ['-vid', '--val_ids_path'],
+    'ids_path': ['-ip', '--ids_path'],
+
+    'log_dir': ['-ld', '--log_dir'],
+    'thresholds_path': ['-thp', '--thresholds_path'],
+    'results_path': ['-p'],
+}
 
 if __name__ == '__main__':
-    pprint.pprint(parse_config(get_default_parser()))
+    pprint.pprint(parse_config(get_parser()))

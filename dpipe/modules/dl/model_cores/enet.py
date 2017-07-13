@@ -111,6 +111,7 @@ def stage(input, output_channels, num_blocks, name, training,
 
 def build_model(input, classes, name, training):
     with tf.variable_scope(name):
+        initial_shape = tf.shape(input)
         input = init_block(input, 'init', training)
         input = stage(input, 64, 5, 'stage1', training, downsample=True)
         input = stage(input, 128, 9, 'stage2', training, downsample=True)
@@ -120,6 +121,9 @@ def build_model(input, classes, name, training):
         input = tf.layers.conv2d_transpose(
             input, classes, kernel_size=2, strides=2, use_bias=True,
             data_format='channels_first')
+        input = tf.transpose(input, perm=[0, 2, 3, 1])
+        input = tf.image.resize_images(input, initial_shape[-2:])
+        input = tf.transpose(input, perm=[0, 3, 1, 2])
         return input
 
 

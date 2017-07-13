@@ -16,7 +16,9 @@ class Isles(Dataset):
         self._patient_ids = self.metadata.index.values
 
     def load_mscan(self, patient_id):
-        channels = self.metadata.iloc[patient_id][self.modalities]
+        id = patient_id
+        channels = self.metadata[self.metadata.id == id][self.modalities]
+        channels = channels.as_matrix()[0]
         res = []
 
         for image in channels:
@@ -35,7 +37,8 @@ class Isles(Dataset):
         pass
 
     def load_msegm(self, patient):
-        channels = self.metadata.iloc[patient][self.labels]
+        channels = self.metadata[self.metadata.id == patient][self.labels]
+        channels = channels.as_matrix()[0]
         res = []
 
         for image in channels:

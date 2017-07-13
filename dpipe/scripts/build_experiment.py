@@ -1,11 +1,11 @@
 import os
 import json
 
-from dpipe.config import parse_config, get_default_parser
+from dpipe.config import parse_config, get_parser
 from dpipe.config import config_dataset, config_split, config_build_experiment
 
 if __name__ == '__main__':
-    parser = get_default_parser()
+    parser = get_parser()
     parser.add_argument('-ep', '--experiments_path')
     parser.add_argument('-sp', '--scripts_path')
     config = parse_config(parser)
