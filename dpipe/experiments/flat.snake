@@ -1,0 +1,87 @@
+=TH_TO_SCRIPTS = './'
+
+TRAIN_SCRIPT = '{PATH_TO_SCRIPTS}/train_model.py'
+PREDICT_SCRIPT = '{PATH_TO_SCRIPTS}/predict.py'
+FIND_TRESHOLD = '{PATH_TO_SCRIPTS}/calculate_dice_threshold.py'
+BINARIZE = '{PATH_TO_SCRIPTS}/binarize.py'
+COMPUTE_DICES = '{PATH_TO_SCRIPTS}/compute_dices.py'
+CONFIG_PATH = '{PATH_TO_SCRIPTS}/config.json'
+
+
+ON_PREDICTED_DATASETS = ['val', 'test']
+TRAIN_IDX = 'train_idx'
+datasets_idx = expand("{dataset}_idx", dataset=ON_PREDICTED_DATASETS)
+LOGS_TO_TNSBRD = './.logs'
+
+predicted = expand("{dataset}_predicted.npy", dataset=ON_PREDICTED_DATASETS)
+SAVED_MODEL = 'trained.model'
+SAVED_THRESHOLS = 'thresholds.npy'
+SAVED_BIN_PREDS = 'binarized_predictions.npy'
+SAVED_DICES = 'dice_scores.npy'
+
+
+rule all:
+    input:
+        predicted,
+        {SAVED_MODEL},
+        {SAVED_PREDS},
+        {SAVED_THRESHOLS},
+        {SAVED_BIN_PREDS},
+        {SAVED_DICES}
+
+rule train_model:
+    input:
+        datasets_idx[0]
+    output:
+        {SAVED_MODEL}
+    shell:
+        'python {TRAIN_SCRIPT} -cp {CONFIG_PATH} -tid {TRAIN_IDX} -vid {datasets_idx[0]} -ld {LOGS_TO_TNSBRD} -smp {SAVED_MODEL} '
+
+rule predict_val:
+    input:
+        {SAVED_MODEL},
+        datasets_idx[0]
+    output:
+        predicted[0]
+    shell:
+        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} -ip {input[1]} -m {SAVED_MODEL} -pp {output}'
+
+rule predict_test:
+    input:
+        {SAVED_MODEL},
+        datasets_idx[1]
+    output:
+        predicted[1]
+    shell:
+        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} -ip {input[1]} -m {SAVED_MODEL} -pp {output}'
+
+rule find_threshold:
+    input:
+        datasets_idx[0],
+        {SAVED_VAL_PREDS}
+    output:
+        {SAVED_THRESHOLS}
+    shell:
+        'python {FIND_TRESHOLD} -cp {CONFIG_PATH} -ip {input[0]} -pp {SAVED_VAL_PREDS} -thp {SAVED_THRESHOLS}'
+
+rule binarize:
+    input:
+        datasets_idx[1],
+        predicted[1],
+        {SAVED_THRESHOLS}
+    output:
+        {SAVED_BIN_PREDS}
+    shell:
+        'python {BINARIZE} -cp {CONFIG_PATH}  -ip {input[0]} -pp {input[1]} -thp {SAVED_THRESHOLS} -p {SAVED_BIN_PREDS}'
+
+rule compute_dices:
+    input:
+        {datasets_idx[1]}
+        {SAVED_MODEL},
+        {SAVED_BIN_PREDS}
+    output:
+        {SAVED_DICES}
+    shell:
+        'python {COMPUTE_DICES} -cp {CONFIG_PATH} -ip {input[0]} -mp {SAVED_MODEL} -thp {SAVED_THRESHOLS} -p {SAVED_DICES}'
+
+
