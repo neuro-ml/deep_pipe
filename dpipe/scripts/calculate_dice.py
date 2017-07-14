@@ -5,7 +5,7 @@ import numpy as np
 from dpipe.config import config_dataset
 from dpipe.config.default_parser import get_config
 from dpipe.medim.metrics import dice_score as dice
-from utils import read_lines
+from utils import read_lines, load_by_id
 
 if __name__ == '__main__':
     config = get_config('results_path', 'ids_path', 'thresholds_path',
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     dices = []
     for id in ids:
         y_true = dataset.load_msegm(id)
-        y = np.load(os.path.join(predictions_path, str(id)))
+        y = load_by_id(predictions_path, id)
 
         dices.append([dice(y[i] > thresholds[i], y_true[i])
                       for i in range(channels)])

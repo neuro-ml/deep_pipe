@@ -1,13 +1,12 @@
 from typing import Iterable
 import os
 import shutil
-import re
 
 import numpy as np
 
 
 def build(split: Iterable, experiment_dir: str):
-    name = os.path.basename(__file__).split('.')[0]
+    name = '.'.join(os.path.basename(__file__).split('.')[:-1])
     base_dir = os.path.dirname(__file__)
     rule_path = os.path.join(base_dir, name + '.rule')
 
