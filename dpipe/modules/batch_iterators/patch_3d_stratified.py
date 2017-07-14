@@ -6,7 +6,7 @@ import numpy as np
 from ..datasets import Dataset
 from .utils import combine_batch
 from dpipe import medim
-from bdp import Pipeline, LambdaTransformer, Source, Chunker, pack_args
+import dpipe.external.pdp.pdp as pdp
 
 
 class Patient:
@@ -50,7 +50,7 @@ def make_3d_patch_stratified_iter(
 
         return patient.mscan, patient.msegm, conditional_centre_indices
 
-    @pack_args
+    @pdp.pack_args
     def extract_patch(mscan, msegm, conditional_center_indices):
         cancer_type = np.random.choice(
             [True, False], p=[nonzero_fraction, 1 - nonzero_fraction])
@@ -72,12 +72,11 @@ def make_3d_patch_stratified_iter(
 
         return (*xs, y)
 
-    return Pipeline(
-        Source(make_random_seq(ids), buffer_size=3),
-        LambdaTransformer(load_data, n_workers=1, buffer_size=3),
-        LambdaTransformer(find_cancer, n_workers=1, buffer_size=3),
-        LambdaTransformer(extract_patch, n_workers=1,
-                          buffer_size=batch_size),
-        Chunker(chunk_size=batch_size, buffer_size=3),
-        LambdaTransformer(combine_batch, n_workers=1, buffer_size=buffer_size)
+    return pdp.Pipeline(
+        pdp.Source(make_random_seq(ids), buffer_size=3),
+        pdp.LambdaTransformer(load_data, buffer_size=3),
+        pdp.LambdaTransformer(find_cancer, buffer_size=3),
+        pdp.LambdaTransformer(extract_patch, buffer_size=batch_size),
+        pdp.Chunker(chunk_size=batch_size, buffer_size=3),
+        pdp.LambdaTransformer(combine_batch, buffer_size=buffer_size)
     )

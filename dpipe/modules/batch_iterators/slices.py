@@ -3,8 +3,7 @@ import numpy as np
 from dpipe.modules.dl.model_cores.enet import iterate_slices
 from ..datasets import Dataset
 from .utils import combine_batch
-
-from bdp import Pipeline, LambdaTransformer, Source, Chunker
+import dpipe.external.pdp.pdp as pdp
 
 
 def shuffle_ids(ids):
@@ -22,8 +21,8 @@ def make_slices_iter(
             y = dataset.load_y(id)
             yield from iterate_slices(x, y, empty=False)
 
-    return Pipeline(
-        Source(slicer(ids), buffer_size=10),
-        Chunker(chunk_size=batch_size, buffer_size=2),
-        LambdaTransformer(combine_batch, n_workers=1, buffer_size=3)
+    return pdp.Pipeline(
+        pdp.Source(slicer(ids), buffer_size=10),
+        pdp.Chunker(chunk_size=batch_size, buffer_size=2),
+        pdp.LambdaTransformer(combine_batch, buffer_size=3)
     )
