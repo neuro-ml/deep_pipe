@@ -1,4 +1,8 @@
-=TH_TO_SCRIPTS = './'
+import json
+with open('paths.json', 'r') as f:
+    p_ = json.load(f)
+
+PATH_TO_SCRIPTS = p_["scripts_path"]
 
 TRAIN_SCRIPT = '{PATH_TO_SCRIPTS}/train_model.py'
 PREDICT_SCRIPT = '{PATH_TO_SCRIPTS}/predict.py'
