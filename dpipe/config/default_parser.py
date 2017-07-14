@@ -21,6 +21,32 @@ module_type2default_params_mapping = {
     'dataset': dataset_name2default_params
 }
 
+# you can pas either a dict with params, or a just an array with names
+# the param's name is added to the names array, if it is not present there
+available_params = {
+    'batch_iter': ['-bi', '--iter'],
+    'batch_size': dict(names=['-bs', '--batch_size'], type=int),
+
+    'dataset': ['-ds', '--dataset'],
+    'dataset_cached': dict(names=['--chached'], action='store_true',
+                           default=False,
+                           help='whether the dataset is chached'),
+
+    'model': ['-m', '--model'],
+    'model_path': ['-mp', '--model_path'],
+    'save_model_path': ['-smp', '--save_model_path'],
+    'restore_model_path': ['-rmp'],
+    'predictions_path': ['-pp', '--predictions_path'],
+
+    'train_ids_path': ['-tid', '--train_ids_path'],
+    'val_ids_path': ['-vid', '--val_ids_path'],
+    'ids_path': ['-ip', '--ids_path'],
+
+    'log_dir': ['-ld', '--log_dir'],
+    'thresholds_path': ['-thp', '--thresholds_path'],
+    'results_path': ['-p'],
+}
+
 
 def parse_config(parser: argparse.ArgumentParser) -> dict:
     args, unknown = parser.parse_known_args()
@@ -120,29 +146,6 @@ def get_parser(*additional_params) -> argparse.ArgumentParser:
 def get_config(*additional_params) -> dict:
     return parse_config(get_parser(*additional_params))
 
-
-available_params = {
-    'batch_iter': ['-bi', '--iter'],
-    'batch_size': dict(names=['-bs', '--batch_size'], type=int),
-
-    'dataset': ['-ds', '--dataset'],
-    'dataset_cached': dict(names=['--chached'], action='store_true',
-                           default=False,
-                           help='whether the dataset is chached'),
-
-    'model': ['-m', '--model'],
-    'model_path': ['-mp', '--model_path'],
-    'save_model_path': ['-smp', '--save_model_path'],
-    'predictions_path': ['-pp', '--predictions_path'],
-
-    'train_ids_path': ['-tid', '--train_ids_path'],
-    'val_ids_path': ['-vid', '--val_ids_path'],
-    'ids_path': ['-ip', '--ids_path'],
-
-    'log_dir': ['-ld', '--log_dir'],
-    'thresholds_path': ['-thp', '--thresholds_path'],
-    'results_path': ['-p'],
-}
 
 if __name__ == '__main__':
     pprint.pprint(parse_config(get_parser()))
