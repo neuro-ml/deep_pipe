@@ -9,8 +9,7 @@ PREDICT_SCRIPT = '{PATH_TO_SCRIPTS}/predict.py'
 FIND_TRESHOLD = '{PATH_TO_SCRIPTS}/calculate_dice_threshold.py'
 BINARIZE = '{PATH_TO_SCRIPTS}/binarize.py'
 COMPUTE_DICES = '{PATH_TO_SCRIPTS}/compute_dices.py'
-CONFIG_PATH = '{PATH_TO_SCRIPTS}/config.json'
-
+CONFIG_PATH = 'config.json'
 
 ON_PREDICTED_DATASETS = ['val', 'test']
 TRAIN_IDX = 'train_idx'
