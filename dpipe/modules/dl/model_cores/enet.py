@@ -25,26 +25,26 @@ def iterate_slices(*data, axis=-1, empty=True):
             yield result
 
 
-def init_block(input, name, training, kernel_size=3):
+def init_block(inputs, name, training, kernel_size=3):
     with tf.variable_scope(name):
-        inp_channels = int(input.shape[1])
-        conv = tf.layers.conv2d(input, 16 - inp_channels, kernel_size,
+        inp_channels = int(inputs.shape[1])
+        conv = tf.layers.conv2d(inputs, 16 - inp_channels, kernel_size,
                                 strides=2, padding='same',
                                 use_bias=False, data_format='channels_first')
-        pool = tf.layers.max_pooling2d(input, pool_size=2, strides=2,
+        pool = tf.layers.max_pooling2d(inputs, pool_size=2, strides=2,
                                        padding='same',
                                        data_format='channels_first')
 
-        input = tf.concat([conv, pool], 1)
-        input = slim.batch_norm(input, decay=0.9, scale=True,
-                                is_training=training,
-                                data_format='NCHW', fused=True)
-        return tf.nn.relu(input)
+        inputs = tf.concat([conv, pool], 1)
+        inputs = slim.batch_norm(inputs, decay=0.9, scale=True,
+                                 is_training=training,
+                                 data_format='NCHW', fused=True)
+        return tf.nn.relu(inputs)
 
 
-def conv_block(input, channels, kernel_size, strides, training, padding='same',
+def conv_block(inputs, channels, kernel_size, strides, training, padding='same',
                activation=tf.nn.relu, layer=tf.layers.conv2d, name=None):
-    conv = layer(input, channels, kernel_size=kernel_size, strides=strides,
+    conv = layer(inputs, channels, kernel_size=kernel_size, strides=strides,
                  padding=padding, use_bias=False, data_format='channels_first',
                  name=name)
     conv = slim.batch_norm(conv, decay=0.9, scale=True, is_training=training,
@@ -52,20 +52,20 @@ def conv_block(input, channels, kernel_size, strides, training, padding='same',
     return activation(conv)
 
 
-def res_block(input, name, output_channels, training, kernel_size=3,
+def res_block(inputs, name, output_channels, training, kernel_size=3,
               downsample=False,
               upsample=False, dropout_prob=.1, internal_scale=4):
     # it can be either upsampling or downsampling:
     assert not (upsample and downsample)
 
-    input_channels = int(input.shape[1])
+    input_channels = int(inputs.shape[1])
     internal_channels = output_channels // internal_scale
     input_stride = downsample and 2 or 1
 
     with tf.variable_scope(name):
         # conv path
         # TODO: use prelu
-        conv = conv_block(input, internal_channels, kernel_size=input_stride,
+        conv = conv_block(inputs, internal_channels, kernel_size=input_stride,
                           strides=input_stride, training=training, name='conv1')
 
         if upsample:
@@ -81,10 +81,10 @@ def res_block(input, name, output_channels, training, kernel_size=3,
         conv = tf.layers.dropout(conv, dropout_prob, training=training)
 
         # main path
-        main = input
+        main = inputs
         if downsample:
             main = tf.layers.max_pooling2d(
-                input, pool_size=2, strides=2,
+                inputs, pool_size=2, strides=2,
                 padding='same', data_format='channels_first')
         if output_channels != input_channels:
             main = conv_block(main, output_channels, kernel_size=1, strides=1,
@@ -98,33 +98,33 @@ def res_block(input, name, output_channels, training, kernel_size=3,
         return tf.nn.relu(conv + main)
 
 
-def stage(input, output_channels, num_blocks, name, training,
+def stage(inputs, output_channels, num_blocks, name, training,
           downsample=False, upsample=False):
     with tf.variable_scope(name):
-        input = res_block(input, 'res0', output_channels, training=training,
-                          downsample=downsample, upsample=upsample)
+        inputs = res_block(inputs, 'res0', output_channels, training=training,
+                           downsample=downsample, upsample=upsample)
         for i in range(num_blocks - 1):
-            input = res_block(input, f'res%d' % (i + 1), output_channels,
-                              training=training)
-        return input
+            inputs = res_block(inputs, f'res%d' % (i + 1), output_channels,
+                               training=training)
+        return inputs
 
 
-def build_model(input, classes, name, training):
+def build_model(inputs, classes, name, training):
     with tf.variable_scope(name):
-        initial_shape = tf.shape(input)
-        input = init_block(input, 'init', training)
-        input = stage(input, 64, 5, 'stage1', training, downsample=True)
-        input = stage(input, 128, 9, 'stage2', training, downsample=True)
-        input = stage(input, 128, 8, 'stage3', training)
-        input = stage(input, 64, 3, 'stage4', training, upsample=True)
-        input = stage(input, 16, 2, 'stage5', training, upsample=False)
-        input = tf.layers.conv2d_transpose(
-            input, classes, kernel_size=2, strides=2, use_bias=True,
+        initial_shape = tf.shape(inputs)
+        inputs = init_block(inputs, 'init', training)
+        inputs = stage(inputs, 64, 5, 'stage1', training, downsample=True)
+        inputs = stage(inputs, 128, 9, 'stage2', training, downsample=True)
+        inputs = stage(inputs, 128, 8, 'stage3', training)
+        inputs = stage(inputs, 64, 3, 'stage4', training, upsample=True)
+        inputs = stage(inputs, 16, 2, 'stage5', training, upsample=False)
+        inputs = tf.layers.conv2d_transpose(
+            inputs, classes, kernel_size=2, strides=2, use_bias=True,
             data_format='channels_first')
-        input = tf.transpose(input, perm=[0, 2, 3, 1])
-        input = tf.image.resize_images(input, initial_shape[-2:])
-        input = tf.transpose(input, perm=[0, 3, 1, 2])
-        return input
+        inputs = tf.transpose(inputs, perm=[0, 2, 3, 1])
+        inputs = tf.image.resize_images(inputs, initial_shape[-2:])
+        inputs = tf.transpose(inputs, perm=[0, 3, 1, 2])
+        return inputs
 
 
 class ENet2D(ModelCore):
