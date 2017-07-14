@@ -1,0 +1,7 @@
+nibabel
+numpy
+pandas
+scikit-learn
+scipy
+tensorflow-gpu
+snakemake
