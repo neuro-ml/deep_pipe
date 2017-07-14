@@ -1,15 +1,15 @@
-import json
+mport json
 with open('paths.json', 'r') as f:
     p_ = json.load(f)
 
 PATH_TO_SCRIPTS = p_["scripts_path"]
 
-TRAIN_SCRIPT = '{PATH_TO_SCRIPTS}/train_model.py'
-PREDICT_SCRIPT = '{PATH_TO_SCRIPTS}/predict.py'
-FIND_TRESHOLD = '{PATH_TO_SCRIPTS}/calculate_dice_threshold.py'
-BINARIZE = '{PATH_TO_SCRIPTS}/binarize.py'
-COMPUTE_DICES = '{PATH_TO_SCRIPTS}/compute_dices.py'
-CONFIG_PATH = '{PATH_TO_SCRIPTS}/config.json'
+TRAIN_SCRIPT = expand('{path_to_scripts}/train_model.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
+PREDICT_SCRIPT = expand('{path_to_scripts}/predict.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
+FIND_TRESHOLD = expand('{path_to_scripts}/calculate_dice_threshold.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
+BINARIZE = expand('{path_to_scripts}/binarize.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
+COMPUTE_DICES = expand('{path_to_scripts}/compute_dices.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
+CONFIG_PATH = expand('{path_to_scripts}config.json', path_to_scripts=PATH_TO_SCRIPTS)[0]
 
 
 ON_PREDICTED_DATASETS = ['val', 'test']
