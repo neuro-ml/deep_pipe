@@ -1,4 +1,4 @@
-mport json
+import json
 with open('paths.json', 'r') as f:
     p_ = json.load(f)
 
@@ -22,7 +22,6 @@ SAVED_MODEL = 'trained.model'
 SAVED_THRESHOLS = 'thresholds.npy'
 SAVED_BIN_PREDS = 'binarized_predictions.npy'
 SAVED_DICES = 'dice_scores.npy'
-
 
 rule all:
     input:
@@ -87,5 +86,4 @@ rule compute_dices:
         {SAVED_DICES}
     shell:
         'python {COMPUTE_DICES} -cp {CONFIG_PATH} -ip {input.test_dataset} -mp {SAVED_MODEL} -thp {SAVED_THRESHOLS} -p {SAVED_DICES}'
-
 
