@@ -13,7 +13,7 @@ def build(split: Iterable, experiment_dir: str):
     for i, ids in enumerate(split):
         local = os.path.join(experiment_dir, f'experiment_{i}')
         os.makedirs(local)
-        shutil.copyfile(rule_path, os.path.join(local, f'{name}.rule'))
+        shutil.copyfile(rule_path, os.path.join(local, f'{name}.snake'))
 
         for val, file in zip(ids, ('train', 'val', 'test')):
             file = os.path.join(local, file + '_ids')
