@@ -1,5 +1,5 @@
 import json
-with open('paths.json', 'r') as f:
+with open('../paths.json', 'r') as f:
     p_ = json.load(f)
 
 PATH_TO_SCRIPTS = p_["scripts_path"]
@@ -13,8 +13,8 @@ CONFIG_PATH = expand('{path_to_scripts}config.json', path_to_scripts=PATH_TO_SCR
 
 
 ON_PREDICTED_DATASETS = ['val', 'test']
-TRAIN_IDX = 'train_idx'
-datasets_idx = expand("{dataset}_idx", dataset=ON_PREDICTED_DATASETS)
+TRAIN_IDX = 'train_ids'
+datasets_idx = expand("{dataset}_ids", dataset=ON_PREDICTED_DATASETS)
 LOGS_TO_TNSBRD = './.logs'
 
 predicted = expand("{dataset}_predicted.npy", dataset=ON_PREDICTED_DATASETS)
@@ -27,7 +27,6 @@ rule all:
     input:
         predicted,
         {SAVED_MODEL},
-        {SAVED_PREDS},
         {SAVED_THRESHOLS},
         {SAVED_BIN_PREDS},
         {SAVED_DICES}
@@ -43,7 +42,7 @@ rule train_model:
 rule predict_val:
     input:
         {SAVED_MODEL},
-        val_dataset = datasets_idx[0]
+        val_dataset = datasets_idx[0],
     output:
         val_predicted = predicted[0]
     shell:
@@ -52,7 +51,7 @@ rule predict_val:
 rule predict_test:
     input:
         {SAVED_MODEL},
-        test_dataset = datasets_idx[1]
+        test_dataset = datasets_idx[1],
     output:
         test_predicted = predicted[1]
     shell:
@@ -71,7 +70,7 @@ rule binarize:
     input:
         {SAVED_THRESHOLS},
         test_dataset = datasets_idx[1],
-        test_preds = predicted[1]
+        test_preds = predicted[1],
     output:
         {SAVED_BIN_PREDS}
     shell:
@@ -80,8 +79,9 @@ rule binarize:
 rule compute_dices:
     input:
         {SAVED_MODEL},
+        {SAVED_THRESHOLS},
         {SAVED_BIN_PREDS},
-        test_dataset = datasets_idx[1]
+        test_dataset = datasets_idx[1],
     output:
         {SAVED_DICES}
     shell:
