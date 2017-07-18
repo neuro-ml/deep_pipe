@@ -69,9 +69,9 @@ rule find_threshold:
 
 rule binarize:
     input:
+        {SAVED_THRESHOLS},
         test_dataset = datasets_idx[1],
-        test_preds = predicted[1],
-        {SAVED_THRESHOLS}
+        test_preds = predicted[1]
     output:
         {SAVED_BIN_PREDS}
     shell:
@@ -79,9 +79,9 @@ rule binarize:
 
 rule compute_dices:
     input:
-        test_dataset = datasets_idx[1],
         {SAVED_MODEL},
-        {SAVED_BIN_PREDS}
+        {SAVED_BIN_PREDS},
+        test_dataset = datasets_idx[1]
     output:
         {SAVED_DICES}
     shell:
