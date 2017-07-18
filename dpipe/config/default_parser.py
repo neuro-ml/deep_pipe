@@ -57,10 +57,11 @@ config_params = {
                            default=False,
                            help='whether the dataset is chached'),
 
-    'model': ['-m', '--model'],
+    'model': ['-m'],
 }
 
-available_params = copy.deepcopy(config_params).update(simple_script_params)
+available_params = copy.deepcopy(config_params)
+available_params.update(simple_script_params)
 
 
 def parse_config(parser: argparse.ArgumentParser) -> dict:

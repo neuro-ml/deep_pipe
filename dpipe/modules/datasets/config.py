@@ -20,13 +20,13 @@ dataset_name2default_params = {
         'data_path': '/home/mount/neuro-x02-ssd/brats2017/processed'},
 
     'isles_siss': {
-        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
+        'data_path': '/nmnt/x04-hdd/ISLES/'},
     'isles_siss_augmented': {
-        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
+        'data_path': '/nmnt/x04-hdd/ISLES/'},
     'isles_spes': {
-        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
+        'data_path': '/nmnt/x04-hdd/ISLES/'},
     'isles_spes_augmented_core': {
-        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
+        'data_path': '/nmnt/x04-hdd/ISLES/'},
     'isles_spes_augmented_penumbra': {
-        'data_path': '/home/mount/neuro-x04-hdd/ISLES/'},
+        'data_path': '/nmnt/x04-hdd/ISLES/'},
 }
