@@ -9,7 +9,7 @@ PREDICT_SCRIPT = expand('{path_to_scripts}/predict.py', path_to_scripts=PATH_TO_
 FIND_TRESHOLD = expand('{path_to_scripts}/calculate_dice_threshold.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 BINARIZE = expand('{path_to_scripts}/binarize.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 COMPUTE_DICES = expand('{path_to_scripts}/compute_dices.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
-CONFIG_PATH = expand('{path_to_scripts}config.json', path_to_scripts=PATH_TO_SCRIPTS)[0]
+CONFIG_PATH = expand('../config.json', path_to_scripts=PATH_TO_SCRIPTS)[0]
 
 
 ON_PREDICTED_DATASETS = ['val', 'test']
