@@ -1,12 +1,17 @@
-import argparse
+import re
+import copy
 import json
 import pprint
-import re
+import argparse
+
 
 from dpipe.config.config import default_config
 from dpipe.modules.datasets.config import dataset_name2default_params
 
 __all__ = ['parse_config', 'get_parser', 'get_config']
+
+# you can pas either a dict with params, or a just an array with names
+# the param's name is added to the names array, if it is not present there
 
 # TODO Add info about arguments vs config settings differences after discussion
 description = """
@@ -21,9 +26,29 @@ module_type2default_params_mapping = {
     'dataset': dataset_name2default_params
 }
 
-# you can pas either a dict with params, or a just an array with names
-# the param's name is added to the names array, if it is not present there
-available_params = {
+
+def head(xs):
+    return xs[0]
+
+
+def get_short_name(name: str):
+    return ''.join(map(head, name.split('_')))
+
+
+# Parameter aname1_bname2_..._cnameN for simple scrips can be provided as
+# --aname1_bname2_..._cnameN or -ab...c
+simple_script_params = {
+    name: (f'-{get_short_name(name)}', f'--{name}')
+    for name in (
+        'train_ids_path', 'val_ids_path', 'ids_path',
+        'save_model_path', 'restore_model_path',
+        'predictions_path', 'binary_predictions_path',
+        'thresholds_path', 'metrics_path',
+        'log_path',
+    )
+}
+
+config_params = {
     'batch_iter': ['-bi', '--iter'],
     'batch_size': dict(names=['-bs', '--batch_size'], type=int),
 
@@ -33,19 +58,9 @@ available_params = {
                            help='whether the dataset is chached'),
 
     'model': ['-m', '--model'],
-    'model_path': ['-mp', '--model_path'],
-    'save_model_path': ['-smp', '--save_model_path'],
-    'restore_model_path': ['-rmp'],
-    'predictions_path': ['-pp', '--predictions_path'],
-
-    'train_ids_path': ['-tid', '--train_ids_path'],
-    'val_ids_path': ['-vid', '--val_ids_path'],
-    'ids_path': ['-ip', '--ids_path'],
-
-    'log_dir': ['-ld', '--log_dir'],
-    'thresholds_path': ['-thp', '--thresholds_path'],
-    'results_path': ['-p'],
 }
+
+available_params = copy.deepcopy(config_params).update(simple_script_params)
 
 
 def parse_config(parser: argparse.ArgumentParser) -> dict:

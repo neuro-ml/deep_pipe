@@ -8,5 +8,5 @@ def read_lines(path):
         return [l for l in map(lambda x: x.strip(), file) if l != '']
 
 
-def load_by_id(path, id):
-    return np.load(os.path.join(path, f'{id}.npy'))
+def load_by_id(path, identifier):
+    return np.load(os.path.join(path, f'{identifier}.npy'))

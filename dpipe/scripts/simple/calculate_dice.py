@@ -8,10 +8,10 @@ from dpipe.medim.metrics import dice_score as dice
 from utils import read_lines, load_by_id
 
 if __name__ == '__main__':
-    config = get_config('results_path', 'ids_path', 'thresholds_path',
-                        'predictions_path', 'dataset')
+    config = get_config('metrics_path', 'ids_path', 'thresholds_path',
+                        'predictions_path')
 
-    results_path = config['results_path']
+    metrics_path = config['metrics_path']
     ids_path = config['ids_path']
     thresholds_path = config['thresholds_path']
     predictions_path = config['predictions_path']
@@ -23,9 +23,9 @@ if __name__ == '__main__':
     channels = dataset.n_chans_msegm
 
     dices = []
-    for id in ids:
-        y_true = dataset.load_msegm(id)
-        y = load_by_id(predictions_path, id)
+    for identifier in ids:
+        y_true = dataset.load_msegm(identifier)
+        y = load_by_id(predictions_path, identifier)
 
         dices.append([dice(y[i] > thresholds[i], y_true[i])
                       for i in range(channels)])
@@ -33,4 +33,4 @@ if __name__ == '__main__':
         # saving some memory
         del y, y_true
 
-    np.save(results_path, dices)
+    np.save(metrics_path, dices)
