@@ -17,5 +17,5 @@ def build(split: Iterable, experiment_dir: str):
         shutil.copyfile(rule_path, os.path.join(local, snake))
 
         for val, file in zip(ids, ('train', 'val', 'test')):
-            file = os.path.join(local, file + '_ids')
+            file = os.path.join(local, f'{file}_ids')
             np.savetxt(file, val, delimiter='\n', fmt='%s')
