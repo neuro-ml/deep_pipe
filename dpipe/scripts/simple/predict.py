@@ -8,7 +8,7 @@ from dpipe.modules.dl import ModelController, Optimizer
 from utils import read_lines
 
 if __name__ == '__main__':
-    config = get_config('ids_path', 'thresholds_path', 'restore_model_path',
+    config = get_config('ids_path', 'restore_model_path',
                         'predictions_path', 'log_path')
 
     results_path = config['predictions_path']
