@@ -6,9 +6,9 @@ PATH_TO_SCRIPTS = p_["scripts_path"]
 
 TRAIN_SCRIPT = expand('{path_to_scripts}/train_model.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 PREDICT_SCRIPT = expand('{path_to_scripts}/predict.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
-FIND_TRESHOLD = expand('{path_to_scripts}/calculate_dice_threshold.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
+FIND_TRESHOLD = expand('{path_to_scripts}/calculate_dice_thresholog_path.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 BINARIZE = expand('{path_to_scripts}/binarize.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
-COMPUTE_DICES = expand('{path_to_scripts}/compute_dices.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
+COMPUTE_DICES = expand('{path_to_scripts}/calculate_dice.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 CONFIG_PATH = expand('../config.json', path_to_scripts=PATH_TO_SCRIPTS)[0]
 
 
@@ -19,7 +19,7 @@ LOGS_TO_TNSBRD = './.logs'
 
 predicted = expand("{dataset}_predicted.npy", dataset=ON_PREDICTED_DATASETS)
 SAVED_MODEL = 'trained.model'
-SAVED_THRESHOLS = 'thresholds.npy'
+SAVED_THRESHOLS = 'thresholog_paths.npy'
 SAVED_BIN_PREDS = 'binarized_predictions.npy'
 SAVED_DICES = 'dice_scores.npy'
 
@@ -37,7 +37,7 @@ rule train_model:
     output:
         {SAVED_MODEL}
     shell:
-        'python {TRAIN_SCRIPT} -cp {CONFIG_PATH} -tid {TRAIN_IDX} -vid {input.val_dataset} -ld {LOGS_TO_TNSBRD} -smp {SAVED_MODEL} '
+        'python {TRAIN_SCRIPT} -cp {CONFIG_PATH} --train_ids_path {TRAIN_IDX} --val_ids_path {input.val_dataset} --log_path {LOGS_TO_TNSBRD} --save_model_path {SAVED_MODEL}'
 
 rule predict_val:
     input:
@@ -46,7 +46,7 @@ rule predict_val:
     output:
         val_predicted = predicted[0]
     shell:
-        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} -ip {input.val_dataset} -m {SAVED_MODEL} -pp {output.val_predicted}'
+        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.val_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.val_predicted}'
 
 rule predict_test:
     input:
@@ -55,16 +55,16 @@ rule predict_test:
     output:
         test_predicted = predicted[1]
     shell:
-        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} -ip {input.test_dataset} -m {SAVED_MODEL} -pp {output.test_predicted}'
+        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.test_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.test_predicted}'
 
-rule find_threshold:
+rule find_thresholog_path:
     input:
         val_dataset = datasets_idx[0],
         val_preds = predicted[0]
     output:
         {SAVED_THRESHOLS}
     shell:
-        'python {FIND_TRESHOLD} -cp {CONFIG_PATH} -ip {input.val_dataset} -pp {input.val_preds} -thp {SAVED_THRESHOLS}'
+        'python {FIND_TRESHOLD} -cp {CONFIG_PATH} --ids_path {input.val_dataset} --predictions_path {input.val_preds} --thresholds_path {SAVED_THRESHOLS}'
 
 rule binarize:
     input:
@@ -74,16 +74,15 @@ rule binarize:
     output:
         {SAVED_BIN_PREDS}
     shell:
-        'python {BINARIZE} -cp {CONFIG_PATH}  -ip {input.test_dataset} -pp {input.test_preds} -thp {SAVED_THRESHOLS} -p {SAVED_BIN_PREDS}'
+        'python {BINARIZE} -cp {CONFIG_PATH}  --ids_path {input.test_dataset}  --thresholds_path {SAVED_THRESHOLS} --binary_predictions_path {SAVED_BIN_PREDS}'
 
 rule compute_dices:
     input:
-        {SAVED_MODEL},
         {SAVED_THRESHOLS},
         {SAVED_BIN_PREDS},
         test_dataset = datasets_idx[1],
     output:
         {SAVED_DICES}
     shell:
-        'python {COMPUTE_DICES} -cp {CONFIG_PATH} -ip {input.test_dataset} -mp {SAVED_MODEL} -thp {SAVED_THRESHOLS} -p {SAVED_DICES}'
+        'python {COMPUTE_DICES} -cp {CONFIG_PATH} --ids_path {input.test_dataset} --thresholog_paths_path {SAVED_THRESHOLS} --predictions_path{SAVED_BIN_PREDS} --metrics_path {SAVED_DICES}'
 
