@@ -1,9 +1,9 @@
 import re
 import copy
+import os
 import json
 import pprint
 import argparse
-
 
 from dpipe.config.config import default_config
 from dpipe.modules.datasets.config import dataset_name2default_params
@@ -40,12 +40,12 @@ def get_short_name(name: str):
 simple_script_params = {
     name: (f'-{get_short_name(name)}', f'--{name}')
     for name in (
-        'train_ids_path', 'val_ids_path', 'ids_path',
-        'save_model_path', 'restore_model_path',
-        'predictions_path', 'binary_predictions_path',
-        'thresholds_path', 'metrics_path',
-        'log_path',
-    )
+    'train_ids_path', 'val_ids_path', 'ids_path',
+    'save_model_path', 'restore_model_path',
+    'predictions_path', 'binary_predictions_path',
+    'thresholds_path', 'metrics_path',
+    'log_path',
+)
 }
 
 config_params = {
@@ -92,6 +92,11 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
         if config.get(module, None) is not None:
             # raise ValueError(f'"{module}" parameter not specified')
             _merge_configs(config[field_name], params[config[module]])
+
+    # TODO: for now a dirty hack:
+    for name in ('save_model_path', 'restore_model_path'):
+        if config.get(name, None) is not None:
+            config[name] = os.path.join(config[name], 'dump')
 
     # final checks
     # for arg, value in args._get_kwargs():

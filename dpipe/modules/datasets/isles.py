@@ -105,3 +105,19 @@ def spes_factory(file):
             return 96, 110, 72
 
     return IslesSPES
+
+
+class Isles2017(Isles):
+    modalities = ['ADC', 'MTT', 'OT', 'TTP', 'Tmax', 'rCBF', 'rCBV']
+    labels = ['OT']
+    filename = 'meta2017.csv'
+
+    def adjust(self, x, label=False):
+        ref_shape = np.array(self.spatial_size)
+        order = 0 if label else 3
+        x = zoom(x, ref_shape / x.shape, order=order)
+        return x
+
+    @property
+    def spatial_size(self):
+        return 96, 110, 72

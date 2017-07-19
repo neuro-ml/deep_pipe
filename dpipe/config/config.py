@@ -27,6 +27,7 @@ default_config = {
     "optimizer__params": {},
 
     "model_core__params": {},
+    "restore_model_path": None,
     "batch_iter__params": {},
 
     "train": None,

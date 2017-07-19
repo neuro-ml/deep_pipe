@@ -1,4 +1,3 @@
-from dpipe.config import parse_config, get_parser
 from dpipe.config import config_dataset, config_optimizer, config_batch_iter, \
     config_model, config_train
 from dpipe.config.default_parser import get_config
@@ -14,7 +13,7 @@ if __name__ == '__main__':
     val_ids_path = config['val_ids_path']
     log_path = config['log_path']
     save_model_path = config['save_model_path']
-    restore_model_path = config.get('restore_model_path', None)
+    restore_model_path = config['restore_model_path']
 
     train_ids = read_lines(train_ids_path)
     val_ids = read_lines(val_ids_path)
