@@ -157,7 +157,7 @@ class ENet2D(ModelCore):
         return np.stack(predicted, axis=-1), loss
 
     def predict_object(self, x, do_inf_step):
-        predicted, losses, = [], []
+        predicted = []
         for x_slice in iterate_slices(x, empty=True):
             y_pred = do_inf_step(x_slice[None])
             predicted.extend(y_pred)
