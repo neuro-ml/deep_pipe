@@ -1,5 +1,6 @@
 from .brats import Brats2015, Brats2017
 from .isles import siss_factory, spes_factory
+from .whitematter import WhiteMatterHyperintensity
 
 
 dataset_name2dataset = {
@@ -11,13 +12,14 @@ dataset_name2dataset = {
     'isles_spes': spes_factory('spes2015.csv'),
     'isles_spes_augmented_core': spes_factory('augmented_spes_core.csv'),
     'isles_spes_augmented_penumbra': spes_factory('augmented_spes_penumbra.csv'),
+    'wmhs': WhiteMatterHyperintensity,
 }
 
 dataset_name2default_params = {
     'brats2015': {
-        'data_path': '/home/mount/neuro-x02-ssd/brats2015/processed'},
+        'data_path': '/nmnt/x02-ssd/brats2015/processed'},
     'brats2017': {
-        'data_path': '/home/mount/neuro-x02-ssd/brats2017/processed'},
+        'data_path': '/nmnt/x02-ssd/brats2017/processed'},
 
     'isles_siss': {
         'data_path': '/nmnt/x04-hdd/ISLES/'},
@@ -29,4 +31,9 @@ dataset_name2default_params = {
         'data_path': '/nmnt/x04-hdd/ISLES/'},
     'isles_spes_augmented_penumbra': {
         'data_path': '/nmnt/x04-hdd/ISLES/'},
+    
+    'wmhs':{
+        'data_path':'/nmnt/media/home/amir/meta_wmhs.csv'},
+
+
 }
