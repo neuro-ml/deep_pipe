@@ -1,3 +1,3 @@
 [submodule "dpipe/external/pdp"]
 	path = dpipe/external/pdp
-	url = git@github.com:Egor-Krivov/pdp.git
+	url = https://github.com/Egor-Krivov/pdp.git
