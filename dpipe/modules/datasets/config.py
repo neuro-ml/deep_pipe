@@ -33,7 +33,7 @@ dataset_name2default_params = {
         'data_path': '/nmnt/x04-hdd/ISLES/'},
     
     'wmhs':{
-        'data_path':'/nmnt/media/home/amir/meta_wmhs.csv'},
+        'data_path':'/nmnt/x01-ssd/MICCAI_WMHS/'},
 
 
 }

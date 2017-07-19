@@ -1,9 +1,6 @@
 import os
-import pandas as pd
 import numpy as np
-from os.path import join
 import nibabel as nib
-from scipy.ndimage import zoom
 
 from .base import Dataset
 
@@ -12,10 +9,17 @@ class WhiteMatterHyperintensity(Dataset):
     def __init__(self, data_path):
         super().__init__(data_path)
         self.data_path = data_path
-        self.metadata = pd.read_csv(data_path)
-        self.metadata['idx'] = self.metadata.idx.astype(str)
-        self._patient_ids = self.metadata.index.values
-    
+        self.idx_to_path = self._get_idx_to_paths(data_path)
+        self._patient_ids = list(self.idx_to_path.keys())
+
+    def _get_idx_to_paths(self, path):
+        idx_paths = {}
+        for path_, dirs, files in os.walk(path):
+            if 'orig' in dirs and 'pre' in dirs:
+                idx = path_.split('/')[-1]
+                idx_paths[idx] = path_
+        return idx_paths
+
     def _reshape_to(self, tmp: np.ndarray, new_shape = None):
         """
         Reshape ND array to new shapes.
@@ -40,50 +44,39 @@ class WhiteMatterHyperintensity(Dataset):
         return np.pad(tmp, new_diff, mode='constant', constant_values=0)
 
     def load_mscan(self, patient_id):
-            idx = patient_id
-            path_to_modalities = self.metadata[self.metadata.idx == idx].path_imgs.as_matrix()[0]
-            path_to_brainmask = self.metadata[self.metadata.idx == idx].path_brain_mask.as_matrix()[0]
+            path_to_modalities = self.idx_to_path[patient_id]
+            # path_to_brainmask = ???
             res = []
-
-            hardcoded_shape = self.spatial_size #(256, 256, 84)
-
-            for modalities in ['FLAIR.nii.gz', 'T1.nii.gz']:
+            for modalities in ['pre/FLAIR.nii.gz', 'pre/T1.nii.gz']:
                 image = os.path.join(path_to_modalities, modalities)
                 x = nib.load(image).get_data().astype('float32')
-                x = self._reshape_to(x, new_shape=hardcoded_shape)
-
-                if modalities == 'FLAIR.nii.gz':
-                    mask = nib.load(path_to_brainmask).get_data()
-                    mask = self._reshape_to(mask, new_shape=hardcoded_shape)
-                    x[mask==0] = 0
-
+                x = self._reshape_to(x, new_shape=self.spatial_size)
+                # if modalities == 'FLAIR.nii.gz':
+                #     mask = nib.load(path_to_brainmask).get_data()
+                #     mask = self._reshape_to(mask, new_shape=self.spatial_size)
+                #     x[mask==0] = 0
                 img_std = x.std()
                 x = x / img_std
                 res.append(x)
-
             return np.asarray(res)
 
     def load_segm(self, patient_id):
-        # dunno what to do here
         pass
 
-    def load_msegm(self, patient):
-        path = self.metadata[self.metadata.idx == patient].path_segm_mask.as_matrix()[0]
+    def load_msegm(self, patient_id):
+        path_to_modalities = self.idx_to_path[patient_id]
         res = []
-        
-        x = nib.load(path).get_data()
+        x = nib.load(os.path.join(path_to_modalities, 'wmh.nii.gz')).get_data()
         x = self._reshape_to(x, new_shape=self.spatial_size)
         res.append(x)
-
         return np.array(res, dtype=bool)
 
     def segm2msegm(self, segm):
-        #  and here too
         pass
 
     @property
     def patient_ids(self):
-        return self.metadata.idx.as_matrix()
+        return self._patient_ids
 
     @property
     def n_chans_mscan(self):
