@@ -6,7 +6,7 @@ PATH_TO_SCRIPTS = p_["scripts_path"]
 
 TRAIN_SCRIPT = expand('{path_to_scripts}/train_model.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 PREDICT_SCRIPT = expand('{path_to_scripts}/predict.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
-FIND_TRESHOLD = expand('{path_to_scripts}/calculate_dice_thresholog_path.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
+FIND_TRESHOLD = expand('{path_to_scripts}/calculate_dice_threshold.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 BINARIZE = expand('{path_to_scripts}/binarize.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 COMPUTE_DICES = expand('{path_to_scripts}/calculate_dice.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 CONFIG_PATH = expand('../config.json', path_to_scripts=PATH_TO_SCRIPTS)[0]
@@ -15,7 +15,9 @@ CONFIG_PATH = expand('../config.json', path_to_scripts=PATH_TO_SCRIPTS)[0]
 ON_PREDICTED_DATASETS = ['val', 'test']
 TRAIN_IDX = 'train_ids'
 datasets_idx = expand("{dataset}_ids", dataset=ON_PREDICTED_DATASETS)
-LOGS_TO_TNSBRD = './.logs'
+LOGS_TO_TNSBRD = './.train_logs'
+LOGS_FOR_PRED_T = './.pred_t_logs'
+LOGS_FOR_PRED_V = './.pred_v_logs'
 
 predicted = expand("{dataset}_predicted.npy", dataset=ON_PREDICTED_DATASETS)
 SAVED_MODEL = 'trained.model'
@@ -46,7 +48,7 @@ rule predict_val:
     output:
         val_predicted = predicted[0]
     shell:
-        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.val_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.val_predicted}'
+        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.val_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.val_predicted} --log_path {LOGS_FOR_PRED_V}'
 
 rule predict_test:
     input:
@@ -55,7 +57,7 @@ rule predict_test:
     output:
         test_predicted = predicted[1]
     shell:
-        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.test_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.test_predicted}'
+        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.test_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.test_predicted} --log_path {LOGS_FOR_PRED_T}'
 
 rule find_thresholog_path:
     input:
@@ -84,5 +86,5 @@ rule compute_dices:
     output:
         {SAVED_DICES}
     shell:
-        'python {COMPUTE_DICES} -cp {CONFIG_PATH} --ids_path {input.test_dataset} --thresholog_paths_path {SAVED_THRESHOLS} --predictions_path{SAVED_BIN_PREDS} --metrics_path {SAVED_DICES}'
+        'python {COMPUTE_DICES} -cp {CONFIG_PATH} --ids_path {input.test_dataset} --thresholog_paths_path {SAVED_THRESHOLS} --predictions_path {SAVED_BIN_PREDS} --metrics_path {SAVED_DICES}'
 
