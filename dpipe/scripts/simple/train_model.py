@@ -14,7 +14,7 @@ if __name__ == '__main__':
     val_ids_path = config['val_ids_path']
     log_path = config['log_path']
     save_model_path = config['save_model_path']
-    restore_model_path = config['restore_model_path']
+    restore_model_path = config.get('restore_model_path', None)
 
     train_ids = read_lines(train_ids_path)
     val_ids = read_lines(val_ids_path)
