@@ -27,5 +27,7 @@ if __name__ == '__main__':
     train = config_train(config)
 
     with ModelController(model, log_path, restore_model_path) as mc:
-        train(mc, train_batch_iter, val_ids, dataset)
-        model.save(save_model_path)
+        try:
+            train(mc, train_batch_iter, val_ids, dataset)
+        finally:
+            model.save(save_model_path)

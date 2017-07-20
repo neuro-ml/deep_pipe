@@ -24,11 +24,7 @@ if __name__ == '__main__':
         frozen_model.prepare(session, restore_model_path)
         for identifier in ids:
             x = dataset.load_x(identifier)
-<<<<<<< HEAD
-            y = mc.predict_object(x)
-=======
             y = frozen_model.predict_object(x)
->>>>>>> frozen_model
 
             np.save(os.path.join(predictions_path, str(identifier)), y)
 
