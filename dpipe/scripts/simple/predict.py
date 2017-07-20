@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     with ModelController(model, log_path, restore_model_path) as mc:
         for identifier in ids:
-            x = dataset.load_mscan(identifier)
+            x = dataset.load_x(identifier)
             y = mc.predict_object(x)
 
             np.save(os.path.join(results_path, str(identifier)), y)
