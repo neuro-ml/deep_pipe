@@ -16,8 +16,6 @@ ON_PREDICTED_DATASETS = ['val', 'test']
 TRAIN_IDX = 'train_ids'
 datasets_idx = expand("{dataset}_ids", dataset=ON_PREDICTED_DATASETS)
 LOGS_TO_TNSBRD = './.train_logs'
-LOGS_FOR_PRED_T = './.pred_t_logs'
-LOGS_FOR_PRED_V = './.pred_v_logs'
 
 predicted = expand("{dataset}", dataset=ON_PREDICTED_DATASETS)
 SAVED_MODEL = 'model'
@@ -48,7 +46,7 @@ rule predict_val:
     output:
         val_predicted = predicted[0]
     shell:
-        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.val_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.val_predicted} --log_path {LOGS_FOR_PRED_V}'
+        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.val_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.val_predicted}'
 
 rule predict_test:
     input:
@@ -57,7 +55,7 @@ rule predict_test:
     output:
         test_predicted = predicted[1]
     shell:
-        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.test_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.test_predicted} --log_path {LOGS_FOR_PRED_T}'
+        'python {PREDICT_SCRIPT} -cp {CONFIG_PATH} --ids_path {input.test_dataset} --restore_model_path {SAVED_MODEL} --predictions_path {output.test_predicted}'
 
 rule find_thresholds:
     input:

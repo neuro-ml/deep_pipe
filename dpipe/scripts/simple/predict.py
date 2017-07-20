@@ -20,7 +20,7 @@ if __name__ == '__main__':
     ids = read_lines(ids_path)
     os.makedirs(predictions_path)
 
-    with tf.Session(frozen_model.graph) as session:
+    with tf.Session(graph=frozen_model.graph) as session:
         frozen_model.prepare(session, restore_model_path)
         for identifier in ids:
             x = dataset.load_x(identifier)
