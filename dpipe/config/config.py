@@ -5,15 +5,15 @@ from dpipe.modules.batch_iterators import build_batch_iter
 from dpipe.modules.batch_iterators.config import batch_iter_name2batch_iter
 from dpipe.modules.datasets.base import make_cached, Dataset
 from dpipe.modules.datasets.config import dataset_name2dataset
-from dpipe.modules.dl import Optimizer, Model
+from dpipe.modules.dl import Optimizer, Model, FrozenModel
 from dpipe.modules.dl.model_cores.config import model_core_name2model_core
 from dpipe.modules.splits.config import get_split_name2get_split
 from dpipe.modules.trains.config import train_name2train
 from dpipe.experiments.config import splitter_name2build_experiment
 
 __all__ = ['config_dataset', 'config_split', 'config_optimizer',
-           'config_model', 'config_batch_iter', 'config_train',
-           'config_build_experiment']
+           'config_model', 'config_frozen_model', 'config_batch_iter',
+           'config_train', 'config_build_experiment']
 
 default_config = {
     "n_iters_per_epoch": None,
@@ -85,6 +85,12 @@ def config_model(config, *, optimizer, n_chans_in, n_chans_out) -> Model:
     model_core = config_object('model_core', config, n_chans_in=n_chans_in,
                                n_chans_out=n_chans_out)
     return Model(model_core, optimizer=optimizer)
+
+
+def config_frozen_model(config, *, n_chans_in, n_chans_out) -> FrozenModel:
+    model_core = config_object('model_core', config, n_chans_in=n_chans_in,
+                               n_chans_out=n_chans_out)
+    return FrozenModel(model_core)
 
 
 def config_batch_iter(config, *, ids, dataset) -> Iterable:
