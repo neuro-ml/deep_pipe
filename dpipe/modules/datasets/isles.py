@@ -45,6 +45,8 @@ class Isles(Dataset):
             image = image.replace('data/', self.data_path)
             x = nib.load(image).get_data()
             x = self.adjust(x, True)
+            # in case adjustment spoils the labels
+            x = x > .5
             res.append(x)
 
         return np.array(res, dtype=bool)
@@ -108,16 +110,17 @@ def spes_factory(file):
 
 
 class Isles2017(Isles):
-    modalities = ['ADC', 'MTT', 'OT', 'TTP', 'Tmax', 'rCBF', 'rCBV']
+    modalities = ['ADC', 'MTT', 'TTP', 'Tmax', 'rCBF', 'rCBV']
     labels = ['OT']
     filename = 'meta2017.csv'
 
     def adjust(self, x, label=False):
-        ref_shape = np.array(self.spatial_size)
+        scale = np.array((192, 192, 0)) / x.shape
+        scale[-1] = 1
         order = 0 if label else 3
-        x = zoom(x, ref_shape / x.shape, order=order)
+        x = zoom(x, scale, order=order)
         return x
 
     @property
     def spatial_size(self):
-        return 96, 110, 72
+        return 192, 192, None
