@@ -45,12 +45,11 @@ class WhiteMatterHyperintensity(Dataset):
 
     def load_mscan(self, patient_id):
             path_to_modalities = self.idx_to_path[patient_id]
-            # path_to_brainmask = ???
             res = []
             for modalities in ['pre/FLAIR.nii.gz', 'pre/T1.nii.gz']:
                 image = os.path.join(path_to_modalities, modalities)
                 x = nib.load(image).get_data().astype('float32')
-                x = self._reshape_to(x, new_shape=self.spatial_size)
+                #x = self._reshape_to(x, new_shape=self.spatial_size)
                 # if modalities == 'FLAIR.nii.gz':
                 #     mask = nib.load(path_to_brainmask).get_data()
                 #     mask = self._reshape_to(mask, new_shape=self.spatial_size)
@@ -61,15 +60,19 @@ class WhiteMatterHyperintensity(Dataset):
             return np.asarray(res)
 
     def load_segm(self, patient_id):
-        pass
+        path_to_modalities = self.idx_to_path[patient_id]
+        x = nib.load(os.path.join(path_to_modalities, 'wmh.nii.gz')).get_data()
+        #x = self._reshape_to(x, new_shape=self.spatial_size)
+        return np.array(x, dtype=bool)
 
     def load_msegm(self, patient_id):
-        path_to_modalities = self.idx_to_path[patient_id]
-        res = []
-        x = nib.load(os.path.join(path_to_modalities, 'wmh.nii.gz')).get_data()
-        x = self._reshape_to(x, new_shape=self.spatial_size)
-        res.append(x)
-        return np.array(res, dtype=bool)
+        pass
+
+    def load_x(self, patient_id):
+        return self.load_mscan(patient_id)
+
+    def load_y(self, patient_id):
+        return self.load_segm(patient_id)
 
     def segm2msegm(self, segm):
         pass
@@ -89,8 +92,3 @@ class WhiteMatterHyperintensity(Dataset):
     @property
     def n_classes(self):
         return 3
-
-    @property
-    def spatial_size(self):
-        return (256, 256, 84)
-
