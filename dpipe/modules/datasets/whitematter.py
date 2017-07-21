@@ -92,8 +92,3 @@ class WhiteMatterHyperintensity(Dataset):
     @property
     def n_classes(self):
         return 3
-
-    # @property
-    # def spatial_size(self):
-    #     return (256, 256, 84)
-

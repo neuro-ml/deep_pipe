@@ -24,13 +24,7 @@ def make_3d_patch_stratified_iter(
         nonzero_fraction, buffer_size=10):
     x_patch_sizes = [np.array(x_patch_size) for x_patch_size in x_patch_sizes]
     y_patch_size = np.array(y_patch_size)
-    spatial_size = np.array(dataset.spatial_size)
-    spatial_dims = [1, 2, 3]
-
-    n_chans_mscan = dataset.n_chans_mscan
-    n_chans_msegm = dataset.n_chans_msegm
-
-    x_shape = np.array([n_chans_msegm, *spatial_size])
+    spatial_dims = [-3, -2, -1]
 
     def make_random_seq(l):
         while True:
@@ -58,7 +52,7 @@ def make_3d_patch_stratified_iter(
             center_idx = choice(conditional_center_indices)
         else:
             center_idx = medim.patch.get_uniform_center_index(
-                x_shape=x_shape, patch_size=y_patch_size,
+                x_shape=np.array(mscan.shape), patch_size=y_patch_size,
                 spatial_dims=spatial_dims)
 
         xs = [medim.patch.extract_patch(
