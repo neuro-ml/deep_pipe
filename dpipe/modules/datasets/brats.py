@@ -72,6 +72,6 @@ class Brats2017(Brats):
     def n_classes(self):
         return 4
 
-    @property
-    def spatial_size(self):
-        return [157, 189, 149]
+    # @property
+    # def spatial_size(self):
+    #     return [157, 189, 149]

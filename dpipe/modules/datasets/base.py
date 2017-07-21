@@ -52,10 +52,6 @@ class Dataset(ABC):
         """Number of classes for this problem. Supposed to be consistent with
         maximum int value in load_segm"""
 
-    @property
-    @abstractmethod
-    def spatial_size(self) -> List[int]:
-        pass
 
     def load_x(self, patient_id):
         return self.load_mscan(patient_id)

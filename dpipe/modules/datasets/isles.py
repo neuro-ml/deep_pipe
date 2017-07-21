@@ -121,6 +121,6 @@ class Isles2017(Isles):
         x = zoom(x, scale, order=order)
         return x
 
-    @property
-    def spatial_size(self):
-        return 192, 192, None
+    # @property
+    # def spatial_size(self):
+    #     return 192, 192, None
