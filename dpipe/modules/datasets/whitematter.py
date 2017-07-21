@@ -49,7 +49,7 @@ class WhiteMatterHyperintensity(Dataset):
             for modalities in ['pre/FLAIR.nii.gz', 'pre/T1.nii.gz']:
                 image = os.path.join(path_to_modalities, modalities)
                 x = nib.load(image).get_data().astype('float32')
-                #x = self._reshape_to(x, new_shape=self.spatial_size)
+                # x = self._reshape_to(x, new_shape=self.spatial_size)
                 # if modalities == 'FLAIR.nii.gz':
                 #     mask = nib.load(path_to_brainmask).get_data()
                 #     mask = self._reshape_to(mask, new_shape=self.spatial_size)
@@ -62,7 +62,7 @@ class WhiteMatterHyperintensity(Dataset):
     def load_segm(self, patient_id):
         path_to_modalities = self.idx_to_path[patient_id]
         x = nib.load(os.path.join(path_to_modalities, 'wmh.nii.gz')).get_data()
-        #x = self._reshape_to(x, new_shape=self.spatial_size)
+        # x = self._reshape_to(x, new_shape=self.spatial_size)
         return np.array(x, dtype=bool)
 
     def load_msegm(self, patient_id):
@@ -75,7 +75,7 @@ class WhiteMatterHyperintensity(Dataset):
         return self.load_segm(patient_id)
 
     def segm2msegm(self, segm):
-        pass
+        np.array([segm == 1, segm == 2]).astype(np.int32)
 
     @property
     def patient_ids(self):
@@ -87,7 +87,7 @@ class WhiteMatterHyperintensity(Dataset):
 
     @property
     def n_chans_msegm(self):
-        return 1
+        return 2
 
     @property
     def n_classes(self):
