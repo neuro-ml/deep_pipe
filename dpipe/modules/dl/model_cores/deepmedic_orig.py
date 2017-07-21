@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from .base import ModelCore
-from .utils import batch_norm
+from .utils import spacial_batch_norm
 
 from dpipe import medim
 
@@ -13,7 +13,8 @@ def activation(t):
 
 def bac(t, n_chans, kernel_size, training, name):
     with tf.variable_scope(name):
-        t = batch_norm(t, training=training)
+        t = spacial_batch_norm(t, training=training,
+                               data_format='channels_first')
         t = activation(t)
         t = tf.layers.conv3d(
             t, n_chans, kernel_size, data_format='channels_first',
@@ -68,7 +69,8 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
                                'context')
 
         with tf.variable_scope('upconv'):
-            t_context_up = batch_norm(t_context, training=training)
+            t_context_up = spacial_batch_norm(t_context, training=training,
+                                              data_format='channels_first')
             t_context_up = activation(t_context_up)
             t_context_up = tf.layers.conv3d_transpose(
                 t_context_up, path_blocks[-1], kernel_size, strides=[3, 3, 3],
@@ -79,7 +81,8 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
                            name='comm')
 
         t = bac(t_comm, n_classes, 1, training, 'C')
-        t = batch_norm(t, training=training)
+        t = spacial_batch_norm(t, training=training,
+                               data_format='channels_first')
         logits = t
 
         return logits

@@ -12,14 +12,19 @@ class Dataset(ABC):
 
     @abstractmethod
     def load_mscan(self, patient_id) -> np.array:
+        """"Method returns multimodal scan of shape [n_chans_mscan, x, y, z]"""
         pass
 
     @abstractmethod
     def load_segm(self, patient_id) -> np.array:
+        """"Method returns segmentation of shape [x, y, z], filled with int
+         values"""
         pass
 
     @abstractmethod
     def load_msegm(self, patient) -> np.array:
+        """"Method returns multimodel segmentation of shape
+         [n_chans_msegm, x, y, z]. We use this result to compute dice scores"""
         pass
 
     @abstractmethod
@@ -44,12 +49,9 @@ class Dataset(ABC):
     @property
     @abstractmethod
     def n_classes(self) -> int:
-        pass
+        """Number of classes for this problem. Supposed to be consistent with
+        maximum int value in load_segm"""
 
-    @property
-    @abstractmethod
-    def spatial_size(self) -> List[int]:
-        pass
 
     def load_x(self, patient_id):
         return self.load_mscan(patient_id)

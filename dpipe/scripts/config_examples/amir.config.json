@@ -1,0 +1,26 @@
+{
+  "dataset": "wmhs",
+  "dataset_cached": true,
+  "model_core": "enet2d",
+  "batch_iter": "slices",
+  "batch_iter__params": {
+    "shuffle": true,
+    "batch_size": 10
+   },
+
+  "split": "cv_111",
+  "split__params": {
+     "n_splits": 4,
+     "val_size": 5
+   },
+  
+  "train": "train_with_lr_decrease",
+  "train__params": {
+    "n_epochs": 50,
+    "lr_init": 0.1,
+    "lr_dec_mul": 0.5,
+    "patience": 5,
+    "rtol": 0.03,
+    "atol": 0.01
+  }
+}

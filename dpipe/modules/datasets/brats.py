@@ -53,10 +53,6 @@ class Brats2015(Brats):
     def n_classes(self):
         return 5
 
-    @property
-    def spatial_size(self):
-        return [146, 181, 160]
-
 
 class Brats2017(Brats):
     """Data loader for brats 2017. We have replaced label 4 with 3 during data
@@ -71,7 +67,3 @@ class Brats2017(Brats):
     @property
     def n_classes(self):
         return 4
-
-    @property
-    def spatial_size(self):
-        return [157, 189, 149]

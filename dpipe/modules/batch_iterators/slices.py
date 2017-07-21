@@ -22,7 +22,7 @@ def make_slices_iter(
             yield from iterate_slices(x, y, empty=False)
 
     return pdp.Pipeline(
-        pdp.Source(slicer(ids), buffer_size=10),
+        pdp.Source(slicer(ids), buffer_size=30),
         pdp.Chunker(chunk_size=batch_size, buffer_size=2),
         pdp.LambdaTransformer(combine_batch, buffer_size=3)
     )
