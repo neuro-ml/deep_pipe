@@ -8,6 +8,7 @@ from dpipe.modules.datasets.factories import FromDataFrame, Scaled
 from .base import Dataset
 
 
+# TODO: subclass those from FromDataFrame class
 class Isles(Dataset):
     def __init__(self, data_path):
         super().__init__(data_path)
@@ -23,7 +24,7 @@ class Isles(Dataset):
         res = []
 
         for image in channels:
-            image = image.replace('data/', self.data_path)
+            image = os.path.join(self.data_path, image)
             x = nib.load(image).get_data()
             x = self.adjust(x)
             x = x.astype('float32')
@@ -43,7 +44,7 @@ class Isles(Dataset):
         res = []
 
         for image in channels:
-            image = image.replace('data/', self.data_path)
+            image = os.path.join(self.data_path, image)
             x = nib.load(image).get_data()
             x = self.adjust(x, True)
             # in case adjustment spoils the labels
@@ -119,8 +120,24 @@ class Isles2017(FromDataFrame, Scaled):
     axes = -3, -2
 
 
+class ISles2017Augmented(Isles2017):
+    filename = 'isles2017_augmented.csv'
+
+    @property
+    def groups(self):
+        return self.dataFrame.patient.as_matrix()
+
+
 class Isles2017Crop(FromDataFrame):
     modality_cols = ['ADC', 'MTT', 'TTP', 'Tmax', 'rCBF', 'rCBV']
     target_cols = ['OT']
-    filename = 'isles2017_cropped.csv'
+    filename = 'isles2017_crop.csv'
     global_path = False
+
+
+class ISles2017CropAugmented(Isles2017Crop):
+    filename = 'isles2017_crop_augm.csv'
+
+    @property
+    def groups(self):
+        return self.dataFrame.patient.as_matrix()
