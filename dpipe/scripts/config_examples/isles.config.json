@@ -1,5 +1,5 @@
 {
-  "dataset": "isles2017",
+  "dataset": "isles2017_crop",
   "dataset_cached": true,
   "model_core": "enet2d",
   "batch_iter": "slices",
@@ -9,9 +9,9 @@
   },
   "train": "train_with_lr_decrease",
   "train__params": {
-    "n_epochs": 20,
+    "n_epochs": 150,
     "lr_init": 0.1,
-    "lr_dec_mul": 0.5,
+    "lr_dec_mul": 0.95,
     "patience": 5,
     "rtol": 0.03,
     "atol": 0.01
@@ -19,6 +19,6 @@
   "split": "cv_111",
   "split__params": {
     "n_splits": 5,
-    "val_size": 6
+    "val_size": 5
   }
 }

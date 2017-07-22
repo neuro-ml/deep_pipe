@@ -40,13 +40,13 @@ def get_short_name(name: str):
 simple_script_params = {
     name: (f'-{get_short_name(name)}', f'--{name}')
     for name in (
-    'train_ids_path', 'val_ids_path', 'ids_path',
-    'save_model_path', 'restore_model_path',
-    'predictions_path', 'binary_predictions_path',
-    'thresholds_path', 'metrics_path',
-    'log_path',
-)
-}
+        'train_ids_path', 'val_ids_path', 'ids_path',
+        'save_model_path', 'restore_model_path',
+        'predictions_path', 'binary_predictions_path',
+        'thresholds_path', 'metrics_path',
+        'log_path',
+    )
+    }
 
 config_params = {
     'batch_iter': ['-bi', '--iter'],
@@ -56,7 +56,9 @@ config_params = {
     'dataset_cached': dict(names=['--chached'], action='store_true',
                            default=False,
                            help='whether the dataset is chached'),
-
+    'save_on_quit': dict(names=['--save'], action='store_true', default=False,
+                         help='whether to save the model after ctrl+c is '
+                              'pressed'),
     'model': ['-m'],
 }
 

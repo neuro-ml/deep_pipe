@@ -44,14 +44,13 @@ class Dataset(ABC):
     @property
     @abstractmethod
     def n_chans_msegm(self) -> int:
-       pass
+        pass
 
     @property
     @abstractmethod
     def n_classes(self) -> int:
         """Number of classes for this problem. Supposed to be consistent with
         maximum int value in load_segm"""
-
 
     def load_x(self, patient_id):
         return self.load_mscan(patient_id)
@@ -79,4 +78,3 @@ def make_cached(dataset) -> Dataset:
             return getattr(self.dataset, name)
 
     return CachedDataset(dataset)
-
