@@ -44,39 +44,75 @@ class Dataset(ABC):
     @property
     @abstractmethod
     def n_chans_msegm(self) -> int:
-       pass
+        pass
 
     @property
     @abstractmethod
     def n_classes(self) -> int:
         """Number of classes for this problem. Supposed to be consistent with
         maximum int value in load_segm"""
+        pass
 
 
-    def load_x(self, patient_id):
-        return self.load_mscan(patient_id)
+class Proxy:
+    def __init__(self, shadowed):
+        self._shadowed = shadowed
 
-    def load_y(self, patient_id):
-        return self.load_msegm(patient_id)
+    def __getattr__(self, name):
+        return getattr(self._shadowed, name)
+
+
+def make_tasked_dataset(dataset, dataset_task):
+    if dataset_task == 'segm':
+        return make_segm_y(dataset)
+    elif dataset_task == 'msegm':
+        return make_msegm_y(dataset)
+    else:
+        raise ValueError('Unknown dataset type\n' + \
+                         'Received: {}'.format(dataset_task) + \
+                         'Possible values segm and msegm')
+
+
+def make_msegm_y(dataset) -> Dataset:
+    class TaskedDataset(Proxy):
+        def load_x(self, patient_id):
+            return self._shadowed.load_mscan(patient_id)
+
+        def load_y(self, patient_id):
+            return self._shadowed.load_msegm(patient_id)
+
+        @property
+        def n_chans_out(self):
+            return self.n_chans_msegm
+
+    return TaskedDataset(dataset)
+
+
+def make_segm_y(dataset) -> Dataset:
+    class TaskedDataset(Proxy):
+        def load_x(self, patient_id):
+            return self._shadowed.load_mscan(patient_id)
+
+        def load_y(self, patient_id):
+            return self._shadowed.load_segm(patient_id)
+
+        @property
+        def n_chans_out(self):
+            return self.n_classes
+
+    return TaskedDataset(dataset)
 
 
 def make_cached(dataset) -> Dataset:
     n = len(dataset.patient_ids)
 
-    class CachedDataset:
-        def __init__(self, dataset):
-            self.dataset = dataset
-
+    class CachedDataset(Proxy):
         @lru_cache(n)
         def load_x(self, patient_id):
-            return self.dataset.load_x(patient_id)
+            return self._shadowed.load_x(patient_id)
 
         @lru_cache(n)
         def load_y(self, patient_id):
-            return self.dataset.load_y(patient_id)
-
-        def __getattr__(self, name):
-            return getattr(self.dataset, name)
+            return self._shadowed.load_y(patient_id)
 
     return CachedDataset(dataset)
-

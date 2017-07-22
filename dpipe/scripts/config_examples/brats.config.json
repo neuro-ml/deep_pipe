@@ -1,8 +1,10 @@
 {
   "n_iters_per_epoch": 100,
+  "experiment": "msegm_predict",
 
   "dataset": "brats2017",
   "dataset_cached": true,
+  "dataset_task": "msegm",
 
   "split": "cv_111",
   "split__params": {
@@ -15,6 +17,12 @@
     "n_parts": [1, 2, 1]
   },
 
+  "loss": "sigmoid_cross_entropy",
+  "predict": "sigmoid",
+
+  "optimizer": "MomentumOptimizer",
+  "optimizer__params": {"use_nesterov": true, "momentum": 0.9},
+
   "batch_iter": "3d_patch_strat",
   "batch_iter__params": {
     "batch_size": 64,
@@ -26,7 +34,7 @@
 
   "train": "train_with_lr_decrease",
   "train__params": {
-    "n_epochs": 30,
+    "n_epochs": 120,
     "lr_init": 0.1,
     "lr_dec_mul": 0.5,
     "patience": 5,

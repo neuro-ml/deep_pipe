@@ -19,7 +19,7 @@ description = """
     First we read default config file, defined in the
     library root, then parse config file, if it was presented, then we
     parse command arguments and finally, we fill parameters specific for each
-    particular object (for instance, dataset path) with default ones,
+    particular object (for instance, shadowed path) with default ones,
     if they were not provided before."""
 
 module_type2default_params_mapping = {
@@ -55,7 +55,7 @@ config_params = {
     'dataset': ['-ds', '--dataset'],
     'dataset_cached': dict(names=['--chached'], action='store_true',
                            default=False,
-                           help='whether the dataset is chached'),
+                           help='whether the shadowed is chached'),
 
     'model': ['-m'],
 }
@@ -87,11 +87,11 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
     # default values
     _merge_configs(config, default_config)
     # module-specific:
-    for module, params in module_type2default_params_mapping.items():
+    for module, default_params in module_type2default_params_mapping.items():
         field_name = f'{module}__params'
-        if config.get(module, None) is not None:
-            # raise ValueError(f'"{module}" parameter not specified')
-            _merge_configs(config[field_name], params[config[module]])
+        params = config.get(field_name, {})
+        _merge_configs(params, default_params[config[module]])
+        config[field_name] = params
 
     # TODO: for now a dirty hack:
     for name in ('save_model_path', 'restore_model_path'):

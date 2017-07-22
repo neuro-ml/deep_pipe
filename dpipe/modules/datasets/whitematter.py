@@ -68,12 +68,6 @@ class WhiteMatterHyperintensity(Dataset):
     def load_msegm(self, patient_id):
         pass
 
-    def load_x(self, patient_id):
-        return self.load_mscan(patient_id)
-
-    def load_y(self, patient_id):
-        return self.load_segm(patient_id)
-
     def segm2msegm(self, segm):
         np.array([segm == 1, segm == 2]).astype(np.int32)
 

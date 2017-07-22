@@ -102,19 +102,12 @@ class DeepMedic(ModelCore):
             tf.float32, (nan, self.n_chans_in, nan, nan, nan), name='x_det')
         x_con_ph = tf.placeholder(
             tf.float32, (nan, self.n_chans_in, nan, nan, nan), name='x_con')
-        y_ph = tf.placeholder(
-            tf.float32, (nan, self.n_chans_out, nan, nan, nan), name='y_true')
-
-        self.train_input_phs = [x_det_ph, x_con_ph, y_ph]
-        self.inference_input_phs = [x_det_ph, x_con_ph]
 
         logits = build_model(
             x_det_ph, x_con_ph, self.kernel_size, self.n_chans_out,
             training_ph, name='deep_medic')
 
-        self.y_pred = tf.nn.sigmoid(logits, name='y_pred')
-
-        self.loss = tf.losses.log_loss(y_ph, self.y_pred, scope='loss')
+        return [x_det_ph, x_con_ph], logits
 
     def validate_object(self, x, y, do_val_step):
         x_shape = np.array(x.shape)
