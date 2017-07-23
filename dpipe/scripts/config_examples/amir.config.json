@@ -1,19 +1,31 @@
 {
+  "n_iters_per_epoch": 100,
+  // Has to be changed to the new name of the experiment
+  "experiment": "msegm_predict",
+
   "dataset": "wmhs",
   "dataset_cached": true,
-  "model_core": "enet2d",
-  "batch_iter": "slices",
-  "batch_iter__params": {
-    "shuffle": true,
-    "batch_size": 10
-   },
+  "dataset_task": "segm",
 
   "split": "cv_111",
   "split__params": {
      "n_splits": 4,
      "val_size": 5
    },
-  
+
+  "model_core": "enet2d",
+
+  "loss": "sparse_softmax_cross_entropy",
+  "predict": "softmax",
+  "optimizer": "MomentumOptimizer",
+  "optimizer__params": {"use_nesterov": true, "momentum": 0.9},
+
+  "batch_iter": "slices",
+  "batch_iter__params": {
+    "shuffle": true,
+    "batch_size": 10
+   },
+
   "train": "train_with_lr_decrease",
   "train__params": {
     "n_epochs": 50,

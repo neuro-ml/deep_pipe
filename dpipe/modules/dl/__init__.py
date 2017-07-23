@@ -1,5 +1,5 @@
-from .model_cores import ModelCore
+from .utils import optimize
 from .model import Model
 from .frozen_model import FrozenModel
-from .optimizer import Optimizer
+from .model_cores import ModelCore
 from .model_controller import ModelController

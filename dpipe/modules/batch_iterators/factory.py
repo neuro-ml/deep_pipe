@@ -56,7 +56,8 @@ class BatchIterFactoryInf(BatchIterFactory):
             return self.inf_batch_iter.__exit__(exc_type, exc_val, exc_tb)
 
 
-def build_batch_iter(get_batch_iter, n_iters_per_batch) -> BatchIterFactory:
+def build_batch_iter_factory(get_batch_iter, n_iters_per_batch) -> \
+        BatchIterFactory:
     if n_iters_per_batch is None:
         return BatchIterFactoryFin(get_batch_iter)
     else:

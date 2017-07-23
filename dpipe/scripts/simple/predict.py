@@ -14,8 +14,7 @@ if __name__ == '__main__':
     ids_path = config['ids_path']
     restore_model_path = config['restore_model_path']
     dataset = config_dataset(config)
-    frozen_model = config_frozen_model(config, n_chans_in=dataset.n_chans_mscan,
-                                       n_chans_out=dataset.n_chans_msegm)
+    frozen_model = config_frozen_model(config, dataset)
 
     ids = read_lines(ids_path)
     os.makedirs(predictions_path)

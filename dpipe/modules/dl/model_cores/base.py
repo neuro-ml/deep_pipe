@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Sequence
+
+import tensorflow as tf
 
 
 class ModelCore(ABC):
@@ -6,14 +9,9 @@ class ModelCore(ABC):
         self.n_chans_in = n_chans_in
         self.n_chans_out = n_chans_out
 
-        # Gets initialized during build
-        self.train_input_phs = self.inference_input_phs = None
-        self.loss = self.y_pred = None
-
     @abstractmethod
-    def build(self, training_ph):
-        """Method defines placeholders and tensors, necessary for the
-         model_core."""
+    def build(self, training_ph) -> (Sequence[tf.placeholder], tf.Tensor):
+        """Method returning x_phs as a list and logits"""
         pass
 
     @abstractmethod

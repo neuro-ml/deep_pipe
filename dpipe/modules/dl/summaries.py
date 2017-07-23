@@ -24,8 +24,7 @@ class CustomSummaryWriter:
 
     def write(self, value):
         summary = tf.Summary(
-            value=[tf.Summary.Value(tag=self.name,
-                                    simple_value=value)])
+            value=[tf.Summary.Value(tag=self.name, simple_value=value)])
 
         self.writer.add_summary(summary, global_step=self.iter)
         self.iter += 1
