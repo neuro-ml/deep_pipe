@@ -1,4 +1,5 @@
 {
+  "n_iters_per_epoch": null,
   "dataset": "isles2017_crop",
   "dataset_cached": true,
   "model_core": "enet2d",

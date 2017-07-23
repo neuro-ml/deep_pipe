@@ -1,9 +1,10 @@
-import re
 import copy
 import os
 import json
 import pprint
 import argparse
+from collections import ChainMap
+
 
 from dpipe.modules.datasets.config import dataset_name2default_params
 
@@ -12,36 +13,20 @@ __all__ = ['parse_config', 'get_parser', 'get_config']
 # you can pas either a dict with params, or a just an array with names
 # the param's name is added to the names array, if it is not present there
 
-# TODO Add info about arguments vs config settings differences after discussion
-description = """
-    Config system.
-    First we read default config file, defined in the
-    library root, then parse config file, if it was presented, then we
-    parse command arguments and finally, we fill parameters specific for each
-    particular object (for instance, shadowed path) with default ones,
-    if they were not provided before."""
-
-default_config = {
-    'n_iters_per_epoch': None,
-    'dataset_cached': True
-}
+description = "Description"
 
 module_type2default_params_mapping = {
     'dataset': dataset_name2default_params
 }
 
 
-def head(xs):
-    return xs[0]
+def get_short_name(name: str) -> str:
+    """long_informative_name -> lip"""
+    return ''.join(map(lambda x: x[0], name.split('_')))
 
 
-def get_short_name(name: str):
-    return ''.join(map(head, name.split('_')))
-
-
-# Parameter aname1_bname2_..._cnameN for simple scrips can be provided as
-# --aname1_bname2_..._cnameN or -ab...c
-simple_script_params = {
+# Simple parameters, similar across scripts, have to be provided, if mentioned
+common_script_params = {
     name: (f'-{get_short_name(name)}', f'--{name}')
     for name in (
         'train_ids_path', 'val_ids_path', 'ids_path',
@@ -52,20 +37,17 @@ simple_script_params = {
     )
 }
 
-config_params = {
-    'batch_iter': ['-bi', '--iter'],
+# Complex parameters
+# Defaults are allowed only for flags
+additional_params = {
     'batch_size': dict(names=['-bs', '--batch_size'], type=int),
-
-    'dataset': ['-ds', '--dataset'],
-    'dataset_cached': dict(names=['--chached'], action='store_true',
-                           default=False,
-                           help='whether the shadowed is chached'),
-
-    'model': ['-m'],
+    'save_on_quit': dict(
+        names=['--save'], action='store_true',
+        help='whether to save the model after ctrl+c is pressed'),
 }
 
-available_params = copy.deepcopy(config_params)
-available_params.update(simple_script_params)
+# Empty dict to protect all the rest from writing
+available_params = ChainMap({}, common_script_params, additional_params)
 
 
 def parse_config(parser: argparse.ArgumentParser) -> dict:
@@ -86,16 +68,13 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
     for arg, value in args._get_kwargs():
         if value is not None:
             config[arg] = value
-    _parse_unknown(unknown, config)
 
-    # default values
-    _merge_configs(config, default_config)
-    # module-specific:
-    for module, default_params in module_type2default_params_mapping.items():
-        field_name = f'{module}__params'
-        params = config.get(field_name, {})
-        _merge_configs(params, default_params[config[module]])
-        config[field_name] = params
+    # # module-specific:
+    # for module, default_params in module_type2default_params_mapping.items():
+    #     field_name = f'{module}__params'
+    #     params = config.get(field_name, {})
+    #     _merge_configs(params, default_params[config[module]])
+    #     config[field_name] = params
 
     # TODO: for now a dirty hack:
     for name in ('save_model_path', 'restore_model_path'):
@@ -108,38 +87,6 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
     #         raise ValueError(f'"{arg}" parameter not specified')
 
     return config
-
-
-def _parse_unknown(unknown, config):
-    i = 0
-    argument = re.compile('^--((\w+__)+\w+)$')
-    while i < len(unknown):
-        arg = argument.match(unknown[i])
-        if not arg:
-            raise ValueError(f'Unknown argument "{unknown[i]}"')
-        i += 1
-        arg = arg.group(1)
-        # reaching the top level
-        names = arg.split('__')
-        names[0] += '__params'
-        temp = config
-        for name in names[:-1]:
-            temp = config.setdefault(name, {})
-        # parsing the value: for now it can be str, int or bool
-        if i >= len(unknown) or unknown[i][:2] == '--':
-            # if the value is omitted, then its value is True
-            value = True
-        else:
-            value = unknown[i]
-            try:
-                value = int(value)
-            except ValueError:
-                pass
-            if value in ['True', 'False']:
-                value = value == 'True'
-            i += 1
-
-        temp[names[-1]] = value
 
 
 def _merge_configs(destination: dict, source: dict):
