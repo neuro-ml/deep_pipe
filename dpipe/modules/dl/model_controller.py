@@ -27,7 +27,6 @@ class ModelController:
     def train(self, batch_iter, *, lr):
         losses = [self.model.do_train_step(*inputs, lr=lr)
                   for inputs in batch_iter]
-
         loss = np.mean(losses)
         self.avg_train_summary.write(loss)
         return loss

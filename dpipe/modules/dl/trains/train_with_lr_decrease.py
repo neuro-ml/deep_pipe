@@ -1,9 +1,9 @@
 import math
 from functools import partial
 
-from ..dl.model_controller import ModelController
-from ..datasets import Dataset
-from ..batch_iterators import BatchIterFactory
+from ..model_controller import ModelController
+from dpipe.modules.datasets import Dataset
+from dpipe.modules.batch_iterators import BatchIterFactory
 
 
 def make_check_loss_decrease(patience: int, rtol: float, atol: float):

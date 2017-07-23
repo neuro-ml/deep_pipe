@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from .base import ModelCore
-from .utils import spacial_batch_norm
+from .utils import spatial_batch_norm
 
 from dpipe import medim
 
@@ -13,7 +13,7 @@ def activation(t):
 
 def bac(t, n_chans, kernel_size, training, name):
     with tf.variable_scope(name):
-        t = spacial_batch_norm(t, training=training,
+        t = spatial_batch_norm(t, training=training,
                                data_format='channels_first')
         t = activation(t)
         t = tf.layers.conv3d(
@@ -69,7 +69,7 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
                                'context')
 
         with tf.variable_scope('upconv'):
-            t_context_up = spacial_batch_norm(t_context, training=training,
+            t_context_up = spatial_batch_norm(t_context, training=training,
                                               data_format='channels_first')
             t_context_up = activation(t_context_up)
             t_context_up = tf.layers.conv3d_transpose(
@@ -81,14 +81,14 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
                            name='comm')
 
         t = bac(t_comm, n_classes, 1, training, 'C')
-        t = spacial_batch_norm(t, training=training,
+        t = spatial_batch_norm(t, training=training,
                                data_format='channels_first')
         logits = t
 
         return logits
 
 
-class DeepMedic(ModelCore):
+class DeepMedicOrig(ModelCore):
     def __init__(self, *, n_chans_in, n_chans_out, n_parts):
         super().__init__(n_chans_in=n_chans_in, n_chans_out=n_chans_out)
 
@@ -178,8 +178,7 @@ def prepare_x(x, x_det_padding, x_con_padding, n_parts):
 
 def prepare_y(y, y_padding, n_parts):
     y = np.pad(y, y_padding, mode='constant')
-    y_parts = medim.split.divide(y, [0] * 4,
-                                           n_parts_per_axis=[1, *n_parts])
+    y_parts = medim.split.divide(y, [0] * 4, n_parts_per_axis=[1, *n_parts])
 
     return y_parts
 

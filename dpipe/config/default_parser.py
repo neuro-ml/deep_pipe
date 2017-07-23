@@ -5,7 +5,6 @@ import json
 import pprint
 import argparse
 
-from dpipe.config.config import default_config
 from dpipe.modules.datasets.config import dataset_name2default_params
 
 __all__ = ['parse_config', 'get_parser', 'get_config']
@@ -21,6 +20,11 @@ description = """
     parse command arguments and finally, we fill parameters specific for each
     particular object (for instance, shadowed path) with default ones,
     if they were not provided before."""
+
+default_config = {
+    'n_iters_per_epoch': None,
+    'dataset_cached': True
+}
 
 module_type2default_params_mapping = {
     'dataset': dataset_name2default_params
@@ -46,7 +50,7 @@ simple_script_params = {
         'thresholds_path', 'metrics_path',
         'log_path',
     )
-    }
+}
 
 config_params = {
     'batch_iter': ['-bi', '--iter'],
@@ -55,10 +59,8 @@ config_params = {
     'dataset': ['-ds', '--dataset'],
     'dataset_cached': dict(names=['--chached'], action='store_true',
                            default=False,
-                           help='whether the dataset is chached'),
-    'save_on_quit': dict(names=['--save'], action='store_true', default=False,
-                         help='whether to save the model after ctrl+c is '
-                              'pressed'),
+                           help='whether the shadowed is chached'),
+
     'model': ['-m'],
 }
 

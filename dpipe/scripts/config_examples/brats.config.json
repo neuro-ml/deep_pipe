@@ -12,7 +12,7 @@
     "val_size": 6
   },
 
-  "model_core": "deepmedic",
+  "model_core": "deepmedic_orig",
   "model_core__params": {
     "n_parts": [1, 2, 1]
   },
