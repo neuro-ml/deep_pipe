@@ -3,7 +3,8 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from dpipe.config import config_dataset, config_frozen_model
+from dpipe.config import config_dataset
+from dpipe.config.config_tf import config_frozen_model
 from dpipe.config.default_parser import get_config
 from utils import read_lines
 

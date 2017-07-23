@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from ipywidgets import interact
+from ipywidgets import interact, IntSlider
 
 
 def slice3d(*data, axis: int = -1, fig_size: int = 5):
@@ -21,7 +21,9 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5):
         if plots == 1:
             axes = [axes]
         for ax, x in zip(axes, data):
-            ax.imshow(x.take(idx, axis=axis))
+            im = ax.imshow(x.take(idx, axis=axis))
+            fig.colorbar(im, ax=ax, orientation='horizontal')
+        plt.tight_layout()
         plt.show()
 
-    interact(update, idx=(0, size - 1))
+    interact(update, idx=IntSlider(min=0, max=size-1, continuous_update=False))

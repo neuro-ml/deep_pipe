@@ -1,5 +1,5 @@
-from dpipe.config import config_dataset, config_batch_iter, config_model, \
-    config_train
+from dpipe.config import config_dataset, config_batch_iter
+from dpipe.config.config_tf import config_model, config_train
 from dpipe.config.default_parser import get_config
 from dpipe.modules.dl import ModelController
 

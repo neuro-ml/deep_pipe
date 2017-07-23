@@ -1,9 +1,9 @@
 import math
 from functools import partial
 
-from ..dl.model_controller import ModelController
-from ..datasets import Dataset
-from ..batch_iterators import BatchIterFactory
+from ..model_controller import ModelController
+from dpipe.modules.datasets import Dataset
+from dpipe.modules.batch_iterators import BatchIterFactory
 
 
 def make_check_loss_decrease(patience: int, rtol: float, atol: float):
@@ -55,5 +55,5 @@ def train_with_lr_decrease(
         for _ in range(n_epochs):
             with next(train_batch_iter_factory) as train_batch_iter:
                 train_loss = model_controller.train(train_batch_iter, lr=lr)
-            y_pred, val_loss = model_controller.validate(x_val, y_val)
-            lr = find_next_lr(val_loss)
+                y_pred, val_loss = model_controller.validate(x_val, y_val)
+                lr = find_next_lr(val_loss)

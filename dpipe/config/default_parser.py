@@ -5,7 +5,6 @@ import json
 import pprint
 import argparse
 
-from dpipe.config.config import default_config
 from dpipe.modules.datasets.config import dataset_name2default_params
 
 __all__ = ['parse_config', 'get_parser', 'get_config']
@@ -21,6 +20,11 @@ description = """
     parse command arguments and finally, we fill parameters specific for each
     particular object (for instance, shadowed path) with default ones,
     if they were not provided before."""
+
+default_config = {
+    'n_iters_per_epoch': None,
+    'dataset_cached': True
+}
 
 module_type2default_params_mapping = {
     'dataset': dataset_name2default_params
