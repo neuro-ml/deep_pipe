@@ -69,12 +69,12 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
         if value is not None:
             config[arg] = value
 
-    # # module-specific:
-    # for module, default_params in module_type2default_params_mapping.items():
-    #     field_name = f'{module}__params'
-    #     params = config.get(field_name, {})
-    #     _merge_configs(params, default_params[config[module]])
-    #     config[field_name] = params
+    # module-specific:
+    for module, default_params in module_type2default_params_mapping.items():
+        field_name = f'{module}__params'
+        params = config.get(field_name, {})
+        _merge_configs(params, default_params[config[module]])
+        config[field_name] = params
 
     # TODO: for now a dirty hack:
     for name in ('save_model_path', 'restore_model_path'):
