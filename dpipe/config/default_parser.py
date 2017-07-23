@@ -44,12 +44,12 @@ def get_short_name(name: str):
 simple_script_params = {
     name: (f'-{get_short_name(name)}', f'--{name}')
     for name in (
-    'train_ids_path', 'val_ids_path', 'ids_path',
-    'save_model_path', 'restore_model_path',
-    'predictions_path', 'binary_predictions_path',
-    'thresholds_path', 'metrics_path',
-    'log_path',
-)
+        'train_ids_path', 'val_ids_path', 'ids_path',
+        'save_model_path', 'restore_model_path',
+        'predictions_path', 'binary_predictions_path',
+        'thresholds_path', 'metrics_path',
+        'log_path',
+    )
 }
 
 config_params = {

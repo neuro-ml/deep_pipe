@@ -1,17 +1,19 @@
 import pandas as pd
 import numpy as np
-from os.path import join
+import os
 import nibabel as nib
 from scipy.ndimage import zoom
 
+from dpipe.modules.datasets.factories import FromDataFrame, Scaled
 from .base import Dataset
 
 
+# TODO: subclass those from FromDataFrame class
 class Isles(Dataset):
     def __init__(self, data_path):
         super().__init__(data_path)
         self.data_path = data_path
-        self.metadata = pd.read_csv(join(data_path, self.filename))
+        self.metadata = pd.read_csv(os.path.join(data_path, self.filename))
         self.metadata['id'] = self.metadata.id.astype(str)
         self._patient_ids = self.metadata.index.values
 
@@ -22,7 +24,7 @@ class Isles(Dataset):
         res = []
 
         for image in channels:
-            image = image.replace('data/', self.data_path)
+            image = os.path.join(self.data_path, image)
             x = nib.load(image).get_data()
             x = self.adjust(x)
             x = x.astype('float32')
@@ -42,7 +44,7 @@ class Isles(Dataset):
         res = []
 
         for image in channels:
-            image = image.replace('data/', self.data_path)
+            image = os.path.join(self.data_path, image)
             x = nib.load(image).get_data()
             x = self.adjust(x, True)
             # in case adjustment spoils the labels
@@ -109,18 +111,33 @@ def spes_factory(file):
     return IslesSPES
 
 
-class Isles2017(Isles):
-    modalities = ['ADC', 'MTT', 'TTP', 'Tmax', 'rCBF', 'rCBV']
-    labels = ['OT']
+class Isles2017(FromDataFrame, Scaled):
+    modality_cols = ['ADC', 'MTT', 'TTP', 'Tmax', 'rCBF', 'rCBV']
+    target_cols = ['OT']
     filename = 'meta2017.csv'
+    global_path = False
+    spacial_shape = 192, 192
+    axes = -3, -2
 
-    def adjust(self, x, label=False):
-        scale = np.array((192, 192, 0)) / x.shape
-        scale[-1] = 1
-        order = 0 if label else 3
-        x = zoom(x, scale, order=order)
-        return x
+
+class ISles2017Augmented(Isles2017):
+    filename = 'isles2017_augmented.csv'
 
     @property
-    def spatial_size(self):
-        return 192, 192, None
+    def groups(self):
+        return self.dataFrame.patient.as_matrix()
+
+
+class Isles2017Crop(FromDataFrame):
+    modality_cols = ['ADC', 'MTT', 'TTP', 'Tmax', 'rCBF', 'rCBV']
+    target_cols = ['OT']
+    filename = 'isles2017_crop.csv'
+    global_path = False
+
+
+class ISles2017CropAugmented(Isles2017Crop):
+    filename = 'isles2017_crop_augm.csv'
+
+    @property
+    def groups(self):
+        return self.dataFrame.patient.as_matrix()

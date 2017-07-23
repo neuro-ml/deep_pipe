@@ -62,6 +62,10 @@ class Proxy:
         return getattr(self._shadowed, name)
 
 
+    def load_x(self, patient_id):
+        return self.load_mscan(patient_id)
+
+
 def make_tasked_dataset(dataset, dataset_task):
     if dataset_task == 'segm':
         return make_segm_y(dataset)

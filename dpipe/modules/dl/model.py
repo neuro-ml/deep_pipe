@@ -59,7 +59,6 @@ class Model:
     def do_train_step(self, *train_inputs, lr):
         _, loss, summary = self.call_train(*train_inputs, lr, True)
         self.summary_logger.write(summary, self.file_writer)
-
         return loss
 
     def do_val_step(self, *val_inputs):

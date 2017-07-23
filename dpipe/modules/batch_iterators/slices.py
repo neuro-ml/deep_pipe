@@ -1,7 +1,7 @@
 import numpy as np
 
-from dpipe.modules.dl.model_cores.enet import iterate_slices
 from ..datasets import Dataset
+from dpipe.medim.slices import iterate_slices
 from .utils import combine_batch
 import dpipe.external.pdp.pdp as pdp
 
@@ -14,6 +14,7 @@ def make_slices_iter(
         ids, dataset: Dataset, batch_size, *, shuffle=False):
     if shuffle:
         ids = shuffle_ids(ids)
+        print(ids)
 
     def slicer(ids):
         for id in ids:
