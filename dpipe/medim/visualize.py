@@ -3,16 +3,21 @@ from ipywidgets import interact, IntSlider
 import numpy as np
 
 
-def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns=None):
+def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
+            colorbar: bool = False, cmap: str = None):
     """
     Creates an interactive plot, simultaneously showing slices along a given
-    axis for all the passes images.
+    axis for all the passed images.
 
-    :param data: list of numpy arrays
-    :param axis: the axis along which the slices will be taken
-    :param fig_size: the size of the image of a single slice
-    :param max_columns: the maximal number of figures in a row.
+    Parameters
+    ----------
+    data : list of numpy arrays
+    axis : the axis along which the slices will be taken
+    fig_size : the size of the image of a single slice
+    max_columns : the maximal number of figures in a row.
                     None - all figures will be in the same row.
+    colorbar : Whether to display a colorbar.
+    cmap : matplotlib cmap
     """
     size = data[0].shape[axis]
     for x in data:
@@ -28,9 +33,12 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns=None):
                                  figsize=(fig_size * columns, fig_size * rows))
         axes = np.array(axes).flatten()
         for ax, x in zip(axes, data):
-            im = ax.imshow(x.take(idx, axis=axis))
-            fig.colorbar(im, ax=ax, orientation='horizontal')
+            im = ax.imshow(x.take(idx, axis=axis), cmap=cmap)
+            if colorbar:
+                fig.colorbar(im, ax=ax, orientation='horizontal')
         plt.tight_layout()
         plt.show()
 
-    interact(update, idx=IntSlider(min=0, max=size-1, continuous_update=False))
+    interact(update, idx=IntSlider(
+        min=0, max=size - 1, continuous_update=False
+    ))
