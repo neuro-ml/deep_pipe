@@ -11,14 +11,19 @@ class FromDataFrame(Dataset):
     filename = None
     target_cols = None
     modality_cols = None
+    group_col = None
     global_path = False
 
-    def __init__(self, data_path):
+    def __init__(self, data_path, modalities=None, targets=None):
         super().__init__(data_path)
         df = pd.read_csv(os.path.join(data_path, self.filename))
         df['id'] = df.id.astype(str)
         self._patient_ids = df.id.as_matrix()
         self.dataFrame = df.set_index('id')
+        if modalities is not None:
+            self.modality_cols = modalities
+        if targets is not None:
+            self.target_cols = targets
 
     @staticmethod
     def load_channel(path):
@@ -38,7 +43,17 @@ class FromDataFrame(Dataset):
 
         return np.asarray(res)
 
-    def load_x(self, patient_id):
+    def load_msegm(self, patient):
+        # super method is needed here to allow chaining in its children
+        super().load_msegm(patient)
+
+        image = self.load_by_cols(patient, self.target_cols)
+
+        return image >= .5
+
+    def load_mscan(self, patient_id):
+        super().load_mscan(patient_id)
+
         image = self.load_by_cols(patient_id, self.modality_cols)
         image = image.astype('float32')
 
@@ -48,10 +63,11 @@ class FromDataFrame(Dataset):
 
         return (image - m) / (M - m)
 
-    def load_y(self, patient_id):
-        image = self.load_by_cols(patient_id, self.target_cols)
+    def load_segm(self, patient_id):
+        super().load_segm(patient_id)
 
-        return image >= .5
+    def segm2msegm(self, segm):
+        super().segm2msegm(segm)
 
     @property
     def patient_ids(self):
@@ -69,6 +85,14 @@ class FromDataFrame(Dataset):
     def n_classes(self):
         return len(self.target_cols)
 
+    @property
+    def groups(self):
+        """
+        Used for GroupKFold
+        """
+        assert self.group_col is not None
+        return self.dataFrame[self.group_col].as_matrix()
+
     @staticmethod
     def build(_filename, _target_cols, _modality_cols, _global_path=False):
         class Child(FromDataFrame):
@@ -79,20 +103,8 @@ class FromDataFrame(Dataset):
 
         return Child
 
-    # i don't need those, but i HAVE to define them
-    def load_msegm(self, patient):
-        super().load_msegm(patient)
 
-    def load_mscan(self, patient_id):
-        super().load_mscan(patient_id)
-
-    def load_segm(self, patient_id):
-        super().load_segm(patient_id)
-
-    def segm2msegm(self, segm):
-        super().segm2msegm(segm)
-
-
+# TODO: unify those two classes
 class Scaled(Dataset):
     spacial_shape = None
     axes = None
@@ -114,14 +126,60 @@ class Scaled(Dataset):
         scale[self.axes] = new_shape / old_shape
         return ndimage.zoom(image, scale, order=order)
 
-    def load_x(self, patient_id):
-        image = super().load_x(patient_id)
+    def load_mscan(self, patient_id):
+        image = super().load_mscan(patient_id)
 
         return self.scale(image, 3)
 
-    def load_y(self, patient_id):
-        image = super().load_y(patient_id)
+    def load_msegm(self, patient):
+        image = super().load_msegm(patient)
         image = self.scale(image, 0)
+
+        return image >= .5
+
+    @staticmethod
+    def build(_spacial_shape):
+        class Child(Scaled):
+            spacial_shape = _spacial_shape
+
+        return Child
+
+
+class Padded(Dataset):
+    spacial_shape = None
+    axes = None
+
+    def __init__(self, data_path):
+        super().__init__(data_path)
+        if self.axes is not None:
+            self.axes = list(sorted(self.axes))
+
+    def pad(self, image):
+        if self.axes is None:
+            l, L = len(self.spacial_shape), image.ndim
+            self.axes = list(range(L - l, L))
+
+        old_shape = np.array(image.shape)[self.axes]
+        new_shape = np.array(self.spacial_shape)
+
+        assert (old_shape <= new_shape).all()
+
+        delta = new_shape - old_shape
+        pad = np.array((delta // 2, (delta + 1) // 2)).T
+
+        padding = np.zeros((image.ndim, 2), int)
+        padding[self.axes] = pad.astype(int)
+
+        return np.pad(image, padding, mode='constant')
+
+    def load_mscan(self, patient_id):
+        image = super().load_mscan(patient_id)
+
+        return self.pad(image)
+
+    def load_msegm(self, patient):
+        image = super().load_msegm(patient)
+        image = self.pad(image)
 
         return image >= .5
 
