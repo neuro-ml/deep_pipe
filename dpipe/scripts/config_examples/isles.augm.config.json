@@ -7,9 +7,9 @@
   "split": "group_cv_111",
   "split__params": {
     "n_splits": 5,
-    "val_size": 20
+    "val_part": 0.15
   },
-  "model_core": "enet2d",
+  "model_core": "unet2d",
   "model_core__params": {
     "init_channels": 32,
     "multiplier": 3
@@ -21,7 +21,7 @@
   "batch_iter__params": {
     "shuffle": true,
     "num_slices": 3,
-    "batch_size": 30
+    "batch_size": 40
   },
   "train": "train_with_lr_decrease",
   "train__params": {

@@ -30,7 +30,7 @@ class ShuffleGroupKFold(KFold):
             yield np.where(train)[0], np.where(test)[0]
 
 
-def get_group_cv_111(dataset: Dataset, *, val_size, n_splits):
+def get_group_cv_111(dataset: Dataset, *, val_part, n_splits):
     """
     In order to use this splitter, your Dataset needs to have
      a 'groups' property.
@@ -41,10 +41,16 @@ def get_group_cv_111(dataset: Dataset, *, val_size, n_splits):
 
     train_val_test = []
     for train, test in cv.split(groups):
-        train = [ids[i] for i in train]
+        train_groups = [groups[i] for i in train]
+        # in validation and train we also need non-overlapping groups
+        val_groups = int(1 / val_part + .5)
+        spl = ShuffleGroupKFold(n_splits=val_groups, shuffle=True,
+                                random_state=25)
+        train_, val_ = next(spl.split(train_groups))
+
+        train = [ids[i] for i in train_]
+        val = [ids[i] for i in val_]
         test = [ids[i] for i in test]
-        train, val = train_test_split(train, test_size=val_size,
-                                      random_state=25)
-        train_val_test.append((list(train), list(val), list(test)))
+        train_val_test.append((train, val, test))
 
     return train_val_test

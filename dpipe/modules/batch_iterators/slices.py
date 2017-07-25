@@ -86,8 +86,24 @@ def make_multiple_slices_iter(
 
             yield from iterate_multiple_slices(x, y, num_slices)
 
+    # @pdp.pack_args
+    # def flip(x, y):
+    #     x = x.copy()
+    #     y = y.copy()
+    #     # if np.random.randint(0, 2):
+    #     #     x = np.flip(x, 1)
+    #     #     y = np.flip(y, 1)
+    #     # swap direction
+    #     if np.random.randint(0, 2):
+    #         x = np.flip(x, 2)
+    #         y = np.flip(y, 2)
+    #     # randomly swap channels because why not?
+    #     # x = x[np.random.permutation(np.arange(len(x)))]
+    #     return x, y
+
     return pdp.Pipeline(
         pdp.Source(slicer(ids), buffer_size=30),
+        # pdp.LambdaTransformer(flip, buffer_size=3),
         pdp.Chunker(chunk_size=batch_size, buffer_size=2),
         pdp.LambdaTransformer(combine_batch, buffer_size=3)
     )

@@ -1,30 +1,38 @@
 from dpipe.modules.datasets.factories import FromDataFrame, Scaled, Padded
 
 
-def spes_factory(_filename):
-    class IslesSPES(Scaled, FromDataFrame):
-        modality_cols = ['CBF', 'CBV', 'DWI', 'T1c', 'T2', 'TTP', 'Tmax']
-        target_cols = ['penumbralabel', 'corelabel']
-        filename = _filename
-        global_path = False
-        spacial_shape = 96, 110, 72
-        axes = -3, -2, -1
-        group_col = 'patient'
+# TODO: create filename factory
 
-    return IslesSPES
+class IslesSPES(Scaled, FromDataFrame):
+    modality_cols = ['CBF', 'CBV', 'DWI', 'T1c', 'T2', 'TTP', 'Tmax']
+    target_cols = ['penumbralabel', 'corelabel']
+    global_path = False
+    spacial_shape = 96, 110, 72
+    axes = -3, -2, -1
+    group_col = 'patient'
+
+
+class IslesSISS(Padded, FromDataFrame):
+    modalities = ['T1', 'T2', 'Flair', 'DWI']
+    labels = ['OT']
+    global_path = False
+    spacial_shape = 230, 230, 154
+    axes = -3, -2, -1
+    group_col = 'patient'
+
+
+def spes_factory(_filename):
+    class Child(IslesSPES):
+        filename = _filename
+
+    return Child
 
 
 def siss_factory(_filename):
-    class IslesSISS(Padded, FromDataFrame):
-        modalities = ['T1', 'T2', 'Flair', 'DWI']
-        labels = ['OT']
+    class Child(IslesSISS):
         filename = _filename
-        global_path = False
-        spacial_shape = 230, 230, 154
-        axes = -3, -2, -1
-        group_col = 'patient'
 
-    return IslesSISS
+    return Child
 
 
 class Isles2017(Scaled, FromDataFrame):
