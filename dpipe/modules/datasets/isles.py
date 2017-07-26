@@ -3,7 +3,7 @@ from dpipe.modules.datasets.factories import FromDataFrame, Scaled, Padded
 
 # TODO: create filename factory
 
-class IslesSPES(Scaled, FromDataFrame):
+class IslesSPES(Scaled):
     modality_cols = ['CBF', 'CBV', 'DWI', 'T1c', 'T2', 'TTP', 'Tmax']
     target_cols = ['penumbralabel', 'corelabel']
     global_path = False
@@ -12,7 +12,7 @@ class IslesSPES(Scaled, FromDataFrame):
     group_col = 'patient'
 
 
-class IslesSISS(Padded, FromDataFrame):
+class IslesSISS(Padded):
     modalities = ['T1', 'T2', 'Flair', 'DWI']
     labels = ['OT']
     global_path = False
@@ -35,7 +35,7 @@ def siss_factory(_filename):
     return Child
 
 
-class Isles2017(Scaled, FromDataFrame):
+class Isles2017(Scaled):
     modality_cols = ['ADC', 'MTT', 'TTP', 'Tmax', 'rCBF', 'rCBV']
     target_cols = ['OT']
     filename = 'meta2017.csv'
