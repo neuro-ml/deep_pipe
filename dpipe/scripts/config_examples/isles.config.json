@@ -1,25 +1,35 @@
 {
   "n_iters_per_epoch": null,
+  "experiment": "msegm_predict",
   "dataset": "isles2017_crop",
   "dataset_cached": true,
-  "model_core": "enet2d",
-  "batch_iter": "slices",
-  "batch_iter__params": {
-    "shuffle": true,
-    "batch_size": 50
-  },
-  "train": "train_with_lr_decrease",
-  "train__params": {
-    "n_epochs": 150,
-    "lr_init": 0.1,
-    "lr_dec_mul": 0.95,
-    "patience": 5,
-    "rtol": 0.03,
-    "atol": 0.01
-  },
+  "dataset_task": "msegm",
   "split": "cv_111",
   "split__params": {
     "n_splits": 5,
     "val_size": 5
+  },
+  "model_core": "unet2d",
+  "model_core__params": {
+    "init_channels": 32,
+    "multiplier": 3
+  },
+  "loss": "sigmoid_cross_entropy",
+  "predict": "sigmoid",
+  "optimizer": "AdamOptimizer",
+  "batch_iter": "multiple_slices",
+  "batch_iter__params": {
+    "shuffle": true,
+    "num_slices": 3,
+    "batch_size": 40
+  },
+  "train": "train_with_lr_decrease",
+  "train__params": {
+    "n_epochs": 100,
+    "lr_init": 0.1,
+    "lr_dec_mul": 0.7,
+    "patience": 5,
+    "rtol": 0.03,
+    "atol": 0.01
   }
 }

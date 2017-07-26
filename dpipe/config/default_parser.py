@@ -13,8 +13,6 @@ __all__ = ['parse_config', 'get_parser', 'get_config']
 # you can pas either a dict with params, or a just an array with names
 # the param's name is added to the names array, if it is not present there
 
-description = "Description"
-
 module_type2default_params_mapping = {
     'dataset': dataset_name2default_params
 }
@@ -99,7 +97,7 @@ def _merge_configs(destination: dict, source: dict):
 
 
 def get_parser(*additional_params) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config', dest='config_path')
 
     for param in additional_params:

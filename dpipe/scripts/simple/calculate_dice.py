@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     dices = []
     for identifier in ids:
-        y_true = dataset.load_y(identifier)
+        y_true = dataset.load_msegm(identifier)
         y = load_by_id(predictions_path, identifier)
 
         dices.append([dice(y[i] > thresholds[i], y_true[i])

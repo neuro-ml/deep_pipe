@@ -4,32 +4,15 @@ import tensorflow.contrib.slim as slim
 
 from .base import ModelCore
 
-
-def iterate_slices(*data, axis=-1, empty=True):
-    """
-    Iterate over slices of a series of tensors along a given axis.
-    If empty is False, the last tensor in the series is assumed to be a mask.
-
-    Parameters
-    ----------
-    data: list, tuple, np.array
-    axis: int
-    empty: bool
-        whether to yield slices, containing only zeroes in the mask.
-    """
-    for i in range(data[0].shape[axis]):
-        if empty or data[-1].take(i, axis=axis).any():
-            result = [entry.take(i, axis=axis) for entry in data]
-            if len(data) == 1:
-                result = result[0]
-            yield result
+from dpipe.modules.batch_iterators.slices import \
+    iterate_multiple_slices as iterate_slices
 
 
-def init_block(inputs, name, training, kernel_size=3):
+def init_block(inputs, name, training, output_channels, kernel_size=3):
     with tf.variable_scope(name):
         inp_channels = int(inputs.shape[1])
-        conv = tf.layers.conv2d(inputs, 16 - inp_channels, kernel_size,
-                                strides=2, padding='same',
+        conv = tf.layers.conv2d(inputs, output_channels - inp_channels,
+                                kernel_size, strides=2, padding='same',
                                 use_bias=False, data_format='channels_first')
         pool = tf.layers.max_pooling2d(inputs, pool_size=2, strides=2,
                                        padding='same',
@@ -109,15 +92,15 @@ def stage(inputs, output_channels, num_blocks, name, training,
         return inputs
 
 
-def build_model(inputs, classes, name, training):
+def build_model(inputs, classes, name, training, init_channels):
     with tf.variable_scope(name):
         initial_shape = tf.shape(inputs)
-        inputs = init_block(inputs, 'init', training)
+        inputs = init_block(inputs, 'init', training, init_channels)
         inputs = stage(inputs, 64, 5, 'stage1', training, downsample=True)
         inputs = stage(inputs, 128, 9, 'stage2', training, downsample=True)
         inputs = stage(inputs, 128, 8, 'stage3', training)
         inputs = stage(inputs, 64, 3, 'stage4', training, upsample=True)
-        inputs = stage(inputs, 16, 2, 'stage5', training, upsample=False)
+        inputs = stage(inputs, 16, 2, 'stage5', training, upsample=True)
         inputs = tf.layers.conv2d_transpose(
             inputs, classes, kernel_size=2, strides=2, use_bias=True,
             data_format='channels_first')
@@ -128,17 +111,24 @@ def build_model(inputs, classes, name, training):
 
 
 class ENet2D(ModelCore):
+    def __init__(self, n_chans_in, n_chans_out, multiplier=1, init_channels=16):
+        super().__init__(n_chans_in * multiplier, n_chans_out)
+        self.init_channels = init_channels
+        self.multiplier = multiplier
+
     def build(self, training_ph):
         x_ph = tf.placeholder(
             tf.float32, (None, self.n_chans_in, None, None), name='input'
         )
 
-        logits = build_model(x_ph, self.n_chans_out, 'enet_2d', training_ph)
+        logits = build_model(x_ph, self.n_chans_out, 'enet_2d',
+                             training_ph, self.init_channels)
         return [x_ph], logits
 
     def validate_object(self, x, y, do_val_step):
+        # TODO: add batches
         predicted, losses, weights = [], [], []
-        for x_slice, y_slice in iterate_slices(x, y, empty=True):
+        for x_slice, y_slice in iterate_slices(x, y, self.multiplier):
             y_pred, loss = do_val_step(x_slice[None], y_slice[None])
 
             predicted.extend(y_pred)
@@ -150,7 +140,7 @@ class ENet2D(ModelCore):
 
     def predict_object(self, x, do_inf_step):
         predicted = []
-        for x_slice in iterate_slices(x, empty=True):
+        for x_slice in iterate_slices(x, num_slices=self.multiplier):
             y_pred = do_inf_step(x_slice[None])
             predicted.extend(y_pred)
 
