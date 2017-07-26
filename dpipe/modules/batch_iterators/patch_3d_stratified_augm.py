@@ -28,7 +28,7 @@ class Patient:
         return hash(self.patient_id)
 
 
-def make_3d_patch_stratified_iter(
+def make_3d_augm_patch_stratified_iter(
         ids, dataset: Dataset, *, batch_size, x_patch_sizes, y_patch_size,
         nonzero_fraction, buffer_size=10):
     x_patch_sizes = [np.array(x_patch_size) for x_patch_size in x_patch_sizes]
@@ -139,7 +139,7 @@ def make_3d_patch_stratified_iter(
     @pdp.pack_args
     def extract_patch(x_big, y):
 
-        center_idx = np.array(x_big.shape) // 2 + np.array(x_big.shape) % 2
+        center_idx = np.array(x_big.shape)[-3:] // 2 + np.array(x_big.shape)[-3:] % 2
 
         xs = [x_big] + [medim.patch.extract_patch(
             x_big, center_idx=center_idx, spatial_dims=spatial_dims,
