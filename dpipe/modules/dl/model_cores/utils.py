@@ -1,5 +1,3 @@
-import warnings
-
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
@@ -30,12 +28,3 @@ def spatial_batch_norm(t, momentum=0.9, center=True, scale=True, training=False,
             raise ValueError('wrong data_format')
 
         return tf.reshape(t, shape)
-
-
-def cba3(t, n_chans, kernel_size, training, activation, name):
-    with tf.variable_scope(name):
-        t = tf.layers.conv3d(t, n_chans, kernel_size, use_bias=False,
-                             data_format='channels_first')
-        t = spatial_batch_norm(t, training=training,
-                               data_format='channels_first')
-        return activation(t)
