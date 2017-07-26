@@ -109,8 +109,8 @@ class Scaled(Dataset):
     spacial_shape = None
     axes = None
 
-    def __init__(self, data_path):
-        super().__init__(data_path)
+    def __init__(self, data_path, **kwargs):
+        super().__init__(data_path, **kwargs)
         if self.axes is not None:
             self.axes = list(sorted(self.axes))
 
@@ -149,8 +149,8 @@ class Padded(Dataset):
     spacial_shape = None
     axes = None
 
-    def __init__(self, data_path):
-        super().__init__(data_path)
+    def __init__(self, data_path, **kwargs):
+        super().__init__(data_path, **kwargs)
         if self.axes is not None:
             self.axes = list(sorted(self.axes))
 

@@ -35,9 +35,8 @@ def upsample_concat(lower, upper, name):
         return tf.concat([lower, upper], axis=1, name='concat')
 
 
-def build_model(inputs, classes, name, training):
-    channels = [16, 32]
-    bridge = channels[-1]
+def build_model(inputs, classes, channels, name, training):
+    bridge = channels[-1] * 2
 
     with tf.variable_scope(name):
         # down path
@@ -66,9 +65,9 @@ def build_model(inputs, classes, name, training):
 
 
 class UNet2D(ModelCore):
-    def __init__(self, n_chans_in, n_chans_out, multiplier=1, init_channels=16):
+    def __init__(self, n_chans_in, n_chans_out, channels, multiplier=1):
         super().__init__(n_chans_in * multiplier, n_chans_out)
-        self.init_channels = init_channels
+        self.channels = channels
         self.multiplier = multiplier
 
     def build(self, training_ph):
@@ -76,7 +75,8 @@ class UNet2D(ModelCore):
             tf.float32, (None, self.n_chans_in, None, None), name='input'
         )
 
-        logits = build_model(x_ph, self.n_chans_out, 'unet_2d', training_ph)
+        logits = build_model(x_ph, self.n_chans_out, self.channels,
+                             'unet_2d', training_ph)
         return [x_ph], logits
 
     def validate_object(self, x, y, do_val_step):

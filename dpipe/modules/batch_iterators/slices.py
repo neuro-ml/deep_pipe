@@ -42,7 +42,7 @@ def shuffle_ids(ids):
 
 
 def make_slices_iter(
-        ids, dataset: Dataset, batch_size, *, shuffle=False, empty_slice=False):
+        ids, dataset: Dataset, batch_size, *, shuffle=False, empty_slice=True):
     if shuffle:
         ids = shuffle_ids(ids)
 
