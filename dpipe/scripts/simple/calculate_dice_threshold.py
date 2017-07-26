@@ -20,7 +20,7 @@ if __name__ == '__main__':
     dices = [[] for _ in range(channels)]
     thresholds = np.linspace(0, 1, 20)
     for identifier in ids:
-        y_true = dataset.load_y(identifier)
+        y_true = dataset.load_msegm(identifier)
         y = load_by_id(predictions_path, identifier)
 
         # get dice with individual threshold for each channel
