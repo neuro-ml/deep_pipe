@@ -13,8 +13,8 @@ class IslesSPES(Scaled):
 
 
 class IslesSISS(Padded):
-    modalities = ['T1', 'T2', 'Flair', 'DWI']
-    labels = ['OT']
+    modality_cols = ['T1', 'T2', 'Flair', 'DWI']
+    target_cols = ['OT']
     global_path = False
     spacial_shape = 230, 230, 154
     axes = -3, -2, -1

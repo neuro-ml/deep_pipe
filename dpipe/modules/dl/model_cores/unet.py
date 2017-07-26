@@ -5,6 +5,7 @@ from tensorflow.contrib import slim
 from dpipe.modules.dl import ModelCore
 from dpipe.modules.batch_iterators.slices import \
     iterate_multiple_slices as iterate_slices
+from .enet import res_block
 
 
 def conv_block(inputs, output_channels, training, name, kernel_size=3,
@@ -35,6 +36,7 @@ def upsample_concat(lower, upper, name):
         return tf.concat([lower, upper], axis=1, name='concat')
 
 
+# TODO: combine
 def build_model(inputs, classes, channels, name, training):
     bridge = channels[-1] * 2
 
@@ -64,38 +66,73 @@ def build_model(inputs, classes, channels, name, training):
         return inputs
 
 
-class UNet2D(ModelCore):
-    def __init__(self, n_chans_in, n_chans_out, channels, multiplier=1):
-        super().__init__(n_chans_in * multiplier, n_chans_out)
-        self.channels = channels
-        self.multiplier = multiplier
+def build_res_model(inputs, classes, channels, name, training):
+    bridge = channels[-1] * 2
 
-    def build(self, training_ph):
-        x_ph = tf.placeholder(
-            tf.float32, (None, self.n_chans_in, None, None), name='input'
-        )
+    with tf.variable_scope(name):
+        # down path
+        down = []
+        for i, channel in enumerate(channels):
+            down.append(res_block(inputs, f'down_{i}', channel, training,
+                                  downsample=True))
 
-        logits = build_model(x_ph, self.n_chans_out, self.channels,
+            # inputs = tf.layers.max_pooling2d(
+            #     inputs, pool_size=2, strides=2, padding='same',
+            #     data_format='channels_first', name=f'pool_{i}')
+
+        # bridge:
+        inputs = res_block(inputs, f'bridge', bridge, training)
+
+        # up path
+        for i, (ch, lower) in enumerate(
+                zip(reversed(channels), reversed(down))):
+            inputs = upsample_concat(inputs, lower, f'upsample_{i}')
+            inputs = res_block(inputs, f'up_{i}', ch, training, upsample=True)
+
+        inputs = tf.layers.conv2d(inputs, classes, kernel_size=1,
+                                  use_bias=True, data_format='channels_first')
+        return inputs
+
+
+def make_unet(builder):
+    class UNet(ModelCore):
+        def __init__(self, n_chans_in, n_chans_out, channels, multiplier=1):
+            super().__init__(n_chans_in * multiplier, n_chans_out)
+            self.channels = channels
+            self.multiplier = multiplier
+
+        def build(self, training_ph):
+            x_ph = tf.placeholder(
+                tf.float32, (None, self.n_chans_in, None, None), name='input'
+            )
+
+            logits = builder(x_ph, self.n_chans_out, self.channels,
                              'unet_2d', training_ph)
-        return [x_ph], logits
+            return [x_ph], logits
 
-    def validate_object(self, x, y, do_val_step):
-        # TODO: add batches
-        predicted, losses, weights = [], [], []
-        for x_slice, y_slice in iterate_slices(x, y, self.multiplier):
-            y_pred, loss = do_val_step(x_slice[None], y_slice[None])
+        def validate_object(self, x, y, do_val_step):
+            # TODO: add batches
+            predicted, losses, weights = [], [], []
+            for x_slice, y_slice in iterate_slices(x, y, self.multiplier):
+                y_pred, loss = do_val_step(x_slice[None], y_slice[None])
 
-            predicted.extend(y_pred)
-            losses.append(loss)
-            weights.append(y_pred.size)
+                predicted.extend(y_pred)
+                losses.append(loss)
+                weights.append(y_pred.size)
 
-        loss = np.average(losses, weights=weights)
-        return np.stack(predicted, axis=-1), loss
+            loss = np.average(losses, weights=weights)
+            return np.stack(predicted, axis=-1), loss
 
-    def predict_object(self, x, do_inf_step):
-        predicted = []
-        for x_slice in iterate_slices(x, num_slices=self.multiplier):
-            y_pred = do_inf_step(x_slice[None])
-            predicted.extend(y_pred)
+        def predict_object(self, x, do_inf_step):
+            predicted = []
+            for x_slice in iterate_slices(x, num_slices=self.multiplier):
+                y_pred = do_inf_step(x_slice[None])
+                predicted.extend(y_pred)
 
-        return np.stack(predicted, axis=-1)
+            return np.stack(predicted, axis=-1)
+
+    return UNet
+
+
+UNet2D = make_unet(build_model)
+UResNet2D = make_unet(build_res_model)

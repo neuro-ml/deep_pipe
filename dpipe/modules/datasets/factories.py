@@ -7,6 +7,7 @@ from scipy import ndimage
 from .base import Dataset
 
 
+# refactor the fuck out of this
 class FromDataFrame(Dataset):
     filename = None
     target_cols = None
@@ -93,15 +94,15 @@ class FromDataFrame(Dataset):
         assert self.group_col is not None
         return self.dataFrame[self.group_col].as_matrix()
 
-    # @staticmethod
-    # def build(_filename, _target_cols, _modality_cols, _global_path=False):
-    #     class Child(FromDataFrame):
-    #         filename = _filename
-    #         target_cols = _target_cols
-    #         modality_cols = _modality_cols
-    #         global_path = _global_path
-    #
-    #     return Child
+        # @staticmethod
+        # def build(_filename, _target_cols, _modality_cols, _global_path=False):
+        #     class Child(FromDataFrame):
+        #         filename = _filename
+        #         target_cols = _target_cols
+        #         modality_cols = _modality_cols
+        #         global_path = _global_path
+        #
+        #     return Child
 
 
 # TODO: unify those two classes
@@ -137,12 +138,12 @@ class Scaled(FromDataFrame):
 
         return image >= .5
 
-    # @staticmethod
-    # def build(_spacial_shape):
-    #     class Child(Scaled):
-    #         spacial_shape = _spacial_shape
-    #
-    #     return Child
+        # @staticmethod
+        # def build(_spacial_shape):
+        #     class Child(Scaled):
+        #         spacial_shape = _spacial_shape
+        #
+        #     return Child
 
 
 class Padded(FromDataFrame):
@@ -183,9 +184,9 @@ class Padded(FromDataFrame):
 
         return image >= .5
 
-    # @staticmethod
-    # def build(_spacial_shape):
-    #     class Child(Scaled):
-    #         spacial_shape = _spacial_shape
-    #
-    #     return Child
+        # @staticmethod
+        # def build(_spacial_shape):
+        #     class Child(Scaled):
+        #         spacial_shape = _spacial_shape
+        #
+        #     return Child
