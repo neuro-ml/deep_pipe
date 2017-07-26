@@ -139,7 +139,8 @@ def make_3d_augm_patch_stratified_iter(
     @pdp.pack_args
     def extract_patch(x_big, y):
 
-        center_idx = np.array(x_big.shape)[-3:] // 2 + np.array(x_big.shape)[-3:] % 2
+        center_idx = np.array(x_big.shape)[spatial_dims] // 2 + np.array(
+            x_big.shape)[spatial_dims] % 2
 
         xs = [x_big] + [medim.patch.extract_patch(
             x_big, center_idx=center_idx, spatial_dims=spatial_dims,
@@ -157,9 +158,12 @@ def make_3d_augm_patch_stratified_iter(
         pdp.Source(random_seq, buffer_size=3),
         pdp.LambdaTransformer(load_patient, buffer_size=3),
         pdp.LambdaTransformer(find_cancer, buffer_size=3),
-        pdp.LambdaTransformer(extract_big_patch, buffer_size=batch_size),
-        pdp.LambdaTransformer(augmentation, buffer_size=batch_size),
-        pdp.LambdaTransformer(extract_patch, buffer_size=batch_size),
+        pdp.LambdaTransformer(extract_big_patch,
+                              n_workers=8, buffer_size=batch_size),
+        pdp.LambdaTransformer(augmentation, n_workers=8,
+                              buffer_size=batch_size),
+        pdp.LambdaTransformer(extract_patch, n_workers=8,
+                              buffer_size=batch_size),
         pdp.Chunker(chunk_size=batch_size, buffer_size=3),
         pdp.LambdaTransformer(combine_batch, buffer_size=buffer_size)
     )
