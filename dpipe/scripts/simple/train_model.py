@@ -1,5 +1,6 @@
 from dpipe.config import config_dataset, config_batch_iter
-from dpipe.config.config_tf import config_model, config_train
+from dpipe.config.config_tf import config_model, config_train, \
+    config_model_controller
 from dpipe.config.default_parser import get_config
 from dpipe.modules.dl import ModelController
 
@@ -22,9 +23,11 @@ if __name__ == '__main__':
     dataset = config_dataset(config)
     train_batch_iter = config_batch_iter(config, ids=train_ids, dataset=dataset)
     model = config_model(config, dataset)
+    model_controller = config_model_controller(config, model, log_path,
+                                               restore_model_path)
     train = config_train(config)
 
-    with ModelController(model, log_path, restore_model_path) as mc:
+    with model_controller as mc:
         try:
             train(mc, train_batch_iter, val_ids, dataset)
             model.save(save_model_path)

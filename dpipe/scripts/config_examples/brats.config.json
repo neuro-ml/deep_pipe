@@ -1,44 +1,66 @@
 {
-  "n_iters_per_epoch": 100,
-  "experiment": "msegm_predict",
-
+  "batch_iter": "3d_patch_strat",
+  "batch_iter__params": {
+    "batch_size": 64,
+    "buffer_size": 30,
+    "nonzero_fraction": 0.5,
+    "x_patch_sizes": [
+      [
+        25,
+        25,
+        25
+      ],
+      [
+        57,
+        57,
+        57
+      ]
+    ],
+    "y_patch_size": [
+      9,
+      9,
+      9
+    ]
+  },
+  "config_path": "deep_pipe/dpipe/scripts/config_examples/brats.config.json",
   "dataset": "brats2017",
+  "dataset__params": {
+    "data_path": "/nmnt/x02-ssd/brats2017/processed"
+  },
   "dataset_cached": true,
   "dataset_task": "msegm",
-
+  "experiment": "msegm_predict",
+  "experiments_path": "/nmnt/media/home/krivov/exp/deepmedic",
+  "loss": "sigmoid_cross_entropy",
+  "model_core": "deepmedic_orig",
+  "model_core__params": {
+    "n_parts": [
+      1,
+      2,
+      2
+    ]
+  },
+  "n_iters_per_epoch": 100,
+  "optimizer": "MomentumOptimizer",
+  "optimizer__params": {
+    "momentum": 0.9,
+    "use_nesterov": true
+  },
+  "predict": "sigmoid",
+  "scripts_path": "/nmnt/media/home/krivov/deep_pipe/dpipe/scripts/simple",
   "split": "cv_111",
   "split__params": {
     "n_splits": 5,
     "val_size": 6
   },
-
-  "model_core": "deepmedic_orig",
-  "model_core__params": {
-    "n_parts": [1, 2, 2]
-  },
-
-  "loss": "sigmoid_cross_entropy",
-  "predict": "sigmoid",
-
-  "optimizer": "MomentumOptimizer",
-  "optimizer__params": {"use_nesterov": true, "momentum": 0.9},
-
-  "batch_iter": "3d_patch_strat",
-  "batch_iter__params": {
-    "batch_size": 64,
-    "x_patch_sizes": [[25, 25, 25], [57, 57, 57]],
-    "y_patch_size": [9, 9, 9],
-    "nonzero_fraction": 0.5,
-    "buffer_size": 80
-  },
-
+  "metrics": ["max_dices"],
   "train": "train_with_lr_decrease",
   "train__params": {
-    "n_epochs": 80,
-    "lr_init": 0.1,
+    "atol": 0.01,
     "lr_dec_mul": 0.5,
+    "lr_init": 0.1,
+    "n_epochs": 80,
     "patience": 5,
-    "rtol": 0.03,
-    "atol": 0.01
+    "rtol": 0.03
   }
 }

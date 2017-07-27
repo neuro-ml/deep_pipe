@@ -7,7 +7,7 @@ def extract(l, idx):
     return [l[i] for i in idx]
 
 
-def calc_max_dice(y_true, y_pred):
+def calc_max_dices(y_true, y_pred):
     dices = []
     thresholds = np.linspace(0, 1, 20)
     for true, pred in zip(y_true, y_pred):

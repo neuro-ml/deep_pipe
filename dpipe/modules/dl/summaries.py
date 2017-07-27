@@ -15,16 +15,24 @@ class SummaryLogger:
         self.iter += 1
 
 
-class CustomSummaryWriter:
-    def __init__(self, name, writer):
-        self.writer = writer
-        self.name = name
+def _write_scalar(scalar, step, name, writer):
+    s = tf.Summary(value=[tf.Summary.Value(tag=name, simple_value=scalar)])
+    writer.add_summary(s, global_step=step)
 
-        self.iter = 0
 
-    def write(self, value):
-        summary = tf.Summary(
-            value=[tf.Summary.Value(tag=self.name, simple_value=value)])
+def _write_value(value, step, name, writer):
+    if hasattr(value, '__iter__'):
+        for i, s in enumerate(value):
+            _write_scalar(s, step, name+'/{}'.format(i), writer)
+    else:
+        _write_scalar(value, step, name, writer)
 
-        self.writer.add_summary(summary, global_step=self.iter)
-        self.iter += 1
+
+def make_write_value(name, writer):
+    step = 0
+
+    def write_value(value):
+        nonlocal step
+        _write_value(value, step, name, writer)
+        step += 1
+    return write_value
