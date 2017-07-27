@@ -10,8 +10,6 @@ from scipy.ndimage.interpolation import zoom, map_coordinates
 from scipy.ndimage.filters import gaussian_filter
 
 
-
-
 from ..datasets import Dataset
 from .utils import combine_batch
 from dpipe import medim
@@ -107,8 +105,8 @@ def make_3d_augm_patch_stratified_iter(
         """
         scipy.random.seed()
 
-        scale = np.random.normal(1, 0.1, size=3)
-        alpha, theta = np.random.normal(0, 5, size=2)
+        # scale = np.random.normal(1, 0.1, size=3)
+        alpha, theta = np.random.normal(0, 9, size=2)
         alpha = 0
 
         for i in range(1, len(x.shape) - 1):
@@ -128,7 +126,7 @@ def make_3d_augm_patch_stratified_iter(
         #         x = _rotate(x, 3, t, a)
         #         y = _rotate(y, 3, t, a)
 
-        x = np.array([i * np.random.normal(1, 0.3) for i in x])
+        x = np.array([i * np.random.normal(1, 0.35) for i in x])
         return x, y
 
 
@@ -157,11 +155,11 @@ def make_3d_augm_patch_stratified_iter(
     return pdp.Pipeline(
         pdp.Source(random_seq, buffer_size=3),
         pdp.LambdaTransformer(load_patient, buffer_size=3),
-        pdp.LambdaTransformer(find_cancer, buffer_size=3),
+        pdp.LambdaTransformer(find_cancer, n_workers=8, buffer_size=3),
         pdp.LambdaTransformer(extract_big_patch,
                               n_workers=8, buffer_size=batch_size),
         pdp.LambdaTransformer(augmentation, n_workers=8,
-                              buffer_size=batch_size),
+                              buffer_size=0),
         pdp.LambdaTransformer(extract_patch, n_workers=8,
                               buffer_size=batch_size),
         pdp.Chunker(chunk_size=batch_size, buffer_size=3),
