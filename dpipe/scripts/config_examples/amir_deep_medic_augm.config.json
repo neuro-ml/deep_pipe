@@ -5,30 +5,37 @@
   "dataset_cached": true,
   "dataset_task": "msegm",
   "split": "cv_111",
+
   "split__params": {
     "n_splits": 5,
     "val_size": 5
   },
-  "model_core": "unetlike3d",
+
+  "model_core": "deepmedic_orig",
+  "model_core__params": {
+    "n_parts": [1, 2, 2]
+  },
 
   "loss": "sigmoid_cross_entropy",
   "predict": "sigmoid",
-  "optimizer": "AdamOptimizer",
+
+  "optimizer": "MomentumOptimizer",
+  "optimizer__params": {"use_nesterov": true, "momentum": 0.9},
 
   "batch_iter": "3d_augm_patch_strat",
-    "batch_iter__params": {
-    "batch_size": 12,
-    "x_patch_sizes": [40,40,40],
-    "y_patch_size": [40,40,40],
-    "nonzero_fraction": 0.95,
-    "buffer_size": 20
+  "batch_iter__params": {
+    "batch_size": 48,
+    "x_patch_sizes": [[25, 25, 25], [57, 57, 57]],
+    "y_patch_size": [9, 9, 9],
+    "nonzero_fraction": 0.8,
+    "buffer_size": 50
   },
 
   "train": "train_with_lr_decrease",
   "train__params": {
-    "n_epochs": 40,
+    "n_epochs": 70,
     "lr_init": 0.1,
-    "lr_dec_mul": 0.7,
+    "lr_dec_mul": 0.55,
     "patience": 5,
     "rtol": 0.03,
     "atol": 0.01
