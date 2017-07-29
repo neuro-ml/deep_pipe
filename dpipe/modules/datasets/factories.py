@@ -2,12 +2,10 @@ import pandas as pd
 import numpy as np
 import os
 import nibabel as nib
-from scipy import ndimage
 
 from .base import Dataset
 
 
-# refactor the fuck out of this
 class FromDataFrame(Dataset):
     filename = None
     target_cols = None
@@ -32,11 +30,9 @@ class FromDataFrame(Dataset):
             return np.load(path)
         return nib.load(path).get_data()
 
-    def load_by_cols(self, patient_id, columns):
-        channels = self.dataFrame[columns].loc[patient_id]
+    def load_by_paths(self, paths):
         res = []
-
-        for image in channels:
+        for image in paths:
             if not self.global_path:
                 image = os.path.join(self.data_path, image)
             x = self.load_channel(image)
@@ -48,14 +44,16 @@ class FromDataFrame(Dataset):
         # super method is needed here to allow chaining in its children
         super().load_msegm(patient)
 
-        image = self.load_by_cols(patient, self.target_cols)
+        paths = self.dataFrame[self.target_cols].loc[patient]
+        image = self.load_by_paths(paths)
 
         return image >= .5
 
     def load_mscan(self, patient_id):
         super().load_mscan(patient_id)
 
-        image = self.load_by_cols(patient_id, self.modality_cols)
+        paths = self.dataFrame[self.modality_cols].loc[patient_id]
+        image = self.load_by_paths(paths)
         image = image.astype('float32')
 
         axes = tuple(range(1, image.ndim))
@@ -94,99 +92,93 @@ class FromDataFrame(Dataset):
         assert self.group_col is not None
         return self.dataFrame[self.group_col].as_matrix()
 
-        # @staticmethod
-        # def build(_filename, _target_cols, _modality_cols, _global_path=False):
-        #     class Child(FromDataFrame):
-        #         filename = _filename
-        #         target_cols = _target_cols
-        #         modality_cols = _modality_cols
-        #         global_path = _global_path
-        #
-        #     return Child
+    @staticmethod
+    def build(_filename, _target_cols, _modality_cols, _global_path=False):
+        class Child(FromDataFrame):
+            filename = _filename
+            target_cols = _target_cols
+            modality_cols = _modality_cols
+            global_path = _global_path
+
+        return Child
 
 
-# TODO: unify those two classes
-class Scaled(FromDataFrame):
-    spacial_shape = None
-    axes = None
+def set_filename(dataset, _filename):
+    class Wrapped(dataset):
+        filename = _filename
 
-    def __init__(self, data_path, **kwargs):
-        super().__init__(data_path, **kwargs)
-        if self.axes is not None:
-            self.axes = list(sorted(self.axes))
-
-    def scale(self, image, order):
-        if self.axes is None:
-            l, L = len(self.spacial_shape), image.ndim
-            self.axes = list(range(L - l, L))
-
-        old_shape = np.array(image.shape)[self.axes]
-        new_shape = np.array(self.spacial_shape)
-
-        scale = np.ones_like(image)
-        scale[self.axes] = new_shape / old_shape
-        return ndimage.zoom(image, scale, order=order)
-
-    def load_mscan(self, patient_id):
-        image = super().load_mscan(patient_id)
-
-        return self.scale(image, 3)
-
-    def load_msegm(self, patient):
-        image = super().load_msegm(patient)
-        image = self.scale(image, 0)
-
-        return image >= .5
-
-        # @staticmethod
-        # def build(_spacial_shape):
-        #     class Child(Scaled):
-        #         spacial_shape = _spacial_shape
-        #
-        #     return Child
+    return Wrapped
 
 
-class Padded(FromDataFrame):
-    spacial_shape = None
-    axes = None
+# decorator for decorators. yeah, baby
+def parametrized(dec):
+    def layer(*args, **kwargs):
+        def repl(f):
+            return dec(f, *args, **kwargs)
 
-    def __init__(self, data_path, **kwargs):
-        super().__init__(data_path, **kwargs)
-        if self.axes is not None:
-            self.axes = list(sorted(self.axes))
+        return repl
 
-    def pad(self, image):
-        if self.axes is None:
-            l, L = len(self.spacial_shape), image.ndim
-            self.axes = list(range(L - l, L))
+    return layer
 
-        old_shape = np.array(image.shape)[self.axes]
-        new_shape = np.array(self.spacial_shape)
 
-        assert (old_shape <= new_shape).all()
+@parametrized
+def apply(cls, func, **kwargs):
+    class Wrapped(cls):
+        def load_mscan(self, patient_id):
+            image = super().load_mscan(patient_id)
+            return func(image, **kwargs)
 
-        delta = new_shape - old_shape
-        pad = np.array((delta // 2, (delta + 1) // 2)).T
+        def load_msegm(self, patient):
+            image = super().load_msegm(patient)
+            image = func(image, **kwargs)
 
-        padding = np.zeros((image.ndim, 2), int)
-        padding[self.axes] = pad.astype(int)
+            return image >= .5
 
-        return np.pad(image, padding, mode='constant')
+    return Wrapped
 
-    def load_mscan(self, patient_id):
-        image = super().load_mscan(patient_id)
 
-        return self.pad(image)
+@parametrized
+def mscan(cls, func, **kwargs):
+    class Wrapped(cls):
+        def load_mscan(self, patient_id):
+            image = super().load_mscan(patient_id)
+            return func(image, **kwargs)
 
-    def load_msegm(self, patient):
-        image = super().load_msegm(patient)
-        image = self.pad(image)
+    return Wrapped
 
-        return image >= .5
 
-        # @staticmethod
-        # def build(_spacial_shape):
-        #     class Child(Scaled):
-        #         spacial_shape = _spacial_shape
-        #
-        #     return Child
+@parametrized
+def msegm(cls, func, **kwargs):
+    class Wrapped(cls):
+        def load_msegm(self, patient):
+            image = super().load_msegm(patient)
+            image = func(image, **kwargs)
+
+            return image >= .5
+
+    return Wrapped
+
+
+def append_channels(cls):
+    class Wrapped(cls):
+        def __init__(self, *args, append_paths, **kwargs):
+            super(Wrapped, self).__init__(*args, **kwargs)
+            self.append_paths = append_paths
+
+        def load_mscan(self, patient_id):
+            image = super().load_mscan(patient_id)
+
+            additional = [i % patient_id for i in self.append_paths]
+            second = self.load_by_paths(additional)
+            if second.ndim != image.ndim:
+                second = second[0]
+            image = np.vstack((image, second))
+            image = image.astype('float32')
+
+            return image
+
+        @property
+        def n_chans_mscan(self):
+            return len(self.append_paths) + super().n_chans_mscan
+
+    return Wrapped

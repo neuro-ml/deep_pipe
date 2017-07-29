@@ -1,7 +1,10 @@
 {
   "n_iters_per_epoch": null,
   "experiment": "msegm_predict",
-  "dataset": "isles2017_crop",
+  "dataset": "isles2017_stack",
+  "dataset__params": {
+    "append_paths": ["data/stack/boxes/%s.npy"]
+  },
   "dataset_cached": true,
   "dataset_task": "msegm",
   "split": "cv_111",
@@ -9,9 +12,9 @@
     "n_splits": 5,
     "val_size": 5
   },
-  "model_core": "unet2d",
+  "model_core": "uresnet2d",
   "model_core__params": {
-    "init_channels": 32,
+    "channels": [16, 32, 64],
     "multiplier": 3
   },
   "loss": "sigmoid_cross_entropy",
@@ -19,17 +22,17 @@
   "optimizer": "AdamOptimizer",
   "batch_iter": "multiple_slices",
   "batch_iter__params": {
-    "shuffle": true,
+    "batch_size": 20,
     "num_slices": 3,
-    "batch_size": 40
+    "shuffle": true
   },
   "train": "train_with_lr_decrease",
   "train__params": {
-    "n_epochs": 100,
-    "lr_init": 0.1,
+    "atol": 0.01,
     "lr_dec_mul": 0.7,
+    "lr_init": 0.1,
+    "n_epochs": 100,
     "patience": 5,
-    "rtol": 0.03,
-    "atol": 0.01
+    "rtol": 0.03
   }
 }
