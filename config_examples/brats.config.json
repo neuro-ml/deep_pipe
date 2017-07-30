@@ -22,7 +22,6 @@
       9
     ]
   },
-  "config_path": "deep_pipe/dpipe/scripts/config_examples/brats.config.json",
   "dataset": "brats2017",
   "dataset__params": {
     "data_path": "/nmnt/x02-ssd/brats2017/processed"

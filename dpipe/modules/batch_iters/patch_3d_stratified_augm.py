@@ -45,7 +45,7 @@ def make_3d_augm_patch_stratified_iter(
         elif patient.y.ndim == 3:
             mask = patient.y > 0
         else:
-            raise ValueError('y number of dimensions '
+            raise ValueError('segm number of dimensions '
                              'was {}, expected 3 or 4'.format(patient.y.ndim))
         conditional_centre_indices = medim.patch.get_conditional_center_indices(
             mask, patch_size=y_patch_size, spatial_dims=spatial_dims)
@@ -114,8 +114,8 @@ def make_3d_augm_patch_stratified_iter(
                 x = np.flip(x, -i)
                 y = np.flip(y, -i)
 
-        # x = np.array([_scale_crop(i) for i in x])
-        # y = _scale_crop(y[0])[np.newaxis]
+        # mscan = np.array([_scale_crop(i) for i in mscan])
+        # segm = _scale_crop(segm[0])[np.newaxis]
 
         x = _rotate(x, 3, theta, alpha)
         y = _rotate(y, 0, theta, alpha)
@@ -123,8 +123,8 @@ def make_3d_augm_patch_stratified_iter(
         #     if np.random.binomial(1, .5):
         #         t = np.random.choice([-90, 0, 90])
         #         a = np.random.choice([-90, 0, 90])
-        #         x = _rotate(x, 3, t, a)
-        #         y = _rotate(y, 3, t, a)
+        #         mscan = _rotate(mscan, 3, t, a)
+        #         segm = _rotate(segm, 3, t, a)
 
         x = np.array([i * np.random.normal(1, 0.35) for i in x])
         return x, y
@@ -145,8 +145,8 @@ def make_3d_augm_patch_stratified_iter(
             patch_size=patch_size)
             for patch_size in x_patch_sizes[1:]]
 
-        # y = medim.patch.extract_patch(
-        #     y, center_idx=center_idx, patch_size=y_patch_size,
+        # segm = medim.patch.extract_patch(
+        #     segm, center_idx=center_idx, patch_size=y_patch_size,
         #     spatial_dims=spatial_dims)
 
         return (*xs, y)

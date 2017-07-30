@@ -1,4 +1,4 @@
-from dpipe.config import config_dataset, config_batch_iter
+from dpipe.config import config_dataset, config_batch_iter_factory
 from dpipe.config.config_tf import config_model, config_train, \
     config_model_controller
 from dpipe.config.default_parser import get_config
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     val_ids = read_lines(val_ids_path)
 
     dataset = config_dataset(config)
-    train_batch_iter = config_batch_iter(config, ids=train_ids, dataset=dataset)
+    train_batch_iter = config_batch_iter_factory(config, ids=train_ids, dataset=dataset)
     model = config_model(config, dataset)
     model_controller = config_model_controller(config, model, log_path,
                                                restore_model_path)

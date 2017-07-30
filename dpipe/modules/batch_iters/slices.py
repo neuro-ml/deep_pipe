@@ -53,18 +53,18 @@ def make_slices_iter(
             yield from iterate_slices(x, y, empty=empty_slice)
 
     # @pdp.pack_args
-    # def flip(x, y):
-    #     x = x.copy()
-    #     y = y.copy()
+    # def flip(mscan, segm):
+    #     mscan = mscan.copy()
+    #     segm = segm.copy()
     #     if np.random.randint(0, 2):
-    #         x = np.flip(x, 1)
-    #         y = np.flip(y, 1)
+    #         mscan = np.flip(mscan, 1)
+    #         segm = np.flip(segm, 1)
     #     if np.random.randint(0, 2):
-    #         x = np.flip(x, 2)
-    #         y = np.flip(y, 2)
+    #         mscan = np.flip(mscan, 2)
+    #         segm = np.flip(segm, 2)
     #     # randomly swap channels because why not?
-    #     x = x[np.random.permutation(np.arange(len(x)))]
-    #     return x, y
+    #     mscan = mscan[np.random.permutation(np.arange(len(mscan)))]
+    #     return mscan, segm
 
     return pdp.Pipeline(
         pdp.Source(slicer(ids), buffer_size=30),
@@ -87,19 +87,19 @@ def make_multiple_slices_iter(
             yield from iterate_multiple_slices(x, y, num_slices)
 
     # @pdp.pack_args
-    # def flip(x, y):
-    #     x = x.copy()
-    #     y = y.copy()
+    # def flip(mscan, segm):
+    #     mscan = mscan.copy()
+    #     segm = segm.copy()
     #     # if np.random.randint(0, 2):
-    #     #     x = np.flip(x, 1)
-    #     #     y = np.flip(y, 1)
+    #     #     mscan = np.flip(mscan, 1)
+    #     #     segm = np.flip(segm, 1)
     #     # swap direction
     #     if np.random.randint(0, 2):
-    #         x = np.flip(x, 2)
-    #         y = np.flip(y, 2)
+    #         mscan = np.flip(mscan, 2)
+    #         segm = np.flip(segm, 2)
     #     # randomly swap channels because why not?
-    #     # x = x[np.random.permutation(np.arange(len(x)))]
-    #     return x, y
+    #     # mscan = mscan[np.random.permutation(np.arange(len(mscan)))]
+    #     return mscan, segm
 
     return pdp.Pipeline(
         pdp.Source(slicer(ids), buffer_size=30),

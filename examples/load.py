@@ -5,4 +5,3 @@ b = np.ones((150, 150, 150))
 
 while True:
     a + b
-

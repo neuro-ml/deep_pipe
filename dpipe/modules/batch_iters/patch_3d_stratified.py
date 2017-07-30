@@ -10,10 +10,10 @@ import dpipe.external.pdp.pdp as pdp
 
 
 class Patient:
-    def __init__(self, patient_id, x, y):
+    def __init__(self, patient_id, mscan, segm):
         self.patient_id = patient_id
-        self.x = x
-        self.y = y
+        self.mscan = mscan
+        self.segm = segm
 
     def __hash__(self):
         return hash(self.patient_id)
@@ -29,27 +29,19 @@ def make_3d_patch_stratified_iter(
     random_seq = iter(partial(choice, ids), None)
 
     def load_patient(name):
-        return Patient(name, dataset.load_x(name), dataset.load_y(name))
+        return Patient(name, dataset.load_mscan(name), dataset.load_segm(name))
 
     @lru_cache(maxsize=len(ids))
     def find_cancer(patient: Patient):
-        if patient.y.ndim == 4:
-            mask = np.any(patient.y, axis=0)
-        elif patient.y.ndim == 3:
-            mask = patient.y > 0
-        else:
-            raise ValueError('y number of dimensions '
-                             'was {}, expected 3 or 4'.format(patient.y.ndim))
+        mask = patient.segm > 0
         conditional_centre_indices = medim.patch.get_conditional_center_indices(
             mask, patch_size=y_patch_size, spatial_dims=spatial_dims)
 
-        return patient.x, patient.y, conditional_centre_indices
+        return patient.mscan, patient.segm, conditional_centre_indices
 
     @pdp.pack_args
     def extract_patch(x, y, conditional_center_indices):
-        cancer_type = np.random.choice(
-            [True, False], p=[nonzero_fraction, 1 - nonzero_fraction])
-        if cancer_type:
+        if np.random.uniform() < nonzero_fraction:
             center_idx = choice(conditional_center_indices)
         else:
             center_idx = medim.patch.get_uniform_center_index(
