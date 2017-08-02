@@ -1,19 +1,15 @@
 from functools import lru_cache, partial
 from random import choice
 
-from itertools import product
-
 import numpy as np
 import scipy
 from scipy.ndimage import rotate
-from scipy.ndimage.interpolation import zoom, map_coordinates
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage.interpolation import zoom
 
-
-from ..datasets import Dataset
-from .utils import combine_batch
+import dpipe.externals.pdp.pdp as pdp
 from dpipe import medim
-import dpipe.external.pdp.pdp as pdp
+from dpipe.datasets import Dataset
+from .utils import combine_batch
 
 
 class Patient:

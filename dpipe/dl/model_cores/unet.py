@@ -2,9 +2,9 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import slim
 
-from dpipe.modules.dl import ModelCore
-from dpipe.modules.batch_iterators.slices import \
+from dpipe.batch_iters import \
     iterate_multiple_slices as iterate_slices
+from dpipe.dl import ModelCore
 from .enet import res_block
 
 

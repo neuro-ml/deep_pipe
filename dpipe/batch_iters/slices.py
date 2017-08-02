@@ -1,9 +1,9 @@
 import numpy as np
 
-from ..datasets import Dataset
+import dpipe.externals.pdp.pdp as pdp
+from dpipe.datasets import Dataset
 from dpipe.medim.slices import iterate_slices
 from .utils import combine_batch
-import dpipe.external.pdp.pdp as pdp
 
 
 # TODO: this is remarkably terrible ^_^

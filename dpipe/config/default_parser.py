@@ -1,21 +1,13 @@
-import copy
 import os
 import json
 import pprint
 import argparse
 from collections import ChainMap
 
-
-from dpipe.modules.datasets.config import dataset_name2default_params
-
 __all__ = ['parse_config', 'get_parser', 'get_config']
 
 # you can pas either a dict with params, or a just an array with names
 # the param's name is added to the names array, if it is not present there
-
-module_type2default_params_mapping = {
-    'dataset': dataset_name2default_params
-}
 
 
 def get_short_name(name: str) -> str:
@@ -38,7 +30,6 @@ common_script_params = {
 # Complex parameters
 # Defaults are allowed only for flags
 additional_params = {
-    'batch_size': dict(names=['-bs', '--batch_size'], type=int),
     'save_on_quit': dict(
         names=['--save'], action='store_true',
         help='whether to save the model after ctrl+c is pressed'),
@@ -66,13 +57,13 @@ def parse_config(parser: argparse.ArgumentParser) -> dict:
     for arg, value in args._get_kwargs():
         if value is not None:
             config[arg] = value
-
-    # module-specific:
-    for module, default_params in module_type2default_params_mapping.items():
-        field_name = f'{module}__params'
-        params = config.get(field_name, {})
-        _merge_configs(params, default_params[config[module]])
-        config[field_name] = params
+    #
+    # # module-specific:
+    # for module, default_params in module_type2default_params_mapping.items():
+    #     field_name = f'{module}__params'
+    #     params = config.get(field_name, {})
+    #     _merge_configs(params, default_params[config[module]])
+    #     config[field_name] = params
 
     # TODO: for now a dirty hack:
     for name in ('save_model_path', 'restore_model_path'):

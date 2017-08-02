@@ -1,9 +1,9 @@
-from dpipe.modules.dl.model_cores.unet import UNet2D, UResNet2D
-from .enet import ENet2D
-from .deepmedic_orig import DeepMedicOrig
-from .deepmedic_highway import DeepMedicHigh
-from .deepmedic_res import DeepMedicRes
+from dpipe.dl.model_cores import UNet2D, UResNet2D
 from .deepmedic_bottle import DeepMedicBottle
+from .deepmedic_highway import DeepMedicHigh
+from .deepmedic_orig import DeepMedicOrig
+from .deepmedic_res import DeepMedicRes
+from .enet import ENet2D
 
 model_core_name2model_core = {
     'deepmedic_orig': DeepMedicOrig,

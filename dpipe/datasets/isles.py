@@ -1,4 +1,4 @@
-from dpipe.modules.datasets.factories import FromDataFrame, Scaled, Padded
+from dpipe.datasets import FromDataFrame, Scaled, Padded
 
 
 # TODO: create filename factory

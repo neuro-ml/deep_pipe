@@ -19,24 +19,3 @@ dataset_name2dataset = {
         'augmented_spes_penumbra.csv'),
     'wmhs': WhiteMatterHyperintensity,
 }
-
-_isles_path = {'data_path': '/nmnt/x04-hdd/ISLES/'}
-dataset_name2default_params = {
-    'brats2015': {
-        'data_path': '/nmnt/x02-ssd/brats2015/processed'},
-    'brats2017': {
-        'data_path': '/nmnt/x02-ssd/brats2017/processed'},
-
-    'isles2017': _isles_path,
-    'isles2017_augm': _isles_path,
-    'isles2017_crop': _isles_path,
-    'isles2017_crop_augm': _isles_path,
-
-    'isles_siss': _isles_path,
-    'isles_siss_augmented': _isles_path,
-    'isles_spes': _isles_path,
-    'isles_spes_augmented_core': _isles_path,
-    'isles_spes_augmented_penumbra': _isles_path,
-
-    'wmhs': {'data_path': '/nmnt/x01-ssd/MICCAI_WMHS/'},
-}

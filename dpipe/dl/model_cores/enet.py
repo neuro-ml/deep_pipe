@@ -2,10 +2,9 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from .base import ModelCore
-
-from dpipe.modules.batch_iterators.slices import \
+from dpipe.batch_iters import \
     iterate_multiple_slices as iterate_slices
+from .base import ModelCore
 
 
 def init_block(inputs, name, training, output_channels, kernel_size=3):

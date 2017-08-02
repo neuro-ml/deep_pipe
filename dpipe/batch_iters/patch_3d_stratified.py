@@ -3,10 +3,10 @@ from random import choice
 
 import numpy as np
 
-from ..datasets import Dataset
-from .utils import combine_batch
+import dpipe.externals.pdp.pdp as pdp
 from dpipe import medim
-import dpipe.external.pdp.pdp as pdp
+from dpipe.datasets import Dataset
+from .utils import combine_batch
 
 
 class Patient:

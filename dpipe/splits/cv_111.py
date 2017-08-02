@@ -1,7 +1,7 @@
-from sklearn.model_selection import KFold, train_test_split
 import numpy as np
+from sklearn.model_selection import KFold, train_test_split
 
-from ..datasets import Dataset
+from dpipe.datasets import Dataset
 
 
 def get_cv_111(dataset: Dataset, *, val_size, n_splits):
