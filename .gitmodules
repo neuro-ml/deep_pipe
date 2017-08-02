@@ -1,0 +1,3 @@
+[submodule "dpipe/externals/pdp"]
+	path = dpipe/externals/pdp
+	url = https://github.com/neuro-ml/deep_pipe.git
