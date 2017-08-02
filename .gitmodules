@@ -1,3 +1,3 @@
-[submodule "dpipe/externals/pdp"]
-	path = dpipe/externals/pdp
+[submodule "dpipe/external/pdp"]
+	path = dpipe/external/pdp
 	url = https://github.com/Egor-Krivov/pdp.git
