@@ -1,8 +1,7 @@
 import json
-with open('../paths.json', 'r') as f:
-    p_ = json.load(f)
+from dpipe.config import get_paths
 
-PATH_TO_SCRIPTS = p_["scripts_path"]
+PATH_TO_SCRIPTS = get_paths()['scripts']
 
 TRAIN_SCRIPT = expand('{path_to_scripts}/train_model.py', path_to_scripts=PATH_TO_SCRIPTS)[0]
 PREDICT_SCRIPT = expand('{path_to_scripts}/predict.py', path_to_scripts=PATH_TO_SCRIPTS)[0]

@@ -1,19 +1,30 @@
 from dpipe.datasets.base import make_cached, Dataset
-
-from dpipe.batch_iters.batch_iter_factory import BatchIterFactory, \
-    BatchIterFactoryFin, BatchIterFactoryInf
-from dpipe.batch_iters.config import batch_iter_fin_name2batch_iter, \
-    batch_iter_inf_name2batch_iter
 from dpipe.datasets.config import dataset_name2dataset
 from dpipe.splits.config import split_name2get_split
+from dpipe.experiments.config import experiment_name2experiment_builder
+from dpipe.batch_iters.config import batch_iter_fin_name2batch_iter, \
+    batch_iter_inf_name2batch_iter
+from dpipe.batch_iters.batch_iter_factory import BatchIterFactory, \
+    BatchIterFactoryFin, BatchIterFactoryInf
 from .utils import config_object, config_partial
 
-__all__ = ['config_dataset', 'config_split', 'config_batch_iter_factory']
+__all__ = ['config_dataset', 'config_split', 'config_batch_iter_factory',
+           'config_experiment']
 
 
 def config_dataset(config) -> Dataset:
     dataset = config_object(config, 'dataset', dataset_name2dataset)
     return dataset if not config['dataset_cached'] else make_cached(dataset)
+
+
+def config_split(config, *, dataset: Dataset):
+    return config_object(config, 'split', split_name2get_split, dataset=dataset)
+
+
+def config_experiment(config, *, experiment_path, config_path, split):
+    return config_object(
+        config, 'experiment', experiment_name2experiment_builder, split=split,
+        experiment_path=experiment_path, config_path=config_path)
 
 
 def config_batch_iter_factory(config, *, ids, dataset) -> BatchIterFactory:
@@ -39,7 +50,3 @@ def config_batch_iter_factory(config, *, ids, dataset) -> BatchIterFactory:
         batch_iter_factory = BatchIterFactoryInf(get_batch_iter,
                                                  n_iters_per_epoch)
     return batch_iter_factory
-
-
-def config_split(config, dataset: Dataset):
-    return config_object(config, 'split', split_name2get_split, dataset=dataset)

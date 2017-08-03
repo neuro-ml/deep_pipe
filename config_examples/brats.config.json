@@ -2,8 +2,10 @@
   "n_iters_per_epoch": 100,
   "problem": "msegm",
 
-  "experiment": "msegm_predict",
-  "makefile": "train_threshold_predict",
+  "experiment": "flat",
+  "experiment__params": {
+      "makefile": "train_threshold_predict"
+  },
 
   "dataset": "brats2017",
   "dataset_cached": true,
@@ -19,7 +21,7 @@
 
   "model_core": "deepmedic_orig",
   "model_core__params": {
-    "n_parts": [1, 2, 1]
+    "n_parts": [1, 2, 2]
   },
 
   "loss": "sigmoid_cross_entropy",
