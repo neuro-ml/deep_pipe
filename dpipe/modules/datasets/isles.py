@@ -36,8 +36,9 @@ class Isles2017Raw(Isles2017):
     filename = 'meta2017.csv'
 
 
-@apply(pad, spacial_shape=(200, 200, 25))
-class Isles2017Crop3D(Isles2017):
+@msegm(scale, spacial_shape=[70], order=0)
+@mscan(scale, spacial_shape=[70], order=3)
+class Isles2017Scaled(Isles2017):
     filename = 'isles2017_crop.csv'
 
 

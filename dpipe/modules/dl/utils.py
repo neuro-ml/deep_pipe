@@ -22,3 +22,15 @@ def sparse_softmax_cross_entropy(*, logits, y_ph):
 
 def sigmoid_cross_entropy(*, logits, y_ph):
     return tf.losses.sigmoid_cross_entropy(y_ph, logits=logits)
+
+
+def soft_dice_loss(*, logits, y_ph, softness=1e-7):
+    batch = tf.shape(y_ph)[0]
+
+    y_ph = tf.reshape(y_ph, [batch, -1])
+    logits = tf.reshape(logits, [batch, -1])
+
+    intersection = 2 * tf.reduce_sum(logits * y_ph, axis=1)
+    volumes = tf.reduce_sum(logits, axis=1) + tf.reduce_sum(y_ph, axis=1)
+
+    return - tf.reduce_mean((intersection + softness) / (volumes + softness))

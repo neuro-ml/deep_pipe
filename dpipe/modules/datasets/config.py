@@ -11,7 +11,7 @@ dataset_name2dataset = {
     'isles2017_augm': set_filename(Isles2017, 'isles2017_augmented.csv'),
     'isles2017_crop': set_filename(Isles2017, 'isles2017_crop.csv'),
     'isles2017_crop_augm': set_filename(Isles2017, 'isles2017_crop_augm.csv'),
-    'isles2017_crop3d': Isles2017Crop3D,
+    'isles2017_scaled': Isles2017Scaled,
     'isles2017_box': Isles2017Box,
     'isles2017_stack': Isles2017Stack,
 
@@ -36,7 +36,7 @@ dataset_name2default_params = {
     'isles2017': _isles_path,
     'isles2017_augm': _isles_path,
     'isles2017_crop': _isles_path,
-    'isles2017_crop3d': _isles_path,
+    'isles2017_scaled': _isles_path,
     'isles2017_box': _isles_path,
     'isles2017_stack': _isles_path,
     'isles2017_crop_augm': _isles_path,
