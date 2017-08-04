@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from .model_cores import ModelCore
+from dpipe.model_cores import ModelCore
 
 
 class FrozenModel:

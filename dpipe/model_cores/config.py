@@ -1,4 +1,4 @@
-from dpipe.dl.model_cores import UNet2D, UResNet2D
+from .unet import UNet2D, UResNet2D
 from .deepmedic_bottle import DeepMedicBottle
 from .deepmedic_highway import DeepMedicHigh
 from .deepmedic_orig import DeepMedicOrig
