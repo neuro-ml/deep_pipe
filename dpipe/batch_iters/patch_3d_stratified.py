@@ -3,25 +3,25 @@ from random import choice
 
 import numpy as np
 
-import dpipe.externals.pdp.pdp as pdp
 from dpipe import medim
-from dpipe.datasets import Dataset
+from dpipe.datasets import DataLoader
+import dpipe.externals.pdp.pdp as pdp
 from .utils import combine_batch
 
 
 class Patient:
-    def __init__(self, patient_id, mscan, segm):
+    def __init__(self, patient_id, x, y):
         self.patient_id = patient_id
-        self.mscan = mscan
-        self.segm = segm
+        self.x = x
+        self.y = y
 
     def __hash__(self):
         return hash(self.patient_id)
 
 
 def make_3d_patch_stratified_iter(
-        ids, dataset: Dataset, *, batch_size, x_patch_sizes, y_patch_size,
-        nonzero_fraction, buffer_size=10):
+        ids, data_loader: DataLoader, *, batch_size, x_patch_sizes,
+        y_patch_size, nonzero_fraction, buffer_size=10):
     x_patch_sizes = [np.array(x_patch_size) for x_patch_size in x_patch_sizes]
     y_patch_size = np.array(y_patch_size)
     spatial_dims = [-3, -2, -1]
@@ -29,15 +29,21 @@ def make_3d_patch_stratified_iter(
     random_seq = iter(partial(choice, ids), None)
 
     def load_patient(name):
-        return Patient(name, dataset.load_mscan(name), dataset.load_segm(name))
+        return Patient(name, data_loader.load_x(name), data_loader.load_y(name))
 
     @lru_cache(maxsize=len(ids))
     def find_cancer(patient: Patient):
-        mask = patient.segm > 0
+        if len(patient.y.shape) == 3:
+            mask = patient.y > 0
+        elif len(patient.y.shape) == 4:
+            mask = np.any(patient.y, axis=0)
+        else:
+            raise ValueError('wrong number of dimensions ')
+
         conditional_centre_indices = medim.patch.get_conditional_center_indices(
             mask, patch_size=y_patch_size, spatial_dims=spatial_dims)
 
-        return patient.mscan, patient.segm, conditional_centre_indices
+        return patient.x, patient.y, conditional_centre_indices
 
     @pdp.pack_args
     def extract_patch(x, y, conditional_center_indices):

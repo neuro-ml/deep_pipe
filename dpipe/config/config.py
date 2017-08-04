@@ -1,4 +1,4 @@
-from dpipe.datasets.base import make_cached, Dataset
+from dpipe.datasets.base import make_cached, Dataset, DataLoader
 from dpipe.datasets.config import dataset_name2dataset
 from dpipe.splits.config import split_name2get_split
 from dpipe.experiments.config import experiment_name2experiment_builder
@@ -9,12 +9,16 @@ from dpipe.batch_iters.batch_iter_factory import BatchIterFactory, \
 from .utils import config_object, config_partial
 
 __all__ = ['config_dataset', 'config_split', 'config_batch_iter_factory',
-           'config_experiment']
+           'config_experiment', 'config_data_loader']
 
 
 def config_dataset(config) -> Dataset:
     dataset = config_object(config, 'dataset', dataset_name2dataset)
-    return dataset if not config['dataset_cached'] else make_cached(dataset)
+    return make_cached(dataset) if config['dataset_cached'] else dataset
+
+
+def config_data_loader(config, dataset) -> DataLoader:
+    return DataLoader(dataset=dataset, problem=config['problem'])
 
 
 def config_split(config, *, dataset: Dataset):
@@ -32,12 +36,13 @@ def config_batch_iter_factory(config, *, ids, dataset) -> BatchIterFactory:
 
     n_iters_per_epoch = config.get('n_iters_per_epoch', None)
 
+    data_loader = config_data_loader(config, dataset)
     if 'batch_iter_fin' in config:
         assert n_iters_per_epoch is None
 
         get_batch_iter = config_partial(
             config, 'batch_iter_fin', batch_iter_fin_name2batch_iter, ids=ids,
-            dataset=dataset
+            data_loader=data_loader
         )
         batch_iter_factory = BatchIterFactoryFin(get_batch_iter)
     else:
@@ -45,7 +50,7 @@ def config_batch_iter_factory(config, *, ids, dataset) -> BatchIterFactory:
 
         get_batch_iter = config_partial(
             'batch_iter_inf', config, batch_iter_inf_name2batch_iter, ids=ids,
-            dataset=dataset
+            data_loader=data_loader
         )
         batch_iter_factory = BatchIterFactoryInf(get_batch_iter,
                                                  n_iters_per_epoch)
