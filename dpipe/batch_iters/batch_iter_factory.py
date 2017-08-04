@@ -1,6 +1,6 @@
 from itertools import islice
 from contextlib import suppress, contextmanager
-from abc import abstractmethod, ABCMeta
+from abc import abstractmethod, ABC
 
 
 @contextmanager
@@ -15,7 +15,7 @@ def maybe_build_contextmanager(o):
         return build_contextmanager(o)
 
 
-class BatchIterFactory(metaclass=ABCMeta):
+class BatchIterFactory(ABC):
     @abstractmethod
     def __next__(self):
         pass
