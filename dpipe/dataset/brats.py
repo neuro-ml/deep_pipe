@@ -14,7 +14,6 @@ def cached_property(f):
 
 class Brats(Dataset, metaclass=ABCMeta):
     def __init__(self, data_path):
-        super().__init__()
         self.data_path = data_path
         self.metadata = pd.read_csv(join(data_path, 'metadata.csv'),
                                     index_col='id')

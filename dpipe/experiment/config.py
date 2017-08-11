@@ -1,5 +1,5 @@
 from .flat import build_flat_structure
 
-experiment_name2experiment_builder = {
+module_builders = {
     'flat': build_flat_structure
 }
