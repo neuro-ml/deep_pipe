@@ -21,12 +21,18 @@ def get_module_builders(module_type):
         config = importlib.import_module(f'dpipe.{path}.config')
         return config.__dict__[f'name2{module_type}']
     else:
-        raise ValueError("Could't locate builders for "
-                         f"module type = {module_type}")
+        raise TypeError("Could't locate builders for "
+                        f"module type = {module_type}")
 
 
 def config_object(config, module_type, lookup_module_type=None, **kwargs):
-    return config_partial(config, module_type, lookup_module_type, **kwargs)()
+    try:
+        return config_partial(config, module_type, lookup_module_type,
+                              **kwargs)()
+    except TypeError as e:
+        raise TypeError('Error, trying to initialize:\n'
+                        f'module type = {module_type}\n'
+                        f'lookup_module_type = {lookup_module_type}') from e
 
 
 def config_partial(config, module_type, lookup_module_type=None, **kwargs):
