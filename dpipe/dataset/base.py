@@ -5,42 +5,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
-class DataLoader:
-    def __init__(self, dataset, *, problem):
-        self.dataset = dataset
-        if problem == 'segm':
-            self._load_y, self._n_chans_y = (dataset.load_segm,
-                                             dataset.segm2msegm.shape[0])
-        elif problem == 'msegm':
-            self._load_y, self._n_chans_y = (dataset.load_msegm,
-                                             dataset.segm2msegm.shape[1])
-        else:
-            raise ValueError(f'Wrong problem: {problem}\n'
-                             'Available values are: "segm"; "msegm"')
-
-    @property
-    def object_ids(self) -> [str]:
-        return self.dataset.patient_ids
-
-    def load_x(self, object_id):
-        return self.dataset.load_mscan(object_id)
-
-    def load_y(self, object_id):
-        return self._load_y(object_id)
-
-    @property
-    def n_chans_x(self):
-        return self.dataset.n_chans_mscan
-
-    @property
-    def n_chans_y(self):
-        return self._n_chans_y
-
-
 class Dataset(ABC):
-    def __init__(self):
-        self.cache_activated = False
-
     @property
     @abstractmethod
     def patient_ids(self) -> Sequence[str]:
@@ -74,9 +39,6 @@ class Dataset(ABC):
         """"Method returns multimodal segmentation of shape
          [n_chans_msegm, x, y, z]. We use this result to compute dice scores"""
         return self.segm2msegm[self.load_segm(patient_id)]
-
-    def activate_cache(self):
-        assert not self.cache_activated
 
 
 class Proxy:

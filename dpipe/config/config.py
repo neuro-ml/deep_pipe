@@ -1,73 +1,64 @@
-from dpipe.batch_iter_factory.base import BatchIterFactory, \
-    BatchIterFactoryFin, BatchIterFactoryInf
-from dpipe.batch_iters.config import name2batch_iter_fin
-from dpipe.datasets.base import make_cached, Dataset
-from dpipe.datasets.config import name2dataset
-from dpipe.experiments.config import name2experiment
-from dpipe.splits.config import name2split
-from .utils import config_object, config_partial
-
-__all__ = ['config_dataset', 'config_split', 'config_batch_iter_factory',
-           'config_experiment', 'config_data_loader']
+import inspect
+import functools
+import importlib
 
 
-def config_dataset(config) -> Dataset:
-    dataset = config_object(config, 'dataset', name2dataset)
-    return make_cached(dataset) if config['dataset_cached'] else dataset
+modules_with_folder = [
+    'dataset', 'batch_iter', 'experiment', 'model_core', 'split', 'train'
+]
+
+module_type2path = {
+    'batch_iter_factory': 'utils'
+}
 
 
-def config_split(config, *, dataset: Dataset):
-    return config_object(config, 'split', name2split, dataset=dataset)
-
-
-def config_experiment(config, *, experiment_path, config_path, split):
-    return config_object(
-        config, 'experiment', name2experiment, config_path=config_path,
-        experiment_path=experiment_path, split=split,
-    )
-
-
-def config_batch_iter(config):
-    assert ('batch_iter_fin' in config) ^ ('batch_iter_inf' in config)
-
-    n_iters_per_epoch = config.get('n_iters_per_epoch', None)
-
-    if 'batch_iter_fin' in config:
-        assert n_iters_per_epoch is None
-
-        get_batch_iter = config_partial(config, 'batch_iter_fin',
-                                        name2batch_iter_fin)
+def get_module_builders(module_type):
+    if module_type in modules_with_folder:
+        return importlib.import_module(
+            f'dpipe.{module_type}.config').module_builders
+    elif module_type in module_type2path:
+        path = module_type2path[module_type]
+        config = importlib.import_module(f'dpipe.{path}.config')
+        return config.__dict__[f'name2{module_type}']
     else:
-        assert n_iters_per_epoch is not None
-
-        get_batch_iter = config_partial(
-            'batch_iter_inf', config, batch_iter_inf_name2batch_iter, ids=ids,
-            data_loader=data_loader
-        )
+        raise ValueError("Could't locate builders for "
+                         f"module type = {module_type}")
 
 
-def config_batch_iter_factory(config, *, ids, data_loader: DataLoader) \
-        -> BatchIterFactory:
-    assert ('batch_iter_fin' in config) ^ ('batch_iter_inf' in config)
+def config_object(config, module_type, lookup_module_type=None, **kwargs):
+    return config_partial(config, module_type, lookup_module_type, **kwargs)()
 
-    n_iters_per_epoch = config.get('n_iters_per_epoch', None)
 
-    data_loader = config_data_loader(config, data_loader)
-    if 'batch_iter_fin' in config:
-        assert n_iters_per_epoch is None
+def config_partial(config, module_type, lookup_module_type=None, **kwargs):
+    if lookup_module_type is None:
+        lookup_module_type = module_type
 
-        get_batch_iter = config_partial(
-            config, 'batch_iter_fin', batch_iter_fin_name2batch_iter, ids=ids,
-            data_loader=data_loader
-        )
-        batch_iter_factory = BatchIterFactoryFin(get_batch_iter)
-    else:
-        assert n_iters_per_epoch is not None
+    module_name = config[lookup_module_type]
+    module_builders = get_module_builders(module_type)
+    try:
+        module_builder = module_builders[module_name]
+    except KeyError:
+        raise ValueError(
+            'Wrong module name provided\n' +
+            'Provided name: {}\n'.format(module_name) +
+            'Available names: {}\n'.format([*module_builders.keys()]))
+    params = config.get('{}__params'.format(lookup_module_type), {})
+    return maybe_partial(module_builder, **params, **kwargs)
 
-        get_batch_iter = config_partial(
-            'batch_iter_inf', config, batch_iter_inf_name2batch_iter, ids=ids,
-            data_loader=data_loader
-        )
-        batch_iter_factory = BatchIterFactoryInf(get_batch_iter,
-                                                 n_iters_per_epoch)
-    return batch_iter_factory
+
+def maybe_partial(f, **parameters):
+    """Function very similar too functools.partial, but it use only those
+    parameters that exists in function signature"""
+    all_parameters = inspect.signature(f).parameters
+    matched_parameters = {}
+    for parameter in parameters:
+        if parameter in all_parameters:
+            default = all_parameters[parameter].default
+            if default is inspect.Parameter.empty:
+                matched_parameters[parameter] = parameters[parameter]
+            else:
+                raise ValueError('Attempted to set parameter '
+                                 f'{parameter}={parameters[parameter]} '
+                                 f'for {f}, which already have'
+                                 f'{parameter}={default}')
+    return functools.partial(f, **matched_parameters)

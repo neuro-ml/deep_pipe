@@ -2,7 +2,7 @@ from .brats import Brats2015, Brats2017
 from .isles import *
 from .whitematter import WhiteMatterHyperintensity
 
-dataset_name2dataset = {
+module_builders = {
     'brats2015': Brats2015,
     'brats2017': Brats2017,
 

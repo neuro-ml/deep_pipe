@@ -8,7 +8,7 @@ from scipy.ndimage.interpolation import zoom
 
 import dpipe.externals.pdp.pdp as pdp
 from dpipe import medim
-from dpipe.datasets import Dataset
+from dpipe.data_loaders import DataLoader
 from .utils import combine_batch
 
 
@@ -23,8 +23,8 @@ class Patient:
 
 
 def make_3d_augm_patch_stratified_iter(
-        ids, dataset: Dataset, *, batch_size, x_patch_sizes, y_patch_size,
-        nonzero_fraction, buffer_size=10):
+        ids, data_loader: DataLoader, *, batch_size,
+        x_patch_sizes, y_patch_size, nonzero_fraction, buffer_size=10):
     x_patch_sizes = [np.array(x_patch_size) for x_patch_size in x_patch_sizes]
     y_patch_size = np.array(y_patch_size)
     spatial_dims = [-3, -2, -1]
@@ -32,7 +32,7 @@ def make_3d_augm_patch_stratified_iter(
     random_seq = iter(partial(choice, ids), None)
 
     def load_patient(name):
-        return Patient(name, dataset.load_x(name), dataset.load_y(name))
+        return Patient(name, data_loader.load_x(name), data_loader.load_y(name))
 
     @lru_cache(maxsize=len(ids))
     def find_cancer(patient: Patient):
@@ -159,5 +159,5 @@ def make_3d_augm_patch_stratified_iter(
         pdp.LambdaTransformer(extract_patch, n_workers=8,
                               buffer_size=batch_size),
         pdp.Chunker(chunk_size=batch_size, buffer_size=3),
-        pdp.LambdaTransformer(combine_batch, buffer_size=buffer_size)
+        pdp.LambdaTransformer(pdp.combine_batches, buffer_size=buffer_size)
     )

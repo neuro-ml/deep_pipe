@@ -4,9 +4,7 @@ from random import choice
 import numpy as np
 
 from dpipe import medim
-from dpipe.datasets import DataLoader
 import dpipe.externals.pdp.pdp as pdp
-from .utils import combine_batch
 
 
 class Patient:
@@ -20,7 +18,7 @@ class Patient:
 
 
 def make_3d_patch_stratified_iter(
-        ids, data_loader: DataLoader, *, batch_size, x_patch_sizes,
+        ids, data_loader, *, batch_size, x_patch_sizes,
         y_patch_size, nonzero_fraction, buffer_size=10):
     x_patch_sizes = [np.array(x_patch_size) for x_patch_size in x_patch_sizes]
     y_patch_size = np.array(y_patch_size)
@@ -71,5 +69,5 @@ def make_3d_patch_stratified_iter(
         pdp.LambdaTransformer(find_cancer, buffer_size=3),
         pdp.LambdaTransformer(extract_patch, buffer_size=batch_size),
         pdp.Chunker(chunk_size=batch_size, buffer_size=3),
-        pdp.LambdaTransformer(combine_batch, buffer_size=buffer_size)
+        pdp.LambdaTransformer(pdp.combine_batches, buffer_size=buffer_size)
     )

@@ -70,7 +70,7 @@ def make_slices_iter(
         pdp.Source(slicer(ids), buffer_size=30),
         # pdp.LambdaTransformer(flip, buffer_size=3),
         pdp.Chunker(chunk_size=batch_size, buffer_size=2),
-        pdp.LambdaTransformer(combine_batch, buffer_size=3)
+        pdp.LambdaTransformer(pdp.combine_batches, buffer_size=3)
     )
 
 
@@ -105,5 +105,5 @@ def make_multiple_slices_iter(
         pdp.Source(slicer(ids), buffer_size=30),
         # pdp.LambdaTransformer(flip, buffer_size=3),
         pdp.Chunker(chunk_size=batch_size, buffer_size=2),
-        pdp.LambdaTransformer(combine_batch, buffer_size=3)
+        pdp.LambdaTransformer(pdp.combine_batches, buffer_size=3)
     )
