@@ -1,11 +1,13 @@
 from functools import partial
 
-from dpipe.dl import optimize, Model, FrozenModel
+from dpipe.data_loaders import DataLoader
+from dpipe.batch_iters import BatchIterFactory
+from dpipe.dl import optimize, Model, FrozenModel, ModelController
 from dpipe.dl.config import predictor_name2predictor, loss_name2loss
-from dpipe.dl.model_cores.config import model_core_name2model_core
-
-from dpipe.dl.trains.config import train_name2train
+from dpipe.model_cores import model_core_name2model_core
+from dpipe.trains import train_name2train
 from .utils import config_partial, config_object
+
 
 __all__ = ['config_model', 'config_frozen_model', 'config_train']
 
@@ -16,8 +18,14 @@ module_builders = {
 }
 
 
-def config_train(config) -> callable:
-    return config_partial(config, 'train', train_name2train)
+def config_train(config, batch_iter_factory: BatchIterFactory,
+                 data_loader: DataLoader, model_controller: ModelController,
+                 val_ids) -> callable:
+    return config_partial(
+        config, 'train', train_name2train, data_loader=data_loader,
+        batch_iter_factory=batch_iter_factory, val_ids=val_ids,
+        model_controller=model_controller
+    )
 
 
 def _config_optimizer(config) -> callable:
@@ -31,14 +39,14 @@ def _config_optimizer(config) -> callable:
 #     return metrics
 
 
-def config_model(config, dataset) -> Model:
+def config_model(config, data_loader: DataLoader) -> Model:
     predict = config_partial('predict', config, module_builders)
     loss = config_partial('loss', config, module_builders)
     optimizer = _config_optimizer(config)
 
     model_core = config_object('model_core', config, module_builders,
-                               n_chans_in=dataset.n_chans_mscan,
-                               n_chans_out=dataset.n_chans_out)
+                               n_chans_in=data_loader.n_chans_x,
+                               n_chans_out=data_loader.n_chans_y)
     return Model(model_core, predict=predict, loss=loss, optimize=optimizer)
 
 #

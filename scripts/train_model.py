@@ -1,10 +1,12 @@
-from dpipe.config import config_dataset, config_batch_iter_factory
+from utils import read_lines
+
+from dpipe.config import config_dataset, config_batch_iter_factory, \
+    config_data_loader
 from dpipe.config.config_tf import config_model, config_train, \
     config_model_controller
 from dpipe.config.default_parser import get_config
-from dpipe.modules.dl import ModelController
 
-from utils import read_lines
+from dpipe.dl import ModelController
 
 if __name__ == '__main__':
     config = get_config('train_ids_path', 'val_ids_path', 'log_path',
@@ -21,19 +23,20 @@ if __name__ == '__main__':
     val_ids = read_lines(val_ids_path)
 
     dataset = config_dataset(config)
-    train_batch_iter = config_batch_iter_factory(config, ids=train_ids, dataset=dataset)
-    model = config_model(config, dataset)
-    model_controller = config_model_controller(config, model, log_path,
-                                               restore_model_path)
-    train = config_train(config)
+    data_loader = config_data_loader(config, dataset)
+    train_batch_iter = config_batch_iter_factory(config, ids=train_ids,
+                                                 data_loader=data_loader)
+    model = config_model(config, data_loader)
+    model_controller = ModelController(model, log_path, restore_model_path)
+    train = config_train(config, train_batch_iter, data_loader,
+                         model_controller, val_ids)
 
-    with model_controller as mc:
+    with model_controller:
         try:
-            train(mc, train_batch_iter, val_ids, dataset)
+            train()
             model.save(save_model_path)
         except KeyboardInterrupt:
             if save_on_quit:
                 model.save(save_model_path)
             else:
                 raise
-
