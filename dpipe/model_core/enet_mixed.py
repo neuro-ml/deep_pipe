@@ -5,10 +5,6 @@ from .base import ModelCore
 from .utils import spatial_batch_norm
 from dpipe import medim
 
-# FIXME high coupling
-from dpipe.modules.batch_iterators.slices import \
-    iterate_multiple_slices as iterate_slices
-
 
 def init_block(inputs, name, training, inp_channels, output_channels,
                kernel_size=3,
