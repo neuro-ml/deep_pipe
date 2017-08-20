@@ -2,8 +2,8 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from dpipe.batch_iters import \
-    iterate_multiple_slices as iterate_slices
+# FIXME high coupling
+from dpipe.batch_iter.slices import iterate_multiple_slices as iterate_slices
 from .base import ModelCore
 
 

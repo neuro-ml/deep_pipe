@@ -1,35 +1,21 @@
-from utils import read_lines
-
-from dpipe.config import config_dataset, config_batch_iter_factory, \
-    config_data_loader
-from dpipe.config.config_tf import config_model, config_train, \
-    config_model_controller
-from dpipe.config.default_parser import get_config
-
-from dpipe.dl import ModelController
+from dpipe.config import get_resource_manager, get_parser, parse_config
 
 if __name__ == '__main__':
-    config = get_config('train_ids_path', 'val_ids_path', 'log_path',
-                        'save_model_path', 'restore_model_path', 'save_on_quit')
+    parser = get_parser('config_path', 'train_ids_path', 'val_ids_path',
+                        'log_path', 'save_model_path', 'restore_model_path')
+    parser.add_argument(
+        '--save', action='store_true', dest='save_on_quit',
+        help='whether to save the model after ctrl+c is pressed'
+    )
 
-    train_ids_path = config['train_ids_path']
-    val_ids_path = config['val_ids_path']
-    log_path = config['log_path']
-    save_model_path = config['save_model_path']
-    restore_model_path = config.get('restore_model_path', None)
-    save_on_quit = config.get('save_on_quit')
+    resource_manager = get_resource_manager(parse_config(parser))
 
-    train_ids = read_lines(train_ids_path)
-    val_ids = read_lines(val_ids_path)
+    save_on_quit = resource_manager['save_on_quit']
+    save_model_path = resource_manager['save_model_path']
+    model_controller = resource_manager['model_controller']
 
-    dataset = config_dataset(config)
-    data_loader = config_data_loader(config, dataset)
-    train_batch_iter = config_batch_iter_factory(config, ids=train_ids,
-                                                 data_loader=data_loader)
-    model = config_model(config, data_loader)
-    model_controller = ModelController(model, log_path, restore_model_path)
-    train = config_train(config, train_batch_iter, data_loader,
-                         model_controller, val_ids)
+    model = resource_manager['model']
+    train = resource_manager['train']
 
     with model_controller:
         try:

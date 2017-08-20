@@ -1,32 +1,31 @@
 import os
+from tqdm import tqdm
 
 import numpy as np
 import tensorflow as tf
 
-from dpipe.config import config_dataset
-from dpipe.config.config_tf import config_frozen_model
-from dpipe.config.default_parser import get_config
-from utils import read_lines
+from dpipe.config import get_config, get_resource_manager
 
 if __name__ == '__main__':
-    config = get_config('ids_path', 'restore_model_path', 'predictions_path')
+    resource_manager = get_resource_manager(get_config(
+        'config_path', 'ids_path', 'restore_model_path', 'predictions_path'
+    ))
 
-    predictions_path = config['predictions_path']
-    ids_path = config['ids_path']
-    restore_model_path = config['restore_model_path']
-    dataset = config_dataset(config)
-    frozen_model = config_frozen_model(config, dataset)
+    predictions_path = resource_manager['predictions_path']
+    restore_model_path = resource_manager['restore_model_path']
+    ids = resource_manager['ids']
+    load_x = resource_manager['load_x']
 
-    ids = read_lines(ids_path)
+    frozen_model = resource_manager['frozen_model']
+
     os.makedirs(predictions_path)
 
     with tf.Session(graph=frozen_model.graph) as session:
         frozen_model.prepare(session, restore_model_path)
-        for identifier in ids:
-            x = dataset.load_x(identifier)
+        for identifier in tqdm(ids):
+            x = load_x(identifier)
             y = frozen_model.predict_object(x)
 
             np.save(os.path.join(predictions_path, str(identifier)), y)
-
             # saving some memory
             del x, y

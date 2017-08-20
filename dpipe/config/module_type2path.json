@@ -1,0 +1,15 @@
+{
+  "dataset": "dpipe.dataset.config",
+  "batch_iter": "dpipe.batch_iter.config",
+  "experiment": "dpipe.experiment.config",
+  "model_core": "dpipe.model_core.config",
+  "split": "dpipe.split.config",
+  "train": "dpipe.train.config",
+  "batch_iter_factory": "dpipe.utils.config",
+  "meta": "dpipe.utils.config",
+  "model": "dpipe.dl.config",
+  "model_controller": "dpipe.dl.config",
+  "loss": "dpipe.dl.config",
+  "predict": "dpipe.dl.config",
+  "optimize": "dpipe.dl.config"
+}

@@ -23,7 +23,7 @@ def _write_scalar(scalar, step, name, writer):
 def _write_value(value, step, name, writer):
     if hasattr(value, '__iter__'):
         for i, s in enumerate(value):
-            _write_scalar(s, step, name+'/{}'.format(i), writer)
+            _write_scalar(s, step, name + '/{}'.format(i), writer)
     else:
         _write_scalar(value, step, name, writer)
 
@@ -35,4 +35,5 @@ def make_write_value(name, writer):
         nonlocal step
         _write_value(value, step, name, writer)
         step += 1
+
     return write_value

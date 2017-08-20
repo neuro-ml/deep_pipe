@@ -5,7 +5,7 @@ from .deepmedic_orig import DeepMedicOrig
 from .deepmedic_res import DeepMedicRes
 from .enet import ENet2D
 
-module_builders = {
+name2model_core = {
     'deepmedic_orig': DeepMedicOrig,
     'deepmedic_highway': DeepMedicHigh,
     'deepmedic_res': DeepMedicRes,

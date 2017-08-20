@@ -4,7 +4,7 @@ import shutil
 import numpy as np
 
 
-def build_flat_structure(experiment_path, config_path, split, *, makefile):
+def build_flat_structure(split, config_path, experiment_path, *, makefile):
     makefile_path = os.path.join(os.path.dirname(__file__), makefile)
     assert os.path.exists(makefile_path), f'no {makefile_path} found'
 

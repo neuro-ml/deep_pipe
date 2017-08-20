@@ -10,15 +10,14 @@ import dpipe.externals.pdp.pdp as pdp
 class Patient:
     def __init__(self, patient_id, x, y):
         self.patient_id = patient_id
-        self.x = x
-        self.y = y
+        self.x, self.y = x, y
 
     def __hash__(self):
         return hash(self.patient_id)
 
 
 def make_3d_patch_stratified_iter(
-        ids, data_loader, *, batch_size, x_patch_sizes,
+        ids, load_x, load_y, *, batch_size, x_patch_sizes,
         y_patch_size, nonzero_fraction, buffer_size=10):
     x_patch_sizes = [np.array(x_patch_size) for x_patch_size in x_patch_sizes]
     y_patch_size = np.array(y_patch_size)
@@ -26,8 +25,9 @@ def make_3d_patch_stratified_iter(
 
     random_seq = iter(partial(choice, ids), None)
 
+    @lru_cache(maxsize=len(ids))
     def load_patient(name):
-        return Patient(name, data_loader.load_x(name), data_loader.load_y(name))
+        return Patient(name, load_x(name), load_y(name))
 
     @lru_cache(maxsize=len(ids))
     def find_cancer(patient: Patient):
@@ -67,7 +67,8 @@ def make_3d_patch_stratified_iter(
         pdp.Source(random_seq, buffer_size=3),
         pdp.LambdaTransformer(load_patient, buffer_size=3),
         pdp.LambdaTransformer(find_cancer, buffer_size=3),
-        pdp.LambdaTransformer(extract_patch, buffer_size=batch_size),
+        pdp.LambdaTransformer(extract_patch, n_workers=4,
+                              buffer_size=batch_size),
         pdp.Chunker(chunk_size=batch_size, buffer_size=3),
         pdp.LambdaTransformer(pdp.combine_batches, buffer_size=buffer_size)
     )

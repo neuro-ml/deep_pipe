@@ -1,7 +1,13 @@
+import os
+
 import tensorflow as tf
 
-from dpipe.model_cores import ModelCore
+from dpipe.model_core import ModelCore
 from .summaries import SummaryLogger
+
+
+def get_model_path(save_path):
+    return os.path.join(save_path, 'model')
 
 
 class Model:
@@ -54,7 +60,7 @@ class Model:
         if restore_ckpt_path is None:
             session.run(self.init_op)
         else:
-            self.saver.restore(session, restore_ckpt_path)
+            self.saver.restore(session, get_model_path(restore_ckpt_path))
 
     def do_train_step(self, *train_inputs, lr):
         _, loss, summary = self.call_train(*train_inputs, lr, True)
@@ -74,4 +80,34 @@ class Model:
         return self.model_core.predict_object(x, self.do_inf_step)
 
     def save(self, save_path):
-        self.saver.save(self.session, save_path)
+        self.saver.save(self.session, get_model_path(save_path))
+
+
+class FrozenModel:
+    def __init__(self, model_core: ModelCore, predict: callable):
+        self.model_core = model_core
+
+        self._build(predict)
+
+        # Gets initialized during model preparation
+        self.session = self.file_writer = None
+        self.call_train = self.call_val = self.call_pred = None
+
+    def _build(self, predict):
+        self.graph = tf.get_default_graph()
+
+        self.x_phs, logits = self.model_core.build(False)
+        self.y_pred = predict(logits)
+
+        self.saver = tf.train.Saver()
+        self.graph.finalize()
+
+    def prepare(self, session: tf.Session, restore_ckpt_path):
+        self.call_pred = session.make_callable(self.y_pred, self.x_phs)
+        self.saver.restore(session, get_model_path(restore_ckpt_path))
+
+    def do_inf_step(self, *inference_inputs):
+        return self.call_pred(*inference_inputs, False)
+
+    def predict_object(self, x):
+        return self.model_core.predict_object(x, self.do_inf_step)

@@ -7,7 +7,7 @@ softmax = partial(tf.nn.softmax, dim=1)
 sigmoid = tf.nn.sigmoid
 
 
-def optimize(*, loss, lr, tf_optimizer_name, **params):
+def optimize(loss, lr, *, tf_optimizer_name, **params):
     with tf.variable_scope('optimization'):
         optimizer = getattr(tf.train, tf_optimizer_name)(
             lr, name='optimizer', **params)

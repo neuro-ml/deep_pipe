@@ -25,7 +25,7 @@ class ModelController:
         self.write_avg_loss_val = make_write_value(
             'epoch_stats/val_loss', self.file_writer)
         self.write_metrics = {
-            k: make_write_value('epoch_stats/'+k, self.file_writer)
+            k: make_write_value('epoch_stats/' + k, self.file_writer)
             for k in self.metrics}
 
         self.model.prepare(self.session, self.file_writer,

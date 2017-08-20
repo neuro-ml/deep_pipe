@@ -1,8 +1,11 @@
+from .base import make_cached
 from .brats import Brats2015, Brats2017
 from .isles import *
 from .whitematter import WhiteMatterHyperintensity
 
-module_builders = {
+name2dataset = {
+    'cached_dataset': make_cached,
+
     'brats2015': Brats2015,
     'brats2017': Brats2017,
 

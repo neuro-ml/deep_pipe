@@ -38,7 +38,15 @@ class Dataset(ABC):
     def load_msegm(self, patient_id) -> np.array:
         """"Method returns multimodal segmentation of shape
          [n_chans_msegm, x, y, z]. We use this result to compute dice scores"""
-        return self.segm2msegm[self.load_segm(patient_id)]
+        return np.rollaxis(self.segm2msegm[self.load_segm(patient_id)], 3, 0)
+
+    @property
+    def n_chans_segm(self):
+        return self.segm2msegm.shape[0]
+
+    @property
+    def n_chans_msegm(self):
+        return self.segm2msegm.shape[1]
 
 
 class Proxy:

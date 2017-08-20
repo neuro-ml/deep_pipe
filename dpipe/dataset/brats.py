@@ -23,7 +23,10 @@ class Brats(Dataset, metaclass=ABCMeta):
 
     @cached_property
     def patient_ids(self):
-        return sorted(self.metadata.index.values)
+        ids = sorted(self.metadata.index.values)
+        # FIXME Wrong sample
+        ids = [i for i in ids if i != 'Brats17_CBICA_AYW_1']
+        return ids
 
     @property
     def n_chans_mscan(self):
@@ -48,12 +51,13 @@ class Brats2015(Brats):
             [1, 0, 0],
             [1, 1, 0],
             [1, 1, 1]
-        ])
+        ], dtype=bool)
 
 
 class Brats2017(Brats):
     """Data loader for brats 2017. We have replaced label 4 with 3 during data
     preparation."""
+
     @cached_property
     def segm2msegm(self):
         return np.array([
@@ -61,4 +65,4 @@ class Brats2017(Brats):
             [1, 1, 0],
             [1, 0, 0],
             [1, 1, 1]
-        ])
+        ], dtype=bool)

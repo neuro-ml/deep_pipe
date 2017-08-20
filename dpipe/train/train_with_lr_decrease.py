@@ -39,10 +39,10 @@ def make_find_next_lr(lr, decrease_lr: callable, get_check: callable):
 def train_with_lr_decrease(
         model_controller: ModelController,
         train_batch_iter_factory: BatchIterFactory,
-        val_ids, data_loader, *, n_epochs, lr_init, lr_dec_mul=0.5,
+        val_ids, load_x, load_y, *, n_epochs, lr_init, lr_dec_mul=0.5,
         patience: int, rtol=0, atol=0):
-    x_val = [data_loader.load_x(p) for p in val_ids]
-    y_val = [data_loader.load_y(p) for p in val_ids]
+    x_val = [load_x(p) for p in val_ids]
+    y_val = [load_y(p) for p in val_ids]
 
     find_next_lr = make_find_next_lr(
         lr_init, lambda lr: lr * lr_dec_mul,

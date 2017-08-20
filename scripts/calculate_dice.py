@@ -1,23 +1,21 @@
-import os
-
 import numpy as np
 
-from dpipe.config import config_dataset
-from dpipe.config.default_parser import get_config
+from dpipe.config import get_config, get_resource_manager
 from dpipe.medim.metrics import dice_score as dice
-from utils import read_lines, load_by_id
+from utils import load_by_id
 
 if __name__ == '__main__':
-    config = get_config('metrics_path', 'ids_path', 'thresholds_path',
-                        'predictions_path')
+    resource_manager = get_resource_manager(get_config(
+        'config_path', 'metrics_path', 'ids_path', 'thresholds_path',
+        'predictions_path'
+    ))
 
-    metrics_path = config['metrics_path']
-    ids_path = config['ids_path']
-    thresholds_path = config['thresholds_path']
-    predictions_path = config['predictions_path']
-    dataset = config_dataset(config)
+    metrics_path = resource_manager['metrics_path']
+    ids = resource_manager['ids']
+    thresholds_path = resource_manager['thresholds_path']
+    predictions_path = resource_manager['predictions_path']
+    dataset = resource_manager['dataset']
 
-    ids = read_lines(ids_path)
     thresholds = np.load(thresholds_path)
 
     channels = dataset.n_chans_msegm

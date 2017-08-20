@@ -69,7 +69,7 @@ def extract_patches(xs: [np.ndarray], *, center_idx: np.array,
 
 
 def get_uniform_center_index(x_shape: np.array, patch_size: np.array,
-                             spatial_dims: list):
+                             spatial_dims: list) -> np.array:
     """
     Returns spatial center coordinates for the patch, chosen randomly.
     We assume that patch have to belong to the object boundaries.

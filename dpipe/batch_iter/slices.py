@@ -1,9 +1,7 @@
 import numpy as np
 
 import dpipe.externals.pdp.pdp as pdp
-from dpipe.datasets import Dataset
 from dpipe.medim.slices import iterate_slices
-from .utils import combine_batch
 
 
 # TODO: this is remarkably terrible ^_^
@@ -42,14 +40,13 @@ def shuffle_ids(ids):
 
 
 def make_slices_iter(
-        ids, dataset: Dataset, batch_size, *, shuffle=False, empty_slice=True):
+        ids, load_x, load_y, batch_size, *, shuffle=False, empty_slice=True):
     if shuffle:
         ids = shuffle_ids(ids)
 
     def slicer(ids):
-        for id in ids:
-            x = dataset.load_x(id)
-            y = dataset.load_y(id)
+        for id_ in ids:
+            x, y = load_x(id_), load_y(id_)
             yield from iterate_slices(x, y, empty=empty_slice)
 
     # @pdp.pack_args
@@ -75,14 +72,13 @@ def make_slices_iter(
 
 
 def make_multiple_slices_iter(
-        ids, dataset: Dataset, batch_size, *, num_slices, shuffle=False):
+        ids, load_x, load_y, batch_size, *, num_slices, shuffle=False):
     if shuffle:
         ids = shuffle_ids(ids)
 
     def slicer(ids):
-        for id in ids:
-            x = dataset.load_x(id)
-            y = dataset.load_y(id)
+        for id_ in ids:
+            x, y = load_x(id_), load_y(id_)
 
             yield from iterate_multiple_slices(x, y, num_slices)
 

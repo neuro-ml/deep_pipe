@@ -1,6 +1,6 @@
 from itertools import islice
-from contextlib import suppress, contextmanager
 from abc import abstractmethod, ABC
+from contextlib import suppress, contextmanager
 
 
 @contextmanager
