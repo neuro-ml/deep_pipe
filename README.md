@@ -15,17 +15,17 @@ ln -s /nmnt/media/home/USERNAME/deep_pipe/dpipe ~/anaconda3/lib/python3.6/site-p
 
 ## Simple usage
 
-1. Create config file, examples are presented in `dpipe/scripts/config_examples`
+1. Create config file, examples are presented in `config_examples`
 2. Choose path to the experiment folder (it will be created for you). We will call it `EXPERIMENT_PATH`.
 3. Run 
 ```
-python scripts/experiment/build_experiment.py -cp CONFIG_PATH -ep EXPERIMENT_PATH -sp ..../deep_pipe/dpipe/scripts/simple
+python experiment/build_experiment.py -cp CONFIG_PATH -ep EXPERIMENT_PATH
 ```
 to make folder with experiment
 
 4. Run 
 ```
-python scripts/experiment/run_experiment_seq.py -ep EXPERIMENT_PATH
+python experiment/run_experiment_seq.py -ep EXPERIMENT_PATH
 ```
 
 ## Style guide:
