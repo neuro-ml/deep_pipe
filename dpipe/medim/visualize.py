@@ -39,6 +39,4 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
         plt.tight_layout()
         plt.show()
 
-    interact(update, idx=IntSlider(
-        min=0, max=size - 1, continuous_update=False
-    ))
+    interact(update, idx=IntSlider(min=0, max=size-1, continuous_update=False))

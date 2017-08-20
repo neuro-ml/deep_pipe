@@ -1,6 +1,4 @@
 # Tools for patch extraction and generation
-from typing import List
-
 import numpy as np
 
 from .utils import extract
@@ -56,9 +54,9 @@ def extract_patch(x: np.ndarray, *, center_idx: np.array, patch_size: np.array,
     return x
 
 
-def extract_patches(xs: List[np.ndarray], *, center_idx: np.array,
-                    patch_sizes: List[np.array],
-                    spatial_dims: list) -> List[np.array]:
+def extract_patches(xs: [np.ndarray], *, center_idx: np.array,
+                    patch_sizes: [np.array],
+                    spatial_dims: list) -> [np.array]:
     """Applies extract_patch for each object in xs with corresponing patch
      size."""
     patches = []
@@ -71,7 +69,7 @@ def extract_patches(xs: List[np.ndarray], *, center_idx: np.array,
 
 
 def get_uniform_center_index(x_shape: np.array, patch_size: np.array,
-                             spatial_dims: list):
+                             spatial_dims: list) -> np.array:
     """
     Returns spatial center coordinates for the patch, chosen randomly.
     We assume that patch have to belong to the object boundaries.

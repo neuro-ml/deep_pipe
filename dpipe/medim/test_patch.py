@@ -6,7 +6,6 @@ from .patch import extract_patch, get_conditional_center_indices,\
 
 
 class TestPatch(unittest.TestCase):
-
     def setUp(self):
         self.x = np.array([[1, 2, 2, 3],
                            [2, 3, 3, 2],
@@ -38,5 +37,4 @@ class TestPatch(unittest.TestCase):
             c = get_uniform_center_index(
                 np.array(self.x.shape), patch_size=self.patch_size,
                 spatial_dims=self.spatial_dims)
-            print(c)
             self.assertTrue(np.all(c == [1]) or np.all(c == [2]))
