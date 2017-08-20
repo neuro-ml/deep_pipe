@@ -6,8 +6,8 @@ import scipy
 from scipy.ndimage import rotate
 from scipy.ndimage.interpolation import zoom
 
-import dpipe.externals.pdp.pdp as pdp
 from dpipe import medim
+import dpipe.externals.pdp.pdp as pdp
 
 
 class Patient:
