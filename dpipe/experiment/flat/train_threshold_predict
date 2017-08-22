@@ -12,8 +12,8 @@ CONFIG_PATH = expand('../config.json', path_to_scripts=PATH_TO_SCRIPTS)[0]
 
 
 ON_PREDICTED_DATASETS = ['val', 'test']
-TRAIN_IDX = 'train_ids'
-datasets_idx = expand("{dataset}_ids", dataset=ON_PREDICTED_DATASETS)
+TRAIN_IDX = 'train_ids.json'
+datasets_idx = expand("{dataset}_ids.json", dataset=ON_PREDICTED_DATASETS)
 LOGS_TO_TNSBRD = 'train_logs'
 
 predicted = expand("{dataset}", dataset=ON_PREDICTED_DATASETS)

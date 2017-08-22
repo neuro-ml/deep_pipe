@@ -55,4 +55,4 @@ def train_with_lr_decrease(
             with next(train_batch_iter_factory) as train_batch_iter:
                 train_loss = model_controller.train(train_batch_iter, lr=lr)
             y_pred, val_loss = model_controller.validate(x_val, y_val)
-            lr = find_next_lr(val_loss)
+            lr = find_next_lr(train_loss)

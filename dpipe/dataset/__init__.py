@@ -1,1 +1,1 @@
-from .base import Dataset, make_cached
+from .base import Dataset

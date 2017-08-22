@@ -1,13 +1,11 @@
-from .base import make_cached
-from .brats import Brats2015, Brats2017
+from .brats import Brats2017
 from .isles import *
 from .factories import set_filename
 from .whitematter import WhiteMatterHyperintensity
 
-name2dataset = {
-    'cached_dataset': make_cached,
+from .wrappers import make_cached, make_bbox_extraction, make_normalized
 
-    'brats2015': Brats2015,
+name2dataset = {
     'brats2017': Brats2017,
 
     'isles2017': Isles2017Raw,
@@ -27,4 +25,10 @@ name2dataset = {
         IslesSPES, 'augmented_spes_penumbra.csv'),
 
     'wmhs': WhiteMatterHyperintensity,
+}
+
+name2dataset_wrapper = {
+    'cached': make_cached,
+    'normalized': make_normalized,
+    'bbox_extraction': make_bbox_extraction
 }

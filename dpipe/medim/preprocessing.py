@@ -16,6 +16,8 @@ def normalize_scan(scan, mean=True, std=True, drop_percentile: int = None):
     else:
         vals = scan.flatten()
 
+    assert vals.ndim == 1
+
     if mean:
         scan = scan - vals.mean()
 

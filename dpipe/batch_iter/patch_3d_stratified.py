@@ -11,6 +11,9 @@ class Patient:
     def __init__(self, patient_id, x, y):
         self.patient_id = patient_id
         self.x, self.y = x, y
+        assert (all(np.array(self.x.shape[1:]) == np.array(self.y.shape[-3:])),
+                f"Wrong shape was provided for patient {patient_id}\n"
+                f"x.shape = {self.x.shape} y.shape = {self.y.shape}")
 
     def __hash__(self):
         return hash(self.patient_id)
@@ -45,6 +48,7 @@ def make_3d_patch_stratified_iter(
 
     @pdp.pack_args
     def extract_patch(x, y, conditional_center_indices):
+        assert all([x.shape[i] == y.shape[i] for i in spatial_dims])
         if np.random.uniform() < nonzero_fraction:
             center_idx = choice(conditional_center_indices)
         else:
@@ -65,8 +69,8 @@ def make_3d_patch_stratified_iter(
 
     return pdp.Pipeline(
         pdp.Source(random_seq, buffer_size=3),
-        pdp.LambdaTransformer(load_patient, buffer_size=3),
-        pdp.LambdaTransformer(find_cancer, buffer_size=3),
+        pdp.LambdaTransformer(load_patient, buffer_size=100),
+        pdp.LambdaTransformer(find_cancer, buffer_size=100),
         pdp.LambdaTransformer(extract_patch, n_workers=4,
                               buffer_size=batch_size),
         pdp.Chunker(chunk_size=batch_size, buffer_size=3),

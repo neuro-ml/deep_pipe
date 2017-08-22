@@ -1,12 +1,25 @@
 {
   "dataset": {
-    "type": "dataset",
-    "name": "cached_dataset",
+    "type": "dataset_wrapper",
+    "name": "cached",
     "inputs": {
       "dataset": {
-        "type": "dataset",
-        "name": "brats2017",
-        "params": {"data_path": "/nmnt/x02-ssd/brats2017/processed"}
+        "type": "dataset_wrapper",
+        "name": "normalized",
+        "params": {"mean": false, "std": true, "drop_percentile": null},
+        "inputs": {
+          "dataset": {
+            "type": "dataset_wrapper",
+            "name": "bbox_extraction",
+            "inputs": {
+              "dataset": {
+                "type": "dataset",
+                "name": "brats2017",
+                "params": {"data_path": "/nmnt/t01-ssd/brats2017/train"}
+              }
+            }
+          }
+        }
       }
     }
   },

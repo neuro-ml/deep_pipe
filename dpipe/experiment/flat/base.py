@@ -1,7 +1,6 @@
 import os
+import json
 import shutil
-
-import numpy as np
 
 
 def build_flat_structure(split, config_path, experiment_path, *, makefile):
@@ -14,6 +13,7 @@ def build_flat_structure(split, config_path, experiment_path, *, makefile):
         shutil.copyfile(makefile_path, os.path.join(local, 'Snakefile'))
 
         for val, prefix in zip(ids, ('train', 'val', 'test')):
-            file = os.path.join(local, f'{prefix}_ids')
-            np.savetxt(file, val, delimiter='\n', fmt='%s')
+            path = os.path.join(local, f'{prefix}_ids.json')
+            with open(path, "w") as f:
+                json.dump(val, f, indent=0)
     shutil.copyfile(config_path, os.path.join(experiment_path, 'config.json'))

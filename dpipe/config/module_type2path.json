@@ -1,5 +1,6 @@
 {
   "dataset": "dpipe.dataset.config",
+  "dataset_wrapper": "dpipe.dataset.config",
   "batch_iter": "dpipe.batch_iter.config",
   "experiment": "dpipe.experiment.config",
   "model_core": "dpipe.model_core.config",
