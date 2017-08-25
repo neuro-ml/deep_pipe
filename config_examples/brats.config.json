@@ -71,7 +71,7 @@
   "load_y": {
     "type": "meta",
     "name": "extractor",
-    "params": {"property": "load_msegm"},
+    "params": {"property": "load_segm"},
     "inputs": {"module": "dataset"}
   },
 
@@ -114,13 +114,13 @@
       "n_chans_out": {
         "type": "meta",
         "name": "extractor",
-        "params": {"property": "n_chans_msegm"},
+        "params": {"property": "n_chans_segm"},
         "inputs": {"module": "dataset"}
       }
     }
   },
 
-  "predict": {"type": "predict", "name": "sigmoid", "init": false},
+  "predict": {"type": "predict", "name": "softmax", "init": false},
 
   "model": {
     "type": "model",
@@ -129,7 +129,7 @@
       "model_core": "model_core",
       "predict": "predict",
       "loss": {
-        "name": "sigmoid_cross_entropy",
+        "name": "sparse_softmax_cross_entropy",
         "type": "loss",
         "init": false
       },
@@ -166,7 +166,7 @@
 
   "train": {
     "type": "train",
-    "name": "train_with_lr_decrease",
+    "name": "train_segm",
     "params": {
       "n_epochs": 120,
       "lr_init": 0.1,
@@ -179,8 +179,7 @@
       "model_controller": "model_controller",
       "train_batch_iter_factory": "batch_iter_factory",
       "val_ids": "val_ids",
-      "load_x": "load_x",
-      "load_y": "load_y"
+      "dataset": "dataset"
     },
     "init": false
   }

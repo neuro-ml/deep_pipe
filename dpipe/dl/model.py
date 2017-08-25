@@ -30,8 +30,7 @@ class Model:
         self.y_pred = predict(logits)
 
         self.lr = tf.placeholder(tf.float32, name='learning_rate')
-        self.y_ph = tf.placeholder(tf.float32, logits.shape, name='y_true')
-        self.loss = loss(logits=logits, y_ph=self.y_ph)
+        self.loss, self.y_ph = loss(logits=logits)
         self.train_op = optimize(loss=self.loss, lr=self.lr)
 
         self.summary_logger = SummaryLogger(

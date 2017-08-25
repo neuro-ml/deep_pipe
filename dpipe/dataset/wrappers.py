@@ -65,3 +65,17 @@ def make_normalized(dataset: Dataset, mean=True, std=True,
                                               drop_percentile=drop_percentile)
 
     return NormalizedDataset(dataset)
+
+
+def make_normalized_sub(dataset: Dataset) -> Dataset:
+    class NormalizedDataset(Proxy):
+        def load_mscan(self, patient_id):
+            mscan = self._shadowed.load_mscan(patient_id)
+            mask = np.any(mscan > 0, axis=0)
+            mscan_inner = medim.bb.extract([mscan], mask)[0]
+
+            mscan = mscan / mscan_inner.std(axis=(1, 2, 3), keepdims=True)
+
+            return mscan
+
+    return NormalizedDataset(dataset)

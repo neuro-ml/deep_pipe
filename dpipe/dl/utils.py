@@ -3,8 +3,8 @@ from functools import partial
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-softmax = partial(tf.nn.softmax, dim=1)
-sigmoid = tf.nn.sigmoid
+softmax = partial(tf.nn.softmax, dim=1, name='softmax')
+sigmoid = partial(tf.nn.sigmoid, name='sigmoid')
 
 
 def optimize(loss, lr, *, tf_optimizer_name, **params):
@@ -14,14 +14,19 @@ def optimize(loss, lr, *, tf_optimizer_name, **params):
         return slim.learning.create_train_op(loss, optimizer)
 
 
-def sparse_softmax_cross_entropy(*, logits, y_ph):
+def sparse_softmax_cross_entropy(*, logits):
     with tf.variable_scope('sparse_softmax_cross_entropy'):
+        y_ph_shape = logits.shape[0:1].concatenate(logits.shape[2:])
+        y_ph = tf.placeholder(tf.int32, y_ph_shape, name='y_true')
+
         t = tf.transpose(logits, [0, *range(2, len(logits.shape)), 1])
-        return tf.losses.sparse_softmax_cross_entropy(labels=y_ph, logits=t)
+        loss = tf.losses.sparse_softmax_cross_entropy(labels=y_ph, logits=t)
+    return loss, y_ph
 
 
-def sigmoid_cross_entropy(*, logits, y_ph):
-    return tf.losses.sigmoid_cross_entropy(y_ph, logits=logits)
+def sigmoid_cross_entropy(*, logits):
+    y_ph = tf.placeholder(tf.float32, logits.shape, name='y_true')
+    return tf.losses.sigmoid_cross_entropy(y_ph, logits=logits), y_ph
 
 
 def soft_dice_loss(*, logits, y_ph, softness=1e-7):

@@ -128,7 +128,7 @@ class DeepMedicOrig(ModelCore):
 
         loss = np.average(losses, weights=weights)
         y_pred = medim.split.combine(y_pred_parts, [1, *self.n_parts])
-        y_pred = restore_y(y_pred, y_padding, self.n_parts)
+        y_pred = restore_y(y_pred, y_padding)
         return y_pred, loss
 
     def predict_object(self, x, do_inf_step):
@@ -145,7 +145,7 @@ class DeepMedicOrig(ModelCore):
             y_pred_parts.append(y_pred)
 
         y_pred = medim.split.combine(y_pred_parts, [1, *self.n_parts])
-        y_pred = restore_y(y_pred, y_padding, self.n_parts)
+        y_pred = restore_y(y_pred, y_padding)
         return y_pred
 
 
@@ -169,20 +169,22 @@ def prepare_x(x, x_det_padding, x_con_padding, n_parts):
     x_con = np.pad(x, x_con_padding, mode='constant')
 
     x_det_parts = medim.split.divide(x_det, [0, 8, 8, 8],
-                                               n_parts_per_axis=[1, *n_parts])
+                                     n_parts_per_axis=[1, *n_parts])
 
     x_con_parts = medim.split.divide(x_con, [0, 24, 24, 24],
-                                               n_parts_per_axis=[1, *n_parts])
+                                     n_parts_per_axis=[1, *n_parts])
     return x_det_parts, x_con_parts
 
 
 def prepare_y(y, y_padding, n_parts):
-    y = np.pad(y, y_padding, mode='constant')
-    y_parts = medim.split.divide(y, [0] * 4, n_parts_per_axis=[1, *n_parts])
+    y = np.pad(y, y_padding[-y.ndim:], mode='constant')
+    n_parts_per_axis = [1] * (y.ndim - 3) + list(n_parts)
+    y_parts = medim.split.divide(y, [0] * y.ndim,
+                                 n_parts_per_axis=n_parts_per_axis)
 
     return y_parts
 
 
-def restore_y(y_pred, y_padding, n_parts):
+def restore_y(y_pred, y_padding):
     r_border = np.array(y_pred.shape[1:]) - y_padding[1:, 1]
     return y_pred[:, :r_border[0], :r_border[1], :r_border[2]]
