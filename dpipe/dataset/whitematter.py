@@ -1,8 +1,14 @@
 import os
+import functools
+
 import numpy as np
 import nibabel as nib
 
 from .base import Dataset
+
+
+def cached_property(f):
+    return property(functools.lru_cache(1)(f))
 
 
 class WhiteMatterHyperintensity(Dataset):
@@ -14,7 +20,7 @@ class WhiteMatterHyperintensity(Dataset):
     def _get_idx_to_paths(self, path):
         idx_paths = {}
         for path_, dirs, files in os.walk(path):
-            if 'orig' in dirs and 'pre' in dirs:
+            if 'pre' in dirs:
                 idx = path_.split('/')[-1]
                 idx_paths[idx] = path_
         return idx_paths
@@ -43,40 +49,29 @@ class WhiteMatterHyperintensity(Dataset):
         return np.pad(tmp, new_diff, mode='constant', constant_values=0)
 
     def load_mscan(self, patient_id):
-            path_to_modalities = self.idx_to_path[patient_id]
-            res = []
-            for modalities in ['pre/FLAIR.nii.gz', 'pre/T1.nii.gz']:
-                image = os.path.join(path_to_modalities, modalities)
-                x = nib.load(image).get_data().astype('float32')
-                x = self._reshape_to(x, new_shape=self.spatial_size)
-                # if modalities == 'FLAIR.nii.gz':
-                #     mask = nib.load(path_to_brainmask).get_data()
-                #     mask = self._reshape_to(mask, new_shape=self.spatial_size)
-                #     x[mask==0] = 0
-                img_std = x.std()
-                x = x / img_std
-                res.append(x)
-            return np.asarray(res)
+        path_to_modalities = self.idx_to_path[patient_id]
+        res = []
+        for modalities in ['pre/FLAIR.nii.gz', 'pre/T1.nii.gz']:
+            image = os.path.join(path_to_modalities, modalities)
+            x = nib.load(image).get_data().astype('float32')
+            # add skull stripping
+            if modalities == 'pre/FLAIR.nii.gz':
+                brain = path_to_modalities + '/pre/brainmask_T1_mask.nii.gz'
+                mask = nib.load(brain).get_data()
+                x[mask == 0] = 0
+            #x = self._reshape_to(x, new_shape=self.spatial_size)
+            img_std = x.std()
+            x = x / img_std
+            res.append(x)
+        return np.asarray(res)
 
     def load_segm(self, patient_id):
         path_to_modalities = self.idx_to_path[patient_id]
         x = nib.load(os.path.join(path_to_modalities, 'wmh.nii.gz')).get_data()
-        x = self._reshape_to(x, new_shape=self.spatial_size)
-        x[x == 2] = 0
-        return np.array(x, dtype=bool)
-
-    def load_msegm(self, patient_id):
-        return self.load_segm(patient_id)[None]
-
-    def load_x(self, patient_id):
-        return self.load_mscan(patient_id)
-
-    def load_y(self, patient_id):
-        return self.load_msegm(patient_id)
-
-    def segm2msegm(self, segm):
-        # np.array([segm == 1, segm == 2]).astype(np.int32)
-        pass
+        #x = self._reshape_to(x, new_shape=self.spatial_size)
+        x[x == 2] = 2
+        print(np.max(x))
+        return np.array(x, dtype=int)
 
     @property
     def patient_ids(self):
@@ -86,14 +81,17 @@ class WhiteMatterHyperintensity(Dataset):
     def n_chans_mscan(self):
         return 2
 
-    @property
-    def n_chans_msegm(self):
-        return 1
+    @cached_property
+    def segm2msegm(self) -> np.array:
+        """2d matrix, filled with mapping segmentation to msegmentation.
+        Rows for int value from segmentation and column for channel values in
+        multimodal segmentation, corresponding for each row."""
+        return np.array([
+            [0],
+            [1],
+            [0]
+        ], dtype=bool)
 
-    @property
-    def n_classes(self):
-        return 3
-
-    @property
-    def spatial_size(self):
-        return (256, 256, 84)
+# [[0, 0],
+#  [0, 1],
+#  [1, 0]]
