@@ -70,7 +70,6 @@ class WhiteMatterHyperintensity(Dataset):
         x = nib.load(os.path.join(path_to_modalities, 'wmh.nii.gz')).get_data()
         #x = self._reshape_to(x, new_shape=self.spatial_size)
         x[x == 2] = 2
-        print(np.max(x))
         return np.array(x, dtype=int)
 
     @property
