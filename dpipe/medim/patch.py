@@ -1,11 +1,11 @@
 # Tools for patch extraction and generation
-from typing import List
-
 import numpy as np
 
 from .utils import extract
 
 
+# FIXME consider what happens if central_idx is outside of x, error is likely
+# Probably need to rewrite it to support it
 def extract_patch(x: np.ndarray, *, center_idx: np.array, patch_size: np.array,
                   spatial_dims: list) -> np.array:
     """Returns extracted patch of specific spatial size and with specified 
@@ -39,6 +39,9 @@ def extract_patch(x: np.ndarray, *, center_idx: np.array, patch_size: np.array,
     padding = np.zeros((x.ndim, 2), dtype=int)
     spatial_shape = np.array(extract(x.shape, spatial_dims))
 
+    assert all([0 <= center_idx[i] < spatial_shape[i]
+                for i in range(len(spatial_dims))])
+
     padding[spatial_dims, 0] = -start
     padding[spatial_dims, 1] = end - spatial_shape
     padding[spatial_dims] = np.maximum(0, padding[spatial_dims])
@@ -50,16 +53,15 @@ def extract_patch(x: np.ndarray, *, center_idx: np.array, patch_size: np.array,
     for i, s in enumerate(spatial_dims):
         slices[s] = slice(start[i], end[i])
 
-    x = x[slices]
-    if np.any(padding > 0):
-        x = np.pad(x, padding, mode='constant')
-    return x
+    patch = np.pad(x[slices], padding, mode='constant')
+    assert np.all([ps == ts for ps, ts in
+                   zip(extract(patch.shape, spatial_dims), patch_size)])
+    return patch
 
-
-def extract_patches(xs: List[np.ndarray], *, center_idx: np.array,
-                    patch_sizes: List[np.array],
-                    spatial_dims: list) -> List[np.array]:
-    """Applies extract_patch for each object in xs with corresponing patch
+def extract_patches(xs: [np.ndarray], *, center_idx: np.array,
+                    patch_sizes: [np.array],
+                    spatial_dims: list) -> [np.array]:
+    """Applies extract_patch for each object in xs with corresponding patch
      size."""
     patches = []
     for i, x in enumerate(xs):
@@ -71,7 +73,7 @@ def extract_patches(xs: List[np.ndarray], *, center_idx: np.array,
 
 
 def get_uniform_center_index(x_shape: np.array, patch_size: np.array,
-                             spatial_dims: list):
+                             spatial_dims: list) -> np.array:
     """
     Returns spatial center coordinates for the patch, chosen randomly.
     We assume that patch have to belong to the object boundaries.
