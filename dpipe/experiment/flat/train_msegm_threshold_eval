@@ -8,12 +8,16 @@ PATH_TO_SCRIPTS = get_paths()['scripts']
 
 TRAIN_SCRIPT = os.path.join(PATH_TO_SCRIPTS, 'train_model.py')
 PREDICT_SCRIPT = os.path.join(PATH_TO_SCRIPTS, 'predict.py')
-TRANSFORM = os.path.join(PATH_TO_SCRIPTS, 'transform.py')
+FIND_THRESHOLD = os.path.join(PATH_TO_SCRIPTS, 'calculate_dice_threshold.py')
+BINARIZE = os.path.join(PATH_TO_SCRIPTS, 'binarize.py')
 COMPUTE_DICES = os.path.join(PATH_TO_SCRIPTS, 'compute_dices.py')
 
 CONFIG = '../config.json'
 SAVED_MODEL = 'model'
 TF_LOG = 'train_logs'
+
+VAL_PRED = 'val_msegm_pred_prob'
+THRESHOLDS = 'thresholds.npy'
 
 TRAIN_IDS = 'train_ids.json'
 VAL_IDS = 'val_ids.json'
@@ -38,17 +42,27 @@ rule predict:
         SAVED_MODEL,
         ids = '{sample}_ids.json'
     output:
-        predictions = '{sample}_segm_pred_prob'
+        predictions = '{sample}_msegm_pred_prob'
     shell:
         'python {PREDICT_SCRIPT} -cp {CONFIG} --ids_path {input.ids} --predictions_path {output.predictions} --restore_model_path {SAVED_MODEL}'
 
-rule predictions2msegm:
+rule find_thresholds:
     input:
-        predictions = '{sample}_segm_pred_prob'
+        VAL_IDS, VAL_PRED, SAVED_MODEL
+    output:
+        THRESHOLDS
+    shell:
+        'python {FIND_THRESHOLD} -cp {CONFIG} --ids_path {VAL_IDS} --predictions_path {VAL_PRED} --thresholds_path {THRESHOLDS}'
+
+rule binarize:
+    input:
+        THRESHOLDS,
+        ids = '{sample}_ids.json',
+        predictions = '{sample}_msegm_pred_prob'
     output:
         predictions = '{sample}_msegm_pred'
     shell:
-        'python {TRANSFORM} -cp {CONFIG} --input_path {input.predictions} --output_path {output.predictions} --transform pred2msegm'
+        'python {BINARIZE} -cp {CONFIG} --ids_path {input.ids} --binary_predictions_path {output.predictions} --predictions_path {input.predictions} --thresholds_path {THRESHOLDS}'
 
 rule compute_dices:
     input:

@@ -184,7 +184,7 @@
     "init": false
   },
 
-  "prob2msegm": {
+  "pred2msegm": {
     "type": "transform",
     "name": "segm_prob2msegm",
     "inputs": {"dataset": "dataset"},
