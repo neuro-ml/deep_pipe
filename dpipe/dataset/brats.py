@@ -53,7 +53,7 @@ class Brats2017(Dataset):
         return 4
 
     @cached_property
-    def segm2msegm(self):
+    def segm2msegm_matrix(self):
         return np.array([
             [0, 0, 0],
             [1, 1, 0],

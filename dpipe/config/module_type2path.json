@@ -12,5 +12,6 @@
   "model_controller": "dpipe.dl.config",
   "loss": "dpipe.dl.config",
   "predict": "dpipe.dl.config",
-  "optimize": "dpipe.dl.config"
+  "optimize": "dpipe.dl.config",
+  "transform": "dpipe.utils.config"
 }

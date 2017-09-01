@@ -65,7 +65,7 @@ class FromDataFrame(Dataset):
     def load_segm(self, patient_id):
         super().load_segm(patient_id)
 
-    def segm2msegm(self, segm):
+    def segm2msegm_matrix(self, segm):
         super().segm2msegm(segm)
 
     @property
