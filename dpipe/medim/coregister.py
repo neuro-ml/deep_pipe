@@ -5,8 +5,23 @@ import shutil
 
 invert = 'ImageMath 3 %s Neg %s'
 register = 'antsRegistrationSyNQuick.sh -d 3 -m %s -f %s -t s -o result -x %s'
-transform = 'antsApplyTransforms -d 3 -i %s -o %s -r ' + \
+transform = 'antsApplyTransforms -d 3 -i %s -o %s -r ' \
             'resultWarped.nii.gz -t result1InverseWarp.nii.gz'
+
+def create_transformation(image, inverse_mask, reference, result_folder):
+    command = register % (reference, image, inverse_mask)
+    subprocess.call(shlex.split(command), cwd=result_folder)
+
+    warped = os.path.join(result_folder, 'resultWarped.nii.gz')
+    filename = os.path.abspath(image)
+    if not image.endswith('.gz'):
+        image += '.gz'
+    shutil.copyfile(warped, os.path.join(result_folder, filename))
+
+
+def apply_transformation(image, result_path, transformations_folder):
+    command = transform % (image, result_path)
+    subprocess.call(shlex.split(command), cwd=transformations_folder)
 
 
 def coregister(result_path, masks_paths, modalities_paths, refs_paths):
@@ -36,44 +51,40 @@ def coregister(result_path, masks_paths, modalities_paths, refs_paths):
     filename = ''
     sym_counter = 0
 
-    for id, image in refs_paths:
-        folder = os.path.join(result_path, str(id))
+    for id, reference in refs_paths:
+        result_folder = os.path.join(result_path, str(id))
         try:
-            os.makedirs(folder)
+            os.makedirs(result_folder)
         except FileExistsError:
             # this patient is already processed, so do nothing
             continue
 
-        # apparently ANTs can't handle comas, so create a symlink:
-        if ',' in image:
+        #  apparently ANTs can't handle comas, so create a symlink:
+        if ',' in reference:
             sym_counter += 1
-            filename = os.path.basename(image).replace(',', '')
-            filename = os.path.join(folder, str(sym_counter) + filename)
-            os.symlink(image, filename)
-            image = filename
+            filename = os.path.basename(reference).replace(',', '')
+            filename = os.path.join(result_folder, str(sym_counter) + filename)
+            os.symlink(reference, filename)
+            reference = filename
 
         # create the transformation
-        command = register % (image, modalities_paths[0], neg_masks[0])
-        subprocess.call(shlex.split(command), cwd=folder)
-        warped = os.path.join(folder, 'resultWarped.nii.gz')
-        shutil.copyfile(warped, os.path.join(folder, mod_files[0]))
+        create_transformation(modalities_paths[0], neg_masks[0], reference, result_folder)
 
         # create other modalities
-        for file, name in zip(modalities_paths[1:], mod_files[1:]):
-            command = transform % (file, name)
-            subprocess.call(shlex.split(command), cwd=folder)
+        for modality, name in zip(modalities_paths[1:], mod_files[1:]):
+            apply_transformation(modality, name, result_folder)
 
         # create the masks
         for neg_mask, name in zip(neg_masks, mask_files):
             output = '_' + name
             command = transform % (neg_mask, output)
-            subprocess.call(shlex.split(command), cwd=folder)
+            subprocess.call(shlex.split(command), cwd=result_folder)
             command = invert % (name, output)
-            subprocess.call(shlex.split(command), cwd=folder)
-            os.remove(os.path.join(folder, output))
+            subprocess.call(shlex.split(command), cwd=result_folder)
+            os.remove(os.path.join(result_folder, output))
 
-        if image == filename:
-            os.unlink(image)
+        if reference == filename:
+            os.unlink(reference)
 
     for neg_mask in neg_masks:
         os.remove(neg_mask)

@@ -1,6 +1,6 @@
 from .brats import Brats2017
 from .isles import *
-from .factories import set_filename
+from .decorators import set_filename
 from .whitematter import WhiteMatterHyperintensity
 
 from .wrappers import make_cached, make_bbox_extraction, make_normalized, \

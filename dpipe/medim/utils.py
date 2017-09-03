@@ -1,4 +1,5 @@
 import numpy as np
+import nibabel as nib
 
 from dpipe.medim.metrics import dice_score
 
@@ -18,3 +19,9 @@ def calc_max_dices(y_true, y_pred):
         dices.append(temp)
     dices = np.asarray(dices)
     return dices.mean(axis=0).max(axis=1)
+
+
+def load_image(path):
+    if path.endswith('.npy'):
+        return np.load(path)
+    return nib.load(path).get_data()
