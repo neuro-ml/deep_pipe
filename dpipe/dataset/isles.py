@@ -1,4 +1,6 @@
-from .dataframe import partial
+import functools
+
+from .dataframe import FromMetadata
 
 # 2015
 
@@ -18,9 +20,10 @@ from .dataframe import partial
 
 
 # 2017
-Isles2017 = partial(
+Isles2017 = functools.partial(
+    FromMetadata,
     modalities=['ADC', 'MTT', 'TTP', 'Tmax', 'rCBF', 'rCBV'],
-    targets=['OT']
+    target='OT'
 )
 
 #

@@ -1,5 +1,4 @@
 import numpy as np
-import nibabel as nib
 
 from dpipe.medim.metrics import dice_score
 
@@ -24,4 +23,9 @@ def calc_max_dices(y_true, y_pred):
 def load_image(path):
     if path.endswith('.npy'):
         return np.load(path)
-    return nib.load(path).get_data()
+    elif path.endswith('.nii') or path.endswith('.nii.gz'):
+        import nibabel as nib
+        return nib.load(path).get_data()
+    else:
+        raise ValueError(f"Couldn't read scan from path: {path}.\n"
+                         "Unknown data extension.")
