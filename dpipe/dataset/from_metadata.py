@@ -19,7 +19,7 @@ class FromMetadata(Dataset):
         df = pd.read_csv(os.path.join(data_path, metadata_rpath))
         df['id'] = df.id.astype(str)
         self._patient_ids = df.id.as_matrix()
-        self.dataFrame = df.set_index('id')
+        self.dataFrame = df.set_index('id').sort_index()
 
     @property
     def segm2msegm_matrix(self):
