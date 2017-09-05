@@ -1,6 +1,5 @@
 {
-  "brats2015": "/nmnt/x02-ssd/brats2015/processed",
-  "brats2017": "/nmnt/x02-ssd/brats2017/processed",
+  "brats2017": "/nmnt/t01-ssd/brats2017",
 
   "isles2017": "/nmnt/x04-hdd/ISLES/",
   "isles_siss": "/nmnt/x04-hdd/ISLES/",

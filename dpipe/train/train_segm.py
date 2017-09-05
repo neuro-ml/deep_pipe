@@ -33,8 +33,7 @@ def train_segm(
             y_pred_proba, val_loss = model_controller.validate(val_x, val_segm)
 
             y_pred = [np.argmax(y, axis=0) for y in y_pred_proba]
-            msegm_pred = [np.rollaxis(dataset.segm2msegm[y], axis=3)
-                          for y in y_pred]
+            msegm_pred = [dataset.segm2msegm(y) for y in y_pred]
 
             dices = [multichannel_dice_score(pred, true)
                      for pred, true in zip(msegm_pred, val_msegm)]

@@ -45,7 +45,7 @@
   "experiment": {
     "type": "experiment",
     "name": "flat",
-    "params": {"makefile": "train_threshold_predict"},
+    "params": {"makefile": "train_segm_evaluate"},
     "inputs": {
       "config_path": "config_path",
       "experiment_path": "experiment_path",
@@ -181,6 +181,13 @@
       "val_ids": "val_ids",
       "dataset": "dataset"
     },
+    "init": false
+  },
+
+  "pred2msegm": {
+    "type": "transform",
+    "name": "segm_prob2msegm",
+    "inputs": {"dataset": "dataset"},
     "init": false
   }
 }

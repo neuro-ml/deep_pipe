@@ -18,3 +18,14 @@ def calc_max_dices(y_true, y_pred):
         dices.append(temp)
     dices = np.asarray(dices)
     return dices.mean(axis=0).max(axis=1)
+
+
+def load_image(path):
+    if path.endswith('.npy'):
+        return np.load(path)
+    elif path.endswith('.nii') or path.endswith('.nii.gz'):
+        import nibabel as nib
+        return nib.load(path).get_data()
+    else:
+        raise ValueError(f"Couldn't read scan from path: {path}.\n"
+                         "Unknown data extension.")

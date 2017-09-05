@@ -54,3 +54,20 @@ def get_group_cv_111(dataset: Dataset, *, val_part, n_splits):
         train_val_test.append((train, val, test))
 
     return train_val_test
+
+
+def _extract_pure(ids):
+    return list(filter(ids, lambda x: '^' not in x))
+
+
+def get_pure_val_test_group_cv_111(dataset: Dataset, *, val_part, n_splits):
+    """
+    In order to use this splitter, your Dataset needs to have
+     a 'groups' property.
+    """
+    split = get_group_cv_111(dataset=dataset, val_part=val_part,
+                             n_splits=n_splits)
+
+    return [(train, _extract_pure(val), _extract_pure(test))
+            for train, val, test in split]
+

@@ -24,8 +24,7 @@ if __name__ == '__main__':
         y = load_by_id(predict_path, identifier)
         assert len(y) == channels
 
-        for i in range(channels):
-            y[i] = y[i] > thresholds[i]
+        y = y > thresholds[:, None, None, None]
 
         np.save(os.path.join(binary_predictions_path, str(identifier)), y)
         del y

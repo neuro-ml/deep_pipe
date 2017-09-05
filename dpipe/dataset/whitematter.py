@@ -81,7 +81,7 @@ class WhiteMatterHyperintensity(Dataset):
         return 2
 
     @cached_property
-    def segm2msegm(self) -> np.array:
+    def segm2msegm_matrix(self) -> np.array:
         """2d matrix, filled with mapping segmentation to msegmentation.
         Rows for int value from segmentation and column for channel values in
         multimodal segmentation, corresponding for each row."""

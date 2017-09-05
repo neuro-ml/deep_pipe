@@ -28,21 +28,24 @@ class Dataset(ABC):
 
     @property
     @abstractmethod
-    def segm2msegm(self) -> np.array:
+    def segm2msegm_matrix(self) -> np.array:
         """2d matrix, filled with mapping segmentation to msegmentation.
         Rows for int value from segmentation and column for channel values in
         multimodal segmentation, corresponding for each row."""
         pass
 
+    def segm2msegm(self, x) -> np.array:
+        return np.rollaxis(self.segm2msegm_matrix[x], 3, 0)
+
     def load_msegm(self, patient_id) -> np.array:
         """"Method returns multimodal segmentation of shape
          [n_chans_msegm, x, y, z]. We use this result to compute dice scores"""
-        return np.rollaxis(self.segm2msegm[self.load_segm(patient_id)], 3, 0)
+        return self.segm2msegm(self.load_segm(patient_id))
 
     @property
     def n_chans_segm(self):
-        return self.segm2msegm.shape[0]
+        return self.segm2msegm_matrix.shape[0]
 
     @property
     def n_chans_msegm(self):
-        return self.segm2msegm.shape[1]
+        return self.segm2msegm_matrix.shape[1]
