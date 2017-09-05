@@ -82,7 +82,7 @@ def make_normalized_sub(dataset: Dataset) -> Dataset:
     return NormalizedDataset(dataset)
 
 
-def add_groups(dataset: Dataset, group_col) -> Dataset:
+def add_groups(dataset: Dataset, group_col: str) -> Dataset:
     class GroupedFromMetadata(Proxy):
         @property
         def groups(self):
