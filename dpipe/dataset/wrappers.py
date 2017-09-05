@@ -37,6 +37,7 @@ def make_bbox_extraction(dataset: Dataset) -> Dataset:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time
     load_mscan = functools.lru_cache(3)(dataset.load_mscan)
+
     class BBoxedDataset(Proxy):
         def load_mscan(self, patient_id):
             img = load_mscan(patient_id)
@@ -79,3 +80,12 @@ def make_normalized_sub(dataset: Dataset) -> Dataset:
             return mscan
 
     return NormalizedDataset(dataset)
+
+
+def add_groups(dataset: Dataset, group_col) -> Dataset:
+    class GroupedFromMetadata(Proxy):
+        @property
+        def groups(self):
+            return self.dataFrame[group_col].as_matrix()
+
+    return GroupedFromMetadata(dataset)
