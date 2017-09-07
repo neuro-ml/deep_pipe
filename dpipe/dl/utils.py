@@ -3,7 +3,11 @@ from functools import partial
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-softmax = partial(tf.nn.softmax, dim=1, name='softmax')
+
+def softmax(logits):
+    with tf.variable_scope('softmax'):
+        return tf.nn.softmax(logits=logits, dim=1,)
+
 sigmoid = partial(tf.nn.sigmoid, name='sigmoid')
 
 
