@@ -102,8 +102,8 @@
 
   "model_core": {
     "type": "model_core",
-    "name": "deepmedic_orig",
-    "params": {"n_parts": [1, 2, 2]},
+    "name": "deepmedic_els",
+    "params": {"n_parts": [1, 2, 2], "with_dropout": true, "downsampling_type": "sampling"},
     "inputs": {
       "n_chans_in": {
         "type": "meta",
