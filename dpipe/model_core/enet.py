@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from .utils import spatial_batch_norm
+from .layers import spatial_batch_norm
 from .base import ModelCore
 
 # FIXME high coupling

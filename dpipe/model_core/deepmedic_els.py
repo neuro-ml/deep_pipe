@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from dpipe import medim
 from .base import ModelCore
-from .utils import spatial_batch_norm, prelu
+from .layers import spatial_batch_norm, prelu, nearest_neighbour
 
 activation = functools.partial(prelu, feature_dims=[1])
 
@@ -49,16 +49,10 @@ def build_model(t_det_in, t_con_in, kernel_size, n_classes, training, name, *,
         t_con = build_path(t_con_in, path_blocks, kernel_size, training,
                            'context')
 
-        t_con_up = t_con
-        with tf.variable_scope('upconv'):
-            t_con_up = tf.layers.conv3d_transpose(
-                t_con_up, path_blocks[-1], 3, strides=[3, 3, 3],
-                data_format='channels_first', use_bias=False)
-            t_con_up = spatial_batch_norm(t_con_up, training=training,
-                                          data_format='channels_first')
-            t_con_up = activation(t_con_up)
+        t_con = nearest_neighbour(t_con, 3, data_format='channels_first',
+                                  name='upsample')
 
-        t_com = tf.concat([t_con_up, t_det], axis=1)
+        t_com = tf.concat([t_con, t_det], axis=1)
 
         t_com = cba(dropout(t_com), n_chans_com, 1, training, name='comm_1')
         t_com = cba(dropout(t_com), n_chans_com, 1, training, name='comm_2')
