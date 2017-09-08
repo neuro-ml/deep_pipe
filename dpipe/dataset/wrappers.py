@@ -86,6 +86,6 @@ def add_groups(dataset: Dataset, group_col: str) -> Dataset:
     class GroupedFromMetadata(Proxy):
         @property
         def groups(self):
-            return self.dataFrame[group_col].as_matrix()
+            return self._shadowed.dataFrame[group_col].as_matrix()
 
     return GroupedFromMetadata(dataset)
