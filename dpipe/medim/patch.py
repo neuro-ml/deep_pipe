@@ -3,12 +3,39 @@ import numpy as np
 
 from .utils import extract
 
-
 # FIXME consider what happens if central_idx is outside of x, error is likely
 # Probably need to rewrite it to support it
-def extract_patch_zero_padding(x: np.ndarray, *, center_idx: np.array,
-                               patch_size: np.array,
-                               spatial_dims: list) -> np.array:
+# FIXME even patch size is not supported
+
+def find_patch_start_end_padding(
+        shape: np.ndarray, *, spatial_center_idx: np.array,
+        spatial_patch_size: np.array, spatial_dims: list):
+    assert (np.all((spatial_patch_size % 2) == 1),
+            'even patch size is not supported')
+
+    spatial_start = spatial_center_idx - spatial_patch_size // 2
+    spatial_end = spatial_start + spatial_patch_size
+
+    padding = np.zeros((len(shape), 2), dtype=int)
+    spatial_shape = shape[spatial_dims]
+
+    padding[spatial_dims, 0] = -spatial_start
+    padding[spatial_dims, 1] = spatial_end - spatial_shape
+    padding[spatial_dims] = np.maximum(0, padding[spatial_dims])
+
+    spatial_start = np.maximum(spatial_start, 0)
+    spatial_end = np.minimum(spatial_end, spatial_shape)
+
+    start = np.zeros(len(shape))
+    start[spatial_dims] = spatial_start
+    end = np.array(shape)
+    end[spatial_dims] = spatial_end
+
+    return start, end, padding
+
+
+def extract_patch(x: np.ndarray, *, spatial_center_idx: np.array,
+                  spatial_patch_size: np.array, spatial_dims: list) -> np.array:
     """Returns extracted patch of specific spatial size and with specified 
     center from x.
     Parameters
@@ -17,16 +44,19 @@ def extract_patch_zero_padding(x: np.ndarray, *, center_idx: np.array,
         Array with data. Some of it's dimensions are spatial. We extract 
         spatial patch specified by spatial location and spatial size. If
         available patch is smaller than required, we pad with zeroes.
-    center_idx
+    spatial_center_idx
         Location of the center of the patch. Components
         correspond to spatial dimensions. If some of patch size components was
         even, patch center is supposed to be on the right center pixel.
-    patch_size
+    spatial_patch_size
         Spatial patch size. Output will have original shape for
         non-spatial dimensions and patch_size shape for spatial dimensions.
     spatial_dims
         Which of x's dimensions consider as spatial. Accepts
         negative parameters.
+    padding_mode
+        Defines operation, used to calculate values in padding. By default
+        padding is not allowed.
     
     Returns
     -------
@@ -34,77 +64,79 @@ def extract_patch_zero_padding(x: np.ndarray, *, center_idx: np.array,
         Patch extracted from x, padded, if necessary. 
  
     """
-    assert np.all((patch_size % 2) == 1), 'even patch size is not supported'
+    slice, padding = find_patch_start_end_padding(
+        np.array(x.shape), spatial_center_idx=spatial_center_idx,
+        spatial_patch_size=spatial_patch_size, spatial_dims=spatial_dims)
 
-    start = center_idx - patch_size // 2
-    end = start + patch_size
-
-    padding = np.zeros((x.ndim, 2), dtype=int)
-    spatial_shape = np.array(extract(x.shape, spatial_dims))
-
-    assert all([0 <= center_idx[i] < spatial_shape[i]
-                for i in range(len(spatial_dims))])
-
-    padding[spatial_dims, 0] = -start
-    padding[spatial_dims, 1] = end - spatial_shape
-    padding[spatial_dims] = np.maximum(0, padding[spatial_dims])
-
-    start = np.maximum(start, 0)
-    end = np.minimum(end, spatial_shape)
-
-    slices = [slice(None)] * x.ndim
-    for i, s in enumerate(spatial_dims):
-        slices[s] = slice(start[i], end[i])
+    if padding_mode is None:
+        if np.all(padding != 0):
+            raise ValueError(
+                "Padding mode was set to None, which doesn't allow padding "
+                "but patch size doesn't fit with current centre.\n"
+                f"Required padding: {padding}"
+            )
+        x_patch = np.array(x_slice)
+    else:
+        x_patch = np.zeros(np.sum(padding, axis=1) + np.sha)
 
     patch = np.pad(x[slices], padding, mode='constant')
     assert np.all([ps == ts for ps, ts in
-                   zip(extract(patch.shape, spatial_dims), patch_size)])
+                   zip(extract(patch.shape, spatial_dims), spatial_patch_size)])
     return patch
 
 
-def extract_patch(x: np.ndarray, *, center_idx: np.array, patch_size: np.array,
-                  spatial_dims: list) -> np.array:
+# FIXME consider what happens if central_idx is outside of x, error is likely
+# Probably need to rewrite it to support it
+def extract_patch(x: np.ndarray, *, spatial_center_idx: np.array,
+                  spatial_patch_size: np.array, spatial_dims: list,
+                  padding_mode: str = None) -> np.array:
     """Returns extracted patch of specific spatial size and with specified
     center from x.
     Parameters
     ----------
     x
         Array with data. Some of it's dimensions are spatial. We extract
-        spatial patch specified by spatial location and spatial size.
-    center_idx
+        spatial patch specified by spatial location and spatial size. If
+        available patch is smaller than required, we pad with zeroes.
+    spatial_center_idx
         Location of the center of the patch. Components
         correspond to spatial dimensions. If some of patch size components was
         even, patch center is supposed to be on the right center pixel.
-    patch_size
+    spatial_patch_size
         Spatial patch size. Output will have original shape for
         non-spatial dimensions and patch_size shape for spatial dimensions.
     spatial_dims
         Which of x's dimensions consider as spatial. Accepts
         negative parameters.
+    padding_mode
+        Defines operation, used to calculate values in padding. By default
+        padding is not allowed.
 
     Returns
     -------
     :
-        Patch extracted from x.
+        Patch extracted from x, padded, if necessary.
 
     """
-    assert np.all((patch_size % 2) == 1), 'even patch size is not supported'
+    slice, padding = find_patch_start_end_padding(
+        np.array(x.shape), spatial_center_idx=spa)
 
-    start = center_idx - patch_size // 2
-    end = start + patch_size
+    if padding_mode is None:
+        if np.all(padding != 0):
+            raise ValueError(
+                "Padding mode was set to None, which doesn't allow padding "
+                "but patch size doesn't fit with current centre.\n"
+                f"Required padding: {padding}"
+            )
+        x_patch = np.array(x_slice)
+    else:
+        x_patch = np.zeros(np.sum(padding, axis=1) + np.sha)
 
-    assert np.all((0 <= start) &
-                  (end <= np.array(extract(x.shape, spatial_dims))))
-
-    slices = [slice(None)] * x.ndim
-    for i, s in enumerate(spatial_dims):
-        slices[s] = slice(start[i], end[i])
-
-    patch = x[slices]
+    patch = np.pad(x[slices], padding, mode='constant')
     assert np.all([ps == ts for ps, ts in
-                   zip(extract(patch.shape, spatial_dims), patch_size)])
+                   zip(extract(patch.shape, spatial_dims), spatial_patch_size)])
+    return patch
 
-    return np.array(patch)
 
 
 def get_uniform_center_index(x_shape: np.array, patch_size: np.array,

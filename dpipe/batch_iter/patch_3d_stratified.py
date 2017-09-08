@@ -35,7 +35,7 @@ def make_3d_patch_stratified_iter(
 
     max_patch_size = np.max([*x_patch_sizes, y_patch_size], axis=0)
     padding = (max_patch_size - y_patch_size) // 2
-
+    
     assert np.all(x_patch_sizes % 2 == 1) and np.all(y_patch_size % 2 == 1)
 
     spatial_dims = [-3, -2, -1]
@@ -62,6 +62,7 @@ def make_3d_patch_stratified_iter(
             raise ValueError('wrong number of dimensions ')
         conditional_centre_indices = medim.patch.get_conditional_center_indices(
             mask, patch_size=max_patch_size, spatial_dims=spatial_dims)
+        print(x.shape)
         return x, y, conditional_centre_indices
 
     @pdp.pack_args
@@ -75,13 +76,13 @@ def make_3d_patch_stratified_iter(
                 spatial_dims=spatial_dims)
 
         xs = [medim.patch.extract_patch(
-                  x, center_idx=center_idx, spatial_dims=spatial_dims,
-                  patch_size=patch_size
+                  x, spatial_center_idx=center_idx, spatial_dims=spatial_dims,
+                  spatial_patch_size=patch_size
               )
               for patch_size in x_patch_sizes]
 
         y = medim.patch.extract_patch(
-            y, center_idx=center_idx, patch_size=y_patch_size,
+            y, spatial_center_idx=center_idx, spatial_patch_size=y_patch_size,
             spatial_dims=spatial_dims
         )
 
@@ -91,8 +92,9 @@ def make_3d_patch_stratified_iter(
         pdp.Source(random_seq, buffer_size=3),
         pdp.LambdaTransformer(load_patient, buffer_size=100),
         pdp.LambdaTransformer(find_cancer, buffer_size=100),
-        pdp.LambdaTransformer(extract_patch, n_workers=4,
+        pdp.LambdaTransformer(extract_patch, n_workers=1,
                               buffer_size=batch_size),
         pdp.Chunker(chunk_size=batch_size, buffer_size=3),
         pdp.LambdaTransformer(pdp.combine_batches, buffer_size=buffer_size)
     )
+

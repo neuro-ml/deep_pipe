@@ -7,6 +7,11 @@ def extract(l, idx):
     return [l[i] for i in idx]
 
 
+def build_slices(start, end):
+    assert len(start) == len(end)
+    return list(map(slice, start, end))
+
+
 def calc_max_dices(y_true, y_pred):
     dices = []
     thresholds = np.linspace(0, 1, 20)

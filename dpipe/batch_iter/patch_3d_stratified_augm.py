@@ -57,12 +57,12 @@ def make_3d_augm_patch_stratified_iter(
                 x_shape=np.array(x.shape), patch_size=y_patch_size,
                 spatial_dims=spatial_dims)
 
-        xs = medim.patch.extract_patch_zero_padding(
-            x, center_idx=center_idx, spatial_dims=spatial_dims,
-            patch_size=x_patch_sizes[0])
+        xs = medim.patch.extract_patch(
+            x, spatial_center_idx=center_idx, spatial_dims=spatial_dims,
+            spatial_patch_size=x_patch_sizes[0])
 
-        y = medim.patch.extract_patch_zero_padding(
-            y, center_idx=center_idx, patch_size=y_patch_size,
+        y = medim.patch.extract_patch(
+            y, spatial_center_idx=center_idx, spatial_patch_size=y_patch_size,
             spatial_dims=spatial_dims)
 
         return (xs, y)
@@ -134,9 +134,9 @@ def make_3d_augm_patch_stratified_iter(
         center_idx = np.array(x_big.shape)[spatial_dims] // 2 + np.array(
             x_big.shape)[spatial_dims] % 2
 
-        xs = [x_big] + [medim.patch.extract_patch_zero_padding(
-            x_big, center_idx=center_idx, spatial_dims=spatial_dims,
-            patch_size=patch_size)
+        xs = [x_big] + [medim.patch.extract_patch(
+            x_big, spatial_center_idx=center_idx, spatial_dims=spatial_dims,
+            spatial_patch_size=patch_size)
             for patch_size in x_patch_sizes[1:]]
 
         # segm = medim.patch.extract_patch(
