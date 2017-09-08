@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from .patch import extract_patch_zero_padding, get_conditional_center_indices,\
+from .patch import extract_patch_zero_padding, get_conditional_center_indices, \
     get_uniform_center_index, extract_patch
 
 
@@ -37,11 +37,10 @@ class TestPatch(unittest.TestCase):
                            [2, 2, 5]])
         self.assertSequenceEqual(list(x.flatten()), list(x_true.flatten()))
 
-
     def test_get_conditional_center_indices(self):
         c = get_conditional_center_indices(np.any(self.x > 4, axis=0),
-            patch_size=self.patch_size,
-            spatial_dims=self.spatial_dims)
+                                           patch_size=self.patch_size,
+                                           spatial_dims=self.spatial_dims)
 
         self.assertSequenceEqual(list(c.flatten()), [2])
 
