@@ -1,8 +1,8 @@
 import unittest
 
 import numpy as np
-from .patch import extract_patch, get_conditional_center_indices,\
-    get_uniform_center_index
+from .patch import extract_patch_zero_padding, get_conditional_center_indices,\
+    get_uniform_center_index, extract_patch
 
 
 class TestPatch(unittest.TestCase):
@@ -14,9 +14,10 @@ class TestPatch(unittest.TestCase):
         self.patch_size = np.array([3])
         self.spatial_dims = [1]
 
-    def test_extract_patch(self):
-        x = extract_patch(self.x, center_idx=[3], patch_size=self.patch_size,
-                          spatial_dims=self.spatial_dims)
+    def test_extract_patch_zero_padding(self):
+        x = extract_patch_zero_padding(self.x, center_idx=[3],
+                                       patch_size=self.patch_size,
+                                       spatial_dims=self.spatial_dims)
 
         self.assertEqual(x.shape, (4, 3))
         x_true = np.array([[2, 3, 0],
@@ -24,6 +25,18 @@ class TestPatch(unittest.TestCase):
                            [5, 2, 0],
                            [2, 5, 0]])
         self.assertSequenceEqual(list(x.flatten()), list(x_true.flatten()))
+
+    def test_extract_patch(self):
+        x = extract_patch(self.x, center_idx=[2], patch_size=self.patch_size,
+                          spatial_dims=self.spatial_dims)
+
+        self.assertEqual(x.shape, (4, 3))
+        x_true = np.array([[2, 2, 3],
+                           [3, 3, 2],
+                           [3, 5, 2],
+                           [2, 2, 5]])
+        self.assertSequenceEqual(list(x.flatten()), list(x_true.flatten()))
+
 
     def test_get_conditional_center_indices(self):
         c = get_conditional_center_indices(np.any(self.x > 4, axis=0),

@@ -6,8 +6,9 @@ from .utils import extract
 
 # FIXME consider what happens if central_idx is outside of x, error is likely
 # Probably need to rewrite it to support it
-def extract_patch(x: np.ndarray, *, center_idx: np.array, patch_size: np.array,
-                  spatial_dims: list) -> np.array:
+def extract_patch_zero_padding(x: np.ndarray, *, center_idx: np.array,
+                               patch_size: np.array,
+                               spatial_dims: list) -> np.array:
     """Returns extracted patch of specific spatial size and with specified 
     center from x.
     Parameters
@@ -33,6 +34,8 @@ def extract_patch(x: np.ndarray, *, center_idx: np.array, patch_size: np.array,
         Patch extracted from x, padded, if necessary. 
  
     """
+    assert np.all((patch_size % 2) == 1), 'even patch size is not supported'
+
     start = center_idx - patch_size // 2
     end = start + patch_size
 
@@ -58,18 +61,50 @@ def extract_patch(x: np.ndarray, *, center_idx: np.array, patch_size: np.array,
                    zip(extract(patch.shape, spatial_dims), patch_size)])
     return patch
 
-def extract_patches(xs: [np.ndarray], *, center_idx: np.array,
-                    patch_sizes: [np.array],
-                    spatial_dims: list) -> [np.array]:
-    """Applies extract_patch for each object in xs with corresponding patch
-     size."""
-    patches = []
-    for i, x in enumerate(xs):
-        patch = extract_patch(
-            x, center_idx=center_idx, spatial_dims=spatial_dims,
-            patch_size=patch_sizes[i])
-        patches.append(patch)
-    return patches
+
+def extract_patch(x: np.ndarray, *, center_idx: np.array, patch_size: np.array,
+                  spatial_dims: list) -> np.array:
+    """Returns extracted patch of specific spatial size and with specified
+    center from x.
+    Parameters
+    ----------
+    x
+        Array with data. Some of it's dimensions are spatial. We extract
+        spatial patch specified by spatial location and spatial size.
+    center_idx
+        Location of the center of the patch. Components
+        correspond to spatial dimensions. If some of patch size components was
+        even, patch center is supposed to be on the right center pixel.
+    patch_size
+        Spatial patch size. Output will have original shape for
+        non-spatial dimensions and patch_size shape for spatial dimensions.
+    spatial_dims
+        Which of x's dimensions consider as spatial. Accepts
+        negative parameters.
+
+    Returns
+    -------
+    :
+        Patch extracted from x.
+
+    """
+    assert np.all((patch_size % 2) == 1), 'even patch size is not supported'
+
+    start = center_idx - patch_size // 2
+    end = start + patch_size
+
+    assert np.all((0 <= start) &
+                  (end <= np.array(extract(x.shape, spatial_dims))))
+
+    slices = [slice(None)] * x.ndim
+    for i, s in enumerate(spatial_dims):
+        slices[s] = slice(start[i], end[i])
+
+    patch = x[slices]
+    assert np.all([ps == ts for ps, ts in
+                   zip(extract(patch.shape, spatial_dims), patch_size)])
+
+    return np.array(patch)
 
 
 def get_uniform_center_index(x_shape: np.array, patch_size: np.array,
