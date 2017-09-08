@@ -32,7 +32,9 @@ def make_3d_patch_stratified_iter(
         y_patch_size, nonzero_fraction, buffer_size=10):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
+
     max_patch_size = np.max([*x_patch_sizes, y_patch_size], axis=0)
+    padding = (max_patch_size - y_patch_size) // 2
 
     assert np.all(x_patch_sizes % 2 == 1) and np.all(y_patch_size % 2 == 1)
 
@@ -46,20 +48,18 @@ def make_3d_patch_stratified_iter(
 
     @lru_cache(maxsize=len(ids))
     def find_cancer(patient: Patient):
-        x = pad_channel_min(patient.x, max_patch_size // 2)
-        print(x.shape)
+        x = pad_channel_min(patient.x, padding)
 
         y = patient.y
         if len(patient.y.shape) == 3:
-            y = np.pad(y, (max_patch_size // 2)[None, :].repeat()(2, axis=0),
+            y = np.pad(y, list(map(tuple, padding[:, None].repeat(2, axis=1))),
                        mode='constant')
             mask = y > 0
         elif len(patient.y.shape) == 4:
-            y = pad_channel_min(y, max_patch_size // 2)
+            y = pad_channel_min(y, padding)
             mask = np.any(y, axis=0)
         else:
             raise ValueError('wrong number of dimensions ')
-        print('going to')
         conditional_centre_indices = medim.patch.get_conditional_center_indices(
             mask, patch_size=max_patch_size, spatial_dims=spatial_dims)
         return x, y, conditional_centre_indices
