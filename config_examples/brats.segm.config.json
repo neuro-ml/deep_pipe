@@ -6,7 +6,7 @@
       "dataset": {
         "type": "dataset_wrapper",
         "name": "normalized",
-        "params": {"mean": false, "std": true, "drop_percentile": null},
+        "params": {"mean": true, "std": true, "drop_percentile": null},
         "inputs": {
           "dataset": {
             "type": "dataset_wrapper",
@@ -15,7 +15,7 @@
               "dataset": {
                 "type": "dataset",
                 "name": "brats2017",
-                "params": {"data_path": "/nmnt/t01-ssd/brats2017/train"}
+                "params": {"data_path": "/cobrain/groups/ml_group/data/brats2017/train"}
               }
             }
           }
@@ -78,7 +78,7 @@
   "batch_iter_factory": {
     "type": "batch_iter_factory",
     "name": "inf",
-    "params": {"n_iters_per_batch": 100},
+    "params": {"n_iters_per_batch": 200},
     "inputs": {
       "get_batch_iter": {
         "type": "batch_iter",
@@ -103,7 +103,7 @@
   "model_core": {
     "type": "model_core",
     "name": "deepmedic_els",
-    "params": {"n_parts": [1, 2, 2], "with_dropout": true, "downsampling_type": "sampling"},
+    "params": {"n_parts": [1, 2, 2], "with_dropout": false, "downsampling_type": "average"},
     "inputs": {
       "n_chans_in": {
         "type": "meta",
