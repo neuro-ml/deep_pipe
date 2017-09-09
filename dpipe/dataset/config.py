@@ -1,6 +1,6 @@
 from .brats import Brats2017
 from .isles import *
-from .whitematter import WhiteMatterHyperintensity
+from .whitematter import WhiteMatterHyperintensity, Wmh2017
 
 from .wrappers import make_cached, make_bbox_extraction, make_normalized, \
     make_normalized_sub, add_groups
@@ -26,6 +26,7 @@ name2dataset = {
     #     IslesSPES, 'augmented_spes_penumbra.csv'),
 
     'wmhs': WhiteMatterHyperintensity,
+    'wmh2017': Wmh2017
 }
 
 name2dataset_wrapper = {
