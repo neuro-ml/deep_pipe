@@ -45,7 +45,7 @@ def hausdorff(a, b, weights=1, label=1):
     from hausdorff import weighted_hausdorff
     
     try:
-#         check if array
+        # check if array
         len(weights)
     except TypeError:
         weights = [weights] * a.ndim 
@@ -54,3 +54,16 @@ def hausdorff(a, b, weights=1, label=1):
     def prep(x):
         return np.argwhere(x == label).copy(order='C').astype('float64')
     return weighted_hausdorff(prep(a), prep(b), weights)
+
+
+def calc_max_dices(y_true, y_pred):
+    dices = []
+    thresholds = np.linspace(0, 1, 20)
+    for true, pred in zip(y_true, y_pred):
+        temp = []
+        for i in range(len(true)):
+            temp.append([dice_score(pred[i] > thr, true[i].astype(bool))
+                         for thr in thresholds])
+        dices.append(temp)
+    dices = np.asarray(dices)
+    return dices.mean(axis=0).max(axis=1)

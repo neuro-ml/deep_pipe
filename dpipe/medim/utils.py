@@ -1,7 +1,5 @@
 import numpy as np
 
-from dpipe.medim.metrics import dice_score
-
 
 def extract(l, idx):
     return [l[i] for i in idx]
@@ -12,17 +10,19 @@ def build_slices(start, end):
     return list(map(slice, start, end))
 
 
-def calc_max_dices(y_true, y_pred):
-    dices = []
-    thresholds = np.linspace(0, 1, 20)
-    for true, pred in zip(y_true, y_pred):
-        temp = []
-        for i in range(len(true)):
-            temp.append([dice_score(pred[i] > thr, true[i].astype(bool))
-                         for thr in thresholds])
-        dices.append(temp)
-    dices = np.asarray(dices)
-    return dices.mean(axis=0).max(axis=1)
+def pad(x, padding, padding_values):
+    shape = np.array(x.shape)
+    padding = np.asarray(padding)
+
+    new_shape = shape + np.sum(padding, axis=1)
+    new_x = np.zeros(new_shape, dtype=x.dtype)
+    new_x[:] = padding_values
+
+    start = padding[:, 0]
+    end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
+    new_x[build_slices(start, end)] = x
+
+    return new_x
 
 
 def load_image(path):

@@ -8,6 +8,7 @@ register = 'antsRegistrationSyNQuick.sh -d 3 -m %s -f %s -t s -o result -x %s'
 transform = 'antsApplyTransforms -d 3 -i %s -o %s -r ' \
             'resultWarped.nii.gz -t result1InverseWarp.nii.gz'
 
+
 def create_transformation(image, inverse_mask, reference, result_folder):
     command = register % (reference, image, inverse_mask)
     subprocess.call(shlex.split(command), cwd=result_folder)
@@ -59,7 +60,7 @@ def coregister(result_path, masks_paths, modalities_paths, refs_paths):
             # this patient is already processed, so do nothing
             continue
 
-        #  apparently ANTs can't handle comas, so create a symlink:
+        # apparently ANTs can't handle comas, so create a symlink:
         if ',' in reference:
             sym_counter += 1
             filename = os.path.basename(reference).replace(',', '')
@@ -68,7 +69,8 @@ def coregister(result_path, masks_paths, modalities_paths, refs_paths):
             reference = filename
 
         # create the transformation
-        create_transformation(modalities_paths[0], neg_masks[0], reference, result_folder)
+        create_transformation(modalities_paths[0], neg_masks[0], reference,
+                              result_folder)
 
         # create other modalities
         for modality, name in zip(modalities_paths[1:], mod_files[1:]):
