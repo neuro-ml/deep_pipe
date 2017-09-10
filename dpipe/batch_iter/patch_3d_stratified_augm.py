@@ -41,7 +41,7 @@ def make_3d_augm_patch_stratified_iter(
         else:
             raise ValueError('segm number of dimensions '
                              'was {}, expected 3 or 4'.format(patient.y.ndim))
-        conditional_centre_indices = medim.patch.get_conditional_center_indices(
+        conditional_centre_indices = medim.patch.find_masked_patch_center_indices(
             mask, patch_size=y_patch_size, spatial_dims=spatial_dims)
 
         return patient.x, patient.y, conditional_centre_indices
@@ -53,8 +53,8 @@ def make_3d_augm_patch_stratified_iter(
         if cancer_type:
             center_idx = choice(conditional_center_indices)
         else:
-            center_idx = medim.patch.get_uniform_center_index(
-                x_shape=np.array(x.shape), patch_size=y_patch_size,
+            center_idx = medim.patch.sample_uniform_center_index(
+                x_shape=np.array(x.shape), spatial_patch_size=y_patch_size,
                 spatial_dims=spatial_dims)
 
         xs = medim.patch.extract_patch(
