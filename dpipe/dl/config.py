@@ -1,4 +1,4 @@
-from ..medim.utils import calc_max_dices
+from ..medim.metrics import calc_max_dices
 from .utils import softmax, sigmoid, optimize, sparse_softmax_cross_entropy, \
     sigmoid_cross_entropy, soft_dice_loss
 from .model_controller import ModelController
