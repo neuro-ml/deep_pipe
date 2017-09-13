@@ -9,34 +9,21 @@ from .base import Dataset
 
 
 class Wmh2017(FromMetadata):
-    def __init__(self, data_path, t1, flair, target, mask=None,
-                 mask_value=None):
-        self.mask_value = mask_value
-        self.mask = mask
-        modalities = [t1, flair] if mask is None else [t1, flair, mask]
+    def __init__(self, data_path, modalities, target):
         super().__init__(
             data_path=data_path,
             metadata_rpath='metadata.csv',
             modalities=modalities,
             target=target,
-            segm2msegm_matrix=np.array([
-                [0],
-                [1],
-                [0]
-            ], dtype=bool)
+            segm2msegm_matrix=np.array([[0], [1], [0]], dtype=bool)
         )
-
-    def load_mscan(self, patient_id):
-        images = super().load_mscan(patient_id)
-        if self.mask is None:
-            return images
-        mask = (images[-1] > 0 if self.mask_value is None
-                else images[-1] == self.mask_value)
-        images = [image * mask for image in images[:-1]]
-        return np.array(images)
 
     def load_segm(self, patient_id):
         return super().load_segm(patient_id).astype(int)
+
+    @property
+    def groups(self):
+        return self.dataFrame['cite'].as_matrix()
 
 
 def cached_property(f):

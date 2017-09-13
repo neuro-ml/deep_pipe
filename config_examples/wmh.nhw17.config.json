@@ -17,10 +17,8 @@
                 "name": "wmh2017",
                 "params": {
                   "data_path": "/home/mibel/wmh_preproc",
-                  "t1": "t1_flairspace",
-                  "flair": "flair_flairspace",
+                  "modalities": ["t1_flairspace", "flair_flairspace"],
                   "target": "target_flairspace",
-                  "mask": "mask_flairspace"
                 }
               }
             }
