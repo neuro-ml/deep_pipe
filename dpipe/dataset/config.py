@@ -3,7 +3,7 @@ from .isles import *
 from .whitematter import WhiteMatterHyperintensity, Wmh2017
 
 from .wrappers import make_cached, make_bbox_extraction, make_normalized, \
-    make_normalized_sub, add_groups
+    make_normalized_sub, add_groups, apply_mask
 
 name2dataset = {
     'brats2017': Brats2017,

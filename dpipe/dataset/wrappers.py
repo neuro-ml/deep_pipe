@@ -33,6 +33,25 @@ def make_cached(dataset: Dataset) -> Dataset:
     return CachedDataset(dataset)
 
 
+def apply_mask(dataset: Dataset, mask_modality_id: int,
+               mask_value=None) -> Dataset:
+
+    class MaskedDataset(Proxy):
+        def load_mscan(self, patient_id):
+            images = self._shadowed.load_mscan(patient_id)
+            mask = images[mask_modality_id]
+            mask_bin = (mask > 0 if mask_value is None else mask == mask_value)
+            assert np.sum(mask_bin) > 0, 'The obtained mask is empty'
+            images = [image * mask for image in images[:-1]]
+            return np.array(images)
+
+        @property
+        def n_chans_mscan(self):
+            return self._shadowed.n_chans_mscan - 1
+
+    return MaskedDataset(dataset)
+
+
 def make_bbox_extraction(dataset: Dataset) -> Dataset:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time

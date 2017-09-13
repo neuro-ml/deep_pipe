@@ -13,12 +13,20 @@
             "name": "bbox_extraction",
             "inputs": {
               "dataset": {
-                "type": "dataset",
-                "name": "wmh2017",
-                "params": {
-                  "data_path": "/home/mibel/wmh_preproc",
-                  "modalities": ["t1_flairspace", "flair_flairspace"],
-                  "target": "target_flairspace",
+                "type": "dataset_wrapper",
+                "name": "apply_mask",
+                "inputs": {
+                  "dataset": {
+                    "type": "dataset",
+                    "name": "wmh2017",
+                    "params": {
+                      "data_path": "/home/mibel/wmh_preproc",
+                      "modalities": ["t1_flairspace", "flair_flairspace", "mask_flairspace"],
+                      "target": "target_flairspace",
+                    }
+                  },
+                  "mask_modality_id": -1,
+                  "mask_value": 1
                 }
               }
             }
