@@ -20,4 +20,5 @@ name2dataset_wrapper = {
     'normalized_sub': make_normalized_sub,
     'bbox_extraction': make_bbox_extraction,
     'groups': add_groups,
+    'apply_mask': apply_mask
 }

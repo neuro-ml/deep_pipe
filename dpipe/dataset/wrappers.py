@@ -34,7 +34,7 @@ def make_cached(dataset: Dataset) -> Dataset:
 
 
 def apply_mask(dataset: Dataset, mask_modality_id: int,
-               mask_value=None) -> Dataset:
+               mask_value: int = None) -> Dataset:
 
     class MaskedDataset(Proxy):
         def load_mscan(self, patient_id):

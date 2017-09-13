@@ -15,6 +15,10 @@
               "dataset": {
                 "type": "dataset_wrapper",
                 "name": "apply_mask",
+                "params":{
+                  "mask_modality_id": -1,
+                  "mask_value": 1
+                },
                 "inputs": {
                   "dataset": {
                     "type": "dataset",
@@ -22,11 +26,9 @@
                     "params": {
                       "data_path": "/home/mibel/wmh_preproc",
                       "modalities": ["t1_flairspace", "flair_flairspace", "mask_flairspace"],
-                      "target": "target_flairspace",
+                      "target": "target_flairspace"
                     }
-                  },
-                  "mask_modality_id": -1,
-                  "mask_value": 1
+                  }
                 }
               }
             }
