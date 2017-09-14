@@ -18,14 +18,8 @@ def config_module_partial(module_name, module_type, get_module_builders,
 
 
 def config_module(module_name, module_type, get_module_builders, **params):
-    try:
-        return config_module_partial(module_name, module_type,
-                                     get_module_builders, **params)()
-    except TypeError as e:
-        raise TypeError('Error, trying to initialize module:\n'
-                        f'module type: {type}\n'
-                        f'module name: {module_name}\n'
-                        f'params:\n{params}') from e
+    return config_module_partial(module_name, module_type,
+                                 get_module_builders, **params)()
 
 
 class ResourceManager:
@@ -35,7 +29,7 @@ class ResourceManager:
         self.resources = {}
 
     def __getitem__(self, item):
-        return self._get_resource(item)
+        return self._request_resource(item)
 
     def __setitem__(self, key, value):
         assert key not in self.resources, f'Tried to overwrite resource {key}'
@@ -44,7 +38,7 @@ class ResourceManager:
     def get(self, item, default=None):
         return self.resources.get(item, default)
 
-    def _get_resource(self, name):
+    def _request_resource(self, name):
         if name not in self.resources:
             try:
                 definition = self.config[name]
@@ -75,17 +69,16 @@ class ResourceManager:
         return initialize(module_name, module_type, self.get_module_builders,
                           **params, **inputs)
 
+    def _get_resource(self, resource):
+        if type(resource) is str:
+            return self._request_resource(resource)
+        elif type(resource) is list:
+            return [self._get_resource(r) for r in resource]
+        elif is_module_definition(resource):
+            return self._define_module(resource)
+        else:
+            raise ValueError("Couldn't get resource:\n{resource}\nUnknown type")
+
     def _get_inputs(self, inputs_definition):
-        inputs = {}
-        for name, value in inputs_definition.items():
-            if type(value) is str:
-                inputs[name] = self._get_resource(value)
-            elif is_module_definition(value):
-                inputs[name] = self._define_module(value)
-            else:
-                raise ValueError("Couldn't define module:\n"
-                                 f'{inputs_definition}\n'
-                                 'Wrong type for input:\n'
-                                 f'{name}: {value}\n'
-                                 'Possible types: "str" or "module"')
-        return inputs
+        return {name: self._get_resource(resource)
+                for name, resource in inputs_definition.items()}

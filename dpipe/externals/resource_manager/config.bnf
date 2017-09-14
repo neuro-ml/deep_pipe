@@ -21,4 +21,5 @@
   <input name>: <resource> {, <input name>: <resource>}*
 }
 <input name> ::= str
-<resource> ::= <resource name> | <resource definition>
+<resource> ::= <resource name> | <resource definition> | <resource list>
+<resource list> ::= [<resource> {, <resource>}*]

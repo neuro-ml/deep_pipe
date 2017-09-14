@@ -5,10 +5,10 @@ from .from_metadata import FromMetadata
 
 # We need this class because in the original data segm values are [0, 1, 2, 4]
 class Brats2017(FromMetadata):
-    def __init__(self, data_path):
+    def __init__(self, data_path, metadata_rpath='metadata.csv'):
         super().__init__(
             data_path=data_path,
-            metadata_rpath='metadata.csv',
+            metadata_rpath=metadata_rpath,
             modalities=['t1', 't1ce', 't2', 'flair'],
             target='segm',
             segm2msegm_matrix=np.array([

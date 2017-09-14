@@ -1,21 +1,44 @@
 {
   "dataset": {
     "type": "dataset_wrapper",
-    "name": "cached",
+    "name": "groups_from_ids",
+    "params": {"separator": "^"},
     "inputs": {
       "dataset": {
         "type": "dataset_wrapper",
-        "name": "normalized",
-        "params": {"mean": true, "std": true, "drop_percentile": null},
+        "name": "cached",
         "inputs": {
           "dataset": {
             "type": "dataset_wrapper",
-            "name": "bbox_extraction",
+            "name": "normalized",
+            "params": {"mean": true, "std": true, "drop_percentile": null},
             "inputs": {
               "dataset": {
-                "type": "dataset",
-                "name": "brats2017",
-                "params": {"data_path": "/cobrain/groups/ml_group/data/brats2017/train"}
+                "type": "dataset_wrapper",
+                "name": "bbox_extraction",
+                "inputs": {
+                  "dataset": {
+                    "type": "dataset_wrapper",
+                    "name": "merge_datasets",
+                    "inputs": {
+                      "datasets": [
+                        {
+                          "type": "dataset",
+                          "name": "brats2017",
+                          "params": {"data_path": "/cobrain/groups/ml_group/data/brats2017/train"}
+                        },
+                        {
+                          "type": "dataset",
+                          "name": "brats2017",
+                          "params": {
+                            "data_path": "/cobrain/groups/ml_group/data/brats2017_augmented/train",
+                            "metadata_rpath": "meta_approved.csv"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
               }
             }
           }
@@ -51,7 +74,7 @@
       "experiment_path": "experiment_path",
       "split": {
         "type": "split",
-        "name": "cv_111",
+        "name": "group_pure_val_test_cv_111",
         "params": {
           "n_splits": 5,
           "val_size": 6

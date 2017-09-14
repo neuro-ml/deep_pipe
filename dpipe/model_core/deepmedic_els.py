@@ -7,7 +7,7 @@ from dpipe import medim
 from .base import ModelCore
 from .layers import spatial_batch_norm, prelu, nearest_neighbour
 
-activation = tf.nn.relu#functools.partial(prelu, feature_dims=[1])
+activation = functools.partial(prelu, feature_dims=[1])
 
 
 def cb(t, n_chans, kernel_size, training, name):

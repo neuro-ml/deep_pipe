@@ -35,7 +35,8 @@ class Dataset(ABC):
         pass
 
     def segm2msegm(self, x) -> np.array:
-        assert np.issubdtype(x.dtype, np.integer), 'Mask dtype must be int'
+        assert np.issubdtype(x.dtype, np.integer), \
+            f'Segmentation dtype must be int, but {x.dtype} provided'
         return np.rollaxis(self.segm2msegm_matrix[x], 3, 0)
 
     def load_msegm(self, patient_id) -> np.array:
