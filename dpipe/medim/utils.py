@@ -1,5 +1,6 @@
 import numpy as np
 
+from dpipe.config import register
 from dpipe.medim.metrics import dice_score
 
 
@@ -7,6 +8,7 @@ def extract(l, idx):
     return [l[i] for i in idx]
 
 
+@register('max_dices', 'metric')
 def calc_max_dices(y_true, y_pred):
     dices = []
     thresholds = np.linspace(0, 1, 20)

@@ -2,6 +2,9 @@ import numpy as np
 
 import dpipe.externals.pdp.pdp as pdp
 from dpipe.medim.slices import iterate_slices
+from dpipe.config.register import bind_module
+
+register = bind_module('batch_iter')
 
 
 # TODO: this is remarkably terrible ^_^
@@ -39,8 +42,8 @@ def shuffle_ids(ids):
     return np.random.permutation(ids)
 
 
-def make_slices_iter(
-        ids, load_x, load_y, batch_size, *, shuffle=False, empty_slice=True):
+@register('slices')
+def slices(ids, load_x, load_y, batch_size, *, shuffle=False, empty_slice=True):
     if shuffle:
         ids = shuffle_ids(ids)
 
@@ -71,8 +74,9 @@ def make_slices_iter(
     )
 
 
-def make_multiple_slices_iter(
-        ids, load_x, load_y, batch_size, *, num_slices, shuffle=False):
+@register('multiple_slices')
+def multiple_slices(ids, load_x, load_y, batch_size,
+                    *, num_slices, shuffle=False):
     if shuffle:
         ids = shuffle_ids(ids)
 

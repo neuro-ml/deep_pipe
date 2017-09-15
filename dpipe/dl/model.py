@@ -2,6 +2,7 @@ import os
 
 import tensorflow as tf
 
+from dpipe.config import register
 from dpipe.model_core import ModelCore
 from .summaries import SummaryLogger
 
@@ -10,6 +11,7 @@ def get_model_path(save_path):
     return os.path.join(save_path, 'model')
 
 
+@register('model', 'model')
 class Model:
     def __init__(self, model_core: ModelCore, predict: callable, loss: callable,
                  optimize: callable):
@@ -82,6 +84,7 @@ class Model:
         self.saver.save(self.session, get_model_path(save_path))
 
 
+@register('frozen_model', 'model')
 class FrozenModel:
     def __init__(self, model_core: ModelCore, predict: callable):
         self.model_core = model_core

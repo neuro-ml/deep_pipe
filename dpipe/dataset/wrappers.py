@@ -2,6 +2,7 @@ import functools
 
 import numpy as np
 
+from dpipe.config.register import bind_module
 from .base import Dataset
 import dpipe.medim as medim
 
@@ -14,7 +15,11 @@ class Proxy:
         return getattr(self._shadowed, name)
 
 
-def make_cached(dataset: Dataset) -> Dataset:
+register = bind_module('dataset_wrapper')
+
+
+@register()
+def cached(dataset: Dataset) -> Dataset:
     n = len(dataset.patient_ids)
 
     class CachedDataset(Proxy):
@@ -33,7 +38,8 @@ def make_cached(dataset: Dataset) -> Dataset:
     return CachedDataset(dataset)
 
 
-def make_bbox_extraction(dataset: Dataset) -> Dataset:
+@register()
+def bbox_extraction(dataset: Dataset) -> Dataset:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time
     load_mscan = functools.lru_cache(3)(dataset.load_mscan)
@@ -57,8 +63,9 @@ def make_bbox_extraction(dataset: Dataset) -> Dataset:
     return BBoxedDataset(dataset)
 
 
-def make_normalized(dataset: Dataset, mean=True, std=True,
-                    drop_percentile: int = None) -> Dataset:
+@register()
+def normalized(dataset: Dataset, mean=True, std=True,
+               drop_percentile: int = None) -> Dataset:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
             img = self._shadowed.load_mscan(patient_id)
@@ -68,7 +75,8 @@ def make_normalized(dataset: Dataset, mean=True, std=True,
     return NormalizedDataset(dataset)
 
 
-def make_normalized_sub(dataset: Dataset) -> Dataset:
+@register()
+def normalized_sub(dataset: Dataset) -> Dataset:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
             mscan = self._shadowed.load_mscan(patient_id)
@@ -82,7 +90,8 @@ def make_normalized_sub(dataset: Dataset) -> Dataset:
     return NormalizedDataset(dataset)
 
 
-def add_groups(dataset: Dataset, group_col: str) -> Dataset:
+@register()
+def groups(dataset: Dataset, group_col: str) -> Dataset:
     class GroupedFromMetadata(Proxy):
         @property
         def groups(self):

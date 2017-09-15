@@ -5,6 +5,9 @@ import numpy as np
 
 from dpipe import medim
 import dpipe.externals.pdp.pdp as pdp
+from dpipe.config.register import bind_module
+
+register = bind_module('batch_iter')
 
 
 class Patient:
@@ -27,6 +30,7 @@ def pad_channel_min(x, padding):
     return y
 
 
+@register('3d_patch_strat')
 def make_3d_patch_stratified_iter(
         ids, load_x, load_y, *, batch_size, x_patch_sizes,
         y_patch_size, nonzero_fraction, buffer_size=10):
@@ -75,10 +79,10 @@ def make_3d_patch_stratified_iter(
                 spatial_dims=spatial_dims)
 
         xs = [medim.patch.extract_patch(
-                  x, center_idx=center_idx, spatial_dims=spatial_dims,
-                  patch_size=patch_size
-              )
-              for patch_size in x_patch_sizes]
+            x, center_idx=center_idx, spatial_dims=spatial_dims,
+            patch_size=patch_size
+        )
+            for patch_size in x_patch_sizes]
 
         y = medim.patch.extract_patch(
             y, center_idx=center_idx, patch_size=y_patch_size,
