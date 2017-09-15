@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.model_selection import KFold, train_test_split
+from sklearn.model_selection import KFold, train_test_split, GroupShuffleSplit
 
 from dpipe.dataset import Dataset
 
@@ -17,6 +17,16 @@ def get_cv_111(dataset: Dataset, *, val_size, n_splits):
         train_val_test.append((list(train), list(val), list(test)))
 
     return train_val_test
+
+
+def get_group_train_val_test_split(dataset: Dataset, *, n_splits=5, 
+                                   train_size=None, test_size=None, random_state=None):
+    for train_index, test_index in group_kfold.split(X, y, groups):
+...     print("TRAIN:", train_index, "TEST:", test_index)
+...     X_train, X_test = X[train_index], X[test_index]
+...     y_train, y_test = y[train_index], y[test_index]
+...     print(X_train, X_test, y_train, y_test)
+sklearn.model_selection.GroupShuffleSplit()
 
 
 class ShuffleGroupKFold(KFold):
