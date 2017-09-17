@@ -6,8 +6,9 @@ import scipy
 from scipy.ndimage import rotate
 from scipy.ndimage.interpolation import zoom
 
-from dpipe import medim
 import dpipe.externals.pdp.pdp as pdp
+from dpipe import medim
+from dpipe.config import register
 
 
 class Patient:
@@ -20,6 +21,7 @@ class Patient:
         return hash(self.patient_id)
 
 
+@register('3d_augm_patch_strat')
 def make_3d_augm_patch_stratified_iter(
         ids, load_x, load_y, *, batch_size,
         x_patch_sizes, y_patch_size, nonzero_fraction, buffer_size=10):
@@ -123,7 +125,6 @@ def make_3d_augm_patch_stratified_iter(
         x = np.array([i * np.random.normal(1, 0.35) for i in x])
         return x, y
 
-
     @pdp.pack_args
     def augmentation(x_big, y):
         return augment(x_big, y)
@@ -144,7 +145,6 @@ def make_3d_augm_patch_stratified_iter(
         #     spatial_dims=spatial_dims)
 
         return (*xs, y)
-
 
     return pdp.Pipeline(
         pdp.Source(random_seq, buffer_size=3),

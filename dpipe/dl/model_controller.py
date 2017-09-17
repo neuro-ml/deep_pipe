@@ -1,10 +1,12 @@
 import numpy as np
 import tensorflow as tf
 
+from dpipe.config import register
 from .summaries import make_write_value
 from .model import Model
 
 
+@register('model_controller', 'model_controller')
 class ModelController:
     def __init__(self, model: Model, log_path, restore_model_path=None,
                  metrics: dict = None):

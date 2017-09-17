@@ -5,6 +5,7 @@ import numpy as np
 
 from dpipe.medim import patch
 import dpipe.externals.pdp.pdp as pdp
+from dpipe.config import register
 
 
 class Patient:
@@ -19,6 +20,15 @@ class Patient:
         return hash(self.patient_id)
 
 
+def pad_channel_min(x, padding):
+    shape = np.array(x.shape)
+    y = np.zeros([shape[0]] + list(2 * padding + shape[1:]))
+    y[:] = np.min(x, axis=(1, 2, 3), keepdims=True)
+    y[[slice(None)] + [*map(slice, padding, -padding)]] = x
+    return y
+
+
+@register('3d_patch_strat')
 def make_3d_patch_stratified_iter(
         ids, load_x, load_y, *, batch_size, x_patch_sizes,
         y_patch_size, nonzero_fraction, buffer_size=10):
@@ -65,8 +75,8 @@ def make_3d_patch_stratified_iter(
                 spatial_dims=spatial_dims)
 
         x = patch.extract_patch(
-            x, spatial_center_idx=spatial_center_idx, spatial_dims=spatial_dims,
-            spatial_patch_size=big_x_patch_size, padding_values=padding_values
+                  x, spatial_center_idx=spatial_center_idx, spatial_dims=spatial_dims,
+                  spatial_patch_size=big_x_patch_size, padding_values=padding_values
         )
 
         y = patch.extract_patch(
@@ -81,8 +91,8 @@ def make_3d_patch_stratified_iter(
         xs = [patch.extract_patch(
             x, spatial_center_idx=big_x_patch_center_idx,
             spatial_dims=spatial_dims, spatial_patch_size=patch_size
-        )
-            for patch_size in x_patch_sizes]
+              )
+              for patch_size in x_patch_sizes]
 
         return (*xs, y)
 

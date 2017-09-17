@@ -6,26 +6,21 @@ def is_module_definition(definition):
             'type' in definition)
 
 
-def config_module_partial(module_name, module_type, get_module_builders,
+def config_module_partial(module_name, module_type, get_resource,
                           **params):
-    module_builders = get_module_builders(module_type)
-    try:
-        module_builder: dict = module_builders[module_name]
-    except KeyError:
-        raise ValueError(f'Wrong module name "{module_name}" provided\n'
-                         f'Available names: {module_builders.keys()}\n')
+    module_builder = get_resource(module_type, module_name)
     return functools.partial(module_builder, **params)
 
 
-def config_module(module_name, module_type, get_module_builders, **params):
+def config_module(module_name, module_type, get_resource, **params):
     return config_module_partial(module_name, module_type,
-                                 get_module_builders, **params)()
+                                 get_resource, **params)()
 
 
 class ResourceManager:
-    def __init__(self, config, get_module_builders):
+    def __init__(self, config, get_resource):
         self.config = config
-        self.get_module_builders = get_module_builders
+        self.get_resource = get_resource
         self.resources = {}
 
     def __getitem__(self, item):
@@ -66,7 +61,7 @@ class ResourceManager:
             initialize = config_module
         else:
             initialize = config_module_partial
-        return initialize(module_name, module_type, self.get_module_builders,
+        return initialize(module_name, module_type, self.get_resource,
                           **params, **inputs)
 
     def _get_resource(self, resource):

@@ -3,9 +3,11 @@ from functools import partial
 
 from dpipe.dl.model_controller import ModelController
 from dpipe.utils.batch_iter_factory import BatchIterFactory
+from dpipe.config import register
 from .utils import make_find_next_lr, make_check_loss_decrease
 
 
+@register()
 def train_with_lr_decrease(
         model_controller: ModelController,
         train_batch_iter_factory: BatchIterFactory,

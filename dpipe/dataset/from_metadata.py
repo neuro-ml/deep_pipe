@@ -3,10 +3,12 @@ import os
 import numpy as np
 import pandas as pd
 
+from dpipe.config import register
 from dpipe.medim.utils import load_image
 from .base import Dataset
 
 
+@register('from_metadata')
 class FromMetadata(Dataset):
     def __init__(self, data_path, modalities, target,
                  metadata_rpath, segm2msegm_matrix):

@@ -5,27 +5,11 @@ import shutil
 
 invert = 'ImageMath 3 %s Neg %s'
 register = 'antsRegistrationSyNQuick.sh -d 3 -m %s -f %s -t s -o result -x %s'
-transform = 'antsApplyTransforms -d 3 -i %s -o %s -r ' \
+transform = 'antsApplyTransforms -d 3 -i %s -o %s -r ' + \
             'resultWarped.nii.gz -t result1InverseWarp.nii.gz'
 
 
-def create_transformation(image, inverse_mask, reference, result_folder):
-    command = register % (reference, image, inverse_mask)
-    subprocess.call(shlex.split(command), cwd=result_folder)
-
-    warped = os.path.join(result_folder, 'resultWarped.nii.gz')
-    filename = os.path.abspath(image)
-    if not image.endswith('.gz'):
-        image += '.gz'
-    shutil.copyfile(warped, os.path.join(result_folder, filename))
-
-
-def apply_transformation(image, result_path, transformations_folder):
-    command = transform % (image, result_path)
-    subprocess.call(shlex.split(command), cwd=transformations_folder)
-
-
-def coregister(result_path, masks_paths, modalities_paths, refs_paths):
+def coregister(result_path, masks_paths, modalities_paths, ref_path):
     """
     The initial transformation will be calculated based on the first entry in
     masks_paths and modalities_paths.
@@ -49,44 +33,37 @@ def coregister(result_path, masks_paths, modalities_paths, refs_paths):
     if not mod_files[0].endswith('gz'):
         mod_files[0] = mod_files[0] + '.gz'
 
+
+    # apparently ANTs can't handle comas, so create a symlink:
     filename = ''
-    sym_counter = 0
+    if ',' in ref_path:
+        filename = os.path.basename(ref_path).replace(',', '')
+        filename = os.path.join(result_path, filename)
+        os.symlink(ref_path, filename)
+        ref_path = filename
 
-    for id, reference in refs_paths:
-        result_folder = os.path.join(result_path, str(id))
-        try:
-            os.makedirs(result_folder)
-        except FileExistsError:
-            # this patient is already processed, so do nothing
-            continue
+    # create the transformation
+    command = register % (ref_path, modalities_paths[0], neg_masks[0])
+    subprocess.call(shlex.split(command), cwd=result_path)
+    warped = os.path.join(result_path, 'resultWarped.nii.gz')
+    shutil.copyfile(warped, os.path.join(result_path, mod_files[0]))
 
-        # apparently ANTs can't handle comas, so create a symlink:
-        if ',' in reference:
-            sym_counter += 1
-            filename = os.path.basename(reference).replace(',', '')
-            filename = os.path.join(result_folder, str(sym_counter) + filename)
-            os.symlink(reference, filename)
-            reference = filename
+    # create other modalities
+    for file, name in zip(modalities_paths[1:], mod_files[1:]):
+        command = transform % (file, name)
+        subprocess.call(shlex.split(command), cwd=result_path)
 
-        # create the transformation
-        create_transformation(modalities_paths[0], neg_masks[0], reference,
-                              result_folder)
+    # create the masks
+    for neg_mask, name in zip(neg_masks, mask_files):
+        output = '_' + name
+        command = transform % (neg_mask, output)
+        subprocess.call(shlex.split(command), cwd=result_path)
+        command = invert % (name, output)
+        subprocess.call(shlex.split(command), cwd=result_path)
+        os.remove(os.path.join(result_path, output))
 
-        # create other modalities
-        for modality, name in zip(modalities_paths[1:], mod_files[1:]):
-            apply_transformation(modality, name, result_folder)
-
-        # create the masks
-        for neg_mask, name in zip(neg_masks, mask_files):
-            output = '_' + name
-            command = transform % (neg_mask, output)
-            subprocess.call(shlex.split(command), cwd=result_folder)
-            command = invert % (name, output)
-            subprocess.call(shlex.split(command), cwd=result_folder)
-            os.remove(os.path.join(result_folder, output))
-
-        if reference == filename:
-            os.unlink(reference)
+    if ref_path == filename:
+        os.unlink(ref_path)
 
     for neg_mask in neg_masks:
         os.remove(neg_mask)
@@ -96,10 +73,10 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('results_path')
+    parser.add_argument('result_path')
     parser.add_argument('-msk', '--masks_paths', nargs='+')
     parser.add_argument('-mod', '--modalities_paths', nargs='+')
-    parser.add_argument('-ref', '--refs_paths', nargs='+')
+    parser.add_argument('-ref', '--ref_path')
     args = parser.parse_args()
 
     coregister(**dict(args._get_kwargs()))
