@@ -65,5 +65,5 @@ def get_resource(module_type, module_name, config_path):
         except (AttributeError, KeyError):
             handle_corruption()
 
-    raise KeyError(f'The module "{module_name}" of type "{module_type}"'
+    raise KeyError(f'The module "{module_name}" of type "{module_type}" '
                    f'was not found')

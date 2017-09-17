@@ -23,6 +23,9 @@ class ResourceManager:
         self.get_resource = get_resource
         self.resources = {}
 
+    def __getattr__(self, item):
+        return self[item]
+
     def __getitem__(self, item):
         return self._request_resource(item)
 
