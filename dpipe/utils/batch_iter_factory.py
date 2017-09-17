@@ -2,6 +2,8 @@ from itertools import islice
 from abc import abstractmethod, ABC
 from contextlib import suppress, contextmanager
 
+from dpipe.config import register
+
 
 @contextmanager
 def build_contextmanager(o):
@@ -30,6 +32,7 @@ class BatchIterFactory(ABC):
         pass
 
 
+@register('fin', 'batch_iter_factory')
 class BatchIterFactoryFin(BatchIterFactory):
     def __init__(self, get_batch_iter):
         self.get_batch_iter = get_batch_iter
@@ -38,6 +41,7 @@ class BatchIterFactoryFin(BatchIterFactory):
         return maybe_build_contextmanager(self.get_batch_iter())
 
 
+@register('inf', 'batch_iter_factory')
 class BatchIterFactoryInf(BatchIterFactory):
     def __init__(self, get_batch_iter, n_iters_per_batch):
         self.inf_batch_iter = get_batch_iter()

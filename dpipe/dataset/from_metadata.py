@@ -8,7 +8,7 @@ from dpipe.medim.utils import load_image
 from .base import Dataset
 
 
-@register('from_metadata', 'dataset')
+@register('from_metadata')
 class FromMetadata(Dataset):
     def __init__(self, data_path, modalities, target,
                  metadata_rpath, segm2msegm_matrix):

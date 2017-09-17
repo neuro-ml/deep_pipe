@@ -1,9 +1,7 @@
 import numpy as np
 
 import dpipe.externals.pdp.pdp as pdp
-from dpipe.config.register import bind_module
-
-register = bind_module('batch_iter')
+from dpipe.config import register
 
 
 def shuffle_ids(ids):
@@ -15,7 +13,7 @@ def load_by_ids(load_x, load_y, ids):
         yield load_x(patient_id), load_y(patient_id)
 
 
-@register('simple')
+@register()
 def simple(ids, load_x, load_y, batch_size, *, shuffle=False):
     if shuffle:
         ids = shuffle_ids(ids)

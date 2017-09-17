@@ -3,11 +3,9 @@ from random import choice
 
 import numpy as np
 
-from dpipe import medim
 import dpipe.externals.pdp.pdp as pdp
-from dpipe.config.register import bind_module
-
-register = bind_module('batch_iter')
+from dpipe import medim
+from dpipe.config import register
 
 
 class Patient:

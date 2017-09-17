@@ -2,9 +2,9 @@ import functools
 
 import numpy as np
 
-from dpipe.config.register import bind_module
-from .base import Dataset
 import dpipe.medim as medim
+from dpipe.config import bind_module
+from .base import Dataset
 
 
 class Proxy:

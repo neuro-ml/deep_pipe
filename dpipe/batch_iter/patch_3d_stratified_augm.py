@@ -6,11 +6,9 @@ import scipy
 from scipy.ndimage import rotate
 from scipy.ndimage.interpolation import zoom
 
-from dpipe import medim
 import dpipe.externals.pdp.pdp as pdp
-from dpipe.config.register import bind_module
-
-register = bind_module('batch_iter')
+from dpipe import medim
+from dpipe.config import register
 
 
 class Patient:

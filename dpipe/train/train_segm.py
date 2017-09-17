@@ -7,8 +7,10 @@ from dpipe.dl.model_controller import ModelController
 from dpipe.utils.batch_iter_factory import BatchIterFactory
 from dpipe.medim.metrics import multichannel_dice_score
 from .utils import make_find_next_lr, make_check_loss_decrease
+from dpipe.config import register
 
 
+@register()
 def train_segm(
         model_controller: ModelController,
         train_batch_iter_factory: BatchIterFactory,
