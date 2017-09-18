@@ -1,4 +1,22 @@
 {
+  "dataset_plain": {
+    "type": "dataset",
+    "name": "wmh2017",
+    "params": {
+      "data_path": "/home/mikhail/nhw/data/derivatives/datasink/preproc",
+      "modalities": null,
+      "target": null
+    }
+  },
+  "dataset_masked": {
+    "type": "dataset_wrapper",
+    "name": "apply_mask",
+    "params":{
+      "mask_modality_id": -1,
+      "mask_value": 1
+    },
+    "inputs": {"dataset": "dataset_plain"}
+  },
   "dataset": {
     "type": "dataset_wrapper",
     "name": "cached",
@@ -11,27 +29,7 @@
           "dataset": {
             "type": "dataset_wrapper",
             "name": "bbox_extraction",
-            "inputs": {
-              "dataset": {
-                "type": "dataset_wrapper",
-                "name": "apply_mask",
-                "params":{
-                  "mask_modality_id": -1,
-                  "mask_value": 1
-                },
-                "inputs": {
-                  "dataset": {
-                    "type": "dataset",
-                    "name": "wmh2017",
-                    "params": {
-                      "data_path": "/home/mikhail/nhw/data/derivatives/datasink/preproc",
-                      "modalities": ["t1_flairspace", "flair_flairspace", "mask_flairspace"],
-                      "target": "target_flairspace"
-                    }
-                  }
-                }
-              }
-            }
+            "inputs": {"dataset": "dataset_masked"}
           }
         }
       }
@@ -56,6 +54,18 @@
     "inputs": {"path": "ids_path"}
   },
 
+  "split": {
+    "type": "split",
+    "name": "base",
+    "params": {
+      "cv_n_splits": 3,
+      "cv_groups_property": "groups",
+      "val_split_size": 6,
+      "n_repeats": 5
+    },
+    "inputs": {"dataset": "dataset"}
+  },
+
   "experiment": {
     "type": "experiment",
     "name": "flat",
@@ -63,17 +73,7 @@
     "inputs": {
       "config_path": "config_path",
       "experiment_path": "experiment_path",
-      "split": {
-        "type": "split",
-        "name": "base",
-        "params": {
-          "cv_n_splits": 3,
-          "cv_groups_property": "groups",
-          "val_split_size": 6,
-          "n_repeats": 2
-        },
-        "inputs": {"dataset": "dataset"}
-      }
+      "split": "split"
     }
   },
 
