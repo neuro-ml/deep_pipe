@@ -5,7 +5,7 @@ __all__ = ['parse_config', 'get_parser', 'get_config']
 
 
 def get_short_name(name: str) -> str:
-    """long_informative_name -> lip"""
+    """long_informative_name -> lin"""
     return ''.join(map(lambda x: x[0], name.split('_')))
 
 
