@@ -1,4 +1,4 @@
-import os
+import os.path as op
 
 import numpy as np
 import pandas as pd
@@ -16,17 +16,17 @@ class FromMetadata(Dataset):
         self.target_col = target
         self._segm2msegm_matrix = np.array(segm2msegm_matrix, dtype=bool)
 
-        df = pd.read_csv(os.path.join(data_path, metadata_rpath))
+        df = pd.read_csv(op.join(data_path, metadata_rpath))
         df['id'] = df.id.astype(str)
         self._patient_ids = df.id.as_matrix()
-        self.dataFrame = df.set_index('id').sort_index()
+        self.dataFrame = df.set_index('id')
 
     @property
     def segm2msegm_matrix(self):
         return self._segm2msegm_matrix
 
     def _load_by_paths(self, paths):
-        return [load_image(os.path.join(self.data_path, path)) for path in paths]
+        return [load_image(op.join(self.data_path, path)) for path in paths]
 
     def load_mscan(self, patient_id):
         paths = self.dataFrame[self.modality_cols].loc[patient_id]
@@ -34,7 +34,7 @@ class FromMetadata(Dataset):
 
     def load_segm(self, patient_id):
         path = self.dataFrame[self.target_col].loc[patient_id]
-        return load_image(os.path.join(self.data_path, path))
+        return load_image(op.join(self.data_path, path))
 
     @property
     def patient_ids(self):
