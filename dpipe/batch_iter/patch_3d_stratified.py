@@ -20,14 +20,6 @@ class Patient:
         return hash(self.patient_id)
 
 
-def pad_channel_min(x, padding):
-    shape = np.array(x.shape)
-    y = np.zeros([shape[0]] + list(2 * padding + shape[1:]))
-    y[:] = np.min(x, axis=(1, 2, 3), keepdims=True)
-    y[[slice(None)] + [*map(slice, padding, -padding)]] = x
-    return y
-
-
 @register('3d_patch_strat')
 def make_3d_patch_stratified_iter(
         ids, load_x, load_y, *, batch_size, x_patch_sizes,

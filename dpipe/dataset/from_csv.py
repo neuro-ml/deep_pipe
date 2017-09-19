@@ -15,8 +15,10 @@ class FromCSV(Dataset):
 
         df = pd.read_csv(os.path.join(data_path, metadata_rpath))
         df['id'] = df.id.astype(str)
-        self._patient_ids = df.id.as_matrix()
-        self.dataFrame = df.set_index('id')
+        df = df.set_index('id').sort_index()
+        self.df = df
+
+        self._patient_ids = list(self.df.index)
 
     @property
     def patient_ids(self):
@@ -35,14 +37,13 @@ class FromCSV(Dataset):
                            for path in paths])
 
     def load_mscan(self, patient_id):
-        paths = self.dataFrame[self.modality_cols].loc[patient_id]
+        paths = self.df[self.modality_cols].loc[patient_id]
         return np.array(self._load_by_paths(paths))
 
 
 @register('csv_multi')
 class FromCSVMultiple(FromCSV):
-    def __init__(self, data_path, modalities, targets,
-                 metadata_rpath='meta.csv'):
+    def __init__(self, data_path, modalities, targets, metadata_rpath):
         super().__init__(data_path, modalities, metadata_rpath=metadata_rpath)
 
         self.target_cols = targets
@@ -69,6 +70,8 @@ class FromCSVInt(FromCSV):
         super().__init__(data_path, modalities, metadata_rpath)
         assert type(target) is str
         self.target_col = target
+
+        assert np.issubdtype(segm2msegm_matrix.dtype, np.bool)
         self._segm2msegm_matrix = np.array(segm2msegm_matrix, dtype=bool)
 
     def load_segm(self, patient_id):
