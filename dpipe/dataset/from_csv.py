@@ -5,11 +5,15 @@ import pandas as pd
 
 from dpipe.config import register
 from dpipe.medim.utils import load_image
-from .base import Dataset
+from .base import Dataset, DatasetInt
 
 
-class FromCSV(Dataset):
-    def __init__(self, data_path, modalities, metadata_rpath='meta.csv'):
+class FromCSV:
+    """
+    A mixin for the Dataset class. Adds support for csv files.
+    """
+
+    def __init__(self, data_path, modalities, metadata_rpath):
         self.data_path = data_path
         self.modality_cols = modalities
 
@@ -25,10 +29,6 @@ class FromCSV(Dataset):
         return self._patient_ids
 
     @property
-    def segm2msegm_matrix(self) -> np.array:
-        return self._segm2msegm_matrix
-
-    @property
     def n_chans_mscan(self):
         return len(self.modality_cols)
 
@@ -42,13 +42,11 @@ class FromCSV(Dataset):
 
 
 @register('csv_multi')
-class FromCSVMultiple(FromCSV):
+class FromCSVMultiple(FromCSV, Dataset):
     def __init__(self, data_path, modalities, targets, metadata_rpath):
-        super().__init__(data_path, modalities, metadata_rpath=metadata_rpath)
+        super().__init__(data_path, modalities, metadata_rpath)
 
         self.target_cols = targets
-        self._segm2msegm_matrix = np.eye(len(self.target_cols) + 1,
-                                         len(self.target_cols), k=-1)
 
     def load_segm(self, patient_id) -> np.array:
         image = self.load_msegm(patient_id)
@@ -62,9 +60,17 @@ class FromCSVMultiple(FromCSV):
 
         return image
 
+    @property
+    def n_chans_segm(self):
+        return self.n_chans_msegm
+
+    @property
+    def n_chans_msegm(self):
+        return len(self.target_cols)
+
 
 @register('csv_int')
-class FromCSVInt(FromCSV):
+class FromCSVInt(FromCSV, DatasetInt):
     def __init__(self, data_path, modalities, target, metadata_rpath,
                  segm2msegm_matrix):
         super().__init__(data_path, modalities, metadata_rpath)
@@ -73,6 +79,10 @@ class FromCSVInt(FromCSV):
 
         assert np.issubdtype(segm2msegm_matrix.dtype, np.bool)
         self._segm2msegm_matrix = np.array(segm2msegm_matrix, dtype=bool)
+
+    @property
+    def segm2msegm_matrix(self) -> np.array:
+        return self._segm2msegm_matrix
 
     def load_segm(self, patient_id):
         path = self.dataFrame[self.target_col].loc[patient_id]
