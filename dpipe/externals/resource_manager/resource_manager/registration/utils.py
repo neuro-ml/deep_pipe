@@ -1,6 +1,16 @@
 import os
+import re
 import json
+import hashlib
 import importlib
+
+first_cap = re.compile('(.)([A-Z][a-z]+)')
+all_cap = re.compile('([a-z0-9])([A-Z])')
+
+
+def snake_case(name):
+    name = first_cap.sub(r'\1_\2', name)
+    return all_cap.sub(r'\1_\2', name).lower()
 
 
 def analyze_file(path, source, config):
@@ -18,8 +28,7 @@ def analyze_file(path, source, config):
             if module_type is None:
                 module_type = os.path.basename(os.path.dirname(source_path))
             if module_name is None:
-                # TODO: maybe https://stackoverflow.com/a/1176023
-                module_name = var
+                module_name = snake_case(var)
 
             if source_path == real_path:
                 for x in config:
@@ -74,16 +83,26 @@ def read_config(path):
     try:
         with open(path, 'r') as file:
             config = json.load(file)
-        last_changed = os.path.getmtime(path)
         try:
-            old_times = config['times']
-            old_config = config['config']
+            hashes = config['hashes']
+            config = config['config']
         except KeyError:
             handle_corruption()
 
     except FileNotFoundError:
-        last_changed = 0
-        old_config = []
-        old_times = {}
+        config = []
+        hashes = {}
 
-    return old_config, old_times, last_changed
+    return config, hashes
+
+
+def get_hash(path, buffer_size=65536):
+    current_hash = hashlib.md5()
+
+    with open(path, 'rb') as file:
+        data = file.read(buffer_size)
+        while data:
+            current_hash.update(data)
+            data = file.read(buffer_size)
+
+    return f'{current_hash.hexdigest()}_{os.path.getsize(path)}'

@@ -4,11 +4,11 @@ import functools
 import numpy as np
 import nibabel as nib
 
-from .from_metadata import FromMetadata
+from .from_csv import FromCSVInt
 from .base import Dataset
 
 
-class Wmh2017(FromMetadata):
+class Wmh2017(FromCSVInt):
     def __init__(self, data_path, t1, flair, target, mask=None,
                  mask_value=None):
         self.mask_value = mask_value

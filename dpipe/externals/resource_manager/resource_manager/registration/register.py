@@ -3,10 +3,23 @@ import functools
 
 from .utils import *
 
-__all__ = ['register', 'bind_module', 'generate_config', 'get_resource']
+__all__ = ['register', 'bind_module', 'register_inline', 'generate_config', 'get_resource']
 
 
 def register(module_name: str = None, module_type: str = None):
+    """
+    A class/function decorator that registers a resource.
+
+    Parameters
+    ----------
+    module_name: str, optional.
+        The name of the module. If None, the variable name converted to snake_case is used.
+    module_type: str, optional
+        The type of the module. If None, the folder name it lies in is used.
+    """
+    assert (type(module_name) is str or module_name is None and
+            type(module_type) is str or module_type is None)
+
     stack = inspect.stack()
     source = inspect.getframeinfo(stack[1][0]).filename
     source = os.path.realpath(source)
@@ -21,11 +34,42 @@ def register(module_name: str = None, module_type: str = None):
 
 
 def bind_module(module_type):
+    """
+    A factory for decorators with fixed module type.
+
+    Parameters
+    ----------
+    module_type: str
+        The type of the module.
+
+    Returns
+    -------
+
+    A class/function decorator with fixed module type
+    """
     return functools.partial(register, module_type=module_type)
 
 
-def generate_config(root, config_path, upper_module, exclude):
-    old_config, old_times, last_changed = read_config(config_path)
+def register_inline(resource, module_name: str = None, module_type: str = None):
+    """
+    Registers a resource. For more details refer to the `register` decorator.
+    """
+    assert (type(module_name) is str or module_name is None and
+            type(module_type) is str or module_type is None)
+
+    stack = inspect.stack()
+    source = inspect.getframeinfo(stack[1][0]).filename
+    source = os.path.realpath(source)
+
+    resource.__module_name__ = module_name
+    resource.__module_type__ = module_type
+    resource.__source_path__ = source
+
+    return resource
+
+
+def generate_config(root, db_path, upper_module, exclude):
+    old_config, old_hashes = read_config(db_path)
     exclude = [os.path.abspath(os.path.join(root, x)) for x in exclude]
     sources_list = walk(root, upper_module, exclude)
 
@@ -38,23 +82,21 @@ def generate_config(root, config_path, upper_module, exclude):
             config.append(entry)
         else:
             # the file is deleted
-            old_times.pop(source_path)
+            old_hashes.pop(source_path)
 
-    times = {}
+    hashes = {}
     for path, source in sources_list:
-        times[path] = os.path.getmtime(path)
-        old_time = old_times.get(path)
-        if old_time is not None and last_changed >= old_time:
-            continue
+        hashes[path] = new_hash = get_hash(path)
+        old_hash = old_hashes.get(path, '')
+        if old_hash != new_hash:
+            config = analyze_file(path, source, config)
 
-        config = analyze_file(path, source, config)
-
-    with open(config_path, 'w') as file:
-        json.dump({'config': config, 'times': times}, file, indent=2)
+    with open(db_path, 'w') as file:
+        json.dump({'config': config, 'hashes': hashes}, file, indent=2)
 
 
-def get_resource(module_type, module_name, config_path):
-    config = read_config(config_path)[0]
+def get_resource(module_type, module_name, db_path):
+    config = read_config(db_path)[0]
 
     for entry in config:
         try:
