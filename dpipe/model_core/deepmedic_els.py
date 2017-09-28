@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 from dpipe import medim
+from dpipe.config import register
 from .base import ModelCore
 from .layers import spatial_batch_norm, prelu, nearest_neighbour
 
@@ -59,6 +60,7 @@ def build_model(t_det_in, t_con_in, kernel_size, n_classes, training, name, *,
         return cb(t_com, n_classes, 1, training, 'C')
 
 
+@register('deepmedic_els')
 class DeepMedicEls(ModelCore):
     def __init__(self, *, n_chans_in, n_chans_out, n_parts,
                  downsampling_type='sampling', with_dropout=True):

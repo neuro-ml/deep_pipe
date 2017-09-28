@@ -12,7 +12,7 @@ def softmax(logits):
         return tf.nn.softmax(logits=logits, dim=1, )
 
 
-sigmoid = register(module_type='predict')(
+sigmoid = register(module_name='sigmoid', module_type='predict')(
     partial(tf.nn.sigmoid, name='sigmoid')
 )
 
