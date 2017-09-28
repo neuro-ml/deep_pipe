@@ -3,17 +3,18 @@ from functools import partial
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from dpipe.config import register
+from dpipe.config import register, register_inline
 
 
 @register(module_type='predict')
 def softmax(logits):
     with tf.variable_scope('softmax'):
-        return tf.nn.softmax(logits=logits, dim=1, )
+        return tf.nn.softmax(logits=logits, dim=1)
 
 
-sigmoid = register(module_type='predict')(
-    partial(tf.nn.sigmoid, name='sigmoid')
+sigmoid = register_inline(
+    partial(tf.nn.sigmoid, name='sigmoid'),
+    'sigmoid', 'predict'
 )
 
 

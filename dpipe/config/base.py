@@ -7,9 +7,7 @@ from dpipe.externals.resource_manager.resource_manager import ResourceManager, \
 DB_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(DB_DIR, 'modules_db.json')
 MODULES_FOLDER = os.path.abspath(os.path.join(DB_DIR, os.pardir))
-
 EXCLUDED_PATHS = ['externals', 'config']
-EXCLUDED_PATHS = [os.path.join(MODULES_FOLDER, x) for x in EXCLUDED_PATHS]
 
 get_resource = functools.partial(get_resource, db_path=DB_PATH)
 

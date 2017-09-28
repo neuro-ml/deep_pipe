@@ -8,4 +8,4 @@ Isles2017 = register_inline(functools.partial(
     modalities=['ADC', 'MTT', 'TTP', 'Tmax', 'rCBF', 'rCBV'],
     target='OT',
     metadata_rpath='data.csv'
-))
+), 'isles2017')
