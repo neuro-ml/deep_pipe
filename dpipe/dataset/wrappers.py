@@ -102,6 +102,7 @@ def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
     return GroupedFromMetadata(dataset)
 
 
+@register()
 def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
     roots = [pi.split(separator)[0] for pi in dataset.patient_ids]
     root2group = dict(map(lambda x: (x[1], x[0]), enumerate(set(roots))))
@@ -116,6 +117,7 @@ def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
     return GroupsFromIDs(dataset)
 
 
+@register()
 def merge_datasets(datasets: List[Dataset]) -> Dataset:
     [np.testing.assert_array_equal(a.segm2msegm_matrix, b.segm2msegm_matrix)
      for a, b, in zip(datasets, datasets[1:])]

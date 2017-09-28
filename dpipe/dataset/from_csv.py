@@ -85,5 +85,5 @@ class FromCSVInt(FromCSV, DatasetInt):
         return self._segm2msegm_matrix
 
     def load_segm(self, patient_id):
-        path = self.dataFrame[self.target_col].loc[patient_id]
+        path = self.df[self.target_col].loc[patient_id]
         return load_image(os.path.join(self.data_path, path))
