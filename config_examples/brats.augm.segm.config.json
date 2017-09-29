@@ -32,7 +32,7 @@
                           "name": "brats2017",
                           "params": {
                             "data_path": "/cobrain/groups/ml_group/data/brats2017_augmented/train",
-                            "metadata_rpath": "meta_approved_reduced.csv"
+                            "metadata_rpath": "meta_approved.csv"
                           }
                         }
                       ]
@@ -188,7 +188,7 @@
     "type": "train",
     "name": "train_segm",
     "params": {
-      "n_epochs": 120,
+      "n_epochs": 150,
       "lr_init": 0.1,
       "lr_dec_mul": 0.5,
       "patience": 5,

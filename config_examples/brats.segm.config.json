@@ -165,7 +165,7 @@
     "type": "train",
     "name": "train_segm",
     "params": {
-      "n_epochs": 120,
+      "n_epochs": 150,
       "lr_init": 0.1,
       "lr_dec_mul": 0.5,
       "patience": 5,
