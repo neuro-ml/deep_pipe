@@ -37,7 +37,7 @@ def walk(path, source, exclude):
 
 def handle_corruption():
     # TODO: more details
-    raise RuntimeError('Config file corrupted')
+    raise RuntimeError('Resources base file corrupted')
 
 
 def read_config(path):
@@ -67,19 +67,3 @@ def get_hash(path, buffer_size=65536):
             data = file.read(buffer_size)
 
     return f'{current_hash.hexdigest()}_{os.path.getsize(path)}'
-
-
-def get_resource(module_type, module_name, db_path):
-    config = read_config(db_path)[0]
-
-    for entry in config:
-        try:
-            if entry['module_type'] == module_type and \
-                            entry['module_name'] == module_name:
-                source = importlib.import_module(entry['source'])
-                return getattr(source, entry['variable'])
-        except (AttributeError, KeyError):
-            handle_corruption()
-
-    raise KeyError(f'The module "{module_name}" of type "{module_type}" '
-                   f'was not found')

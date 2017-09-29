@@ -1,9 +1,8 @@
 import inspect
-import functools
 
 from .utils import *
 
-__all__ = ['register', 'register_inline', 'generate_config', 'get_resource']
+__all__ = ['register', 'register_inline', 'generate_config', 'get_module']
 
 
 class RegistrationSystem:
@@ -73,7 +72,16 @@ class RegistrationSystem:
 
     def register_inline(self, resource, module_name: str = None, module_type: str = None):
         """
-        Registers a resource. For more details refer to the `register` decorator.
+        Registers a resource.
+
+        Parameters
+        ----------
+        resource
+            Any object that needs to be registered.
+        module_name: str, optional.
+            The name of the module. If None, the __name__ attribute converted to snake_case is used.
+        module_type: str, optional
+            The type of the module. If None, the folder name it lies in is used.
         """
 
         return self._register(resource, module_name, module_type)
@@ -106,8 +114,24 @@ class RegistrationSystem:
         with open(db_path, 'w') as file:
             json.dump({'config': config, 'hashes': hashes}, file, indent=2)
 
+    def get_module(self, module_type, module_name, db_path):
+        config = read_config(db_path)[0]
+
+        for entry in config:
+            try:
+                if (entry['module_type'] == module_type and
+                            entry['module_name'] == module_name):
+                    importlib.import_module(entry['source'])
+                    return self._registry[entry['module_type']][entry['module_name']]
+            except KeyError:
+                handle_corruption()
+
+        raise KeyError(f'The module "{module_name}" of type "{module_type}" '
+                       f'was not found')
+
 
 registration_system = RegistrationSystem()
 register = registration_system.register
 register_inline = registration_system.register_inline
 generate_config = registration_system.generate_config
+get_module = registration_system.get_module

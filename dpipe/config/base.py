@@ -1,20 +1,25 @@
-import os
 import functools
+import os
 
-from dpipe.externals.resource_manager.resource_manager import ResourceManager, \
-    get_resource, generate_config
+from dpipe.config.registration import get_module, generate_config
+from dpipe.externals.resource_manager.resource_manager import ResourceManager
 
 DB_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(DB_DIR, 'modules_db.json')
 MODULES_FOLDER = os.path.abspath(os.path.join(DB_DIR, os.pardir))
 EXCLUDED_PATHS = ['externals', 'config']
 
-get_resource = functools.partial(get_resource, db_path=DB_PATH)
+get_module = functools.partial(get_module, db_path=DB_PATH)
 
 
-def get_resource_manager(config) -> ResourceManager:
+def get_resource_manager(config_path, **additional) -> ResourceManager:
+    rm = ResourceManager(config_path, get_module=get_module)
+    # Additional arguments:
+    for key, value in additional.items():
+        rm.set(key, value, override=True)
+
     generate_config(MODULES_FOLDER, DB_PATH, 'dpipe', EXCLUDED_PATHS)
-    return ResourceManager(config, get_resource=get_resource)
+    return rm
 
 
 if __name__ == '__main__':

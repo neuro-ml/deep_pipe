@@ -1,6 +1,6 @@
 import functools
 
-from dpipe.externals.resource_manager.resource_manager import register_inline, register
+from dpipe.config import register_inline, register
 from dpipe.externals.pdp.pdp import Pipeline, LambdaTransformer, Chunker, Source
 
 register_inline = functools.partial(register_inline, module_type='pdp')
