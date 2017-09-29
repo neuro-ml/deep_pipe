@@ -1,9 +1,12 @@
 import functools
+from typing import List
+from collections import ChainMap
 
 import numpy as np
 
-from .base import Dataset
 import dpipe.medim as medim
+from dpipe.config import bind_module
+from .base import Dataset
 
 
 class Proxy:
@@ -14,7 +17,11 @@ class Proxy:
         return getattr(self._shadowed, name)
 
 
-def make_cached(dataset: Dataset) -> Dataset:
+register = bind_module('dataset_wrapper')
+
+
+@register()
+def cached(dataset: Dataset) -> Dataset:
     n = len(dataset.patient_ids)
 
     class CachedDataset(Proxy):
@@ -33,7 +40,8 @@ def make_cached(dataset: Dataset) -> Dataset:
     return CachedDataset(dataset)
 
 
-def make_bbox_extraction(dataset: Dataset) -> Dataset:
+@register()
+def bbox_extraction(dataset: Dataset) -> Dataset:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time
     load_mscan = functools.lru_cache(3)(dataset.load_mscan)
@@ -57,8 +65,9 @@ def make_bbox_extraction(dataset: Dataset) -> Dataset:
     return BBoxedDataset(dataset)
 
 
-def make_normalized(dataset: Dataset, mean=True, std=True,
-                    drop_percentile: int = None) -> Dataset:
+@register()
+def normalized(dataset: Dataset, mean=True, std=True,
+               drop_percentile: int = None) -> Dataset:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
             img = self._shadowed.load_mscan(patient_id)
@@ -68,7 +77,8 @@ def make_normalized(dataset: Dataset, mean=True, std=True,
     return NormalizedDataset(dataset)
 
 
-def make_normalized_sub(dataset: Dataset) -> Dataset:
+@register()
+def normalized_sub(dataset: Dataset) -> Dataset:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
             mscan = self._shadowed.load_mscan(patient_id)
@@ -82,10 +92,56 @@ def make_normalized_sub(dataset: Dataset) -> Dataset:
     return NormalizedDataset(dataset)
 
 
-def add_groups(dataset: Dataset, group_col: str) -> Dataset:
+@register()
+def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
     class GroupedFromMetadata(Proxy):
         @property
         def groups(self):
-            return self.dataFrame[group_col].as_matrix()
+            return self._shadowed.dataFrame[group_col].as_matrix()
 
     return GroupedFromMetadata(dataset)
+
+
+@register()
+def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
+    roots = [pi.split(separator)[0] for pi in dataset.patient_ids]
+    root2group = dict(map(lambda x: (x[1], x[0]), enumerate(set(roots))))
+    groups = tuple(root2group[pi.split(separator)[0]]
+                   for pi in dataset.patient_ids)
+
+    class GroupsFromIDs(Proxy):
+        @property
+        def groups(self):
+            return groups
+
+    return GroupsFromIDs(dataset)
+
+
+@register()
+def merge_datasets(datasets: List[Dataset]) -> Dataset:
+    [np.testing.assert_array_equal(a.segm2msegm_matrix, b.segm2msegm_matrix)
+     for a, b, in zip(datasets, datasets[1:])]
+
+    assert all(dataset.n_chans_mscan == datasets[0].n_chans_mscan
+               for dataset in datasets)
+
+    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.patient_ids}
+                                    for dataset in datasets))
+
+    patient_ids = sorted(list(patient_id2dataset.keys()))
+
+    class MergedDataset(Proxy):
+        @property
+        def patient_ids(self):
+            return patient_ids
+
+        def load_mscan(self, patient_id):
+            return patient_id2dataset[patient_id].load_mscan(patient_id)
+
+        def load_segm(self, patient_id):
+            return patient_id2dataset[patient_id].load_segm(patient_id)
+
+        def load_msegm(self, patient_id):
+            return patient_id2dataset[patient_id].load_msegm(patient_id)
+
+    return MergedDataset(datasets[0])

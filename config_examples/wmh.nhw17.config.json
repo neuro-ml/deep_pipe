@@ -6,7 +6,7 @@
       "dataset": {
         "type": "dataset_wrapper",
         "name": "normalized",
-        "params": {"mean": false, "std": true, "drop_percentile": null},
+        "params": {"mean": true, "std": true, "drop_percentile": null},
         "inputs": {
           "dataset": {
             "type": "dataset_wrapper",
@@ -14,8 +14,14 @@
             "inputs": {
               "dataset": {
                 "type": "dataset",
-                "name": "brats2017",
-                "params": {"data_path": "/nmnt/t01-ssd/brats2017/train"}
+                "name": "wmh2017",
+                "params": {
+                  "data_path": "/home/mibel/wmh_preproc",
+                  "t1": "t1_flairspace",
+                  "flair": "flair_flairspace",
+                  "target": "target_flairspace",
+                  "mask": "mask_flairspace"
+                }
               }
             }
           }
@@ -53,7 +59,7 @@
         "type": "split",
         "name": "cv_111",
         "params": {
-          "n_splits": 5,
+          "n_splits": 3,
           "val_size": 6
         },
         "inputs": {"dataset": "dataset"}
@@ -103,7 +109,7 @@
   "model_core": {
     "type": "model_core",
     "name": "deepmedic_orig",
-    "params": {"n_parts": [1, 2, 2], "with_dropout": true, "downsampling_type": "sampling"},
+    "params": {"n_parts": [1, 2, 2]},
     "inputs": {
       "n_chans_in": {
         "type": "meta",

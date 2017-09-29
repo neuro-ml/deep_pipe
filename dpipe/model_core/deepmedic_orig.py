@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from .base import ModelCore
-from .utils import spatial_batch_norm
+from .layers import spatial_batch_norm
 
 from dpipe import medim
 

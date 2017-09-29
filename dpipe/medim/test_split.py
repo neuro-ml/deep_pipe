@@ -5,7 +5,6 @@ from .split import _combine_with_shape, _build_shape, combine, divide
 
 
 class TestDivide(unittest.TestCase):
-
     def setUp(self):
         self.shape = (3, 20, 30, 40)
         self.n_parts_per_axis = [1, 2, 3, 4]

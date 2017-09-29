@@ -1,6 +1,6 @@
 import numpy as np
 
-
+# FIXME is this code dead? Remove it all?
 # decorator for decorators. yeah, baby
 def parametrized(dec):
     def layer(*args, **kwargs):

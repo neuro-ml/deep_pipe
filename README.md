@@ -1,6 +1,6 @@
 # Deep pipe
 
-Repository for deep learning experiments, primarily for 3d image segmentation
+Repository for deep learning experiments with 3d image segmentation
 
 
 ## Installation:
@@ -27,6 +27,12 @@ to make folder with experiment
 ```
 python experiment/run_experiment_seq.py -ep EXPERIMENT_PATH
 ```
+
+## Requirements
+
+1. Python 3.6
+2. Libraries from requirements.txt
+3. GPU, CUDA
 
 ## Style guide:
 - PEP8 style guide, which among other things limits max line length to 80 symbols.

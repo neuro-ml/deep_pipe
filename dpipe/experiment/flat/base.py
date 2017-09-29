@@ -2,7 +2,10 @@ import os
 import json
 import shutil
 
+from dpipe.config import register
 
+
+@register('flat', 'experiment')
 def build_flat_structure(split, config_path, experiment_path, *, makefile):
     makefile_path = os.path.join(os.path.dirname(__file__), makefile)
     assert os.path.exists(makefile_path), f'no {makefile_path} found'

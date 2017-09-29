@@ -1,21 +1,44 @@
 {
   "dataset": {
     "type": "dataset_wrapper",
-    "name": "cached",
+    "name": "add_groups_from_ids",
+    "params": {"separator": "^"},
     "inputs": {
       "dataset": {
         "type": "dataset_wrapper",
-        "name": "normalized",
-        "params": {"mean": false, "std": true, "drop_percentile": null},
+        "name": "cached",
         "inputs": {
           "dataset": {
             "type": "dataset_wrapper",
-            "name": "bbox_extraction",
+            "name": "normalized",
+            "params": {"mean": true, "std": true, "drop_percentile": null},
             "inputs": {
               "dataset": {
-                "type": "dataset",
-                "name": "brats2017",
-                "params": {"data_path": "/nmnt/t01-ssd/brats2017/train"}
+                "type": "dataset_wrapper",
+                "name": "bbox_extraction",
+                "inputs": {
+                  "dataset": {
+                    "type": "dataset_wrapper",
+                    "name": "merge_datasets",
+                    "inputs": {
+                      "datasets": [
+                        {
+                          "type": "dataset",
+                          "name": "brats2017",
+                          "params": {"data_path": "/cobrain/groups/ml_group/data/brats2017/train"}
+                        },
+                        {
+                          "type": "dataset",
+                          "name": "brats2017",
+                          "params": {
+                            "data_path": "/cobrain/groups/ml_group/data/brats2017_augmented/train",
+                            "metadata_rpath": "meta_approved.csv"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
               }
             }
           }
@@ -45,13 +68,13 @@
   "experiment": {
     "type": "experiment",
     "name": "flat",
-    "params": {"makefile": "train_msegm_threshold_eval"},
+    "params": {"makefile": "train_segm_evaluate"},
     "inputs": {
       "config_path": "config_path",
       "experiment_path": "experiment_path",
       "split": {
         "type": "split",
-        "name": "cv_111",
+        "name": "group_cv_111_pure_011",
         "params": {
           "n_splits": 5,
           "val_size": 6
@@ -71,14 +94,14 @@
   "load_y": {
     "type": "meta",
     "name": "extractor",
-    "params": {"property": "load_msegm"},
+    "params": {"property": "load_segm"},
     "inputs": {"module": "dataset"}
   },
 
   "batch_iter_factory": {
     "type": "batch_iter_factory",
     "name": "inf",
-    "params": {"n_iters_per_batch": 100},
+    "params": {"n_iters_per_batch": 200},
     "inputs": {
       "get_batch_iter": {
         "type": "batch_iter",
@@ -102,8 +125,8 @@
 
   "model_core": {
     "type": "model_core",
-    "name": "deepmedic_orig",
-    "params": {"n_parts": [1, 2, 2], "with_dropout": true, "downsampling_type": "sampling"},
+    "name": "deepmedic_els",
+    "params": {"n_parts": [1, 1, 1], "with_dropout": false, "downsampling_type": "sampling"},
     "inputs": {
       "n_chans_in": {
         "type": "meta",
@@ -114,13 +137,13 @@
       "n_chans_out": {
         "type": "meta",
         "name": "extractor",
-        "params": {"property": "n_chans_msegm"},
+        "params": {"property": "n_chans_segm"},
         "inputs": {"module": "dataset"}
       }
     }
   },
 
-  "predict": {"type": "predict", "name": "sigmoid", "init": false},
+  "predict": {"type": "predict", "name": "softmax", "init": false},
 
   "model": {
     "type": "model",
@@ -129,7 +152,7 @@
       "model_core": "model_core",
       "predict": "predict",
       "loss": {
-        "name": "sigmoid_cross_entropy",
+        "name": "sparse_softmax_cross_entropy",
         "type": "loss",
         "init": false
       },
@@ -158,17 +181,14 @@
   "model_controller": {
     "type": "model_controller",
     "name": "model_controller",
-    "inputs": {
-      "model": "model",
-      "log_path": "log_path"
-    }
+    "inputs": {"model": "model", "log_path": "log_path"}
   },
 
   "train": {
     "type": "train",
-    "name": "train_with_lr_decrease",
+    "name": "train_segm",
     "params": {
-      "n_epochs": 120,
+      "n_epochs": 150,
       "lr_init": 0.1,
       "lr_dec_mul": 0.5,
       "patience": 5,
@@ -179,9 +199,15 @@
       "model_controller": "model_controller",
       "train_batch_iter_factory": "batch_iter_factory",
       "val_ids": "val_ids",
-      "load_x": "load_x",
-      "load_y": "load_y"
+      "dataset": "dataset"
     },
+    "init": false
+  },
+
+  "pred2msegm": {
+    "type": "transform",
+    "name": "segm_prob2msegm",
+    "inputs": {"dataset": "dataset"},
     "init": false
   }
 }

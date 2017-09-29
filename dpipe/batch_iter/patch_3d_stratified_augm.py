@@ -6,8 +6,9 @@ import scipy
 from scipy.ndimage import rotate
 from scipy.ndimage.interpolation import zoom
 
-from dpipe import medim
 import dpipe.externals.pdp.pdp as pdp
+from dpipe import medim
+from dpipe.config import register
 
 
 class Patient:
@@ -20,6 +21,7 @@ class Patient:
         return hash(self.patient_id)
 
 
+@register('3d_augm_patch_strat')
 def make_3d_augm_patch_stratified_iter(
         ids, load_x, load_y, *, batch_size,
         x_patch_sizes, y_patch_size, nonzero_fraction, buffer_size=10):
@@ -41,7 +43,7 @@ def make_3d_augm_patch_stratified_iter(
         else:
             raise ValueError('segm number of dimensions '
                              'was {}, expected 3 or 4'.format(patient.y.ndim))
-        conditional_centre_indices = medim.patch.get_conditional_center_indices(
+        conditional_centre_indices = medim.patch.find_masked_patch_center_indices(
             mask, patch_size=y_patch_size, spatial_dims=spatial_dims)
 
         return patient.x, patient.y, conditional_centre_indices
@@ -53,16 +55,16 @@ def make_3d_augm_patch_stratified_iter(
         if cancer_type:
             center_idx = choice(conditional_center_indices)
         else:
-            center_idx = medim.patch.get_uniform_center_index(
-                x_shape=np.array(x.shape), patch_size=y_patch_size,
+            center_idx = medim.patch.sample_uniform_center_index(
+                x_shape=np.array(x.shape), spatial_patch_size=y_patch_size,
                 spatial_dims=spatial_dims)
 
         xs = medim.patch.extract_patch(
-            x, center_idx=center_idx, spatial_dims=spatial_dims,
-            patch_size=x_patch_sizes[0])
+            x, spatial_center_idx=center_idx, spatial_dims=spatial_dims,
+            spatial_patch_size=x_patch_sizes[0])
 
         y = medim.patch.extract_patch(
-            y, center_idx=center_idx, patch_size=y_patch_size,
+            y, spatial_center_idx=center_idx, spatial_patch_size=y_patch_size,
             spatial_dims=spatial_dims)
 
         return (xs, y)
@@ -123,7 +125,6 @@ def make_3d_augm_patch_stratified_iter(
         x = np.array([i * np.random.normal(1, 0.35) for i in x])
         return x, y
 
-
     @pdp.pack_args
     def augmentation(x_big, y):
         return augment(x_big, y)
@@ -135,8 +136,8 @@ def make_3d_augm_patch_stratified_iter(
             x_big.shape)[spatial_dims] % 2
 
         xs = [x_big] + [medim.patch.extract_patch(
-            x_big, center_idx=center_idx, spatial_dims=spatial_dims,
-            patch_size=patch_size)
+            x_big, spatial_center_idx=center_idx, spatial_dims=spatial_dims,
+            spatial_patch_size=patch_size)
             for patch_size in x_patch_sizes[1:]]
 
         # segm = medim.patch.extract_patch(
@@ -144,7 +145,6 @@ def make_3d_augm_patch_stratified_iter(
         #     spatial_dims=spatial_dims)
 
         return (*xs, y)
-
 
     return pdp.Pipeline(
         pdp.Source(random_seq, buffer_size=3),

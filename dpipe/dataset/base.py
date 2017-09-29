@@ -20,6 +20,8 @@ class Dataset(ABC):
         """"Method returns multimodal scan of shape [n_chans_mscan, x, y, z]"""
         pass
 
+
+class DatasetInt(Dataset):
     @abstractmethod
     def load_segm(self, patient_id) -> np.array:
         """"Method returns segmentation of shape [x, y, z], filled with int
@@ -35,6 +37,8 @@ class Dataset(ABC):
         pass
 
     def segm2msegm(self, x) -> np.array:
+        assert np.issubdtype(x.dtype, np.integer), \
+            f'Segmentation dtype must be int, but {x.dtype} provided'
         return np.rollaxis(self.segm2msegm_matrix[x], 3, 0)
 
     def load_msegm(self, patient_id) -> np.array:
