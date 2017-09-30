@@ -1,7 +1,7 @@
 {
   "dataset": {
     "type": "dataset_wrapper",
-    "name": "groups_from_ids",
+    "name": "add_groups_from_ids",
     "params": {"separator": "^"},
     "inputs": {
       "dataset": {
@@ -74,7 +74,7 @@
       "experiment_path": "experiment_path",
       "split": {
         "type": "split",
-        "name": "group_pure_val_test_cv_111",
+        "name": "group_cv_111_pure_011",
         "params": {
           "n_splits": 5,
           "val_size": 6
@@ -188,7 +188,7 @@
     "type": "train",
     "name": "train_segm",
     "params": {
-      "n_epochs": 120,
+      "n_epochs": 150,
       "lr_init": 0.1,
       "lr_dec_mul": 0.5,
       "patience": 5,

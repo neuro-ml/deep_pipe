@@ -1,5 +1,4 @@
 from matplotlib import pyplot as plt
-from ipywidgets import interact, IntSlider
 import numpy as np
 
 
@@ -19,6 +18,10 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
     colorbar : Whether to display a colorbar.
     cmap : matplotlib cmap
     """
+    # Dirty hack to solve problem between new registry system that scan
+    # everything and ipywidgets
+    from ipywidgets import interact, IntSlider
+
     size = data[0].shape[axis]
     for x in data:
         assert x.shape[axis] == size
