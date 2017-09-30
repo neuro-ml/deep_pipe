@@ -13,45 +13,6 @@ def snake_case(name):
     return all_cap.sub(r'\1_\2', name).lower()
 
 
-def analyze_file(path, source, config):
-    config = [x for x in config if x['source'] != source]
-    imported = importlib.import_module(source)
-    real_path = os.path.realpath(path)
-
-    for var in dir(imported):
-        variable = getattr(imported, var)
-        try:
-            module_type = getattr(variable, '__module_type__')
-            module_name = getattr(variable, '__module_name__')
-            source_path = getattr(variable, '__source_path__')
-
-            if module_type is None:
-                module_type = os.path.basename(os.path.dirname(source_path))
-            if module_name is None:
-                module_name = snake_case(var)
-
-            if source_path == real_path:
-                for x in config:
-                    if x['module_type'] == module_type and \
-                                    x['module_name'] == module_name:
-                        raise ValueError(
-                            f'The module "{module_name}" of type  '
-                            f'"{module_type}" already exists')
-
-                config.append({
-                    'module_type': module_type,
-                    'module_name': module_name,
-                    'source_path': source_path,
-                    'variable': var,
-                    'source': source,
-                })
-
-        except AttributeError:
-            pass
-
-    return config
-
-
 def walk(path, source, exclude):
     modules = []
     if path in exclude:
@@ -76,7 +37,7 @@ def walk(path, source, exclude):
 
 def handle_corruption():
     # TODO: more details
-    raise RuntimeError('Config file corrupted')
+    raise RuntimeError('Resources base file corrupted')
 
 
 def read_config(path):

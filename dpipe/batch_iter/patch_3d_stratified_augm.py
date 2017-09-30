@@ -21,7 +21,7 @@ class Patient:
         return hash(self.patient_id)
 
 
-@register('3d_augm_patch_strat')
+@register('augm_patch_3d_strat')
 def make_3d_augm_patch_stratified_iter(
         ids, load_x, load_y, *, batch_size,
         x_patch_sizes, y_patch_size, nonzero_fraction, buffer_size=10):

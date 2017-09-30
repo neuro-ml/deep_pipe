@@ -4,28 +4,21 @@ from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
 
-from dpipe.config import get_config, get_resource_manager
+from dpipe.config import get_args, get_resource_manager
 
 if __name__ == '__main__':
-    resource_manager = get_resource_manager(get_config(
+    rm = get_resource_manager(**get_args(
         'config_path', 'ids_path', 'restore_model_path', 'predictions_path'
     ))
 
-    predictions_path = resource_manager['predictions_path']
-    restore_model_path = resource_manager['restore_model_path']
-    ids = resource_manager['ids']
-    load_x = resource_manager['load_x']
+    os.makedirs(rm.predictions_path)
 
-    frozen_model = resource_manager['frozen_model']
+    with tf.Session(graph=rm.frozen_model.graph) as session:
+        rm.frozen_model.prepare(session, rm.restore_model_path)
+        for identifier in tqdm(rm.ids):
+            x = rm.load_x(identifier)
+            y = rm.frozen_model.predict_object(x)
 
-    os.makedirs(predictions_path)
-
-    with tf.Session(graph=frozen_model.graph) as session:
-        frozen_model.prepare(session, restore_model_path)
-        for identifier in tqdm(ids):
-            x = load_x(identifier)
-            y = frozen_model.predict_object(x)
-
-            np.save(os.path.join(predictions_path, str(identifier)), y)
+            np.save(os.path.join(rm.predictions_path, str(identifier)), y)
             # saving some memory
             del x, y

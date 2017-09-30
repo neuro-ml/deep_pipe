@@ -5,7 +5,7 @@ from collections import ChainMap
 import numpy as np
 
 import dpipe.medim as medim
-from dpipe.config import bind_module
+from dpipe.config import register
 from .base import Dataset
 
 
@@ -17,7 +17,7 @@ class Proxy:
         return getattr(self._shadowed, name)
 
 
-register = bind_module('dataset_wrapper')
+register = functools.partial(register, module_type='dataset_wrapper')
 
 
 @register()

@@ -54,8 +54,8 @@ class FromCSVMultiple(FromCSV, Dataset):
         return np.einsum('ijkl,i', image, weights)
 
     def load_msegm(self, patient_id) -> np.array:
-        paths = self.dataFrame[self.target_cols].loc[patient_id]
-        image = self._load_by_paths(paths)
+        paths = self.df[self.target_cols].loc[patient_id]
+        image = self._load_by_paths(paths).astype(bool)
         assert image.dtype == np.bool
 
         return image
@@ -85,5 +85,5 @@ class FromCSVInt(FromCSV, DatasetInt):
         return self._segm2msegm_matrix
 
     def load_segm(self, patient_id):
-        path = self.dataFrame[self.target_col].loc[patient_id]
+        path = self.df[self.target_col].loc[patient_id]
         return load_image(os.path.join(self.data_path, path))

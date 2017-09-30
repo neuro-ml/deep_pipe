@@ -4,10 +4,10 @@ import numpy as np
 import nibabel as nib
 from tqdm import tqdm
 
-from dpipe.config import get_config
+from dpipe.config import get_args
 
 if __name__ == '__main__':
-    config = get_config('predictions_path', 'submission_path')
+    config = get_args('predictions_path', 'submission_path')
     predictions_path = config['predictions_path']
 
     for filename in tqdm(os.listdir(predictions_path)):

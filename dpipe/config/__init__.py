@@ -1,7 +1,4 @@
-import functools
-
-from .base import get_resource_manager, get_resource
+from .base import get_resource_manager, get_module
 from .default_parser import *
+from .registration import register, register_inline
 from .paths import get_paths
-from dpipe.externals.resource_manager.resource_manager import register, \
-    bind_module, register_inline

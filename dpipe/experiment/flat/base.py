@@ -19,4 +19,4 @@ def build_flat_structure(split, config_path, experiment_path, *, makefile):
             path = os.path.join(local, f'{prefix}_ids.json')
             with open(path, "w") as f:
                 json.dump(val, f, indent=0)
-    shutil.copyfile(config_path, os.path.join(experiment_path, 'config.json'))
+    shutil.copyfile(config_path, os.path.join(experiment_path, 'config'))
