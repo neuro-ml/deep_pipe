@@ -6,6 +6,6 @@ from .from_csv import FromCSVMultiple
 Isles2017 = register_inline(functools.partial(
     FromCSVMultiple,
     modalities=['ADC', 'MTT', 'TTP', 'Tmax', 'rCBF', 'rCBV'],
-    target='OT',
-    metadata_rpath='data.csv'
+    targets=['OT'],
+    metadata_rpath='meta2017.csv'
 ), 'isles2017')

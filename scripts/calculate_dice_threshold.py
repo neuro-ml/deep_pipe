@@ -27,4 +27,4 @@ if __name__ == '__main__':
     identifier = dices.mean(axis=1).argmax(axis=1)
     final = thresholds[identifier]
 
-    np.save(rm.threshold_path, final)
+    np.save(rm.thresholds_path, final)

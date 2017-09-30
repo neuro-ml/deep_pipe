@@ -2,9 +2,11 @@ import numpy as np
 from sklearn.model_selection import KFold, train_test_split
 
 from dpipe.dataset import Dataset
+from dpipe.config import register
 
 
-def get_cv_111(dataset: Dataset, *, val_size, n_splits):
+@register()
+def cv_111(dataset: Dataset, *, val_size, n_splits):
     ids = dataset.patient_ids
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=17)
 
@@ -70,4 +72,3 @@ def get_pure_val_test_group_cv_111(dataset: Dataset, *, val_part, n_splits):
 
     return [(train, _extract_pure(val), _extract_pure(test))
             for train, val, test in split]
-

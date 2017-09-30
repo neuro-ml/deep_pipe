@@ -12,7 +12,7 @@ FIND_THRESHOLD = os.path.join(PATH_TO_SCRIPTS, 'calculate_dice_threshold.py')
 BINARIZE = os.path.join(PATH_TO_SCRIPTS, 'binarize.py')
 COMPUTE_DICES = os.path.join(PATH_TO_SCRIPTS, 'compute_dices.py')
 
-CONFIG = '../config.json'
+CONFIG = '../config'
 SAVED_MODEL = 'model'
 TF_LOG = 'train_logs'
 

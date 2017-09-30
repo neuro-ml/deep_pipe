@@ -15,6 +15,7 @@ get_module = functools.partial(get_module, db_path=DB_PATH)
 def get_resource_manager(config_path, **additional) -> ResourceManager:
     rm = ResourceManager(config_path, get_module=get_module)
     # Additional arguments:
+    rm.set('config_path', config_path)
     for key, value in additional.items():
         rm.set(key, value, override=True)
 

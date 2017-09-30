@@ -1,6 +1,7 @@
-from dpipe.config import get_config, get_resource_manager
+from dpipe.config import get_args, get_resource_manager
 
 if __name__ == '__main__':
-    config = get_config('config_path', 'experiment_path')
-    get_resource_manager(config)['experiment']
-    print('Experiment was build')
+    get_resource_manager(
+        **get_args('config_path', 'experiment_path')
+    ).experiment
+    print('The experiment is built')

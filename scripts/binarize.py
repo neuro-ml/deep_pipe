@@ -16,7 +16,7 @@ if __name__ == '__main__':
     os.makedirs(rm.binary_predictions_path)
 
     for identifier in rm.ids:
-        y = load_by_id(rm.predict_path, identifier)
+        y = load_by_id(rm.predictions_path, identifier)
         assert len(y) == channels
 
         y = y > thresholds[:, None, None, None]
