@@ -1,7 +1,8 @@
 import functools
 
 from dpipe.config import register_inline, register
-from dpipe.externals.pdp.pdp import Pipeline, LambdaTransformer, Chunker, Source
+from dpipe.externals.pdp.pdp import Pipeline, LambdaTransformer, Chunker, Source, \
+    pack_args
 
 register_inline = functools.partial(register_inline, module_type='pdp')
 register = functools.partial(register, module_type='pdp')
@@ -14,6 +15,12 @@ def pipeline(source, transformers):
     return Pipeline(source, *transformers)
 
 
-register_inline(LambdaTransformer)
+@register()
+def transformer(f, pack=False, **kwargs):
+    if pack:
+        f = pack_args(f)
+    return LambdaTransformer(f, **kwargs)
+
+
 register_inline(Chunker)
 register_inline(Source)

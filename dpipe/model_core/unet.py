@@ -5,8 +5,7 @@ from tensorflow.contrib import slim
 from dpipe.config import register_inline
 from .base import ModelCore
 from .enet import res_block
-# FIXME unnecessary coupling
-from dpipe.batch_iter.slices import iterate_multiple_slices as iterate_slices
+from dpipe.medim.slices import iterate_slices
 
 
 def conv_block(inputs, output_channels, training, name, kernel_size=3,
@@ -114,7 +113,8 @@ def make_unet(builder):
         def validate_object(self, x, y, do_val_step):
             # TODO: add batches
             predicted, losses, weights = [], [], []
-            for x_slice, y_slice in iterate_slices(x, y, self.multiplier):
+            for x_slice, y_slice in iterate_slices(
+                    x, y, slices=self.multiplier, concatenate=0):
                 y_pred, loss = do_val_step(x_slice[None], y_slice[None])
 
                 predicted.extend(y_pred)
@@ -126,7 +126,8 @@ def make_unet(builder):
 
         def predict_object(self, x, do_inf_step):
             predicted = []
-            for x_slice in iterate_slices(x, num_slices=self.multiplier):
+            for x_slice in iterate_slices(x, slices=self.multiplier,
+                                          concatenate=0):
                 y_pred = do_inf_step(x_slice[None])
                 predicted.extend(y_pred)
 
