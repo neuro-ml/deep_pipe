@@ -35,7 +35,7 @@ def make_metadata(hgg_patients, lgg_patients, survival_data) -> pd.DataFrame:
         record['survival_days'] = survival_record.get('Survival', None)
         record['survival_class'] = get_survival_class(record['survival_days'])
         for modality, postfix in MODALITIES_POSTFIXES.items():
-            record[modality] = os.path.join(patient, record['cancer_type'],
+            record[modality] = os.path.join(record['cancer_type'], patient,
                                             patient + postfix)
 
         records[patient] = record

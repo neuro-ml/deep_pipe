@@ -12,9 +12,9 @@ class Patient:
     def __init__(self, patient_id, x, y):
         self.patient_id = patient_id
         self.x, self.y = x, y
-        assert (all(np.array(self.x.shape[1:]) == np.array(self.y.shape[-3:])),
-                f"Wrong shape was provided for patient {patient_id}\n"
-                f"x.shape = {self.x.shape} y.shape = {self.y.shape}")
+        assert all(np.array(self.x.shape[1:]) == np.array(self.y.shape[-3:])), \
+            (f"Wrong shape was provided for patient {patient_id}\n" 
+             f"x.shape = {self.x.shape} y.shape = {self.y.shape}")
 
     def __hash__(self):
         return hash(self.patient_id)
