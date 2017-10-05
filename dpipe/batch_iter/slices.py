@@ -5,12 +5,15 @@ from dpipe.medim.utils import load_by_ids
 
 
 @register()
-def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1, pad=0,
-           concatenate=None):
+def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1,
+           pad=0, concatenate=None):
     def slicer():
         for x, y in load_by_ids(load_x, load_y, ids, shuffle):
-            yield from iterate_slices(x, y, axis=axis, slices=slices, pad=pad,
-                                      concatenate=concatenate)
+            for x_slice, y_slice in iterate_slices(
+                    x, y, axis=axis, slices=slices, pad=pad,
+                    concatenate=concatenate):
+                if y_slice.any():
+                    yield x_slice, y_slice
 
     return pdp.Pipeline(
         pdp.Source(slicer(), buffer_size=30),
