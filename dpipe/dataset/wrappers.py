@@ -66,7 +66,7 @@ def bbox_extraction(dataset: Dataset) -> Dataset:
 
 
 @register()
-def normalized(dataset: Dataset, mean=True, std=True,
+def normalized(dataset: Dataset, mean, std,
                drop_percentile: int = None) -> Dataset:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
