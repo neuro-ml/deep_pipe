@@ -12,15 +12,15 @@ class Patient:
     def __init__(self, patient_id, x, y):
         self.patient_id = patient_id
         self.x, self.y = x, y
-        assert (all(np.array(self.x.shape[1:]) == np.array(self.y.shape[-3:])),
-                f"Wrong shape was provided for patient {patient_id}\n"
-                f"x.shape = {self.x.shape} y.shape = {self.y.shape}")
+        assert all(np.array(self.x.shape[1:]) == np.array(self.y.shape[-3:])), \
+            (f"Wrong shape was provided for patient {patient_id}\n" 
+             f"x.shape = {self.x.shape} y.shape = {self.y.shape}")
 
     def __hash__(self):
         return hash(self.patient_id)
 
 
-@register('3d_patch_strat')
+@register('patch_3d_strat')
 def make_3d_patch_stratified_iter(
         ids, load_x, load_y, *, batch_size, x_patch_sizes,
         y_patch_size, nonzero_fraction, buffer_size=10):

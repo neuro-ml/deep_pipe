@@ -11,7 +11,7 @@ PREDICT_SCRIPT = os.path.join(PATH_TO_SCRIPTS, 'predict.py')
 TRANSFORM = os.path.join(PATH_TO_SCRIPTS, 'transform.py')
 COMPUTE_DICES = os.path.join(PATH_TO_SCRIPTS, 'compute_dices.py')
 
-CONFIG = '../config.json'
+CONFIG = '../config'
 SAVED_MODEL = 'model'
 TF_LOG = 'train_logs'
 

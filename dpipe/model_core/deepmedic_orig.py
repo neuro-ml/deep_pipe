@@ -5,6 +5,7 @@ from .base import ModelCore
 from .layers import spatial_batch_norm
 
 from dpipe import medim
+from dpipe.config import register
 
 
 def activation(t):
@@ -87,7 +88,7 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
 
         return logits
 
-
+@register(module_name='deepmedic_orig')
 class DeepMedicOrig(ModelCore):
     def __init__(self, *, n_chans_in, n_chans_out, n_parts):
         super().__init__(n_chans_in=n_chans_in, n_chans_out=n_chans_out)

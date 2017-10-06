@@ -5,7 +5,7 @@ from collections import ChainMap
 import numpy as np
 
 import dpipe.medim as medim
-from dpipe.config import bind_module
+from dpipe.config import register
 from .base import Dataset
 
 
@@ -17,7 +17,7 @@ class Proxy:
         return getattr(self._shadowed, name)
 
 
-register = bind_module('dataset_wrapper')
+register = functools.partial(register, module_type='dataset_wrapper')
 
 
 @register()
@@ -66,7 +66,7 @@ def bbox_extraction(dataset: Dataset) -> Dataset:
 
 
 @register()
-def normalized(dataset: Dataset, mean=True, std=True,
+def normalized(dataset: Dataset, mean, std,
                drop_percentile: int = None) -> Dataset:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
@@ -97,7 +97,7 @@ def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
     class GroupedFromMetadata(Proxy):
         @property
         def groups(self):
-            return self._shadowed.dataFrame[group_col].as_matrix()
+            return self._shadowed.df[group_col].as_matrix()
 
     return GroupedFromMetadata(dataset)
 

@@ -1,11 +1,11 @@
 import numpy as np
 import tensorflow as tf
 
+from dpipe.config import register
 from .layers import spatial_batch_norm
 from .base import ModelCore
 
-# FIXME high coupling
-from dpipe.batch_iter.slices import iterate_multiple_slices as iterate_slices
+from dpipe.medim.slices import iterate_slices
 
 
 def init_block(inputs, name, training, output_channels, kernel_size=3,
@@ -133,6 +133,7 @@ def build_model(inputs, classes, name, training, init_channels,
         return inputs
 
 
+@register('enet2d')
 class ENet2D(ModelCore):
     def __init__(self, n_chans_in, n_chans_out, multiplier=1, init_channels=16):
         super().__init__(n_chans_in * multiplier, n_chans_out)
@@ -151,7 +152,8 @@ class ENet2D(ModelCore):
     def validate_object(self, x, y, do_val_step):
         # TODO: add batches
         predicted, losses, weights = [], [], []
-        for x_slice, y_slice in iterate_slices(x, y, self.multiplier):
+        for x_slice, y_slice in iterate_slices(x, y, slices=self.multiplier,
+                                               concatenate=0):
             y_pred, loss = do_val_step(x_slice[None], y_slice[None])
 
             predicted.extend(y_pred)
@@ -163,7 +165,8 @@ class ENet2D(ModelCore):
 
     def predict_object(self, x, do_inf_step):
         predicted = []
-        for x_slice in iterate_slices(x, num_slices=self.multiplier):
+        for x_slice in iterate_slices(x, slices=self.multiplier,
+                                      concatenate=0):
             y_pred = do_inf_step(x_slice[None])
             predicted.extend(y_pred)
 

@@ -1,4 +1,4 @@
-from dpipe.config import get_resource_manager, get_parser, parse_config
+from dpipe.config import get_resource_manager, get_parser, parse_args
 
 if __name__ == '__main__':
     parser = get_parser('config_path', 'train_ids_path', 'val_ids_path',
@@ -8,21 +8,14 @@ if __name__ == '__main__':
         help='whether to save the model after ctrl+c is pressed'
     )
 
-    resource_manager = get_resource_manager(parse_config(parser))
+    rm = get_resource_manager(**parse_args(parser))
 
-    save_on_quit = resource_manager['save_on_quit']
-    save_model_path = resource_manager['save_model_path']
-    model_controller = resource_manager['model_controller']
-
-    model = resource_manager['model']
-    train = resource_manager['train']
-
-    with model_controller:
+    with rm.model_controller:
         try:
-            train()
-            model.save(save_model_path)
+            rm.train()
+            rm.model.save(rm.save_model_path)
         except KeyboardInterrupt:
-            if save_on_quit:
-                model.save(save_model_path)
+            if rm.save_on_quit:
+                rm.model.save(rm.save_model_path)
             else:
                 raise

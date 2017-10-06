@@ -30,7 +30,6 @@ def train_segm(
         for i in range(n_epochs):
             with next(train_batch_iter_factory) as train_batch_iter:
                 train_loss = model_controller.train(train_batch_iter, lr=lr)
-            lr = find_next_lr(train_loss)
 
             y_pred_proba, val_loss = model_controller.validate(val_x, val_segm)
 
@@ -42,3 +41,5 @@ def train_segm(
 
             print('{:>5} {:>10.5f} {}'.format(i, val_loss,
                                               np.mean(dices, axis=0)))
+
+            lr = find_next_lr(val_loss)

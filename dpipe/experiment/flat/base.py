@@ -2,7 +2,7 @@ import os
 import json
 import shutil
 
-from dpipe.config import register
+from dpipe.config import register, get_resource_manager
 
 
 @register('flat', 'experiment')
@@ -19,4 +19,7 @@ def build_flat_structure(split, config_path, experiment_path, *, makefile):
             path = os.path.join(local, f'{prefix}_ids.json')
             with open(path, "w") as f:
                 json.dump(val, f, indent=0)
-    shutil.copyfile(config_path, os.path.join(experiment_path, 'config.json'))
+
+    # resource manager is needed here, because there may be inheritance
+    rm = get_resource_manager(config_path)
+    rm.save_whole_config(os.path.join(experiment_path, 'config'))
