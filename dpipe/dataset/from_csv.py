@@ -55,7 +55,10 @@ class FromCSVMultiple(FromCSV, Dataset):
 
     def load_msegm(self, patient_id) -> np.array:
         paths = self.df[self.target_cols].loc[patient_id]
-        image = self._load_by_paths(paths).astype(bool)
+        image = self._load_by_paths(paths)
+        if not (set(np.unique(image).astype(float)) - {0., 1.}):
+            # in this case it's ok to convert to bool
+            image = image.astype(np.bool)
         assert image.dtype == np.bool
 
         return image

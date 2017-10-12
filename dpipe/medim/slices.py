@@ -6,10 +6,14 @@ import numpy as np
 
 def join_result(stacks, axis, concatenate):
     func = np.stack
-    if concatenate is not None:
-        func = np.concatenate
-        axis = concatenate
-    result = [func(stack, axis) for stack in stacks]
+    # if only one slice then, probably, the axis is not needed
+    if len(stacks[0]) == 1 and concatenate is None:
+        result = [stack[0] for stack in stacks]
+    else:
+        if concatenate is not None:
+            func = np.concatenate
+            axis = concatenate
+        result = [func(stack, axis) for stack in stacks]
     if len(result) == 1:
         result = result[0]
     return result
@@ -33,7 +37,7 @@ def iterate_slices(*data, axis: int = -1, slices: Union[int, List[int]] = 1,
     if type(slices) is int:
         slices = [slices] * len(data)
     slices = np.asarray(slices)
-    if not all(slices > 0):
+    if not (slices > 0).all():
         return
 
     if type(pad) is int:
@@ -50,7 +54,7 @@ def iterate_slices(*data, axis: int = -1, slices: Union[int, List[int]] = 1,
         new_data.append(np.pad(entry, pads, mode='constant'))
     data = new_data
     shapes = [entry.shape[axis] for entry in data]
-    assert all(slices <= shapes)
+    assert (slices <= shapes).all()
 
     stacks = [deque() for _ in range(len(slices))]
     indices = np.zeros(len(data))
@@ -68,7 +72,7 @@ def iterate_slices(*data, axis: int = -1, slices: Union[int, List[int]] = 1,
     yield join_result(stacks, axis, concatenate)
 
     # yield main body
-    while all(indices < shapes):
+    while (indices < shapes).all():
         for stack in stacks:
             stack.popleft()
 

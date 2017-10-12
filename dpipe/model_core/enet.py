@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
+from dpipe.config import register
 from .layers import spatial_batch_norm
 from .base import ModelCore
 
@@ -132,6 +133,7 @@ def build_model(inputs, classes, name, training, init_channels,
         return inputs
 
 
+@register('enet2d')
 class ENet2D(ModelCore):
     def __init__(self, n_chans_in, n_chans_out, multiplier=1, init_channels=16):
         super().__init__(n_chans_in * multiplier, n_chans_out)

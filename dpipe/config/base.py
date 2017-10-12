@@ -1,8 +1,8 @@
 import functools
 import os
 
-from dpipe.config.registration import get_module, generate_config
-from dpipe.externals.resource_manager.resource_manager import ResourceManager
+from dpipe.externals.resource_manager.resource_manager import ResourceManager, \
+    get_module, generate_config
 
 DB_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(DB_DIR, 'modules_db.json')
