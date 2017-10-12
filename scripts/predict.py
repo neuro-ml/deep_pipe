@@ -13,12 +13,12 @@ if __name__ == '__main__':
 
     os.makedirs(rm.predictions_path)
 
-    with tf.Session(graph=rm.frozen_model.graph) as session:
-        rm.frozen_model.prepare(session, rm.restore_model_path)
-        for identifier in tqdm(rm.ids):
-            x = rm.load_x(identifier)
-            y = rm.frozen_model.predict_object(x)
+    frozen_model = rm.frozen_model(restore_ckpt_path=rm.restore_model_path)
+    batch_predict = rm.batch_predict()
+    for identifier in tqdm(rm.ids):
+        x = rm.load_x(identifier)
+        y = batch_predict.predict(x, frozen_model.do_inf_step)
 
-            np.save(os.path.join(rm.predictions_path, str(identifier)), y)
-            # saving some memory
-            del x, y
+        np.save(os.path.join(rm.predictions_path, str(identifier)), y)
+        # saving some memory
+        del x, y
