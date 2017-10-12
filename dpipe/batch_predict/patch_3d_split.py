@@ -3,47 +3,74 @@ import numpy as np
 import dpipe.medim as medim
 from dpipe.config import register
 
+spatial_dims = (-3, -2, -1)
+zero_spatial_intersection_size = np.zeros(len(spatial_dims), dtype=int)
 
-def split(x, xs_padding: np.array, x_patch_sizes: np.array, padding_values):
+
+def split(x, x_intersection_sizes: np.array, x_patch_sizes: np.array,
+          padding_values):
     xs_parts = []
-    for x_padding, x_patch_size in zip(xs_padding, x_patch_sizes):
-        complete_patch_size = np.array((x.shape[0], *x_patch_size))
-        x_parts = medim.split.divide(x, patch_size=complete_patch_size,
-                                     intersection_size=complete_patch_size,
-                                     padding_values=padding_values)
-        xs_parts.append(x_parts)
+    for x_intersection_size, x_patch_size in zip(x_intersection_sizes,
+                                                 x_patch_sizes):
+        x_parts = medim.split.divide_spatial(
+            x, spatial_patch_size=x_patch_size, spatial_dims=list(spatial_dims),
+            spatial_intersection_size=x_intersection_size,
+            padding_values=padding_values,
+        )
+        xs_parts.append([x_part[None, :] for x_part in x_parts])
 
     assert all([len(x_parts) == len(xs_parts[0]) for x_parts in xs_parts])
     return xs_parts
 
 
-def compute_y_shape(x, y_parts):
-    x_shape = np.array(x.shape)
-    if y_parts[0].ndim == 3:
-        return x_shape[-3:]
-    else:
-        x_shape[0] = y_parts[0].shape[0]
-        return x_shape
-
-# FIXME Batches should be put into the model
-
 @register(module_name='patch_3d')
-def make_patch_3d_predict(
-        model, x_patch_sizes: list, y_patch_size: list, padding_mode: str):
-    x_patch_sizes = np.array(x_patch_sizes)
-    y_patch_size = np.array(y_patch_size)
-    assert np.all(x_patch_sizes % 2 == 1) and np.all(y_patch_size % 2 == 1)
+class Patch3DPredictor:
+    def __init__(self, x_spatial_patch_sizes: list, y_spatial_patch_size: list,
+                 padding_mode: str):
+        self.x_spatial_patch_sizes = np.array(x_spatial_patch_sizes)
+        self.y_spatial_patch_size = np.array(y_spatial_patch_size)
+        assert (np.all(self.x_spatial_patch_sizes % 2 == 1) and
+                np.all(self.y_spatial_patch_size % 2 == 1))
 
-    xs_padding = [np.array((0, *(p // 20)))[:, None].repeat(2, axis=1)
-                  for p in (x_patch_sizes - y_patch_size)]
+        self.x_spatial_intersection_sizes = (self.x_spatial_patch_sizes -
+                                             self.y_spatial_patch_size) // 2
 
-    assert padding_mode == 'min'
+        assert padding_mode == 'min'
 
-    def predict(x):
-        padding_values = x.min(axis=(1, 2, 3), keepdims=True)
-        xs_parts = split(x, xs_padding, x_patch_sizes, padding_values)
-        y_parts = [model.predict(*inputs) for inputs in zip(*xs_parts)]
-        y_shape = compute_y_shape(x, y_parts)
-        return medim.split.combine(y_parts, y_shape)
+    def validate(self, x, y, validate_fn):
+        xs_batches = split(
+            x, self.x_spatial_intersection_sizes, self.x_spatial_patch_sizes,
+            x.min(axis=spatial_dims, keepdims=True)
+        )
+        y_parts_true = medim.split.divide_spatial(
+            y, spatial_patch_size=self.y_spatial_patch_size,
+            spatial_intersection_size=zero_spatial_intersection_size,
+            spatial_dims=list(spatial_dims))
+        y_parts_true = [y_part[None, :] for y_part in y_parts_true]
 
-    return predict
+        weights = []
+        losses = []
+        y_preds = []
+        for inputs in zip(*xs_batches, y_parts_true):
+            y_pred, loss = validate_fn(*inputs)
+            y_preds.append(y_pred)
+            losses.append(loss)
+            weights.append(y_pred.size)
+
+        loss = np.average(losses, weights=weights)
+        complete_shape = medim.shape_utils.compute_shape_from_spatial(
+            y_preds[0].shape, x.shape[-3:], spatial_dims=spatial_dims
+        )
+        return medim.split.combine(y_preds, complete_shape), loss
+
+    def predict(self, x, predict_fn):
+        padding_values = x.min(axis=spatial_dims, keepdims=True)
+        xs_batches = split(
+            x, self.x_spatial_intersection_sizes, self.x_spatial_patch_sizes,
+            padding_values
+        )
+        y_preds = [predict_fn(*inputs) for inputs in zip(*xs_batches)]
+        complete_shape = medim.shape_utils.compute_shape_from_spatial(
+            y_preds[0].shape, x.shape[-3:], spatial_dims=spatial_dims
+        )
+        return medim.split.combine(y_preds, complete_shape)

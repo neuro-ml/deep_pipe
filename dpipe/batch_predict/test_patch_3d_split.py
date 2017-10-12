@@ -2,7 +2,7 @@ import unittest
 from itertools import product
 
 import numpy as np
-from .patch_3d_split import make_patch_3d_predict
+from .patch_3d_split import Patch3DPredictor
 
 
 class Model:
@@ -10,19 +10,20 @@ class Model:
         self.i = i
         self.y_ndim = y_ndim
 
-        self.x_shape = (3, 120, 120, 120)
+    def validate(self, *inputs):
+        return self.predict(*inputs), 1
 
-    def predict(self, *x_batches):
+    def predict(self, *inputs):
         if self.y_ndim == 4:
             if self.i == 0:
-                return x_batches[self.i][0][:, 1:-1, 1:-1, 1:-1]
+                return inputs[self.i][0][:, 1:-1, 1:-1, 1:-1]
             else:
-                return x_batches[self.i][0][:, 3:-3, 3:-3, 3:-3]
+                return inputs[self.i][0][:, 3:-3, 3:-3, 3:-3]
         else:
             if self.i == 0:
-                return x_batches[self.i][0][0, 1:-1, 1:-1, 1:-1]
+                return inputs[self.i][0][0, 1:-1, 1:-1, 1:-1]
             else:
-                return x_batches[self.i][0][0, 3:-3, 3:-3, 3:-3]
+                return inputs[self.i][0][0, 3:-3, 3:-3, 3:-3]
 
 
 class TestMake3DPredict(unittest.TestCase):
@@ -31,17 +32,25 @@ class TestMake3DPredict(unittest.TestCase):
         self.x_patch_sizes = [[7, 7, 7], [11, 11, 11]]
         self.y_patch_size = [5, 5, 5]
 
-    def test_make_patch_3d_predict_call(self):
-        make_patch_3d_predict(None, self.x_patch_sizes, self.y_patch_size,
-                              padding_mode='min')
+    def test_patch_3d_predict_call(self):
+        Patch3DPredictor(self.x_patch_sizes, self.y_patch_size,
+                         padding_mode='min')
 
-    def test_divide_combine(self):
-        models = [Model(i, y_ndim) for (i, y_ndim) in product(range(2), (3, 4))]
-        for model in models:
-            predict = make_patch_3d_predict(
-                model, self.x_patch_sizes, self.y_patch_size, padding_mode='min'
-            )
+    def test_predictor(self):
+        for i, y_ndim in product(range(2), (3, 4)):
+            with self.subTest(f'{i}, {y_ndim}'):
+                predictor = Patch3DPredictor(
+                    self.x_patch_sizes, self.y_patch_size, padding_mode='min'
+                )
+                model = Model(i, y_ndim)
 
-            a_1 = np.random.randn(*self.x_shape)
-            a_2 = predict(a_1)
-            np.testing.assert_equal(a_1, a_2)
+                x = np.random.randn(*self.x_shape)
+                y = x[0] if y_ndim == 3 else x
+                y_pred, loss = predictor.validate(x, y, model.validate)
+                np.testing.assert_equal(y_pred, y)
+                self.assertEqual(1, loss)
+
+                x = np.random.randn(*self.x_shape)
+                y = x[0] if y_ndim == 3 else x
+                y_pred = predictor.predict(x, model.predict)
+                np.testing.assert_equal(y_pred, y)
