@@ -10,12 +10,11 @@ if __name__ == '__main__':
 
     rm = get_resource_manager(**parse_args(parser))
 
-    with rm.model_controller:
-        try:
-            rm.train()
+    try:
+        rm.train()
+        rm.model.save(rm.save_model_path)
+    except KeyboardInterrupt:
+        if rm.save_on_quit:
             rm.model.save(rm.save_model_path)
-        except KeyboardInterrupt:
-            if rm.save_on_quit:
-                rm.model.save(rm.save_model_path)
-            else:
-                raise
+        else:
+            raise

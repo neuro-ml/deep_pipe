@@ -3,7 +3,7 @@ from functools import partial
 
 import numpy as np
 
-from dpipe.dl.model_controller import ModelController
+from dpipe.dl.model import Model
 from dpipe.utils.batch_iter_factory import BatchIterFactory
 from dpipe.medim.metrics import multichannel_dice_score
 from .utils import make_find_next_lr, make_check_loss_decrease
@@ -11,11 +11,9 @@ from dpipe.config import register
 
 
 @register()
-def train_segm(
-        model_controller: ModelController,
-        train_batch_iter_factory: BatchIterFactory,
-        val_ids, dataset, *, n_epochs, lr_init, lr_dec_mul=0.5,
-        patience: int, rtol=0, atol=0):
+def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory,
+               val_ids, dataset, *, n_epochs, lr_init, lr_dec_mul=0.5,
+               patience: int, rtol=0, atol=0):
     val_x = [dataset.load_mscan(p) for p in val_ids]
     val_segm = [dataset.load_segm(p) for p in val_ids]
     val_msegm = [dataset.load_msegm(p) for p in val_ids]
@@ -29,7 +27,7 @@ def train_segm(
     with train_batch_iter_factory:
         for i in range(n_epochs):
             with next(train_batch_iter_factory) as train_batch_iter:
-                train_loss = model_controller.train(train_batch_iter, lr=lr)
+                train_loss = model.train(train_batch_iter, lr=lr)
             lr = find_next_lr(train_loss)
 
             y_pred_proba, val_loss = model_controller.validate(val_x, val_segm)
