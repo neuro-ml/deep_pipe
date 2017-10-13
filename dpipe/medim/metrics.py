@@ -1,12 +1,13 @@
 import numpy as np
 
 
-def dice_score(y_pred, target, empty_val=0):
+def dice_score(x, y, empty_val=0):
     """Dice score between two binary masks."""
-    assert y_pred.dtype == target.dtype == np.bool
+    assert x.dtype == y.dtype == np.bool
+    assert x.shape == y.shape
 
-    num = 2 * np.sum(y_pred & target)
-    den = np.sum(y_pred) + np.sum(target)
+    num = 2 * np.sum(x & y)
+    den = np.sum(x) + np.sum(y)
 
     return empty_val if den == 0 else num / den
 

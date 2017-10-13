@@ -6,8 +6,8 @@ def validate_object(inputs, *, validate_fn):
     losses = []
     y_preds = []
     for i in inputs:
-        y_pred, loss = validate_fn(*i)
-        y_preds.append(y_pred)
+        y_pred, loss = validate_fn(*[x[None, :] for x in i])
+        y_preds.append(y_pred[0])
         losses.append(loss)
         weights.append(y_pred.size)
 
@@ -16,4 +16,4 @@ def validate_object(inputs, *, validate_fn):
 
 
 def predict_object(inputs, *, predict_fn):
-    return [predict_fn(*i) for i in inputs]
+    return [predict_fn(*[x[None, :] for x in i])[0] for i in inputs]

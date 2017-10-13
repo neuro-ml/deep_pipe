@@ -13,10 +13,8 @@ from dpipe.config import register
 
 
 @register()
-def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory,
-               batch_predict: BatchPredict, log_path, val_ids, dataset, *,
-               n_epochs, lr_init, lr_dec_mul=0.5, patience: int, rtol=0, atol=0
-               ):
+def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_predict: BatchPredict, log_path, val_ids,
+               dataset, *, n_epochs, lr_init, lr_dec_mul=0.5, patience: int, rtol=0, atol=0):
 
     logger = Logger(log_path)
 
@@ -24,10 +22,8 @@ def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory,
     segm_val = [dataset.load_segm(p) for p in val_ids]
     msegm_val = [dataset.load_msegm(p) for p in val_ids]
 
-    find_next_lr = make_find_next_lr(
-        lr_init, lambda lr: lr * lr_dec_mul,
-        partial(make_check_loss_decrease, patience=patience,
-                rtol=rtol, atol=atol))
+    find_next_lr = make_find_next_lr(lr_init, lambda lr: lr * lr_dec_mul,
+                                     partial(make_check_loss_decrease, patience=patience, rtol=rtol, atol=atol))
 
     train_log_write = logger.make_log_scalar('train_loss')
 
@@ -47,20 +43,15 @@ def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory,
             msegms_pred = []
             val_losses = []
             for x, y in zip(mscan_val, segm_val):
-                y_pred, loss = batch_predict.validate(
-                    x, y, validate_fn=model.do_val_step
-                )
-                msegms_pred.append(dataset.segm2msegm(np.argmax(y_pred,
-                                                                axis=0)))
+                y_pred, loss = batch_predict.validate(x, y, validate_fn=model.do_val_step)
+                msegms_pred.append(dataset.segm2msegm(np.argmax(y_pred, axis=0)))
                 val_losses.append(loss)
 
             val_loss = np.mean(val_losses)
             val_avg_log_write(val_loss)
 
-            dices = [multichannel_dice_score(pred, true)
-                     for pred, true in zip(msegms_pred, msegm_val)]
+            dices = [multichannel_dice_score(pred, true) for pred, true in zip(msegms_pred, msegm_val)]
 
-            print('{:>5} {:>10.5f} {}'.format(i, val_loss,
-                                              np.mean(dices, axis=0)))
+            print('{:>5} {:>10.5f} {}'.format(i, val_loss, np.mean(dices, axis=0)))
 
             lr = find_next_lr(val_loss)

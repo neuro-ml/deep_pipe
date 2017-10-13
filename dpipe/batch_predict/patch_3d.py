@@ -21,23 +21,19 @@ def divide_x(x, x_intersection_sizes: np.array, x_patch_sizes: np.array,
             spatial_intersection_size=x_intersection_size,
             padding_values=padding_values,
         )
-        xs_parts.append([x_part[None, :] for x_part in x_parts])
+        xs_parts.append(x_parts)
 
     assert all([len(x_parts) == len(xs_parts[0]) for x_parts in xs_parts])
     return xs_parts
 
 
 def divide_y(y, y_spatial_patch_size):
-    y_parts = divide_spatial(
-        y, spatial_patch_size=y_spatial_patch_size,
-        spatial_intersection_size=zero_spatial_intersection_size,
-        spatial_dims=list(spatial_dims))
-    return [y_part[None, :] for y_part in y_parts]
+    return divide_spatial(y, spatial_patch_size=y_spatial_patch_size, spatial_dims=list(spatial_dims),
+                          spatial_intersection_size=zero_spatial_intersection_size)
 
 
 def combine_y(y_preds, x_shape):
-    complete_shape = compute_shape_from_spatial(y_preds[0].shape, x_shape[-3:],
-                                                spatial_dims=spatial_dims)
+    complete_shape = compute_shape_from_spatial(y_preds[0].shape, x_shape[-3:], spatial_dims=spatial_dims)
     return combine(y_preds, complete_shape)
 
 
