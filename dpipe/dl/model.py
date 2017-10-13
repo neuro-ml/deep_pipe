@@ -22,13 +22,13 @@ class Model:
         self.graph = tf.get_default_graph()
 
         training_ph = tf.placeholder('bool', name='is_training')
-        x_phs, logits = self.model_core.build(self.training_ph)
+        x_phs, logits = self.model_core.build(training_ph)
 
         y_pred = predict(logits)
 
         lr = tf.placeholder(tf.float32, name='learning_rate')
         loss, y_ph = loss(logits=logits)
-        train_op = optimize(loss=self.loss, lr=self.lr)
+        train_op = optimize(loss=loss, lr=lr)
 
         init_op = tf.global_variables_initializer()
         self.saver = tf.train.Saver()

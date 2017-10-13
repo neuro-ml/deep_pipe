@@ -5,8 +5,8 @@ import numpy as np
 from .utils import pad
 
 
-def compute_n_parts_per_axis(x_shape: np.array, patch_size: np.array):
-    return np.ceil(x_shape / patch_size).astype(int)
+def compute_n_parts_per_axis(x_shape, patch_size):
+    return np.ceil(np.asarray(x_shape) / np.asarray(patch_size)).astype(int)
 
 
 def divide_no_padding(x: np.ndarray, patch_size, intersection_size):
@@ -30,11 +30,11 @@ def divide_no_padding(x: np.ndarray, patch_size, intersection_size):
     return x_parts
 
 
-def divide(x: np.ndarray, patch_size: np.array, intersection_size: np.array,
-           padding_values=None):
+def divide(x: np.ndarray, patch_size, intersection_size, padding_values=None):
     """Divides x into multiple patches of patch_size shape with intersections of
     size intersection_size. To provide values on boarders, perform padding with
     values from padding_values, which has to be broadcastable to x shape."""
+    intersection_size = np.array(intersection_size)
     if padding_values is not None:
         x = pad(x, padding=np.repeat(intersection_size[:, None], 2, axis=1),
                 padding_values=padding_values)
@@ -44,8 +44,8 @@ def divide(x: np.ndarray, patch_size: np.array, intersection_size: np.array,
                              intersection_size=intersection_size)
 
 
-def divide_spatial(x: np.ndarray, *, spatial_patch_size: np.array,
-                   spatial_intersection_size: np.array, padding_values=None,
+def divide_spatial(x: np.ndarray, *, spatial_patch_size,
+                   spatial_intersection_size, padding_values=None,
                    spatial_dims: list):
     patch_size = np.array(x.shape)
     patch_size[spatial_dims] = spatial_patch_size
@@ -57,7 +57,7 @@ def divide_spatial(x: np.ndarray, *, spatial_patch_size: np.array,
                   padding_values=padding_values)
 
 
-def combine(x_parts, x_shape: np.array):
+def combine(x_parts, x_shape):
     """Combines parts of one big array of shape x_shape back into one array."""
     patch_size = np.array(x_parts[0].shape)
     n_parts_per_axis = compute_n_parts_per_axis(x_shape, patch_size)

@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from .split import compute_n_parts_per_axis, divide_no_padding, divide, \
+from .divide import compute_n_parts_per_axis, divide_no_padding, divide, \
     divide_spatial, combine
 
 

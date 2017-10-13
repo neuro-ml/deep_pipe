@@ -11,10 +11,11 @@ if __name__ == '__main__':
     rm = get_resource_manager(**parse_args(parser))
 
     model = rm.model
+    log_path = rm.log_path
     if rm.restore_model_path is not None:
         model.load(rm.restore_model_path)
     try:
-        rm.train()
+        rm.train(log_path=log_path)
         model.save(rm.save_model_path)
     except KeyboardInterrupt:
         if rm.save_on_quit:

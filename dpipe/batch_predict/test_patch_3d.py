@@ -2,7 +2,7 @@ import unittest
 from itertools import product
 
 import numpy as np
-from .patch_3d_split import Patch3DPredictor
+from .patch_3d import Patch3DPredictor
 
 
 class Model:
@@ -46,11 +46,12 @@ class TestMake3DPredict(unittest.TestCase):
 
                 x = np.random.randn(*self.x_shape)
                 y = x[0] if y_ndim == 3 else x
-                y_pred, loss = predictor.validate(x, y, model.validate)
+                y_pred, loss = predictor.validate(x, y,
+                                                  validate_fn=model.validate)
                 np.testing.assert_equal(y_pred, y)
                 self.assertEqual(1, loss)
 
                 x = np.random.randn(*self.x_shape)
                 y = x[0] if y_ndim == 3 else x
-                y_pred = predictor.predict(x, model.predict)
+                y_pred = predictor.predict(x, predict_fn=model.predict)
                 np.testing.assert_equal(y_pred, y)
