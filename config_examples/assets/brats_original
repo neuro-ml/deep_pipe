@@ -1,0 +1,9 @@
+dataset = dataset_wrapper.cached
+    dataset = dataset_wrapper.normalized
+        mean = true
+        std = true
+        drop_percentile = null
+
+        dataset = dataset.brats2017
+            data_path = data_path
+            metadata_rpath = metadata_rpath

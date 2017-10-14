@@ -1,0 +1,18 @@
+dataset = dataset_wrapper.groups_from_ids
+    separator = "^"
+
+    dataset = dataset_wrapper.cached
+        dataset = dataset_wrapper.normalized
+            mean = true
+            std = true
+            drop_percentile = null
+
+            dataset = dataset_wrapper.merge_datasets
+                datasets = [
+                    dataset.brats2017(
+                        data_path = data_path
+                        metadata_rpath = metadata_rpath
+                    ) dataset.brats2017(
+                        data_path = augmented_data_path
+                        metadata_rpath = augmented_metadata_rpath
+                    )]
