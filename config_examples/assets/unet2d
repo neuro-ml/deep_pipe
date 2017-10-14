@@ -1,0 +1,25 @@
+model_core = model_core.unet2d
+    channels = [64 128 256]
+
+    n_chans_in = meta.extractor
+        property = "n_chans_mscan"
+        module = dataset
+
+    n_chans_out = meta.extractor
+        property = "n_chans_segm"
+        module = dataset
+
+train = train.train_with_lr_decrease
+    @init = false
+    atol = 0.01
+    lr_dec_mul = 0.7
+    lr_init = 0.1
+    n_epochs = 60
+    patience = 5
+    rtol = 0.03
+
+    model_controller = model_controller
+    train_batch_iter_factory = batch_iter_factory
+    val_ids = val_ids
+    load_x = load_x
+    load_y = load_y
