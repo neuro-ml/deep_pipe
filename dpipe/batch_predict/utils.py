@@ -2,9 +2,7 @@ import numpy as np
 
 
 def validate_object(inputs, *, validate_fn):
-    weights = []
-    losses = []
-    y_preds = []
+    weights, losses, y_preds = [], [], []
     for i in inputs:
         y_pred, loss = validate_fn(*[x[None, :] for x in i])
         y_preds.append(y_pred[0])
