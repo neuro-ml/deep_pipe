@@ -62,15 +62,12 @@ def build_model(t_det_in, t_con_in, kernel_size, n_classes, training, name, *,
 
 @register('deepmedic_els')
 class DeepMedicEls(ModelCore):
-    def __init__(self, *, n_chans_in, n_chans_out, n_parts,
-                 downsampling_type='sampling', with_dropout=True):
+    def __init__(self, *, n_chans_in, n_chans_out,  downsampling_type='sampling', with_dropout=True):
         super().__init__(n_chans_in=n_chans_in, n_chans_out=n_chans_out)
 
         self.kernel_size = 3
         self.with_dropout = with_dropout
         self.downsampling_op = downsampling_ops[downsampling_type]
-        self.n_parts = np.array(n_parts)
-        assert np.all(np.in1d(self.n_parts, [1, 2]))
 
     def build(self, training_ph):
         if self.with_dropout:

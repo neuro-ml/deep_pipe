@@ -90,13 +90,11 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
 
 @register(module_name='deepmedic_orig')
 class DeepMedicOrig(ModelCore):
-    def __init__(self, *, n_chans_in, n_chans_out, n_parts):
+    def __init__(self, *, n_chans_in, n_chans_out):
         super().__init__(n_chans_in=n_chans_in, n_chans_out=n_chans_out)
 
         self.kernel_size = 3
-        self.n_parts = np.array(n_parts)
-        assert np.all((self.n_parts == 1) | (self.n_parts == 2))
-
+        
     def build(self, training_ph):
         nan = None
         x_det_ph = tf.placeholder(
