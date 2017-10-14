@@ -2,9 +2,9 @@ from functools import lru_cache, partial
 from random import choice
 
 import numpy as np
+import pdp
 
 from dpipe.medim import patch
-import dpipe.externals.pdp.pdp as pdp
 from dpipe.config import register
 
 
@@ -90,10 +90,10 @@ def make_3d_patch_stratified_iter(
 
     return pdp.Pipeline(
         pdp.Source(random_seq, buffer_size=3),
-        pdp.LambdaTransformer(load_patient, buffer_size=100),
-        pdp.LambdaTransformer(find_cancer_and_padding_values, buffer_size=100),
-        pdp.LambdaTransformer(extract_big_patches, buffer_size=batch_size),
-        pdp.LambdaTransformer(extract_patches, buffer_size=batch_size),
-        pdp.Chunker(chunk_size=batch_size, buffer_size=3),
-        pdp.LambdaTransformer(pdp.combine_batches, buffer_size=buffer_size)
+        pdp.One2One(load_patient, buffer_size=100),
+        pdp.One2One(find_cancer_and_padding_values, buffer_size=100),
+        pdp.One2One(extract_big_patches, buffer_size=batch_size),
+        pdp.One2One(extract_patches, buffer_size=batch_size),
+        pdp.Many2One(chunk_size=batch_size, buffer_size=3),
+        pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
     )

@@ -2,44 +2,56 @@ import math
 from functools import partial
 
 import numpy as np
+from tensorboard_easy.logger import Logger
 
-from dpipe.dl.model_controller import ModelController
+from dpipe.dl.model import Model
 from dpipe.utils.batch_iter_factory import BatchIterFactory
+from dpipe.batch_predict import BatchPredict
 from dpipe.medim.metrics import multichannel_dice_score
 from .utils import make_find_next_lr, make_check_loss_decrease
 from dpipe.config import register
 
 
 @register()
-def train_segm(
-        model_controller: ModelController,
-        train_batch_iter_factory: BatchIterFactory,
-        val_ids, dataset, *, n_epochs, lr_init, lr_dec_mul=0.5,
-        patience: int, rtol=0, atol=0):
-    val_x = [dataset.load_mscan(p) for p in val_ids]
-    val_segm = [dataset.load_segm(p) for p in val_ids]
-    val_msegm = [dataset.load_msegm(p) for p in val_ids]
+def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_predict: BatchPredict, log_path, val_ids,
+               dataset, *, n_epochs, lr_init, lr_dec_mul=0.5, patience: int, rtol=0, atol=0):
 
-    find_next_lr = make_find_next_lr(
-        lr_init, lambda lr: lr * lr_dec_mul,
-        partial(make_check_loss_decrease, patience=patience,
-                rtol=rtol, atol=atol))
+    logger = Logger(log_path)
+
+    mscan_val = [dataset.load_mscan(p) for p in val_ids]
+    segm_val = [dataset.load_segm(p) for p in val_ids]
+    msegm_val = [dataset.load_msegm(p) for p in val_ids]
+
+    find_next_lr = make_find_next_lr(lr_init, lambda lr: lr * lr_dec_mul,
+                                     partial(make_check_loss_decrease, patience=patience, rtol=rtol, atol=atol))
+
+    train_log_write = logger.make_log_scalar('train_loss')
+
+    train_avg_log_write = logger.make_log_scalar('avg_train_loss')
+    val_avg_log_write = logger.make_log_scalar('avg_val_loss')
 
     lr = find_next_lr(math.inf)
     with train_batch_iter_factory:
         for i in range(n_epochs):
             with next(train_batch_iter_factory) as train_batch_iter:
-                train_loss = model_controller.train(train_batch_iter, lr=lr)
+                train_losses = []
+                for inputs in train_batch_iter:
+                    train_losses.append(model.do_train_step(*inputs, lr=lr))
+                    train_log_write(train_losses[-1])
+                train_avg_log_write(np.mean(train_losses))
 
-            y_pred_proba, val_loss = model_controller.validate(val_x, val_segm)
+            msegms_pred = []
+            val_losses = []
+            for x, y in zip(mscan_val, segm_val):
+                y_pred, loss = batch_predict.validate(x, y, validate_fn=model.do_val_step)
+                msegms_pred.append(dataset.segm2msegm(np.argmax(y_pred, axis=0)))
+                val_losses.append(loss)
 
-            y_pred = [np.argmax(y, axis=0) for y in y_pred_proba]
-            msegm_pred = [dataset.segm2msegm(y) for y in y_pred]
+            val_loss = np.mean(val_losses)
+            val_avg_log_write(val_loss)
 
-            dices = [multichannel_dice_score(pred, true)
-                     for pred, true in zip(msegm_pred, val_msegm)]
+            dices = [multichannel_dice_score(pred, true) for pred, true in zip(msegms_pred, msegm_val)]
 
-            print('{:>5} {:>10.5f} {}'.format(i, val_loss,
-                                              np.mean(dices, axis=0)))
+            print('{:>5} {:>10.5f} {}'.format(i, val_loss, np.mean(dices, axis=0)))
 
             lr = find_next_lr(val_loss)

@@ -16,11 +16,3 @@ class ModelCore(ABC):
         Returns ([x_phs], logits).
         Logits have shape [batch_size, n_chans_out, spatial_dims...]."""
         pass
-
-    @abstractmethod
-    def validate_object(self, x, y, do_val_step) -> (np.array, float):
-        pass
-
-    @abstractmethod
-    def predict_object(self, x, do_inf_step) -> np.array:
-        pass

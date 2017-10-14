@@ -6,3 +6,5 @@ scipy
 tensorflow-gpu
 tqdm
 snakemake
+pdp
+tensorboard-easy
