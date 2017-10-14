@@ -15,7 +15,6 @@ from dpipe.config import register
 @register()
 def train_msegm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_predict: BatchPredict, log_path,
                 val_ids, dataset, *, n_epochs, lr_init, lr_dec_mul=0.5, patience: int, rtol=0, atol=0):
-
     logger = Logger(log_path)
 
     mscans_val = [dataset.load_mscan(p) for p in val_ids]
@@ -54,3 +53,5 @@ def train_msegm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_
             print('{:>5} {:>10.5f} {}'.format(i, val_loss, np.mean(dices, axis=0)))
 
             lr = find_next_lr(val_loss)
+
+    logger.close()

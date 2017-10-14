@@ -9,7 +9,7 @@ model_core = model_core.unet2d
         property = "n_chans_segm"
         module = dataset
 
-train = train.train_with_lr_decrease
+train = train.train_segm
     @init = false
     atol = 0.01
     lr_dec_mul = 0.7
@@ -18,8 +18,8 @@ train = train.train_with_lr_decrease
     patience = 5
     rtol = 0.03
 
-    model_controller = model_controller
+    model = model
     train_batch_iter_factory = batch_iter_factory
     val_ids = val_ids
-    load_x = load_x
-    load_y = load_y
+    dataset = dataset
+    batch_predict = batch_predict.slice2d
