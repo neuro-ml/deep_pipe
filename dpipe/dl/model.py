@@ -6,14 +6,13 @@ from dpipe.config import register
 from dpipe.model_core import ModelCore
 
 
-def get_model_path(save_path):
-    return os.path.join(save_path, 'model')
+def get_model_path(path):
+    return os.path.join(path, 'model')
 
 
 @register('model', 'model')
 class Model:
-    def __init__(self, model_core: ModelCore, predict: callable, loss: callable,
-                 optimize: callable):
+    def __init__(self, model_core: ModelCore, predict: callable, loss: callable, optimize: callable):
         self.model_core = model_core
 
         self._build(predict, loss, optimize)
@@ -37,17 +36,12 @@ class Model:
         # ----------------------------------------------------------------------
         self.session = tf.Session()
 
-        self.call_train = self.session.make_callable(
-            [train_op, loss], [*x_phs, y_ph, lr, training_ph]
-        )
-
-        self.call_val = self.session.make_callable(
-            [y_pred, loss], [*x_phs, y_ph, training_ph]
-        )
-
-        self.call_pred = self.session.make_callable(
-            y_pred, [*x_phs, training_ph]
-        )
+        self.call_train = self.session.make_callable([train_op, loss],
+                                                     [*x_phs, y_ph, lr, training_ph])
+        self.call_val = self.session.make_callable([y_pred, loss],
+                                                   [*x_phs, y_ph, training_ph])
+        self.call_pred = self.session.make_callable(y_pred,
+                                                    [*x_phs, training_ph])
 
         self.session.run(init_op)
 
@@ -61,22 +55,21 @@ class Model:
     def do_inf_step(self, *inference_inputs):
         return self.call_pred(*inference_inputs, False)
 
-    def save(self, save_path):
-        self.saver.save(self.session, get_model_path(save_path))
+    def save(self, path):
+        self.saver.save(self.session, get_model_path(path))
 
-    def load(self, load_path):
-        self.saver.restore(self.session, get_model_path(load_path))
+    def load(self, path):
+        self.saver.restore(self.session, get_model_path(path))
 
 
 @register('frozen_model', 'model')
 class FrozenModel:
-    def __init__(self, model_core: ModelCore, predict: callable,
-                 restore_ckpt_path):
+    def __init__(self, model_core: ModelCore, predict: callable, restore_model_path):
         self.model_core = model_core
 
-        self._build(predict, restore_ckpt_path)
+        self._build(predict, restore_model_path)
 
-    def _build(self, predict, restore_ckpt_path):
+    def _build(self, predict, restore_model_path):
         self.graph = tf.get_default_graph()
 
         x_phs, logits = self.model_core.build(False)
@@ -87,7 +80,7 @@ class FrozenModel:
 
         self.session = tf.Session()
         self.call_pred = self.session.make_callable(y_pred, [*x_phs])
-        self.saver.restore(self.session, get_model_path(restore_ckpt_path))
+        self.saver.restore(self.session, get_model_path(restore_model_path))
 
     def do_inf_step(self, *inference_inputs):
         return self.call_pred(*inference_inputs)
