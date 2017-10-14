@@ -1,9 +1,7 @@
-from functools import partial
-
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from dpipe.config import register, register_inline
+from dpipe.config import register
 
 
 @register(module_type='predict')
@@ -12,17 +10,15 @@ def softmax(logits):
         return tf.nn.softmax(logits=logits, dim=1)
 
 
-sigmoid = register_inline(
-    partial(tf.nn.sigmoid, name='sigmoid'),
-    'sigmoid', 'predict'
-)
+@register(module_type='predict')
+def sigmoid(logits):
+    return tf.nn.sigmoid(logits, name='sigmoid')
 
 
 @register('tf_optimize', 'optimize')
 def optimize(loss, lr, *, tf_optimizer_name, **params):
     with tf.variable_scope('optimization'):
-        optimizer = getattr(tf.train, tf_optimizer_name)(
-            lr, name='optimizer', **params)
+        optimizer = getattr(tf.train, tf_optimizer_name)(lr, name='optimizer', **params)
         return slim.learning.create_train_op(loss, optimizer)
 
 
