@@ -1,6 +1,5 @@
-import functools
-
 import pdp
+import numpy as np
 
 from dpipe.config import register
 from dpipe.medim.slices import iterate_slices
@@ -37,7 +36,23 @@ def slices_augmented(ids, load_x, load_y, batch_size, *, shuffle, axis=-1,
                 if y_slice.any():
                     yield x_slice, y_slice
 
-    augment = pdp.pack_args(functools.partial(spacial_augmentation, axes=[-1, -2]))
+    @pdp.pack_args
+    def augment(x, y):
+        convert = y.ndim == 2
+        if convert:
+            unique = np.unique(y)
+            y = np.asarray([y == i for i in unique])
+
+        x, y = spacial_augmentation(x, y, axes=[-1, -2])
+
+        if convert:
+            y = np.argmax(y, axis=0)
+            #     restoring old int tensor
+            if set(unique) - set(range(len(unique))):
+                for i, val in enumerate(unique):
+                    y[y == i] = val
+
+        return x, y
 
     return pdp.Pipeline(
         pdp.Source(slicer(), buffer_size=5),

@@ -13,12 +13,11 @@ from dpipe.config import register
 
 
 @register()
-def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_predict: BatchPredict, log_path, val_ids,
-               dataset, *, n_epochs, lr_init, lr_dec_mul=0.5, patience: int, rtol=0, atol=0):
+def train_msegm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_predict: BatchPredict, log_path,
+                val_ids, dataset, *, n_epochs, lr_init, lr_dec_mul=0.5, patience: int, rtol=0, atol=0):
     logger = Logger(log_path)
 
     mscans_val = [dataset.load_mscan(p) for p in val_ids]
-    segms_val = [dataset.load_segm(p) for p in val_ids]
     msegms_val = [dataset.load_msegm(p) for p in val_ids]
 
     find_next_lr = make_find_next_lr(lr_init, lambda lr: lr * lr_dec_mul,
@@ -41,9 +40,9 @@ def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_p
 
             msegms_pred = []
             val_losses = []
-            for x, y in zip(mscans_val, segms_val):
+            for x, y in zip(mscans_val, msegms_val):
                 y_pred, loss = batch_predict.validate(x, y, validate_fn=model.do_val_step)
-                msegms_pred.append(dataset.segm2msegm(np.argmax(y_pred, axis=0)))
+                msegms_pred.append(y_pred > 0.5)
                 val_losses.append(loss)
 
             val_loss = np.mean(val_losses)
