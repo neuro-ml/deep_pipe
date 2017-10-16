@@ -53,5 +53,3 @@ def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_p
             val_dices_log_write(np.mean(val_dices, axis=0))
 
             lr = find_next_lr(val_loss)
-
-    logger.close()
