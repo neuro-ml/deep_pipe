@@ -1,4 +1,3 @@
-batch_size = 20
 batch_iter_factory = batch_iter_factory.fin
     get_batch_iter = batch_iter.slices
         @init = false
