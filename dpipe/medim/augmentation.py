@@ -72,13 +72,18 @@ def spacial_augmentation(x, y, axes=None, order=1):
         x = rotate(x, angle, axes=axis, reshape=False, order=order, cval=cval)
         y = rotate(y, angle, axes=axis, reshape=False, order=order)
 
-    # flip
-    for axis, flip in zip(axes, np.random.binomial(1, .5, len(axes))):
-        if flip:
-            x = np.flip(x, axis)
-            y = np.flip(y, axis)
-
     stack = np.concatenate((x, y))
     stack = elastic_transform(stack, alpha=1, sigma=1, axes=axes)
     x, y = stack[:len(x)], stack[-len(y):]
     return x, y > .5
+
+
+def random_flip(x, y, axes):
+    # multithreading
+    np.random.seed()
+
+    for axis, flip in zip(axes, np.random.binomial(1, .5, len(axes))):
+        if flip:
+            x = np.flip(x, axis)
+            y = np.flip(y, axis)
+    return x, y
