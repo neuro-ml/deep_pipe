@@ -45,6 +45,7 @@ def make_3d_patch_stratified_iter(
             mask = np.any(patient.y, axis=0)
         else:
             raise ValueError('wrong number of dimensions ')
+        assert np.any(mask), f'No cancer voxels found {patient.patient_id}'
         cancer_center_indices = patch.find_masked_patch_center_indices(
             mask, patch_size=y_patch_size
         )
