@@ -9,7 +9,9 @@ from dpipe.medim.metrics import dice_score as dice
 from dpipe.medim.metrics import multichannel_dice_score
 
 
-@register()
+register_cmd = register(module_type='command')
+
+@register_cmd
 def train_model(train, model, save_model_path, restore_model_path):
     if restore_model_path is not None:
         model.load(restore_model_path)
@@ -18,7 +20,7 @@ def train_model(train, model, save_model_path, restore_model_path):
     model.save(save_model_path)
 
 
-@register()
+@register_cmd
 def transform(input_path, output_path, transform_fn):
     os.makedirs(output_path)
 
@@ -26,7 +28,7 @@ def transform(input_path, output_path, transform_fn):
         np.save(os.path.join(output_path, f), transform_fn(np.load(os.path.join(input_path, f))))
 
 
-@register()
+@register_cmd
 def predict(ids, output_path, load_x, predict_object):
     os.makedirs(output_path)
 
@@ -39,7 +41,7 @@ def predict(ids, output_path, load_x, predict_object):
         del x, y
 
 
-@register()
+@register_cmd
 def compute_dices(load_msegm, predictions_path, dices_path):
     dices = {}
     for f in tqdm(os.listdir(predictions_path)):
@@ -53,7 +55,7 @@ def compute_dices(load_msegm, predictions_path, dices_path):
         json.dump(dices, f, indent=0)
 
 
-@register()
+@register_cmd
 def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
     thresholds = np.linspace(0, 1, 20)
     dices = []

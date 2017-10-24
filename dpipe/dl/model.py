@@ -12,21 +12,21 @@ def get_model_path(path):
 
 @register('model', 'model')
 class Model:
-    def __init__(self, model_core: ModelCore, predict: callable, loss: callable, optimize: callable):
+    def __init__(self, model_core: ModelCore, logits2pred: callable, logits2loss: callable, optimize: callable):
         self.model_core = model_core
 
-        self._build(predict, loss, optimize)
+        self._build(logits2pred, logits2loss, optimize)
 
-    def _build(self, predict, loss, optimize):
+    def _build(self, logits2pred, logits2loss, optimize):
         self.graph = tf.get_default_graph()
 
         training_ph = tf.placeholder('bool', name='is_training')
         x_phs, logits = self.model_core.build(training_ph)
 
-        y_pred = predict(logits)
+        y_pred = logits2pred(logits)
 
         lr = tf.placeholder(tf.float32, name='learning_rate')
-        loss, y_ph = loss(logits=logits)
+        loss, y_ph = logits2loss(logits=logits)
         train_op = optimize(loss=loss, lr=lr)
 
         init_op = tf.global_variables_initializer()
@@ -64,16 +64,16 @@ class Model:
 
 @register('frozen_model', 'model')
 class FrozenModel:
-    def __init__(self, model_core: ModelCore, predict: callable, restore_model_path):
+    def __init__(self, model_core: ModelCore, logits2pred: callable, restore_model_path):
         self.model_core = model_core
 
-        self._build(predict, restore_model_path)
+        self._build(logits2pred, restore_model_path)
 
-    def _build(self, predict, restore_model_path):
+    def _build(self, logits2pred, restore_model_path):
         self.graph = tf.get_default_graph()
 
         x_phs, logits = self.model_core.build(False)
-        y_pred = predict(logits)
+        y_pred = logits2pred(logits)
 
         self.saver = tf.train.Saver()
         self.graph.finalize()

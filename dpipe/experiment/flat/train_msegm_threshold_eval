@@ -1,10 +1,7 @@
-import os
-import json
-
 from dpipe.config import get_paths
 
 
-PATH_TO_SCRIPTS = get_paths()['scripts']
+DO = get_paths()['do']
 
 CONFIG = '../config'
 SAVED_MODEL = 'model'
@@ -28,7 +25,7 @@ rule train_model:
     output:
         SAVED_MODEL, TF_LOG
     shell:
-        'python do train_model -cp {CONFIG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TF_LOG} --save_model_path {SAVED_MODEL}'
+        'python {DO} train_model -cp {CONFIG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TF_LOG} --save_model_path {SAVED_MODEL}'
 
 rule predict:
     input:
@@ -37,7 +34,7 @@ rule predict:
     output:
         predictions = '{sample}_msegm_pred_prob'
     shell:
-        'python do predict -cp {CONFIG} --ids_path {input.ids} --predictions_path {output.predictions} --restore_model_path {SAVED_MODEL}'
+        'python {DO} predict -cp {CONFIG} --ids_path {input.ids} --predictions_path {output.predictions} --restore_model_path {SAVED_MODEL}'
 
 rule find_thresholds:
     input:
@@ -45,7 +42,7 @@ rule find_thresholds:
     output:
         THRESHOLDS
     shell:
-        'python do find_thresholds -cp {CONFIG} --ids_path {VAL_IDS} --predictions_path {VAL_PRED} --thresholds_path {THRESHOLDS}'
+        'python {DO} find_thresholds -cp {CONFIG} --ids_path {VAL_IDS} --predictions_path {VAL_PRED} --thresholds_path {THRESHOLDS}'
 
 rule binarize:
     input:
@@ -55,7 +52,7 @@ rule binarize:
     output:
         predictions = '{sample}_msegm_pred'
     shell:
-        'python do binarize -cp {CONFIG} --ids_path {input.ids} --binary_predictions_path {output.predictions} --predictions_path {input.predictions} --thresholds_path {THRESHOLDS}'
+        'python {DO} binarize -cp {CONFIG} --ids_path {input.ids} --binary_predictions_path {output.predictions} --predictions_path {input.predictions} --thresholds_path {THRESHOLDS}'
 
 rule compute_dices:
     input:
@@ -63,4 +60,4 @@ rule compute_dices:
     output:
         dices = '{sample}_dices.json'
     shell:
-        'python do compute_dices -cp {CONFIG} --predictions_path {input.predictions} --dices_path {output.dices}'
+        'python {DO} compute_dices -cp {CONFIG} --predictions_path {input.predictions} --dices_path {output.dices}'
