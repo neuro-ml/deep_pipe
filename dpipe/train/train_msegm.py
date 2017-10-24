@@ -4,13 +4,13 @@ from functools import partial
 import numpy as np
 from tensorboard_easy.logger import Logger
 
-from dpipe.dl.model import Model
-from dpipe.utils.batch_iter_factory import BatchIterFactory
+from dpipe.batch_iter_factory import BatchIterFactory
 from dpipe.batch_predict import BatchPredict
-from dpipe.medim.metrics import multichannel_dice_score
-from .utils import make_find_next_lr, make_check_loss_decrease
-from .logging import make_log_vector
 from dpipe.config import register
+from dpipe.dl.model import Model
+from dpipe.medim.metrics import multichannel_dice_score
+from .logging import make_log_vector
+from .utils import make_find_next_lr, make_check_loss_decrease
 
 
 @register()

@@ -43,7 +43,7 @@ rule predictions2msegm:
     output:
         predictions = '{sample}_msegm_pred'
     shell:
-        'python do transform -cp {CONFIG} --input_path {input.predictions} --output_path {output.predictions} --transform pred2msegm'
+        'python do transform -cp {CONFIG} --input_path {input.predictions} --output_path {output.predictions}'
 
 rule compute_dices:
     input:
