@@ -12,7 +12,7 @@ def combine_batches_even(inputs):
     result = []
     for o in zip(*inputs):
         shapes = np.array([x.shape for x in o])
-        padded = [pad(x, shapes.max(axis=0)[1:]) for x in o]
+        padded = [pad(x, shapes.max(axis=0)) for x in o]
         result.append(np.array(padded))
     return result
 
