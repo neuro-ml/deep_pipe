@@ -54,14 +54,13 @@ def compute_dices(load_msegm, predictions_path, dices_path):
 
 
 @register()
-def find_dice_threshold(load_msegm, predictions_path, thresholds_path):
+def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
     thresholds = np.linspace(0, 1, 20)
     dices = []
 
-    for f in tqdm(os.listdir(predictions_path)):
-        threshold_ids = f.replace('.npy', '')
-        y_true = load_msegm(threshold_ids)
-        y_pred = np.load(os.path.join(predictions_path, f))
+    for patient_id in ids:
+        y_true = load_msegm(patient_id)
+        y_pred = np.load(os.path.join(predictions_path, f'{patient_id}.npy'))
 
         # get dice with individual threshold for each channel
         for y_pred_chan, y_true_chan in zip(y_pred, y_true):
