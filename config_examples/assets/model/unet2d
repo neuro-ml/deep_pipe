@@ -1,19 +1,19 @@
-model_core = model_core.unet2d
+model_core = model_core:unet2d
     channels = [64 128 256]
     n_chans_in = n_chans_in
     n_chans_out = n_chans_out
 
-model = model.model
+model = model:model
     model_core = model_core
     predict = predict
     loss = loss
-    optimize = optimize.tf_optimize
+    optimize = optimize:tf_optimize
         @init = false
         tf_optimizer_name = "AdamOptimizer"
 
-frozen_model = model.frozen_model
+frozen_model = model:frozen_model
     model_core = model_core
     predict = predict
     restore_model_path = restore_model_path
 
-batch_predict = batch_predict.slice2d
+batch_predict = batch_predict:slice2d
