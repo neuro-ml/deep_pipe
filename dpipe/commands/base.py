@@ -27,12 +27,12 @@ def transform(input_path, output_path, transform_fn):
 
 
 @register()
-def predict(ids, output_path, load_x, predict_fn):
+def predict(ids, output_path, load_x, predict_object):
     os.makedirs(output_path)
 
     for identifier in tqdm(ids):
         x = load_x(identifier)
-        y = predict_fn(x)
+        y = predict_object(x)
 
         np.save(os.path.join(output_path, str(identifier)), y)
         # saving some memory
