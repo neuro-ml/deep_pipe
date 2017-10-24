@@ -11,7 +11,7 @@ def load_json(path):
         return json.load(f)
 
 
-console_argument = re.compile(r'^--[^\d\W]\w*$')
+console_argument = re.compile(r'^--?[^\d\W]\w*$')
 
 
 @register('console', 'io')
@@ -19,6 +19,9 @@ class ConsoleArguments:
     def __init__(self):
         parser = argparse.ArgumentParser()
         args = parser.parse_known_args()[1]
+        # allow for positional arguments:
+        while args and not console_argument.match(args[0]):
+            args = args[1:]
 
         self.args = {}
         for arg, value in zip(args[::2], args[1::2]):
