@@ -3,8 +3,10 @@ from scipy.ndimage import rotate
 from scipy.ndimage.interpolation import map_coordinates, zoom
 from scipy.ndimage.filters import gaussian_filter
 
+from .utils import pad
 
-def elastic_transform(x, alpha, sigma, axes=None):
+
+def elastic_transform(x, alpha, sigma, axes=None, order=1):
     """
     Apply a gaussian elastic transform to a np.array along given axes.
     """
@@ -30,7 +32,7 @@ def elastic_transform(x, alpha, sigma, axes=None):
             idx[ax] = slice(None)
 
         z = x[idx]
-        result[idx] = map_coordinates(z, indices, order=1).reshape(z.shape)
+        result[idx] = map_coordinates(z, indices, order=order).reshape(z.shape)
     return result
 
 
@@ -76,6 +78,34 @@ def spacial_augmentation(x, y, axes=None, order=1):
     stack = elastic_transform(stack, alpha=1, sigma=1, axes=axes)
     x, y = stack[:len(x)], stack[-len(y):]
     return x, y > .5
+
+
+def spatial_augmentation_strict(x, y, axes=None, order=1):
+    if axes is None:
+        axes = range(x.ndim)
+    axes = list(sorted(axes))
+    y = y.astype(np.float32)
+    # multithreading
+    np.random.seed()
+
+    # scale
+    sigmas = np.zeros(x.ndim)
+    sigmas[axes] = .15
+    scale_factor = np.random.normal(1, sigmas)
+    x = zoom(x, scale_factor, order=order)
+    y = zoom(y, scale_factor, order=order)
+
+    # rotate
+    cval = x.take(0)
+    angles = np.random.normal(0, 5, len(axes))
+    for angle, *axis in zip(angles, axes, axes[1:]):
+        x = rotate(x, angle, axes=axis, reshape=False, order=order, cval=cval)
+        y = rotate(y, angle, axes=axis, reshape=False, order=order)
+
+    stack = np.concatenate((x, y))
+    stack = elastic_transform(stack, alpha=1, sigma=1, axes=axes, order=order)
+    x, y = stack[:len(x)], stack[-len(y):]
+    return x, y
 
 
 def random_flip(x, y, axes):
