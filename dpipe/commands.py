@@ -14,7 +14,7 @@ register_cmd = register(module_type='command')
 
 
 @register_cmd
-def train_model(train, model, save_model_path, restore_model_path):
+def train_model(train, model, save_model_path, restore_model_path=None):
     if restore_model_path:
         model.load(restore_model_path)
 
