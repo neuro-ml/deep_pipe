@@ -10,11 +10,11 @@ from dpipe.medim.metrics import multichannel_dice_score
 
 
 @register()
-def train_model(train_fn, model, save_model_path, restore_model_path):
+def train_model(train, model, save_model_path, restore_model_path):
     if restore_model_path is not None:
         model.load(restore_model_path)
 
-    train_fn()
+    train()
     model.save(save_model_path)
 
 
