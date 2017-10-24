@@ -1,3 +1,0 @@
-[submodule "dpipe/externals/resource_manager"]
-	path = dpipe/externals/resource_manager
-	url = https://github.com/maxme1/resource_manager.git
