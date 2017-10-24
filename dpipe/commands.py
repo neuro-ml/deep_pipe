@@ -4,16 +4,18 @@ import json
 import numpy as np
 from tqdm import tqdm
 
+from dpipe.batch_predict import BatchPredict
 from dpipe.config import register
+from dpipe.dl.model import FrozenModel
 from dpipe.medim.metrics import dice_score as dice
 from dpipe.medim.metrics import multichannel_dice_score
 
-
 register_cmd = register(module_type='command')
+
 
 @register_cmd
 def train_model(train, model, save_model_path, restore_model_path):
-    if restore_model_path is not None:
+    if restore_model_path:
         model.load(restore_model_path)
 
     train()
@@ -29,12 +31,12 @@ def transform(input_path, output_path, transform_fn):
 
 
 @register_cmd
-def predict(ids, output_path, load_x, predict_object):
+def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: BatchPredict):
     os.makedirs(output_path)
 
     for identifier in tqdm(ids):
         x = load_x(identifier)
-        y = predict_object(x)
+        y = batch_predict.predict(x, predict_fn=frozen_model.do_inf_step)
 
         np.save(os.path.join(output_path, str(identifier)), y)
         # saving some memory
@@ -65,10 +67,13 @@ def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
         y_pred = np.load(os.path.join(predictions_path, f'{patient_id}.npy'))
 
         # get dice with individual threshold for each channel
+        channels = []
         for y_pred_chan, y_true_chan in zip(y_pred, y_true):
-            dices.append([dice(y_pred_chan > thr, y_true_chan) for thr in thresholds])
-
+            channels.append([dice(y_pred_chan > thr, y_true_chan) for thr in thresholds])
+        dices.append(channels)
         # saving some memory
         del y_pred, y_true
+
     optimal_thresholds = thresholds[np.mean(dices, axis=0).argmax(axis=1)]
-    np.save(thresholds_path, optimal_thresholds)
+    with open(thresholds_path, 'w') as file:
+        json.dump(optimal_thresholds.tolist(), file)

@@ -10,5 +10,3 @@ if __name__ == '__main__':
 
     rm = get_resource_manager(args.config_path)
     getattr(rm, args.command)
-
-    print('The experiment is built')

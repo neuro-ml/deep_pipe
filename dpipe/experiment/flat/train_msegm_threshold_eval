@@ -8,7 +8,7 @@ SAVED_MODEL = 'model'
 TF_LOG = 'train_logs'
 
 VAL_PRED = 'val_msegm_pred_prob'
-THRESHOLDS = 'thresholds.npy'
+THRESHOLDS = 'thresholds.json'
 
 TRAIN_IDS = 'train_ids.json'
 VAL_IDS = 'val_ids.json'
@@ -25,7 +25,7 @@ rule train_model:
     output:
         SAVED_MODEL, TF_LOG
     shell:
-        'python {DO} train_model -cp {CONFIG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TF_LOG} --save_model_path {SAVED_MODEL}'
+        'python {DO} train_model --config_path {CONFIG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TF_LOG} --save_model_path {SAVED_MODEL} --restore_model_path ""'
 
 rule predict:
     input:
@@ -34,7 +34,7 @@ rule predict:
     output:
         predictions = '{sample}_msegm_pred_prob'
     shell:
-        'python {DO} predict -cp {CONFIG} --ids_path {input.ids} --predictions_path {output.predictions} --restore_model_path {SAVED_MODEL}'
+        'python {DO} predict --config_path {CONFIG} --ids_path {input.ids} --output_path {output.predictions} --restore_model_path {SAVED_MODEL}'
 
 rule find_thresholds:
     input:
@@ -42,7 +42,7 @@ rule find_thresholds:
     output:
         THRESHOLDS
     shell:
-        'python {DO} find_thresholds -cp {CONFIG} --ids_path {VAL_IDS} --predictions_path {VAL_PRED} --thresholds_path {THRESHOLDS}'
+        'python {DO} find_thresholds --config_path {CONFIG} --ids_path {VAL_IDS} --predictions_path {VAL_PRED} --thresholds_path {THRESHOLDS}'
 
 rule binarize:
     input:
@@ -52,7 +52,7 @@ rule binarize:
     output:
         predictions = '{sample}_msegm_pred'
     shell:
-        'python {DO} binarize -cp {CONFIG} --ids_path {input.ids} --binary_predictions_path {output.predictions} --predictions_path {input.predictions} --thresholds_path {THRESHOLDS}'
+        'python {DO} binarize --config_path {CONFIG} --ids_path {input.ids} --input_path {input.predictions} --output_path {output.predictions} --thresholds_path {THRESHOLDS}'
 
 rule compute_dices:
     input:
@@ -60,4 +60,4 @@ rule compute_dices:
     output:
         dices = '{sample}_dices.json'
     shell:
-        'python {DO} compute_dices -cp {CONFIG} --predictions_path {input.predictions} --dices_path {output.dices}'
+        'python {DO} compute_dices --config_path {CONFIG} --predictions_path {input.predictions} --dices_path {output.dices}'

@@ -22,4 +22,4 @@ def build_flat_structure(split, config_path, experiment_path, *, makefile):
 
     # resource manager is needed here, because there may be inheritance
     rm = get_resource_manager(config_path)
-    rm.save_whole_config(os.path.join(experiment_path, 'config'))
+    rm.save_config(os.path.join(experiment_path, 'config'))

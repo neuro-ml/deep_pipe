@@ -11,4 +11,5 @@ def segm_prob2msegm(x, dataset):
 @register(module_type='transform')
 def binarize(x, thresholds):
     assert len(x) == len(thresholds)
+    thresholds = np.asarray(thresholds)
     return x > thresholds[:, None, None, None]
