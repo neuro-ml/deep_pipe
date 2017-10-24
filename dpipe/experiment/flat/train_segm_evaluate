@@ -6,11 +6,6 @@ from dpipe.config import get_paths
 
 PATH_TO_SCRIPTS = get_paths()['scripts']
 
-TRAIN_SCRIPT = os.path.join(PATH_TO_SCRIPTS, 'train_model.py')
-PREDICT_SCRIPT = os.path.join(PATH_TO_SCRIPTS, 'predict.py')
-TRANSFORM = os.path.join(PATH_TO_SCRIPTS, 'transform.py')
-COMPUTE_DICES = os.path.join(PATH_TO_SCRIPTS, 'compute_dices.py')
-
 CONFIG = '../config'
 SAVED_MODEL = 'model'
 TF_LOG = 'train_logs'
@@ -31,7 +26,7 @@ rule train_model:
     output:
         SAVED_MODEL, TF_LOG
     shell:
-        'python {TRAIN_SCRIPT} -cp {CONFIG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TF_LOG} --save_model_path {SAVED_MODEL}'
+        'python do train_model -cp {CONFIG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TF_LOG} --save_model_path {SAVED_MODEL}'
 
 rule predict:
     input:
@@ -40,7 +35,7 @@ rule predict:
     output:
         predictions = '{sample}_segm_pred_prob'
     shell:
-        'python {PREDICT_SCRIPT} -cp {CONFIG} --ids_path {input.ids} --predictions_path {output.predictions} --restore_model_path {SAVED_MODEL}'
+        'python do predict -cp {CONFIG} --ids_path {input.ids} --predictions_path {output.predictions} --restore_model_path {SAVED_MODEL}'
 
 rule predictions2msegm:
     input:
@@ -48,7 +43,7 @@ rule predictions2msegm:
     output:
         predictions = '{sample}_msegm_pred'
     shell:
-        'python {TRANSFORM} -cp {CONFIG} --input_path {input.predictions} --output_path {output.predictions} --transform pred2msegm'
+        'python do transform -cp {CONFIG} --input_path {input.predictions} --output_path {output.predictions} --transform pred2msegm'
 
 rule compute_dices:
     input:
@@ -56,4 +51,4 @@ rule compute_dices:
     output:
         dices = '{sample}_dices.json'
     shell:
-        'python {COMPUTE_DICES} -cp {CONFIG} --predictions_path {input.predictions} --dices_path {output.dices}'
+        'python do compute_dices -cp {CONFIG} --predictions_path {input.predictions} --dices_path {output.dices}'
