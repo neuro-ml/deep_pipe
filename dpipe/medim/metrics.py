@@ -1,6 +1,32 @@
 import numpy as np
 
 
+def soft_weighted_dice_score(a, b, empty_val: float = 0):
+    """
+    Realization of dice metric proposed in https://arxiv.org/pdf/1707.01992.pdf
+
+    Parameters
+    ----------
+    a - predicted probability maps
+    b - ground truth
+    empty_val - default value to avoid division by zero
+    """
+    assert b.dtype == np.bool
+    assert a.shape == b.shape
+
+    swds = 0
+    num_classes = a.shape[0]
+
+    for x, y in zip(a, b):
+        num = 2 * np.sum(x * y)
+        den = np.sum(y) + np.sum(x ** 2)
+
+        swds += empty_val if den == 0 else num / den
+
+    swds = swds / num_classes
+    return swds
+
+
 def dice_score(x, y, empty_val=0):
     """Dice score between two binary masks."""
     assert x.dtype == y.dtype == np.bool
@@ -44,16 +70,17 @@ def hausdorff(a, b, weights=1, label=1):
     hausdorff(x, y, weights=(1,1,1,5)) # anisotropic
     """
     from hausdorff import weighted_hausdorff
-    
+
     try:
         # check if array
         len(weights)
     except TypeError:
-        weights = [weights] * a.ndim 
+        weights = [weights] * a.ndim
     weights = np.array(weights, 'float64')
-    
+
     def prep(x):
         return np.argwhere(x == label).copy(order='C').astype('float64')
+
     return weighted_hausdorff(prep(a), prep(b), weights)
 
 
