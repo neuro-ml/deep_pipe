@@ -8,3 +8,4 @@ tqdm
 snakemake
 pdp
 tensorboard-easy
+resource-manager

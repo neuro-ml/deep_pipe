@@ -1,9 +1,7 @@
 import functools
 
-import numpy as np
 import tensorflow as tf
 
-from dpipe import medim
 from dpipe.config import register
 from .base import ModelCore
 from .layers import spatial_batch_norm, prelu, nearest_neighbour
