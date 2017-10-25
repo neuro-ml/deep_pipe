@@ -35,8 +35,8 @@ def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_p
         for i in range(n_epochs):
             with next(train_batch_iter_factory) as train_batch_iter:
                 train_losses = []
-                for inputs in train_batch_iter:
-                    train_losses.append(model.do_train_step(*inputs, lr=lr))
+                for *inputs, target in train_batch_iter:
+                    train_losses.append(model.do_train_step(*inputs, target, lr=lr))
                     train_log_write(train_losses[-1])
                 train_avg_log_write(np.mean(train_losses))
 
