@@ -7,8 +7,7 @@ from dpipe.config import register
 
 @register('slice2d')
 class Slice2D(BatchPredict):
-    def validate(self, *inputs, validate_fn):
-        x, y = inputs
+    def validate(self, x, y, validate_fn):
         predicted, losses, weights = [], [], []
         for x_slice, y_slice in iterate_slices(x, y, concatenate=0):
             y_pred, loss = validate_fn(x_slice[None], y_slice[None])
@@ -20,8 +19,7 @@ class Slice2D(BatchPredict):
         loss = np.average(losses, weights=weights)
         return np.stack(predicted, axis=-1), loss
 
-    def predict(self, *inputs, predict_fn):
-        x = inputs[0]
+    def predict(self, x, predict_fn):
         predicted = []
         for x_slice in iterate_slices(x, concatenate=0):
             y_pred = predict_fn(x_slice[None])

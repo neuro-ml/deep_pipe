@@ -8,11 +8,11 @@ def get_model_path(path):
 
 class Model(ABC):
     @abstractmethod
-    def do_train_step(self, *inputs, target, lr):
+    def do_train_step(self, *inputs, lr):
         pass
 
     @abstractmethod
-    def do_val_step(self, *inputs, target):
+    def do_val_step(self, *inputs):
         pass
 
     @abstractmethod
@@ -25,4 +25,10 @@ class Model(ABC):
 
     @abstractmethod
     def load(self, path):
+        pass
+
+
+class FrozenModel(ABC):
+    @abstractmethod
+    def do_inf_step(self, *inputs):
         pass

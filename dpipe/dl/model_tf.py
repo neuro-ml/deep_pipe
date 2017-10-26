@@ -2,7 +2,7 @@ import os
 
 import tensorflow as tf
 
-from .model import Model
+from .model import Model, FrozenModel
 from dpipe.config import register
 from dpipe.model_core import ModelCore
 
@@ -11,8 +11,8 @@ def get_model_path(path):
     return os.path.join(path, 'model')
 
 
-@register('torch', 'model')
-class TorchModel(Model):
+@register('tf', 'model')
+class TFModel(Model):
     def __init__(self, model_core: ModelCore, logits2pred: callable, logits2loss: callable, optimize: callable):
         self.model_core = model_core
 
@@ -63,8 +63,8 @@ class TorchModel(Model):
         self.saver.restore(self.session, get_model_path(path))
 
 
-@register('frozen_model', 'model')
-class FrozenModel:
+@register('tf', 'frozen_model')
+class TFFrozenModel(FrozenModel):
     def __init__(self, model_core: ModelCore, logits2pred: callable, restore_model_path):
         self.model_core = model_core
 

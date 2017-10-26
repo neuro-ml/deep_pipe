@@ -26,17 +26,17 @@ def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_p
                                      partial(make_check_loss_decrease, patience=patience, rtol=rtol, atol=atol))
 
     train_log_write = logger.make_log_scalar('train_loss')
-    train_avg_log_write = logger.make_log_scalar('avg_train_loss')
-    val_avg_log_write = logger.make_log_scalar('avg_val_loss')
-    val_dices_log_write = make_log_vector(logger, 'val_dices')
+    train_avg_log_write = logger.make_log_scalar('average/train_loss')
+    val_avg_log_write = logger.make_log_scalar('average/val_loss')
+    val_dices_log_write = make_log_vector(logger, 'metrics/val_dices')
 
     lr = find_next_lr(math.inf)
     with train_batch_iter_factory, logger:
         for i in range(n_epochs):
             with next(train_batch_iter_factory) as train_batch_iter:
                 train_losses = []
-                for *inputs, target in train_batch_iter:
-                    train_losses.append(model.do_train_step(*inputs, target, lr=lr))
+                for inputs in train_batch_iter:
+                    train_losses.append(model.do_train_step(*inputs, lr=lr))
                     train_log_write(train_losses[-1])
                 train_avg_log_write(np.mean(train_losses))
 
