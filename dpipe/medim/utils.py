@@ -11,10 +11,9 @@ def build_slices(start, end):
 
 
 def pad(x, padding, padding_values):
-    shape = np.array(x.shape)
-    padding = np.asarray(padding)
+    padding = np.array(padding)
 
-    new_shape = shape + np.sum(padding, axis=1)
+    new_shape = np.array(x.shape) + np.sum(padding, axis=1)
     new_x = np.zeros(new_shape, dtype=x.dtype)
     new_x[:] = padding_values
 
@@ -34,3 +33,10 @@ def load_image(path):
     else:
         raise ValueError(f"Couldn't read scan from path: {path}.\n"
                          "Unknown data extension.")
+
+
+def load_by_ids(load_x, load_y, ids, shuffle=False):
+    if shuffle:
+        ids = np.random.permutation(ids)
+    for patient_id in ids:
+        yield load_x(patient_id), load_y(patient_id)

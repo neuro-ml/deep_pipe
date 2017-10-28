@@ -1,0 +1,9 @@
+batch_iter_factory = batch_iter_factory:fin
+    get_batch_iter = batch_iter:slices
+        @init = false
+        ids = train_ids
+        load_x = load_x
+        load_y = load_y
+
+        batch_size = batch_size
+        shuffle = true

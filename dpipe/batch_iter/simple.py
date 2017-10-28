@@ -1,24 +1,13 @@
-import numpy as np
+from dpipe.config import register
+from dpipe.medim.utils import load_by_ids
 
-import dpipe.externals.pdp.pdp as pdp
-
-
-def shuffle_ids(ids):
-    return np.random.permutation(ids)
+import pdp
 
 
-def load_by_ids(load_x, load_y, ids):
-    for patient_id in ids:
-        yield load_x(patient_id), load_y(patient_id)
-
-
-def make_simple_iter(
-        ids, load_x, load_y, batch_size, *, shuffle=False):
-    if shuffle:
-        ids = shuffle_ids(ids)
-
+@register()
+def simple(ids, load_x, load_y, batch_size, *, shuffle=False):
     return pdp.Pipeline(
-        pdp.Source(load_by_ids(load_x, load_y, ids), buffer_size=30),
-        pdp.Chunker(chunk_size=batch_size, buffer_size=2),
-        pdp.LambdaTransformer(pdp.combine_batches, buffer_size=3)
+        pdp.Source(load_by_ids(load_x, load_y, ids, shuffle), buffer_size=30),
+        pdp.Many2One(chunk_size=batch_size, buffer_size=2),
+        pdp.One2One(pdp.combine_batches, buffer_size=3)
     )

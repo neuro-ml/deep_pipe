@@ -1,105 +1,73 @@
+import pdp
 import numpy as np
 
-import dpipe.externals.pdp.pdp as pdp
+from dpipe.config import register
+from dpipe.medim.preprocessing import pad
 from dpipe.medim.slices import iterate_slices
+from dpipe.medim.utils import load_by_ids
+from dpipe.medim.augmentation import spacial_augmentation, random_flip
 
 
-# TODO: this is remarkably terrible ^_^
-def iterate_multiple_slices(x, y=None, num_slices=1):
-    if num_slices == 1:
-        if y is None:
-            yield from iterate_slices(x)
-        else:
-            yield from iterate_slices(x, y)
-        return
-
-    output_shape = list(x.shape)
-    size = output_shape.pop()
-    output_shape[0] *= num_slices
-    for i in range(size):
-        begin = max(0, i - num_slices // 2)
-        end = min(size, i + (num_slices + 1) // 2)
-        stack = []
-        output = np.zeros(output_shape)
-        for idx in range(begin, end):
-            stack.extend(x[..., idx])
-        stack = np.stack(stack)
-        #         choosing where to pad:
-        if begin != 0:
-            output[:len(stack)] = stack
-        else:
-            output[-len(stack):] = stack
-        if y is None:
-            yield output
-        else:
-            yield output, y[..., i]
+def combine_batches_even(inputs):
+    result = []
+    for o in zip(*inputs):
+        shapes = np.array([x.shape for x in o])
+        padded = [pad(x, shapes.max(axis=0)) for x in o]
+        result.append(np.array(padded))
+    return result
 
 
-def shuffle_ids(ids):
-    return np.random.permutation(ids)
-
-
-def make_slices_iter(
-        ids, load_x, load_y, batch_size, *, shuffle=False, empty_slice=True):
-    if shuffle:
-        ids = shuffle_ids(ids)
-
-    def slicer(ids):
-        for id_ in ids:
-            x, y = load_x(id_), load_y(id_)
-            yield from iterate_slices(x, y, empty=empty_slice)
-
-    # @pdp.pack_args
-    # def flip(mscan, segm):
-    #     mscan = mscan.copy()
-    #     segm = segm.copy()
-    #     if np.random.randint(0, 2):
-    #         mscan = np.flip(mscan, 1)
-    #         segm = np.flip(segm, 1)
-    #     if np.random.randint(0, 2):
-    #         mscan = np.flip(mscan, 2)
-    #         segm = np.flip(segm, 2)
-    #     # randomly swap channels because why not?
-    #     mscan = mscan[np.random.permutation(np.arange(len(mscan)))]
-    #     return mscan, segm
+@register()
+def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1,
+           pad=0, concatenate=None):
+    def slicer():
+        for x, y in load_by_ids(load_x, load_y, ids, shuffle):
+            for x_slice, y_slice in iterate_slices(
+                    x, y, axis=axis, slices=slices, pad=pad,
+                    concatenate=concatenate):
+                if y_slice.any():
+                    yield x_slice, y_slice
 
     return pdp.Pipeline(
-        pdp.Source(slicer(ids), buffer_size=30),
-        # pdp.LambdaTransformer(flip, buffer_size=3),
-        pdp.Chunker(chunk_size=batch_size, buffer_size=2),
-        pdp.LambdaTransformer(pdp.combine_batches, buffer_size=3)
+        pdp.Source(slicer(), buffer_size=5),
+        pdp.Many2One(chunk_size=batch_size, buffer_size=2),
+        pdp.One2One(combine_batches_even, buffer_size=3)
     )
 
 
-def make_multiple_slices_iter(
-        ids, load_x, load_y, batch_size, *, num_slices, shuffle=False):
-    if shuffle:
-        ids = shuffle_ids(ids)
+@register()
+def slices_augmented(ids, load_x, load_y, batch_size, *, shuffle, axis=-1,
+                     slices=1, pad=0, concatenate=None):
+    def slicer():
+        for x, y in load_by_ids(load_x, load_y, ids, shuffle):
+            for x_slice, y_slice in iterate_slices(
+                    x, y, axis=axis, slices=slices, pad=pad,
+                    concatenate=concatenate):
+                if y_slice.any():
+                    yield x_slice, y_slice
 
-    def slicer(ids):
-        for id_ in ids:
-            x, y = load_x(id_), load_y(id_)
+    @pdp.pack_args
+    def augment(x, y):
+        convert = y.ndim == 2
+        if convert:
+            unique = np.unique(y)
+            y = np.asarray([y == i for i in unique])
 
-            yield from iterate_multiple_slices(x, y, num_slices)
+        x, y = spacial_augmentation(x, y, axes=[-1, -2])
+        x, y = random_flip(x, y, axes=[-2])
 
-    # @pdp.pack_args
-    # def flip(mscan, segm):
-    #     mscan = mscan.copy()
-    #     segm = segm.copy()
-    #     # if np.random.randint(0, 2):
-    #     #     mscan = np.flip(mscan, 1)
-    #     #     segm = np.flip(segm, 1)
-    #     # swap direction
-    #     if np.random.randint(0, 2):
-    #         mscan = np.flip(mscan, 2)
-    #         segm = np.flip(segm, 2)
-    #     # randomly swap channels because why not?
-    #     # mscan = mscan[np.random.permutation(np.arange(len(mscan)))]
-    #     return mscan, segm
+        if convert:
+            y = np.argmax(y, axis=0)
+            #     restoring old int tensor
+            if set(unique) - set(range(len(unique))):
+                for i, val in enumerate(unique):
+                    y[y == i] = val
+
+        return x, y
 
     return pdp.Pipeline(
-        pdp.Source(slicer(ids), buffer_size=30),
-        # pdp.LambdaTransformer(flip, buffer_size=3),
-        pdp.Chunker(chunk_size=batch_size, buffer_size=2),
-        pdp.LambdaTransformer(pdp.combine_batches, buffer_size=3)
+        pdp.Source(slicer(), buffer_size=5),
+        pdp.One2One(augment, buffer_size=20, n_workers=6),
+        pdp.Many2One(chunk_size=batch_size, buffer_size=2),
+        pdp.One2One(combine_batches_even, buffer_size=3),
     )

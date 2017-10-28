@@ -228,10 +228,10 @@ class ENetPatch(ModelCore):
         return [x_ph], logits
 
     def validate_object(self, x, y, do_val_step):
-        x_parts = medim.split.divide(x, [0] * 4,
-                                     n_parts_per_axis=[1, *self.n_parts])
-        y_parts = medim.split.divide(y, [0] * 4,
-                                     n_parts_per_axis=[1, *self.n_parts])
+        x_parts = medim.divide.divide_no_padding(x, [0] * 4,
+                                                 n_parts_per_axis=[1, *self.n_parts])
+        y_parts = medim.divide.divide_no_padding(y, [0] * 4,
+                                                 n_parts_per_axis=[1, *self.n_parts])
 
         y_pred_parts, weights, losses = [], [], []
         for x_part, y_part in zip(x_parts, y_parts):
@@ -241,17 +241,17 @@ class ENetPatch(ModelCore):
             weights.append(y_pred.size)
 
         loss = np.average(losses, weights=weights)
-        y_pred = medim.split.combine(y_pred_parts, [1, *self.n_parts])
+        y_pred = medim.divide.combine(y_pred_parts, [1, *self.n_parts])
         return y_pred, loss
 
     def predict_object(self, x, do_inf_step):
-        x_parts = medim.split.divide(x, [0] * 4,
-                                     n_parts_per_axis=[1, *self.n_parts])
+        x_parts = medim.divide.divide_no_padding(x, [0] * 4,
+                                                 n_parts_per_axis=[1, *self.n_parts])
 
         y_pred_parts = []
         for x_part in x_parts:
             y_pred = do_inf_step(x_part[None, :])[0]
             y_pred_parts.append(y_pred)
 
-        y_pred = medim.split.combine(y_pred_parts, [1, *self.n_parts])
+        y_pred = medim.divide.combine(y_pred_parts, [1, *self.n_parts])
         return y_pred

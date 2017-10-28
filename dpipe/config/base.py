@@ -1,24 +1,17 @@
+import functools
 import os
-import json
-import importlib
 
-from dpipe.externals.resource_manager.resource_manager import ResourceManager
+from resource_manager import ResourceManager, get_module, generate_config
 
-with open(os.path.join(os.path.dirname(__file__),
-                       'module_type2path.json')) as f:
-    module_type2path = json.load(f)
+DB_DIR = os.path.abspath(os.path.dirname(__file__))
+DB_PATH = os.path.join(DB_DIR, 'modules_db.json')
+MODULES_FOLDER = os.path.abspath(os.path.join(DB_DIR, os.pardir))
+EXCLUDED_PATHS = ['externals', 'config', 'medim']
 
-
-def get_module_builders(module_type):
-    try:
-        path = module_type2path[module_type]
-    except KeyError as e:
-        raise TypeError("Could't locate builders for module type:"
-                        f" {module_type}") from e
-
-    config = importlib.import_module(path)
-    return getattr(config, f'name2{module_type}')
+get_module = functools.partial(get_module, db_path=DB_PATH)
 
 
-def get_resource_manager(config) -> ResourceManager:
-    return ResourceManager(config, get_module_builders=get_module_builders)
+def get_resource_manager(config_path) -> ResourceManager:
+    rm = ResourceManager(config_path, get_module=get_module)
+    generate_config(MODULES_FOLDER, DB_PATH, 'dpipe', EXCLUDED_PATHS)
+    return rm

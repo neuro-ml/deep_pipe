@@ -13,4 +13,3 @@ if __name__ == '__main__':
 
     values = list(json.loads(sys.stdin.read()).values())
     print(op(values, axis=0))
-

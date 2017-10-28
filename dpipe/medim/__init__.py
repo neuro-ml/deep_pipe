@@ -3,5 +3,7 @@ from . import bounding_box as bb
 from . import utils
 from . import metrics
 from . import patch
-from . import split
+from . import divide
+from . import shape_utils
 from .utils import load_image
+
