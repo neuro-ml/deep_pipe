@@ -2,6 +2,7 @@ import numpy as np
 
 from dpipe.config import register
 from dpipe.medim.divide import compute_n_parts_per_axis
+from dpipe.medim.shape_utils import compute_shape_from_spatial
 from dpipe.medim.utils import pad
 from .patch_3d import Patch3DPredictor, spatial_dims
 
@@ -38,7 +39,8 @@ class Patch3DFixedPredictor(Patch3DPredictor):
 
     def combine_y(self, y_parts, x_shape):
         spatial_size = np.array(x_shape)[list(spatial_dims)]
-        y_pred = super().combine_y(y_parts, x_shape)
+        fixed_spatial_size = find_fixed_spatial_size(spatial_size, self.y_spatial_patch_size)
+        y_pred = super().combine_y(y_parts, compute_shape_from_spatial(x_shape, fixed_spatial_size, spatial_dims))
         y_pred = slice_spatial_size(y_pred, spatial_size, spatial_dims)
         return y_pred
 

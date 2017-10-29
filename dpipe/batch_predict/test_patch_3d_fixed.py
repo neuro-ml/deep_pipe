@@ -52,6 +52,28 @@ class TestPatch3DFixedPredictor(unittest.TestCase):
                 y_pred = predictor.predict(x, predict_fn=model.predict)
                 np.testing.assert_equal(y_pred, y)
 
+    def test_predictor_big(self):
+        for i, y_ndim in product(range(2), (3, 4)):
+
+            self.x_patch_sizes = [[7, 17, 52], [11, 21, 56]]
+            self.y_patch_size = [5, 15, 50]
+
+            with self.subTest(f'{i}, {y_ndim}'):
+                predictor = Patch3DFixedPredictor(self.x_patch_sizes, self.y_patch_size, padding_mode='min')
+                model = Model(i, y_ndim)
+
+                x = np.random.randn(*self.x_shape)
+                y = x[0] if y_ndim == 3 else x
+                y_pred, loss = predictor.validate(x, y, validate_fn=model.validate)
+                np.testing.assert_equal(y_pred, y)
+                self.assertEqual(1, loss)
+
+                x = np.random.randn(*self.x_shape)
+                y = x[0] if y_ndim == 3 else x
+                y_pred = predictor.predict(x, predict_fn=model.predict)
+                np.testing.assert_equal(y_pred, y)
+
+
 
 class TestPatch3DFixedQuantilesPredictor(unittest.TestCase):
     def setUp(self):
