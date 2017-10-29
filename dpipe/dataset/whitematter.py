@@ -19,4 +19,4 @@ class Wmh2017(FromCSVInt):
 
     @property
     def groups(self):
-        return self.dataFrame['cite'].as_matrix()
+        return self.df['cite'].as_matrix()

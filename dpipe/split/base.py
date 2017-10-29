@@ -41,7 +41,7 @@ def split_train(splits, val_size, groups=None, **kwargs):
     for train_val, test in splits:
         sub_groups = None if groups is None else groups[train_val]
         train, val = train_test_split_groups(
-            train_val, val_size=val_size, group=sub_groups, **kwargs)
+            train_val, val_size=val_size, groups=sub_groups, **kwargs)
         new_splits.append([train, val, test])
     return new_splits
 
@@ -49,7 +49,7 @@ def split_train(splits, val_size, groups=None, **kwargs):
 @register()
 def indices_to_subj_ids(splits, subj_ids):
     '''Converts split indices to subject IDs'''
-    return [map(lambda ids: [subj_ids[i] for i in ids], split)
+    return [list(map(lambda ids: [subj_ids[i] for i in ids], split))
             for split in splits]
 
 
@@ -62,6 +62,7 @@ def get_loo_cv(dataset: Dataset, *, val_size=None):
     splits = kfold_split(subj_ids, n_splits, groups=groups)
     if val_size is not None:
         splits = split_train(splits, val_size)
+    print(indices_to_subj_ids(splits, subj_ids))
     return indices_to_subj_ids(splits, subj_ids)
 
 
