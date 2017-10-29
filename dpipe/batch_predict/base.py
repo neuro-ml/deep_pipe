@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 
 class BatchPredict(ABC):
     @abstractmethod
-    def validate(self, *inputs, validate_fn):
+    def validate(self, x, y, *, validate_fn):
         pass
 
     @abstractmethod
-    def predict(self, *inputs, predict_fn):
+    def predict(self, x, *, predict_fn):
         pass
