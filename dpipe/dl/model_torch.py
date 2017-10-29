@@ -11,6 +11,9 @@ class TorchModel(Model):
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, logits2loss: callable, optimize, cuda=True):
         if cuda:
             model_core.cuda()
+            logits2pred.cuda()
+            logits2loss.cuda()  
+
         self.cuda = cuda
         self.model_core = model_core
         self.logits2pred = logits2pred
@@ -22,9 +25,8 @@ class TorchModel(Model):
         inputs = [to_var(x, self.cuda) for x in inputs]
         *inputs, target = inputs
 
-        output = self.model_core(*inputs)
-        output = self.logits2pred(output)
-        loss = self.logits2loss(output, target)
+        logits = self.model_core(*inputs)
+        loss = self.logits2loss(logits, target)
 
         set_lr(self.optimizer, lr)
         self.optimizer.zero_grad()
@@ -38,17 +40,20 @@ class TorchModel(Model):
         inputs = [to_var(x, self.cuda) for x in inputs]
         *inputs, target = inputs
 
-        output = self.model_core(*inputs)
-        loss = self.logits2loss(self.logits2pred(output), target)
+        logits = self.model_core(*inputs)
+        y_pred = self.logits2pred(logits)
+        loss = self.logits2loss(logits, target)
 
-        return to_np(output), to_np(loss)[0]
+        return to_np(y_pred), to_np(loss)[0]
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
         inputs = [to_var(x, self.cuda) for x in inputs]
-        output = self.model_core(*inputs)
 
-        return to_np(output)
+        logits = self.model_core(*inputs)
+        y_pred = self.logits2pred(logits)
+
+        return to_np(y_pred)
 
     def save(self, path):
         os.makedirs(path, exist_ok=True)
@@ -66,6 +71,7 @@ class TorchFrozenModel(FrozenModel):
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path, cuda=True):
         if cuda:
             model_core.cuda()
+            logits2pred.cuda()
         self.cuda = cuda
         self.model_core = model_core
         self.logits2pred = logits2pred
@@ -76,17 +82,19 @@ class TorchFrozenModel(FrozenModel):
     def do_inf_step(self, *inputs):
         self.model_core.eval()
         inputs = [to_var(x, self.cuda) for x in inputs]
-        output = self.model_core(*inputs)
 
-        return to_np(output)
+        logits = self.model_core(*inputs)
+        y_pred = self.logits2pred(logits)
+
+        return to_np(y_pred)
 
 
 def to_np(x: Variable):
     return x.cpu().data.numpy()
 
 
-def to_var(x, cuda=None, dtype='float32'):
-    x = Variable(torch.from_numpy(x.astype(dtype)))  # , volatile=True)
+def to_var(x, cuda, volatile=False):
+    x = Variable(torch.from_numpy(x), volatile=volatile)
     if (torch.cuda.is_available() and cuda is None) or cuda:
         x = x.cuda()
     return x
