@@ -1,67 +1,74 @@
-import numpy as np
-from sklearn.model_selection import KFold, ShuffleSplit, GroupShuffleSplit
+from .cv import ShuffleGroupKFold, train_test_split_groups
+from sklearn.model_selection import KFold
 from dpipe.dataset import Dataset
+from dpipe.config import register
 
 
-def base(dataset: Dataset, *, cv_n_splits, cv_groups_property=None,
-         val_split_size=None, val_split_groups_property=None, n_repeats=1):
-
-    def _apply_idx(x, subset):
-        return x if subset is None or x is None else [x[i] for i in subset]
-
-    def _get_groups(groups_property):
-        if groups_property is not None:
-            try:
-                groups = getattr(dataset, groups_property)
-            except AttributeError:
-                raise('Dataset must have {} property containing groups\' ids'
-                      ''.format(groups_property))
-        else:
-            groups = None
-        return groups
-
-    splits = []
-    subj_ids = dataset.patient_ids
-    groups = _get_groups(cv_groups_property)
-    for i in range(n_repeats):
-        kfoldClass = KFold if cv_groups_property is None else ShuffleGroupKFold
-        kfold = kfoldClass(cv_n_splits, shuffle=True, random_state=i)
-        for learn, test in kfold.split(X=subj_ids, groups=groups):
-            if val_split_size is not None:
-                splitClass = (ShuffleSplit if val_split_groups_property is None
-                              else GroupShuffleSplit)
-                split = splitClass(n_splits=1, test_size=val_split_size,
-                                   random_state=i)
-                subgroups = _get_groups(val_split_groups_property)
-                train, val = next(split.split(
-                    X=learn, groups=_apply_idx(subgroups, learn)))
-                splits.append((_apply_idx(subj_ids, learn[train]),
-                               _apply_idx(subj_ids, learn[val]),
-                               _apply_idx(subj_ids, test)))
-            else:
-                splits.append((_apply_idx(subj_ids, learn),
-                               _apply_idx(subj_ids, test)))
-    return splits
+@register()
+def get_subj_idx(dataset: Dataset):
+    '''Returns a list of subject IDs '''
+    return dataset.patient_ids
 
 
-class ShuffleGroupKFold(KFold):
-    def split(self, *, X, groups):
-        names_unique = np.unique(groups)
+@register()
+def get_groups(dataset: Dataset, groups_property='groups'):
+    '''Returns a list which will be used to perform a group-based CV split'''
+    try:
+        groups = getattr(dataset, groups_property)
+    except AttributeError:
+        raise('Dataset must have {} property containing groups\' ids'
+              ''.format(groups_property))
+    return groups
 
-        for train, test in super().split(names_unique):
-            train = np.in1d(groups, names_unique[train])
-            test = np.in1d(groups, names_unique[test])
-            yield np.where(train)[0], np.where(test)[0]
+
+@register()
+def kfold_split(subj_ids, n_splits, groups=None, **kwargs):
+    '''Perform kfold (or group kfold) split
+    Returns indices: [[train_0, val_0], ..., [train_k, val_k]]
+    '''
+    kfoldClass = KFold if groups is None else ShuffleGroupKFold
+    kfold = kfoldClass(n_splits, **kwargs)
+    return [split for split in kfold.split(X=subj_ids, groups=groups)]
 
 
+@register()
+def split_train(splits, val_size, groups=None, **kwargs):
+    '''Add additional splits of train subsets to output of kfold
+    Returns indices: [[train_0, val_0, test_0], ..., [train_k, val_k, test_k]]
+    '''
+    new_splits = []
+    for train_val, test in splits:
+        sub_groups = None if groups is None else groups[train_val]
+        train, val = train_test_split_groups(
+            train_val, val_size=val_size, group=sub_groups, **kwargs)
+        new_splits.append([train, val, test])
+    return new_splits
+
+
+@register()
+def indices_to_subj_idx(splits, subj_ids):
+    '''Converts split indices to subject IDs'''
+    return [map(lambda idx: [subj_ids[i] for i in idx], split)
+            for split in splits]
+
+
+# non registered examples
 def get_cv_11(dataset: Dataset, *, n_splits):
-    return base(dataset, cv_n_splits=n_splits)
+    subj_idx = get_subj_idx(dataset)
+    split_indices = kfold_split(subj_idx, n_splits)
+    return indices_to_subj_idx(split_indices, subj_idx)
 
 
 def get_cv_111(dataset: Dataset, *, val_size, n_splits):
-    return base(dataset, cv_n_splits=n_splits, val_split_size=val_size)
+    subj_idx = get_subj_idx(dataset)
+    split_indices = kfold_split(subj_idx, n_splits)
+    split_indices = split_train(split_indices, val_size)
+    return indices_to_subj_idx(split_indices, subj_idx)
 
 
-def get_group_cv_111(dataset: Dataset, *, val_part, n_splits):
-    return base(dataset, cv_n_splits=n_splits, cv_groups_property='groups',
-                val_split_size=val_part)
+def get_group_cv_111(dataset: Dataset, *, val_size, n_splits):
+    subj_idx = get_subj_idx(dataset)
+    groups = get_groups(dataset)
+    split_indices = kfold_split(subj_idx, n_splits, groups=groups)
+    split_indices = split_train(split_indices, val_size, groups=groups)
+    return indices_to_subj_idx(split_indices, subj_idx)
