@@ -1,10 +1,8 @@
-import numpy as np
 import tensorflow as tf
 
 from .base import ModelCore
 from .layers import spatial_batch_norm
 
-from dpipe import medim
 from dpipe.config import register
 
 
