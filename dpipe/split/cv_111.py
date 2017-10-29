@@ -1,6 +1,5 @@
 import numpy as np
 from sklearn.model_selection import KFold, train_test_split
-
 from dpipe.dataset import Dataset
 from dpipe.config import register
 

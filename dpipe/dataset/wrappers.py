@@ -3,7 +3,6 @@ from typing import List
 from collections import ChainMap
 
 import numpy as np
-
 import dpipe.medim as medim
 from dpipe.config import register
 from .base import Dataset
@@ -38,6 +37,26 @@ def cached(dataset: Dataset) -> Dataset:
             return self._shadowed.load_msegm(patient_id)
 
     return CachedDataset(dataset)
+
+
+@register()
+def apply_mask(dataset: Dataset, mask_modality_id: int = None,
+               mask_value: int = None) -> Dataset:
+
+    class MaskedDataset(Proxy):
+        def load_mscan(self, patient_id):
+            images = self._shadowed.load_mscan(patient_id)
+            mask = images[mask_modality_id]
+            mask_bin = (mask > 0 if mask_value is None else mask == mask_value)
+            assert np.sum(mask_bin) > 0, 'The obtained mask is empty'
+            images = [image * mask for image in images[:-1]]
+            return np.array(images)
+
+        @property
+        def n_chans_mscan(self):
+            return self._shadowed.n_chans_mscan - 1
+
+    return dataset if mask_modality_id is None else MaskedDataset(dataset)
 
 
 @register()
