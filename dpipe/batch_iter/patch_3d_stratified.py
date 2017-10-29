@@ -138,9 +138,9 @@ def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_pat
 
     @pdp.pack_args
     def _extract_patches(x, y, quantiles):
-        patches = extract_patches(x, y, big_x_patch_center_idx=big_x_patch_center_idx, x_patch_sizes=x_patch_sizes,
+        *xs, y = extract_patches(x, y, big_x_patch_center_idx=big_x_patch_center_idx, x_patch_sizes=x_patch_sizes,
                                  spatial_dims=spatial_dims)
-        return (*patches, quantiles)
+        return (*xs, quantiles, y)
 
     return pdp.Pipeline(
         pdp.Source(random_seq, buffer_size=3),

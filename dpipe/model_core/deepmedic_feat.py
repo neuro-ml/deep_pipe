@@ -53,7 +53,7 @@ def build_model(t_det_in, t_con_in, t_ftr_in, kernel_size, n_classes, training, 
 
 @register('deepmedic_feat')
 class DeepMedicEls(ModelCore):
-    def __init__(self, *, n_chans_in, n_chans_out, downsampling_type='sampling', with_dropout=True, n_features=21):
+    def __init__(self, *, n_chans_in, n_chans_out, downsampling_type='sampling', with_dropout=True, n_features):
         super().__init__(n_chans_in=n_chans_in, n_chans_out=n_chans_out)
 
         self.kernel_size = 3

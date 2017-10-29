@@ -1,4 +1,3 @@
-.ipynb_checkpoints
 __pycache__/
-*.log
 dpipe/config/modules_db.json
+*.log
