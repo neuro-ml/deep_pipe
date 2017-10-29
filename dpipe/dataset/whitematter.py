@@ -1,14 +1,11 @@
-import functools
 import numpy as np
 from .from_csv import FromCSVInt
+from dpipe.config import register
 
 
+@register('wmh2017')
 class Wmh2017(FromCSVInt):
-    def __init__(self, data_path, t1, flair, target, mask=None,
-                 mask_value=None):
-        self.mask_value = mask_value
-        self.mask = mask
-        modalities = [t1, flair] if mask is None else [t1, flair, mask]
+    def __init__(self, data_path, modalities, target):
         super().__init__(
             data_path=data_path,
             metadata_rpath='metadata.csv',
@@ -23,7 +20,3 @@ class Wmh2017(FromCSVInt):
     @property
     def groups(self):
         return self.dataFrame['cite'].as_matrix()
-
-
-def cached_property(f):
-    return property(functools.lru_cache(1)(f))

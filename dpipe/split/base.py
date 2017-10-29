@@ -1,3 +1,4 @@
+import numpy as np
 from .cv import ShuffleGroupKFold, train_test_split_groups
 from sklearn.model_selection import KFold
 from dpipe.dataset import Dataset
@@ -5,7 +6,7 @@ from dpipe.config import register
 
 
 @register()
-def get_subj_idx(dataset: Dataset):
+def get_subj_ids(dataset: Dataset):
     '''Returns a list of subject IDs '''
     return dataset.patient_ids
 
@@ -46,29 +47,41 @@ def split_train(splits, val_size, groups=None, **kwargs):
 
 
 @register()
-def indices_to_subj_idx(splits, subj_ids):
+def indices_to_subj_ids(splits, subj_ids):
     '''Converts split indices to subject IDs'''
-    return [map(lambda idx: [subj_ids[i] for i in idx], split)
+    return [map(lambda ids: [subj_ids[i] for i in ids], split)
             for split in splits]
+
+
+@register()
+def get_loo_cv(dataset: Dataset, *, val_size=None):
+    '''Leave one group out CV. Validation subset will be selected randomly'''
+    subj_ids = get_subj_ids(dataset)
+    groups = get_groups(dataset)
+    n_splits = len(np.unique(groups))
+    splits = kfold_split(subj_ids, n_splits, groups=groups)
+    if val_size is not None:
+        splits = split_train(splits, val_size)
+    return indices_to_subj_ids(splits, subj_ids)
 
 
 # non registered examples
 def get_cv_11(dataset: Dataset, *, n_splits):
-    subj_idx = get_subj_idx(dataset)
-    split_indices = kfold_split(subj_idx, n_splits)
-    return indices_to_subj_idx(split_indices, subj_idx)
+    subj_ids = get_subj_ids(dataset)
+    split_indices = kfold_split(subj_ids, n_splits)
+    return indices_to_subj_ids(split_indices, subj_ids)
 
 
 def get_cv_111(dataset: Dataset, *, val_size, n_splits):
-    subj_idx = get_subj_idx(dataset)
-    split_indices = kfold_split(subj_idx, n_splits)
-    split_indices = split_train(split_indices, val_size)
-    return indices_to_subj_idx(split_indices, subj_idx)
+    subj_ids = get_subj_ids(dataset=dataset)
+    split_indices = kfold_split(subj_ids=subj_ids, n_splits=n_splits)
+    split_indices = split_train(splits=split_indices, val_size=val_size)
+    return indices_to_subj_ids(splits=split_indices, subj_ids=subj_ids)
 
 
 def get_group_cv_111(dataset: Dataset, *, val_size, n_splits):
-    subj_idx = get_subj_idx(dataset)
+    subj_ids = get_subj_ids(dataset)
     groups = get_groups(dataset)
-    split_indices = kfold_split(subj_idx, n_splits, groups=groups)
+    split_indices = kfold_split(subj_ids, n_splits, groups=groups)
     split_indices = split_train(split_indices, val_size, groups=groups)
-    return indices_to_subj_idx(split_indices, subj_idx)
+    return indices_to_subj_ids(split_indices, subj_ids)

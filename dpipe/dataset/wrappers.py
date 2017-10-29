@@ -40,7 +40,7 @@ def cached(dataset: Dataset) -> Dataset:
 
 
 @register()
-def apply_mask(dataset: Dataset, mask_modality_id: int,
+def apply_mask(dataset: Dataset, mask_modality_id: int = None,
                mask_value: int = None) -> Dataset:
 
     class MaskedDataset(Proxy):
@@ -56,7 +56,7 @@ def apply_mask(dataset: Dataset, mask_modality_id: int,
         def n_chans_mscan(self):
             return self._shadowed.n_chans_mscan - 1
 
-    return MaskedDataset(dataset)
+    return dataset if mask_modality_id is None else MaskedDataset(dataset)
 
 
 @register()
