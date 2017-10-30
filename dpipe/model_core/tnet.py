@@ -44,12 +44,12 @@ def _make_tnet(conv_block, conv_transposed_block):
 
             self.up_steps = nn.ModuleList(
                 [conv_transposed_block(n_chans_in=down_level[-1], n_chans_out=level[0] - bridge_level[-1],
-                                       padding=padding, kernel_size=kernel_size, stride=stride, activation=activation)
+                                       padding=padding, kernel_size=kernel_size, stride=stride,
+                                       activation=activation)
                  for bridge_level, level, down_level in zip(bridge_paths, up_paths, [*up_paths[1:], bridge_paths[-1]])]
             )
 
-            self.output_layer = conv_block(n_chans_in=up_paths[0][-1], n_chans_out=n_chans_out, padding=padding,
-                                           kernel_size=kernel_size, stride=stride)
+            self.output_layer = conv_block(n_chans_in=up_paths[0][-1], n_chans_out=n_chans_out, kernel_size=1)
 
         def forward(self, input):
             down_outputs = []
@@ -57,7 +57,6 @@ def _make_tnet(conv_block, conv_transposed_block):
                 input = level(input)
                 down_outputs.append(input)
                 input = down_step(input)
-
             down_outputs.append(input)
 
             bridge_outputs = [level(input) for input, level in zip(down_outputs, self.bridge_levels)]
@@ -73,5 +72,5 @@ def _make_tnet(conv_block, conv_transposed_block):
 TNet2d = _make_tnet(ConvBlock2d, ConvTransposeBlock2d)
 TNet3d = _make_tnet(ConvBlock3d, ConvTransposeBlock3d)
 
-register('TNet2d')(TNet2d)
-register('TNet3d')(TNet3d)
+register('tnet2d')(TNet2d)
+register('tnet3d')(TNet3d)
