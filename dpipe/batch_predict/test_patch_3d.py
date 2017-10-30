@@ -26,7 +26,7 @@ class Model:
                 return inputs[self.i][:, 0, 3:-3, 3:-3, 3:-3]
 
 
-class TestMake3DPredict(unittest.TestCase):
+class TestPatch3DPredictor(unittest.TestCase):
     def setUp(self):
         self.x_shape = [3, 20, 30, 40]
         self.x_patch_sizes = [[7, 7, 7], [11, 11, 11]]

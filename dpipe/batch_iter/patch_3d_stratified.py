@@ -102,6 +102,57 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
     )
 
 
+@register('patch_3d_strat_quantiles')
+def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size,
+                                       nonzero_fraction, buffer_size, n_quantiles):
+    x_patch_sizes = np.array(x_patch_sizes)
+    y_patch_size = np.array(y_patch_size)
+
+    assert np.all(x_patch_sizes % 2 == 1) and np.all(y_patch_size % 2 == 1)
+
+    spatial_dims = [-3, -2, -1]
+
+    random_seq = iter(partial(random.choice, ids), None)
+
+    @lru_cache(len(ids))
+    def _load_patient(patient_id):
+        return Patient(patient_id, load_x(patient_id), load_y(patient_id))
+
+    @lru_cache(len(ids))
+    def _find_cancer_and_padding_values_and_quantiles_(patient: Patient):
+        x, y, cancer_ids, padding_vals = find_cancer_and_padding_values(
+            patient.x, patient.y, y_patch_size=y_patch_size, spatial_dims=spatial_dims
+        )
+        quantiles = np.percentile(x, np.linspace(0, 100, n_quantiles))
+        return x, y, cancer_ids, padding_vals, quantiles
+
+    big_x_patch_size = np.max(x_patch_sizes, axis=0)
+    big_x_patch_center_idx = big_x_patch_size // 2
+
+    @pdp.pack_args
+    def _extract_big_patches(x, y, cancer_center_indices, padding_values, quantiles):
+        x, y = extract_big_patches(x, y, cancer_center_indices=cancer_center_indices, padding_values=padding_values,
+                                   nonzero_fraction=nonzero_fraction, big_x_patch_size=big_x_patch_size,
+                                   y_patch_size=y_patch_size, spatial_dims=spatial_dims)
+        return x, y, quantiles
+
+    @pdp.pack_args
+    def _extract_patches(x, y, quantiles):
+        *xs, y = extract_patches(x, y, big_x_patch_center_idx=big_x_patch_center_idx, x_patch_sizes=x_patch_sizes,
+                                 spatial_dims=spatial_dims)
+        return (*xs, quantiles, y)
+
+    return pdp.Pipeline(
+        pdp.Source(random_seq, buffer_size=3),
+        pdp.One2One(_load_patient, buffer_size=len(ids)),
+        pdp.One2One(_find_cancer_and_padding_values_and_quantiles_, buffer_size=len(ids)),
+        pdp.One2One(_extract_big_patches, buffer_size=batch_size),
+        pdp.One2One(_extract_patches, buffer_size=batch_size),
+        pdp.Many2One(chunk_size=batch_size, buffer_size=3),
+        pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
+    )
+
+
 class ExpirationPool:
     def __init__(self, expiration_time, pool_size):
         self.pool_size = pool_size
@@ -174,6 +225,7 @@ def make_3d_patch_strat_augm_iter(ids, load_x, load_y, *, batch_size, x_patch_si
         return find_cancer_and_padding_values(x, y, y_patch_size=y_patch_size, spatial_dims=spatial_dims)
 
     pool = ExpirationPool(expiration_time=expiration_time, pool_size=pool_size)
+
     @pdp.pack_args
     def _augmented_pool_sampling(x, y, cancer_center_indices, padding_values):
         nonlocal pool
