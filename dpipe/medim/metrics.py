@@ -1,5 +1,6 @@
 import numpy as np
-from itertools import  product
+from itertools import product
+
 
 def soft_weighted_dice_score(a, b, empty_val: float = 0):
     """
@@ -45,7 +46,8 @@ def multichannel_dice_score(a, b, empty_val=0):
     dices = [dice_score(x, y, empty_val=empty_val) for x, y in zip(a, b)]
     return dices
 
-def check_neighborhood(y, voxel_index, interested_value:int):
+
+def check_neighborhood(y, voxel_index, interested_value: int):
     if y[voxel_index] != 1:
         return False
     voxel_index = np.asarray(voxel_index)
@@ -55,30 +57,55 @@ def check_neighborhood(y, voxel_index, interested_value:int):
     for delta in product(values, repeat=n):
         if sum(np.abs(delta)) == 0:
             continue
-        if y[tuple(voxel_index+delta)] == interested_value:
+        if y[tuple(voxel_index + delta)] == interested_value:
             return True
 
     return False
 
-def find_bounds(y, size_of_bound = 1):
 
+def get_next_bound(y, bound_indexes, next_bound_value, default_value=1):
+    new_bound = []
+    values = [-1, 0, 1]
+    n = y.ndim
+
+    for bv in bound_indexes:
+        for delta in product(values, repeat=n):
+            if sum(np.abs(delta)) == 0:
+                continue
+            if y[tuple(bv + delta)] == default_value:
+                y[tuple(bv + delta)] = next_bound_value
+                new_bound.append(bv + delta)
+
+    return new_bound
+
+
+def get_weighted_mask(y, thickness=1):
     """
 
     Parameters
     ----------
-    y: ndarray of np.bool
+    y: ndarray of type np.bool
         Binary mask (all dimensions must be spatial)
-    size_of_bound: int
+    thickness: int
+        The thickness of the boundary
     """
     assert y.dtype == np.bool
 
     y = y.astype(np.int)
-    bound_weight = 1 + size_of_bound
-    for bw in range(bound_weight,1,-1):
-        interested_value = 0 if bw == bound_weight else bw+1
-        for voxel_index in np.ndindex(*y.shape):
-            if check_neighborhood(y,voxel_index, interested_value):
-                y[voxel_index] = bw
+    bound_weight = thickness
+    bw = bound_weight + 1
+    bound_indexes = []
+
+    #   firstly let's find the first bound
+    #   bound arrays must contain np.arrays, not tuples
+    for voxel_index in np.ndindex(*y.shape):
+        if check_neighborhood(y, voxel_index, interested_value=0):
+            y[voxel_index] = bw
+            bound_indexes.append(np.asarray(voxel_index))
+
+        #   other bounds
+    for bw in range(bound_weight, 1, -1):
+        bound_indexes = get_next_bound(y, bound_indexes, bw)
 
     return y
 
