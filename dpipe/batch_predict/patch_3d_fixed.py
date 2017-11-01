@@ -61,9 +61,9 @@ class Patch3DFixedQuantilesPredictor(Patch3DFixedPredictor):
 
 
 @register(module_name='patch_3d_fixed_quantiles_coordinates')
-class Patch3DFixedQuantilesPredictor(Patch3DFixedPredictor):
+class Patch3DFixedQuantilesPredictor(Patch3DFixedQuantilesPredictor):
     def divide_x(self, x):
-        xs_parts, quantiles = super().divide_x(x)
-        shape = np.array(x.shape)[spatial_dims]
-        coordinates = get_coordinate_features(shape, shape // 2, self.y_patch_size)
+        *xs_parts, quantiles = super().divide_x(x)
+        shape = np.array(x.shape)[list(spatial_dims)]
+        coordinates = [get_coordinate_features(shape, shape // 2, self.y_patch_size)] * len(xs_parts[0])
         return (*xs_parts, coordinates, quantiles)
