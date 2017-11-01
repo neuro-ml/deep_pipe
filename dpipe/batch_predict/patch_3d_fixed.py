@@ -27,19 +27,19 @@ def find_fixed_spatial_size(spatial_size, spatial_patch_size):
 class Patch3DFixedPredictor(Patch3DPredictor):
     def divide_x(self, x):
         spatial_size = np.array(x.shape)[list(spatial_dims)]
-        fixed_spatial_size = find_fixed_spatial_size(spatial_size, self.y_spatial_patch_size)
+        fixed_spatial_size = find_fixed_spatial_size(spatial_size, self.y_patch_size)
         x_padded = pad_spatial_size(x, fixed_spatial_size, spatial_dims)
         return super().divide_x(x_padded)
 
     def divide_y(self, y):
         spatial_size = np.array(y.shape)[list(spatial_dims)]
-        fixed_spatial_size = find_fixed_spatial_size(spatial_size, self.y_spatial_patch_size)
+        fixed_spatial_size = find_fixed_spatial_size(spatial_size, self.y_patch_size)
         y_padded = pad_spatial_size(y, fixed_spatial_size, spatial_dims)
         return super().divide_y(y_padded)
 
     def combine_y(self, y_parts, x_shape):
         spatial_size = np.array(x_shape)[list(spatial_dims)]
-        fixed_spatial_size = find_fixed_spatial_size(spatial_size, self.y_spatial_patch_size)
+        fixed_spatial_size = find_fixed_spatial_size(spatial_size, self.y_patch_size)
         y_pred = super().combine_y(y_parts, compute_shape_from_spatial(x_shape, fixed_spatial_size, spatial_dims))
         y_pred = slice_spatial_size(y_pred, spatial_size, spatial_dims)
         return y_pred
@@ -47,8 +47,8 @@ class Patch3DFixedPredictor(Patch3DPredictor):
 
 @register(module_name='patch_3d_fixed_quantiles')
 class Patch3DFixedQuantilesPredictor(Patch3DFixedPredictor):
-    def __init__(self, x_spatial_patch_sizes: list, y_spatial_patch_size: list, n_quantiles: int, padding_mode: str):
-        super().__init__(x_spatial_patch_sizes=x_spatial_patch_sizes, y_spatial_patch_size=y_spatial_patch_size,
+    def __init__(self, x_patch_sizes: list, y_patch_size: list, n_quantiles: int, padding_mode: str):
+        super().__init__(x_patch_sizes=x_patch_sizes, y_patch_size=y_patch_size,
                          padding_mode=padding_mode)
         self.n_quantiles = n_quantiles
 

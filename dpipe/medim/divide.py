@@ -44,8 +44,7 @@ def divide(x: np.ndarray, patch_size, intersection_size, padding_values=None):
                              intersection_size=intersection_size)
 
 
-def divide_spatial(x: np.ndarray, *, spatial_patch_size,
-                   spatial_intersection_size, padding_values=None,
+def divide_spatial(x: np.ndarray, *, spatial_patch_size, spatial_intersection_size, padding_values=None,
                    spatial_dims: list):
     patch_size = np.array(x.shape)
     patch_size[spatial_dims] = spatial_patch_size
