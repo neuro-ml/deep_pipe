@@ -4,6 +4,7 @@ from dpipe.config import register
 from dpipe.medim.divide import compute_n_parts_per_axis
 from dpipe.medim.shape_utils import compute_shape_from_spatial
 from dpipe.medim.utils import pad
+from dpipe.medim.features import get_coordinate_features
 from .patch_3d import Patch3DPredictor, spatial_dims
 
 
@@ -57,3 +58,12 @@ class Patch3DFixedQuantilesPredictor(Patch3DFixedPredictor):
         quantiles = np.percentile(x, np.linspace(0, 100, self.n_quantiles))
         xs_parts.append(len(xs_parts[0]) * [quantiles])
         return xs_parts
+
+
+@register(module_name='patch_3d_fixed_quantiles_coordinates')
+class Patch3DFixedQuantilesPredictor(Patch3DFixedPredictor):
+    def divide_x(self, x):
+        xs_parts, quantiles = super().divide_x(x)
+        shape = np.array(x.shape)[spatial_dims]
+        coordinates = get_coordinate_features(shape, shape // 2, self.y_patch_size)
+        return (*xs_parts, coordinates, quantiles)
