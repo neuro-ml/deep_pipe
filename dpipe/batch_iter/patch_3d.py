@@ -21,6 +21,20 @@ class Patient:
         return hash(self.patient_id)
 
 
+def find_cancer(x, y, y_patch_size, spatial_dims):
+    if len(y.shape) == 3:
+        mask = y > 0
+    elif len(y.shape) == 4:
+        mask = np.any(y, axis=0)
+    else:
+        raise ValueError('wrong number of dimensions ')
+    assert np.any(mask), f'No cancer voxels found'
+    cancer_center_indices = patch.find_masked_patch_center_indices(mask, patch_size=y_patch_size)
+    return cancer_center_indices
+
+def find_padding
+
+
 def find_cancer_and_padding_values(x, y, y_patch_size, spatial_dims):
     if len(y.shape) == 3:
         mask = y > 0
