@@ -43,21 +43,21 @@ class BatchPredictorShapeState(BatchPredict):
 
 @register(module_name='patch_3d')
 class Patch3DPredictor(BatchPredictorShapeState):
-    def __init__(self, x_spatial_patch_sizes: list, y_spatial_patch_size: list, padding_mode: str):
-        self.x_spatial_patch_sizes = np.array(x_spatial_patch_sizes)
-        self.y_spatial_patch_size = np.array(y_spatial_patch_size)
+    def __init__(self, x_patch_sizes: list, y_patch_size: list, padding_mode: str):
+        self.x_patch_sizes = np.array(x_patch_sizes)
+        self.y_patch_size = np.array(y_patch_size)
 
-        assert self.x_spatial_patch_sizes.shape[1] == len(self.y_spatial_patch_size) == 3
-        np.testing.assert_equal(np.unique(self.x_spatial_patch_sizes % 2), np.unique(self.y_spatial_patch_size % 2))
+        assert self.x_patch_sizes.shape[1] == len(self.y_patch_size) == 3
+        np.testing.assert_equal(np.unique(self.x_patch_sizes % 2), np.unique(self.y_patch_size % 2))
 
-        self.x_spatial_intersection_sizes = (self.x_spatial_patch_sizes - self.y_spatial_patch_size) // 2
+        self.x_spatial_intersection_sizes = (self.x_patch_sizes - self.y_patch_size) // 2
 
         assert padding_mode == 'min'
 
     def divide_x(self, x):
         xs_parts = []
         padding_values = x.min(axis=spatial_dims, keepdims=True)
-        for x_intersection_size, x_patch_size in zip(self.x_spatial_intersection_sizes, self.x_spatial_patch_sizes):
+        for x_intersection_size, x_patch_size in zip(self.x_spatial_intersection_sizes, self.x_patch_sizes):
             x_parts = divide_spatial(x, spatial_patch_size=x_patch_size, spatial_dims=list(spatial_dims),
                                      spatial_intersection_size=x_intersection_size, padding_values=padding_values)
             xs_parts.append(x_parts)
@@ -66,7 +66,7 @@ class Patch3DPredictor(BatchPredictorShapeState):
         return xs_parts
 
     def divide_y(self, y):
-        return divide_spatial(y, spatial_patch_size=self.y_spatial_patch_size, spatial_dims=list(spatial_dims),
+        return divide_spatial(y, spatial_patch_size=self.y_patch_size, spatial_dims=list(spatial_dims),
                               spatial_intersection_size=zero_spatial_intersection_size)
 
     def combine_y(self, y_parts, x_shape):

@@ -1,4 +1,6 @@
 import numpy as np
+from itertools import product
+
 
 def soft_weighted_dice_score(a, b, empty_val: float = 0):
     """
@@ -44,72 +46,68 @@ def multichannel_dice_score(a, b, empty_val=0):
     dices = [dice_score(x, y, empty_val=empty_val) for x, y in zip(a, b)]
     return dices
 
-def find_bounds(y):
+
+def check_neighborhood(y, voxel_index, interested_value: int):
+    if y[voxel_index] != 1:
+        return False
+    voxel_index = np.asarray(voxel_index)
+    values = [-1, 0, 1]
+    n = y.ndim
+
+    for delta in product(values, repeat=n):
+        if sum(np.abs(delta)) == 0:
+            continue
+        if y[tuple(voxel_index + delta)] == interested_value:
+            return True
+
+    return False
+
+
+def get_next_bound(y, bound_indexes, next_bound_value, default_value=1):
+    new_bound = []
+    values = [-1, 0, 1]
+    n = y.ndim
+
+    for bv in bound_indexes:
+        for delta in product(values, repeat=n):
+            if sum(np.abs(delta)) == 0:
+                continue
+            if y[tuple(bv + delta)] == default_value:
+                y[tuple(bv + delta)] = next_bound_value
+                new_bound.append(bv + delta)
+
+    return new_bound
+
+
+def get_weighted_mask(y, thickness=1):
     """
 
     Parameters
     ----------
-    y: ndarray of np.bool
-        Multichannel binary mask
-
+    y: ndarray of type np.bool
+        Binary mask (all dimensions must be spatial)
+    thickness: int
+        The thickness of the boundary
     """
     assert y.dtype == np.bool
 
-    all_bounds = []
-    for channel in y:
-        bounds = np.zeros(channel.shape).astype(np.bool)
-        for i in range(len(channel.shape)):
-            temp_bound = (channel & (~np.roll(channel, 1, axis=i))) | (channel & (~np.roll(channel, -1, axis=i)))
-            bounds = bounds | temp_bound
+    y = y.astype(np.int)
+    bound_weight = thickness
+    bw = bound_weight + 1
+    bound_indexes = []
 
-        all_bounds.append(bounds)
-    return np.array(all_bounds)
+    #   firstly let's find the first bound
+    #   bound arrays must contain np.arrays, not tuples
+    for voxel_index in np.ndindex(*y.shape):
+        if check_neighborhood(y, voxel_index, interested_value=0):
+            y[voxel_index] = bw
+            bound_indexes.append(np.asarray(voxel_index))
 
-def weighted_bounds_dice_score(a,b, size_of_bound = 1, empty_val = 0):
-    """
+        #   other bounds
+    for bw in range(bound_weight, 1, -1):
+        bound_indexes = get_next_bound(y, bound_indexes, bw)
 
-    Parameters
-    ----------
-    a: ndarray of np.bool
-        Multichannel binary mask
-    b: ndarray
-        Predicted probability maps
-    size_of_bound: int
-    empty_val: int
-        Default value to avoid division by zero
-    Returns
-    -------
-
-    """
-
-    assert b.dtype == np.bool
-    assert a.shape == b.shape
-
-    temp_b = b.copy()
-    bounds = []
-
-    for i in range(size_of_bound):
-        bounds.append(find_bounds(temp_b))
-        temp_b = ~np.logical_xor(temp_b, bounds[-1])
-
-    bounds = np.array(bounds).astype(np.int) * np.arange(1,size_of_bound+1)
-    temp_b = np.array(temp_b).astype(np.int)
-
-    for bound in bounds:
-        temp_b = temp_b + bound
-    #now temp_b is mask with weighted boundes
-
-    wbds = 0
-    num_classes = a.shape[0]
-
-    for x, y in zip(a, temp_b):
-        num = 2 * np.sum(x * y)
-        den = np.sum(y) + np.sum(x)
-
-        wbds += empty_val if den == 0 else num / den
-
-    wbds = wbds / num_classes
-    return wbds
+    return y
 
 
 # Before using this module, install the dependencies:
@@ -121,18 +119,18 @@ def weighted_bounds_dice_score(a,b, size_of_bound = 1, empty_val = 0):
 def hausdorff(a, b, weights=1, label=1):
     """
     Calculates the Hausdorff distance between two masks.
-    
+
     Parameters
     ----------
-    
+
     a, b: ndarray
         The arrays containing the masks. Their ndim must match.
     label: int, default = 1
         The label of the mask
     weights: number or array/list/tuple
-        The weight along each axis (for anisotropic grids). If array, its length must 
+        The weight along each axis (for anisotropic grids). If array, its length must
         match the ndim of the array. If number, all the axes will have the same weight
-        
+
     Examples
     --------
     hausdorff(x, y, weights=2) # isotropic, but weighted
