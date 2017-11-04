@@ -6,7 +6,6 @@ from dpipe.config import register
 
 @register(module_type='torch')
 def softmax(x):
-    shape = x.size()
     e = torch.exp(x)
     return e / e.sum(dim=1, keepdim=True)
 
