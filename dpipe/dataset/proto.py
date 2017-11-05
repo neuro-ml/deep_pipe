@@ -6,6 +6,8 @@ import numpy as np
 from urllib.request import urlretrieve
 import gzip
 
+from dpipe.config import register
+
 
 class DataSet(ABC):
     @property
@@ -22,6 +24,7 @@ class DataSet(ABC):
         pass
 
 
+@register()
 class MNIST(DataSet):
     def load_x(self, identifier: str):
         return self.xs[identifier]
@@ -35,14 +38,15 @@ class MNIST(DataSet):
 
     def __init__(self, data_path):
         self.data_path = data_path
-        self.xs = self._get_or_load('train-images-idx3-ubyte.gz', 16).reshape(-1, 1, 28, 28)
-        self.ys = self._get_or_load('train-labels-idx1-ubyte.gz', 8)
+        self.xs = self._get_or_load('train-images-idx3-ubyte.gz', 16).reshape(-1, 1, 28, 28).astype('float32')
+        self.ys = self._get_or_load('train-labels-idx1-ubyte.gz', 8).astype('int')
 
     def _get_or_load(self, file, offset):
         path = os.path.join(self.data_path, file)
 
         if not os.path.exists(path):
+            # os.makedirs(self.data_path)
             urlretrieve(f'http://yann.lecun.com/exdb/mnist/{file}', path)
-        with gzip.open(file, 'rb') as f:
+        with gzip.open(path, 'rb') as f:
             data = np.frombuffer(f.read(), np.uint8, offset=offset)
         return data

@@ -11,7 +11,7 @@ VAL_IDS = 'val_ids.json'
 
 rule all:
     input:
-        SAVED_MODEL, TEST_DICES
+        SAVED_MODEL
 
 rule train_model:
     input:

@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.model_selection import KFold, train_test_split
 from dpipe.dataset import Dataset
 from dpipe.config import register
+from dpipe.dataset.proto import DataSet
 
 
 def extract(l, ids):
@@ -9,8 +10,8 @@ def extract(l, ids):
 
 
 @register()
-def cv_111(dataset: Dataset, *, val_size, n_splits):
-    ids = dataset.patient_ids
+def cv_111(dataset: DataSet, *, val_size, n_splits):
+    ids = dataset.ids
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=17)
 
     train_val_test_ids = []

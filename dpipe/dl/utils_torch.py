@@ -11,7 +11,8 @@ def softmax(x):
 
 
 def swap_channels(x):
-    x_new = x.permute(0, 2, 3, 4, 1)
+    idx = list(range(2, len(x.size())))
+    x_new = x.permute(0, *idx, 1)
     return x_new.contiguous().view(-1, x.size()[-1])
 
 
