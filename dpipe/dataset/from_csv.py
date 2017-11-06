@@ -5,7 +5,7 @@ import pandas as pd
 
 from dpipe.config import register
 from dpipe.medim.utils import load_image
-from .base import Dataset, DatasetInt
+from .segmentation import Segmentation, DatasetInt
 
 
 class FromCSV:
@@ -42,7 +42,7 @@ class FromCSV:
 
 
 @register('csv_multi')
-class FromCSVMultiple(FromCSV, Dataset):
+class FromCSVMultiple(FromCSV, Segmentation):
     def __init__(self, data_path, modalities, targets, metadata_rpath):
         super().__init__(data_path, modalities, metadata_rpath)
 

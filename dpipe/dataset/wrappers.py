@@ -5,7 +5,7 @@ from collections import ChainMap
 import numpy as np
 import dpipe.medim as medim
 from dpipe.config import register
-from .base import Dataset
+from .base import DataSet
 
 
 class Proxy:
@@ -20,7 +20,7 @@ register = functools.partial(register, module_type='dataset_wrapper')
 
 
 @register()
-def cached(dataset: Dataset) -> Dataset:
+def cached(dataset: DataSet) -> DataSet:
     n = len(dataset.patient_ids)
 
     class CachedDataset(Proxy):
@@ -40,9 +40,8 @@ def cached(dataset: Dataset) -> Dataset:
 
 
 @register()
-def apply_mask(dataset: Dataset, mask_modality_id: int = None,
-               mask_value: int = None) -> Dataset:
-
+def apply_mask(dataset: DataSet, mask_modality_id: int = None,
+               mask_value: int = None) -> DataSet:
     class MaskedDataset(Proxy):
         def load_mscan(self, patient_id):
             images = self._shadowed.load_mscan(patient_id)
@@ -60,7 +59,7 @@ def apply_mask(dataset: Dataset, mask_modality_id: int = None,
 
 
 @register()
-def bbox_extraction(dataset: Dataset) -> Dataset:
+def bbox_extraction(dataset: DataSet) -> DataSet:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time
     load_mscan = functools.lru_cache(3)(dataset.load_mscan)
@@ -85,8 +84,8 @@ def bbox_extraction(dataset: Dataset) -> Dataset:
 
 
 @register()
-def normalized(dataset: Dataset, mean, std,
-               drop_percentile: int = None) -> Dataset:
+def normalized(dataset: DataSet, mean, std,
+               drop_percentile: int = None) -> DataSet:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
             img = self._shadowed.load_mscan(patient_id)
@@ -97,7 +96,19 @@ def normalized(dataset: Dataset, mean, std,
 
 
 @register()
-def normalized_sub(dataset: Dataset) -> Dataset:
+def segm_to_volume(dataset: DataSet) -> DataSet:
+    class Volume(Proxy):
+        def load_x(self, identifier):
+            return self.load_mscan(identifier)
+
+        def load_y(self, identifier):
+            return self._shadowed.load_mscan(identifier).sum()
+
+    return Volume(dataset)
+
+
+@register()
+def normalized_sub(dataset: DataSet) -> DataSet:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
             mscan = self._shadowed.load_mscan(patient_id)
@@ -112,7 +123,7 @@ def normalized_sub(dataset: Dataset) -> Dataset:
 
 
 @register()
-def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
+def add_groups_from_df(dataset: DataSet, group_col: str) -> DataSet:
     class GroupedFromMetadata(Proxy):
         @property
         def groups(self):
@@ -122,7 +133,7 @@ def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
 
 
 @register()
-def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
+def add_groups_from_ids(dataset: DataSet, separator: str) -> DataSet:
     roots = [pi.split(separator)[0] for pi in dataset.patient_ids]
     root2group = dict(map(lambda x: (x[1], x[0]), enumerate(set(roots))))
     groups = tuple(root2group[pi.split(separator)[0]]
@@ -137,7 +148,7 @@ def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
 
 
 @register()
-def merge_datasets(datasets: List[Dataset]) -> Dataset:
+def merge_datasets(datasets: List[DataSet]) -> DataSet:
     [np.testing.assert_array_equal(a.segm2msegm_matrix, b.segm2msegm_matrix)
      for a, b, in zip(datasets, datasets[1:])]
 

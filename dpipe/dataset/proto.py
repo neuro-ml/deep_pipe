@@ -1,27 +1,12 @@
-from typing import Sequence, Union
-from abc import ABC, abstractmethod
-
-import os
-import numpy as np
-from urllib.request import urlretrieve
 import gzip
+import os
+from typing import Sequence
+from urllib.request import urlretrieve
+
+import numpy as np
 
 from dpipe.config import register
-
-
-class DataSet(ABC):
-    @property
-    @abstractmethod
-    def ids(self) -> Sequence[Union[str, int]]:
-        pass
-
-    @abstractmethod
-    def load_x(self, identifier: Union[str, int]):
-        pass
-
-    @abstractmethod
-    def load_y(self, identifier: Union[str, int]):
-        pass
+from dpipe.dataset import DataSet
 
 
 @register()
@@ -45,7 +30,6 @@ class MNIST(DataSet):
         path = os.path.join(self.data_path, file)
 
         if not os.path.exists(path):
-            # os.makedirs(self.data_path)
             urlretrieve(f'http://yann.lecun.com/exdb/mnist/{file}', path)
         with gzip.open(path, 'rb') as f:
             data = np.frombuffer(f.read(), np.uint8, offset=offset)

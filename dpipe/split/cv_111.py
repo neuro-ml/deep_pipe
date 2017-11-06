@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.model_selection import KFold, train_test_split
-from dpipe.dataset import Dataset
+from dpipe.dataset import DataSet
 from dpipe.config import register
 from dpipe.dataset.proto import DataSet
 
@@ -48,7 +48,7 @@ class ShuffleGroupKFold(KFold):
 
 
 @register()
-def group_cv_111(dataset: Dataset, *, val_size, n_splits):
+def group_cv_111(dataset: DataSet, *, val_size, n_splits):
     """
     In order to use this splitter, your Dataset needs to have
      a 'groups' property.
@@ -70,7 +70,7 @@ def group_cv_111(dataset: Dataset, *, val_size, n_splits):
 
 
 @register()
-def group_cv_111_pure_011(dataset: Dataset, *, val_size, n_splits):
+def group_cv_111_pure_011(dataset: DataSet, *, val_size, n_splits):
     """
     In order to use this splitter, your Dataset needs to have
      a 'groups' property.

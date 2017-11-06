@@ -16,7 +16,7 @@ class InitialBlock(nn.Module):
 
         self.convolution = self.conv(nchannels, 16 - nchannels, kernel_size,
                                      stride=2, padding=1, bias=True)
-        self.max_pool = self.pool(2, stride=2)
+        self.max_pool = self.pool(2, stride=2, ceil_mode=True)
         self.batch_norm = self.batch(16, eps=1e-3)
 
     def forward(self, input):

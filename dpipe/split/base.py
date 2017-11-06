@@ -3,7 +3,7 @@ import numpy as np
 from dpipe.dataset.proto import DataSet
 from .cv import ShuffleGroupKFold, train_test_split_groups
 from sklearn.model_selection import KFold
-from dpipe.dataset import Dataset
+from dpipe.dataset import DataSet
 from dpipe.config import register
 
 
@@ -14,7 +14,7 @@ def get_subj_ids(dataset: DataSet):
 
 
 @register()
-def get_groups(dataset: Dataset, groups_property='groups'):
+def get_groups(dataset: DataSet, groups_property='groups'):
     """Returns a list which will be used to perform a group-based CV split"""
     try:
         groups = getattr(dataset, groups_property)
@@ -56,7 +56,7 @@ def indices_to_subj_ids(splits, subj_ids):
 
 
 @register()
-def get_loo_cv(dataset: Dataset, *, val_size=None):
+def get_loo_cv(dataset: DataSet, *, val_size=None):
     '''Leave one group out CV. Validation subset will be selected randomly'''
     subj_ids = get_subj_ids(dataset)
     groups = get_groups(dataset)
