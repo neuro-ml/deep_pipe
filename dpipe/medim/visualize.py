@@ -3,7 +3,7 @@ import numpy as np
 
 
 def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
-            colorbar: bool = False, cmap: str = None):
+            colorbar: bool = False, cmap: str = None, vlim = (None, None)):
     """
     Creates an interactive plot, simultaneously showing slices along a given
     axis for all the passed images.
@@ -32,11 +32,10 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
         rows = (len(data) - 1) // columns + 1
 
     def update(idx):
-        fig, axes = plt.subplots(rows, columns,
-                                 figsize=(fig_size * columns, fig_size * rows))
+        fig, axes = plt.subplots(rows, columns, figsize=(fig_size * columns, fig_size * rows))
         axes = np.array(axes).flatten()
         for ax, x in zip(axes, data):
-            im = ax.imshow(x.take(idx, axis=axis), cmap=cmap)
+            im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vlim[0], vmax=vlim[1])
             if colorbar:
                 fig.colorbar(im, ax=ax, orientation='horizontal')
         plt.tight_layout()

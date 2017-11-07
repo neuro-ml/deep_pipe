@@ -3,7 +3,7 @@ import tensorflow as tf
 from dpipe.config import register
 
 
-@register(module_type='activation')
+@register(module_type='tf')
 def prelu(x, feature_dims):
     with tf.variable_scope('prelu'):
         shape = [s if i in feature_dims else 1
@@ -15,6 +15,3 @@ def prelu(x, feature_dims):
         neg = alphas * (x - tf.abs(x)) * 0.5
 
     return pos + neg
-
-
-register('relu', 'activation')(tf.nn.relu)

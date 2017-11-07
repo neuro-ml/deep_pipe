@@ -1,9 +1,10 @@
 import os
+
 import torch
 from torch.autograd import Variable
 
 from dpipe.config import register
-from .model import Model, get_model_path, FrozenModel
+from dpipe.model import Model, FrozenModel, get_model_path
 
 
 @register('torch', 'model')
@@ -11,6 +12,8 @@ class TorchModel(Model):
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, logits2loss: callable, optimize, cuda=True):
         if cuda:
             model_core.cuda()
+            if hasattr(logits2loss, 'cuda'):
+                logits2loss.cuda()
 
         self.cuda = cuda
         self.model_core = model_core
