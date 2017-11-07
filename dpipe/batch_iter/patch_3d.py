@@ -48,8 +48,6 @@ def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patc
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
 
-    assert np.all(x_patch_sizes % 2 == 1) and np.all(y_patch_size % 2 == 1)
-
     spatial_dims = [-3, -2, -1]
 
     random_seq = iter(functools.partial(random.choice, ids), None)
@@ -69,7 +67,7 @@ def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patc
         xs = extract_patches(x, patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=padding_values,
                              spatial_dims=spatial_dims)
         y, = extract_patches(y, patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
-                            spatial_dims=spatial_dims)
+                             spatial_dims=spatial_dims)
 
         return (*xs, y)
 
@@ -260,7 +258,7 @@ class ExpirationPool:
 
 
 @register('patch_3d_strat_augm')
-def make_3d_patch_strat_augm_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, nonzero_fraction,
+def make_patch_3d_strat_augm_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, nonzero_fraction,
                                   buffer_size, expiration_time, pool_size, n_workers):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)

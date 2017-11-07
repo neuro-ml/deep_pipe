@@ -1,14 +1,8 @@
-import os
-
 import tensorflow as tf
 
-from .model import Model, FrozenModel
 from dpipe.config import register
+from dpipe.model import Model, FrozenModel, get_model_path
 from dpipe.model_core import ModelCore
-
-
-def get_model_path(path):
-    return os.path.join(path, 'model')
 
 
 @register('tf', 'model')

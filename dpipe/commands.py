@@ -1,14 +1,14 @@
-import os
 import json
+import os
 
 import numpy as np
 from tqdm import tqdm
 
 from dpipe.batch_predict import BatchPredict
 from dpipe.config import register
-from dpipe.dl.model import FrozenModel
 from dpipe.medim.metrics import dice_score as dice
 from dpipe.medim.metrics import multichannel_dice_score
+from dpipe.model import FrozenModel
 
 register_cmd = register(module_type='command')
 

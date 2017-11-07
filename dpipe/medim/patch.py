@@ -1,4 +1,5 @@
 # Tools for patch extraction and generation
+# For even patch sizes, center is always considered to be close to the right border
 import numpy as np
 
 from .utils import build_slices, pad
@@ -6,19 +7,10 @@ from .utils import build_slices, pad
 
 # FIXME consider what happens if central_idx is outside of x, error is likely
 # Probably need to rewrite to support it
-# FIXME even patch size is not supported
-
-
-def find_patch_size(shape, spatial_patch_size, spatial_dims):
-    patch_shape = np.array(shape)
-    patch_shape[spatial_dims] = spatial_patch_size
-    return patch_shape
 
 
 def find_patch_start_end_padding(shape: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_size: np.array,
                                  spatial_dims: list):
-    assert np.all((spatial_patch_size % 2) == 1), 'even patch size is not supported'
-
     spatial_start = spatial_center_idx - spatial_patch_size // 2
     spatial_end = spatial_start + spatial_patch_size
 
@@ -121,7 +113,7 @@ def find_masked_patch_center_indices(mask: np.array, patch_size: np.array):
     c = np.argwhere(mask)
 
     l_bound = c - patch_size // 2
-    r_bound = c + patch_size // 2 + patch_size % 2
+    r_bound = l_bound + patch_size
 
     # Remove centers that are too left and too right
     c = c[np.all((l_bound >= 0) & (r_bound <= np.array(mask.shape)), axis=1)]
