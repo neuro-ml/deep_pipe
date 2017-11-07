@@ -18,8 +18,9 @@ def find_patch_size(shape, spatial_patch_size, spatial_dims):
 def find_patch_start_end_padding(
         shape: np.ndarray, *, spatial_center_idx: np.array,
         spatial_patch_size: np.array, spatial_dims: list):
-    assert np.all((spatial_patch_size % 2) == 1), \
-        'even patch size is not supported'
+    # TODO: why?
+    # assert np.all((spatial_patch_size % 2) == 1), \
+    #     'even patch size is not supported'
 
     spatial_start = spatial_center_idx - spatial_patch_size // 2
     spatial_end = spatial_start + spatial_patch_size

@@ -38,7 +38,7 @@ class FromCSV:
 
     def load_mscan(self, patient_id):
         paths = self.df[self.modality_cols].loc[patient_id]
-        return np.array(self._load_by_paths(paths))
+        return np.array(self._load_by_paths(paths), dtype='float32')
 
 
 @register('csv_multi')

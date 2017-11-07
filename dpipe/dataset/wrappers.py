@@ -5,6 +5,7 @@ from collections import ChainMap
 import numpy as np
 import dpipe.medim as medim
 from dpipe.config import register
+from dpipe.dataset.segmentation import Segmentation
 from .base import DataSet
 
 
@@ -96,18 +97,6 @@ def normalized(dataset: DataSet, mean, std,
 
 
 @register()
-def segm_to_volume(dataset: DataSet) -> DataSet:
-    class Volume(Proxy):
-        def load_x(self, identifier):
-            return self.load_mscan(identifier)
-
-        def load_y(self, identifier):
-            return self._shadowed.load_mscan(identifier).sum()
-
-    return Volume(dataset)
-
-
-@register()
 def normalized_sub(dataset: DataSet) -> DataSet:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
@@ -175,3 +164,30 @@ def merge_datasets(datasets: List[DataSet]) -> DataSet:
             return patient_id2dataset[patient_id].load_msegm(patient_id)
 
     return MergedDataset(datasets[0])
+
+
+@register()
+def msegm(dataset: Segmentation) -> DataSet:
+    class Multimodal(Proxy):
+        def load_y(self, identifier):
+            return self.load_msegm(identifier)
+
+    return Multimodal(dataset)
+
+
+@register()
+def padded(dataset: Segmentation, shape: list, axes: list) -> DataSet:
+    class Padded(Proxy):
+        def load_mscan(self, patient_id):
+            img = self._shadowed.load_mscan(patient_id)
+            return medim.preprocessing.pad(img, shape, axes)
+
+        def load_segm(self, patient_id):
+            img = self._shadowed.load_segm(patient_id)
+            return medim.preprocessing.pad(img, shape, axes)
+
+        def load_msegm(self, patient_id):
+            img = self._shadowed.load_msegm(patient_id)
+            return medim.preprocessing.pad(img, shape, axes)
+
+    return Padded(dataset)

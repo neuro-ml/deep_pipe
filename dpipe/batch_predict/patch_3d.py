@@ -43,7 +43,7 @@ class BatchPredictorShapeState(BatchPredict):
 
 @register(module_name='patch_3d')
 class Patch3DPredictor(BatchPredictorShapeState):
-    def __init__(self, x_spatial_patch_sizes: list, y_spatial_patch_size: list, padding_mode: str):
+    def __init__(self, x_spatial_patch_sizes: list, y_spatial_patch_size: list, padding_mode: str = 'min'):
         self.x_spatial_patch_sizes = np.array(x_spatial_patch_sizes)
         self.y_spatial_patch_size = np.array(y_spatial_patch_size)
 

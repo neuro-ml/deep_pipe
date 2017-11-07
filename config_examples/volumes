@@ -1,30 +1,47 @@
 n_epochs = 20
 batch_size = 20
+n_iters_per_batch = 100
+patch_size = [40 40 15]
 
 dataset = dataset_wrapper:cached
-    dataset = dataset_wrapper:segm_to_volume
-        dataset = dataset_wrapper:normalized
-            mean = true
-            std = true
+    dataset = dataset_wrapper:normalized
+        mean = true
+        std = true
+        dataset = dataset_wrapper:msegm
             dataset = dataset:isles2017
                 metadata_rpath = "isles2017_crop.csv"
                 data_path = "/nmnt/x04-hdd/ISLES/"
 
-batch_iter_factory = batch_iter_factory:fin
-    get_batch_iter = batch_iter:simples
+batch_iter_factory = batch_iter_factory:inf
+    n_iters_per_batch = n_iters_per_batch
+
+    get_batch_iter = pdp:pipeline
         @lazy
-        ids = train_ids
-        load_x = load_x
-        load_y = load_y
         batch_size = batch_size
-        shuffle = true
+        transformers = [
+            batch_iter:patch_3d_stratified(
+                x_patch_sizes = [patch_size]
+                y_patch_size = patch_size
+                nonzero_fraction = 0.5
+                ids = train_ids
+                load_x = load_x
+                load_y = load_y
+            )
+            pdp:one2one(
+                f = batch_iter:y_to_volume
+                pack = true
+            )
+        ]
 
 split = split:cv_111
     n_splits = 5
     val_size = 5
     dataset = dataset
 
-batch_predict = batch_predict:simple()
+batch_predict = batch_predict:patch_3d_volume(
+    x_spatial_patch_sizes = [patch_size]
+    y_spatial_patch_size = patch_size
+)
 
 // model
 
