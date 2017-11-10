@@ -2,10 +2,13 @@ from sklearn.model_selection import train_test_split
 from dpipe.dataset import Dataset
 from dpipe.config import register
 
-
 @register()
 def monte_carlo(dataset: Dataset, *, train_fraction, val_fraction, n_splits):
-    if not (train_fraction > 0 and val_fraction >= 0 and train_fraction + val_fraction < 1):
+    """
+    Example: train_fraction = 0.8, val_fraction = 0.1, n_splits = 2 will create 2 splits such that 80% of ids are in
+    the train sample, 10% - in val sample, 10% - in test sample.
+    """
+    if not (train_fraction > 0 and val_fraction >= 0 and train_fraction + val_fraction <= 1):
         raise ValueError
 
     ids = dataset.patient_ids
