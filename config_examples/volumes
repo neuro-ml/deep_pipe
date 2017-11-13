@@ -1,7 +1,7 @@
-n_epochs = 20
+n_epochs = 60
 batch_size = 20
 n_iters_per_batch = 100
-patch_size = [40 40 15]
+patch_size = [40 40 14]
 
 dataset = dataset_wrapper:cached
     dataset = dataset_wrapper:normalized
@@ -19,10 +19,9 @@ batch_iter_factory = batch_iter_factory:inf
         @lazy
         batch_size = batch_size
         transformers = [
-            batch_iter:patch_3d_stratified(
+            batch_iter:patch_3d_part(
                 x_patch_sizes = [patch_size]
                 y_patch_size = patch_size
-                nonzero_fraction = 0.5
                 ids = train_ids
                 load_x = load_x
                 load_y = load_y
@@ -38,15 +37,15 @@ split = split:cv_111
     val_size = 5
     dataset = dataset
 
-batch_predict = batch_predict:patch_3d_volume(
-    x_spatial_patch_sizes = [patch_size]
-    y_spatial_patch_size = patch_size
-)
+batch_predict = batch_predict:patch_3d_volume
+    x_patch_sizes = [patch_size]
+    y_patch_size = patch_size
 
 // model
 
 model_core = model_core:res_regressor
     n_chans_in = dataset.n_chans_mscan
+    units = 3200
 
 T = meta:import
     module = "torch"

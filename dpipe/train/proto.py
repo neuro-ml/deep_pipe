@@ -8,7 +8,7 @@ from tensorboard_easy.logger import Logger
 from dpipe.batch_iter_factory import BatchIterFactory
 from dpipe.batch_predict import BatchPredict
 from dpipe.config import register
-from dpipe.dl.model import Model
+from dpipe.model import Model
 from .utils import make_find_next_lr, make_check_loss_decrease
 
 
