@@ -7,17 +7,8 @@ from dpipe.dataset.base import DataSet
 
 
 class Segmentation(DataSet):
-    @property
-    def ids(self):
-        return self.patient_ids
-
     def load_x(self, identifier: Union[str, int]):
         return self.load_mscan(identifier)
-
-    @property
-    @abstractmethod
-    def patient_ids(self) -> Sequence[str]:
-        pass
 
     @property
     @abstractmethod

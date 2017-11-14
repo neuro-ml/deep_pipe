@@ -22,11 +22,11 @@ class FromCSV:
         df = df.set_index('id').sort_index()
         self.df = df
 
-        self._patient_ids = list(self.df.index)
+        self._ids = list(self.df.index)
 
     @property
-    def patient_ids(self):
-        return self._patient_ids
+    def ids(self):
+        return self._ids
 
     @property
     def n_chans_mscan(self):

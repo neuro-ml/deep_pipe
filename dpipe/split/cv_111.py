@@ -2,7 +2,6 @@ import numpy as np
 from sklearn.model_selection import KFold, train_test_split
 from dpipe.dataset import DataSet
 from dpipe.config import register
-from dpipe.dataset.proto import DataSet
 
 
 def extract(l, ids):
@@ -53,7 +52,7 @@ def group_cv_111(dataset: DataSet, *, val_size, n_splits):
     In order to use this splitter, your Dataset needs to have
      a 'groups' property.
     """
-    ids = dataset.patient_ids
+    ids = dataset.ids
     groups = dataset.groups
     cv = ShuffleGroupKFold(n_splits=n_splits, shuffle=True, random_state=17)
 

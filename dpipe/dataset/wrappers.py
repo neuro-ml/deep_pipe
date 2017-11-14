@@ -22,7 +22,7 @@ register = functools.partial(register, module_type='dataset_wrapper')
 
 @register()
 def cached(dataset: DataSet) -> DataSet:
-    n = len(dataset.patient_ids)
+    n = len(dataset.ids)
 
     class CachedDataset(Proxy):
         @functools.lru_cache(n)
@@ -123,10 +123,10 @@ def add_groups_from_df(dataset: DataSet, group_col: str) -> DataSet:
 
 @register()
 def add_groups_from_ids(dataset: DataSet, separator: str) -> DataSet:
-    roots = [pi.split(separator)[0] for pi in dataset.patient_ids]
+    roots = [pi.split(separator)[0] for pi in dataset.ids]
     root2group = dict(map(lambda x: (x[1], x[0]), enumerate(set(roots))))
     groups = tuple(root2group[pi.split(separator)[0]]
-                   for pi in dataset.patient_ids)
+                   for pi in dataset.ids)
 
     class GroupsFromIDs(Proxy):
         @property
@@ -144,15 +144,15 @@ def merge_datasets(datasets: List[DataSet]) -> DataSet:
     assert all(dataset.n_chans_mscan == datasets[0].n_chans_mscan
                for dataset in datasets)
 
-    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.patient_ids}
+    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.ids}
                                     for dataset in datasets))
 
-    patient_ids = sorted(list(patient_id2dataset.keys()))
+    ids = sorted(list(patient_id2dataset.keys()))
 
     class MergedDataset(Proxy):
         @property
         def patient_ids(self):
-            return patient_ids
+            return ids
 
         def load_mscan(self, patient_id):
             return patient_id2dataset[patient_id].load_mscan(patient_id)
@@ -175,6 +175,7 @@ def msegm(dataset: Segmentation) -> DataSet:
     return Multimodal(dataset)
 
 
+# TODO: convert to class
 @register()
 def padded(dataset: Segmentation, shape: list, axes: list) -> DataSet:
     class Padded(Proxy):
