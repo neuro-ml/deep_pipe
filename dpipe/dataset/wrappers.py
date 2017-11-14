@@ -167,11 +167,12 @@ def merge_datasets(datasets: List[Dataset]) -> Dataset:
 
 
 @register()
-def weighted(dataset: Dataset, tickhess: str) -> Dataset:
+def weighted(dataset: Dataset, thickness: str) -> Dataset:
+    n = len(dataset.patient_ids)
     class WeightedBoundariesDataset(Proxy):
-
+        @functools.lru_cache(n)
         def load_weighted_mask(self, patient_id) -> np.array:
-            paths = self.df[tickhess].loc[patient_id]
+            paths = self.df[thickness].loc[patient_id]
             image = self._load_by_paths(paths)
 
             return image
