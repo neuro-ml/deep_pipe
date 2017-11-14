@@ -13,5 +13,5 @@ get_module = functools.partial(get_module, db_path=DB_PATH)
 
 def get_resource_manager(config_path) -> ResourceManager:
     rm = ResourceManager(config_path, get_module=get_module)
-    generate_config(MODULES_FOLDER, DB_PATH, 'dpipe', EXCLUDED_PATHS)
+    generate_config(MODULES_FOLDER, DB_PATH, 'dpipe', exclude=EXCLUDED_PATHS)
     return rm
