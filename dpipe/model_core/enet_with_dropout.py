@@ -119,13 +119,13 @@ def build_model(inputs, classes, name, training, init_channels,
         inputs = stage(inputs, 16, 2, 'stage5', training, upsample=True,
                        **layers)
 
-        #magic of dropout is here
+        # magic of dropout is here
         inputs = tf.layers.conv2d(inputs, 80, kernel_size=1,
                                   padding='same', use_bias=False,
                                   data_format='channels_first', name='conv_before_dropout')
 
         inputs = tf.layers.dropout(inputs, training=True, name='dropout')
-        #end of magic
+        # end of magic
 
         inputs = conv_up(
             inputs, classes, kernel_size=2, strides=2, use_bias=True,
