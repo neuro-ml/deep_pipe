@@ -20,7 +20,7 @@ ln -s /path/to/deep_pipe/dpipe /path/to/anaconda/lib/python3.6/site-packages/ # 
 1. Create a config file. There are some examples in `config_examples`
 2. To build the experiment, run 
 ```
-python /path/to/deep_pipe/scripts do.py build_experiment --config_path CONFIG_PATH --experiment_path EXPERIMENT_PATH
+python /path/to/deep_pipe/scripts/do.py build_experiment --config_path CONFIG_PATH --experiment_path EXPERIMENT_PATH
 ```
 
 3. To start the experiment, run 
