@@ -7,6 +7,10 @@ from dpipe.config import register
 
 @register('slice2d')
 class Slice2D(BatchPredict):
+    """
+    A predictor that feeds 2D slices along the OZ axis into the network and stacks the predictions.
+    """
+
     def validate(self, *inputs, validate_fn):
         x, y = inputs
         predicted, losses, weights = [], [], []
