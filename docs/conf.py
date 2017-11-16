@@ -18,9 +18,25 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 # import os
-# import sys
 # sys.path.insert(0, '/nmnt/media/home/memax/deep_pipe/dpipe')
 
+import sys
+import unittest.mock
+
+MOCK_MODULES = '''nibabel
+numpy
+pandas
+sklearn
+scipy
+tensorflow
+tqdm
+snakemake
+pdp
+tensorboard_easy
+resource_manager'''.splitlines()
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = unittest.mock.Mock()
 
 # -- General configuration ------------------------------------------------
 
@@ -33,6 +49,7 @@
 # ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
+              'sphinx.ext.napoleon',
               'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
