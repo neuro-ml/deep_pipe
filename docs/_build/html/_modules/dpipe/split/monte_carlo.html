@@ -1,0 +1,247 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.split.monte_carlo &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="dpipe  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dpipe.html">dpipe package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dpipe.split.monte_carlo</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dpipe.split.monte_carlo</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">dpipe.dataset</span> <span class="k">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="monte_carlo"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.monte_carlo.monte_carlo">[docs]</a><span class="k">def</span> <span class="nf">monte_carlo</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">train_fraction</span><span class="p">,</span> <span class="n">val_fraction</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Example: train_fraction = 0.8, val_fraction = 0.1, n_splits = 2 will create 2 splits such that 80% of ids are in</span>
+<span class="sd">    the train sample, 10% - in val sample, 10% - in test sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">train_fraction</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">val_fraction</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">train_fraction</span> <span class="o">+</span> <span class="n">val_fraction</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span>
+    <span class="n">train_val_test_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">random_state</span> <span class="o">=</span> <span class="mi">52</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_splits</span><span class="p">):</span>
+        <span class="n">train_val_ids</span><span class="p">,</span> <span class="n">test_ids</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+            <span class="n">ids</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">train_fraction</span> <span class="o">+</span> <span class="n">val_fraction</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span> <span class="o">+</span> <span class="n">i</span>
+        <span class="p">)</span>
+        <span class="n">train_fraction_normalized</span> <span class="o">=</span> <span class="n">train_fraction</span> <span class="o">/</span> <span class="p">(</span><span class="n">train_fraction</span> <span class="o">+</span> <span class="n">val_fraction</span><span class="p">)</span>
+        <span class="n">train_ids</span><span class="p">,</span> <span class="n">val_ids</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+            <span class="n">train_val_ids</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">train_fraction_normalized</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span> <span class="o">+</span> <span class="n">i</span>
+        <span class="p">)</span>
+        <span class="n">train_val_test_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">train_ids</span><span class="p">,</span> <span class="n">val_ids</span><span class="p">,</span> <span class="n">test_ids</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">train_val_test_ids</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

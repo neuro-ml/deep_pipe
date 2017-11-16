@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.train package &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="dpipe  documentation" href="index.html"/>
+        <link rel="up" title="dpipe package" href="dpipe.html"/>
+        <link rel="prev" title="dpipe.split package" href="dpipe.split.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dpipe.html">dpipe package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dpipe.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dpipe.batch_iter.html">dpipe.batch_iter package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.batch_predict.html">dpipe.batch_predict package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.config.html">dpipe.config package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.dataset.html">dpipe.dataset package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.medim.html">dpipe.medim package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.model_core.html">dpipe.model_core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.split.html">dpipe.split package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dpipe.train package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.logging">dpipe.train.logging module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.train_msegm">dpipe.train.train_msegm module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.train_segm">dpipe.train.train_segm module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.utils">dpipe.train.utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.batch_iter_factory">dpipe.batch_iter_factory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.commands">dpipe.commands module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.io">dpipe.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.transformers">dpipe.transformers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="dpipe.html">dpipe package</a> &raquo;</li>
+        
+      <li>dpipe.train package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/dpipe.train.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dpipe-train-package">
+<h1>dpipe.train package<a class="headerlink" href="#dpipe-train-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-dpipe.train.logging">
+<span id="dpipe-train-logging-module"></span><h2>dpipe.train.logging module<a class="headerlink" href="#module-dpipe.train.logging" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.train.logging.log_vector">
+<code class="descclassname">dpipe.train.logging.</code><code class="descname">log_vector</code><span class="sig-paren">(</span><em>logger: tensorboard_easy.logger.Logger</em>, <em>tag: str</em>, <em>vector</em>, <em>step: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/logging.html#log_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.logging.log_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a vector values to log.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.train.logging.make_log_vector">
+<code class="descclassname">dpipe.train.logging.</code><code class="descname">make_log_vector</code><span class="sig-paren">(</span><em>logger: tensorboard_easy.logger.Logger</em>, <em>tag: str</em>, <em>first_step: int = 0</em><span class="sig-paren">)</span> &#x2192; &lt;built-in function callable&gt;<a class="reference internal" href="_modules/dpipe/train/logging.html#make_log_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.logging.make_log_vector" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.train.train_msegm">
+<span id="dpipe-train-train-msegm-module"></span><h2>dpipe.train.train_msegm module<a class="headerlink" href="#module-dpipe.train.train_msegm" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.train.train_msegm.train_msegm">
+<code class="descclassname">dpipe.train.train_msegm.</code><code class="descname">train_msegm</code><span class="sig-paren">(</span><em>model: dpipe.dl.model.Model</em>, <em>train_batch_iter_factory: dpipe.batch_iter_factory.BatchIterFactory</em>, <em>batch_predict: dpipe.batch_predict.base.BatchPredict</em>, <em>log_path</em>, <em>val_ids</em>, <em>dataset</em>, <em>*</em>, <em>n_epochs</em>, <em>lr_init</em>, <em>lr_dec_mul=0.5</em>, <em>patience: int</em>, <em>rtol=0</em>, <em>atol=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/train_msegm.html#train_msegm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.train_msegm.train_msegm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.train.train_segm">
+<span id="dpipe-train-train-segm-module"></span><h2>dpipe.train.train_segm module<a class="headerlink" href="#module-dpipe.train.train_segm" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.train.train_segm.train_segm">
+<code class="descclassname">dpipe.train.train_segm.</code><code class="descname">train_segm</code><span class="sig-paren">(</span><em>model: dpipe.dl.model.Model</em>, <em>train_batch_iter_factory: dpipe.batch_iter_factory.BatchIterFactory</em>, <em>batch_predict: dpipe.batch_predict.base.BatchPredict</em>, <em>log_path</em>, <em>val_ids</em>, <em>dataset</em>, <em>*</em>, <em>n_epochs</em>, <em>lr_init</em>, <em>lr_dec_mul=0.5</em>, <em>patience: int</em>, <em>rtol=0</em>, <em>atol=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/train_segm.html#train_segm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.train_segm.train_segm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.train.utils">
+<span id="dpipe-train-utils-module"></span><h2>dpipe.train.utils module<a class="headerlink" href="#module-dpipe.train.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.train.utils.make_check_loss_decrease">
+<code class="descclassname">dpipe.train.utils.</code><code class="descname">make_check_loss_decrease</code><span class="sig-paren">(</span><em>patience: int</em>, <em>rtol: float</em>, <em>atol: float</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/utils.html#make_check_loss_decrease"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.utils.make_check_loss_decrease" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.train.utils.make_find_next_lr">
+<code class="descclassname">dpipe.train.utils.</code><code class="descname">make_find_next_lr</code><span class="sig-paren">(</span><em>lr</em>, <em>decrease_lr: &lt;built-in function callable&gt;</em>, <em>get_check: &lt;built-in function callable&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/utils.html#make_find_next_lr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.utils.make_find_next_lr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.train">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-dpipe.train" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="dpipe.split.html" class="btn btn-neutral" title="dpipe.split package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.batch_predict.patch_3d_fixed &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="dpipe  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dpipe.html">dpipe package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dpipe.batch_predict.patch_3d_fixed</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dpipe.batch_predict.patch_3d_fixed</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
+<span class="kn">from</span> <span class="nn">dpipe.medim.divide</span> <span class="k">import</span> <span class="n">compute_n_parts_per_axis</span>
+<span class="kn">from</span> <span class="nn">dpipe.medim.shape_utils</span> <span class="k">import</span> <span class="n">compute_shape_from_spatial</span>
+<span class="kn">from</span> <span class="nn">dpipe.medim.utils</span> <span class="k">import</span> <span class="n">pad</span>
+<span class="kn">from</span> <span class="nn">dpipe.medim.features</span> <span class="k">import</span> <span class="n">get_coordinate_features</span>
+<span class="kn">from</span> <span class="nn">.patch_3d</span> <span class="k">import</span> <span class="n">Patch3DPredictor</span><span class="p">,</span> <span class="n">spatial_dims</span>
+
+
+<div class="viewcode-block" id="pad_spatial_size"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.pad_spatial_size">[docs]</a><span class="k">def</span> <span class="nf">pad_spatial_size</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">spatial_size</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">):</span>
+    <span class="n">padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">padding</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">spatial_size</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="nb">list</span><span class="p">(</span><span class="n">spatial_dims</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="slice_spatial_size"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.slice_spatial_size">[docs]</a><span class="k">def</span> <span class="nf">slice_spatial_size</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">spatial_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">):</span>
+    <span class="n">slices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+    <span class="n">slices</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">spatial_dims</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">slice</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">spatial_size</span><span class="p">),</span> <span class="n">spatial_size</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">slices</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="find_fixed_spatial_size"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.find_fixed_spatial_size">[docs]</a><span class="k">def</span> <span class="nf">find_fixed_spatial_size</span><span class="p">(</span><span class="n">spatial_size</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">compute_n_parts_per_axis</span><span class="p">(</span><span class="n">spatial_size</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="p">)</span> <span class="o">*</span> <span class="n">spatial_patch_size</span></div>
+
+
+<span class="nd">@register</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;patch_3d_fixed&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="Patch3DFixedPredictor"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor">[docs]</a><span class="k">class</span> <span class="nc">Patch3DFixedPredictor</span><span class="p">(</span><span class="n">Patch3DPredictor</span><span class="p">):</span>
+<div class="viewcode-block" id="Patch3DFixedPredictor.divide_x"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.divide_x">[docs]</a>    <span class="k">def</span> <span class="nf">divide_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">spatial_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="nb">list</span><span class="p">(</span><span class="n">spatial_dims</span><span class="p">)]</span>
+        <span class="n">fixed_spatial_size</span> <span class="o">=</span> <span class="n">find_fixed_spatial_size</span><span class="p">(</span><span class="n">spatial_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_patch_size</span><span class="p">)</span>
+        <span class="n">x_padded</span> <span class="o">=</span> <span class="n">pad_spatial_size</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fixed_spatial_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">divide_x</span><span class="p">(</span><span class="n">x_padded</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Patch3DFixedPredictor.divide_y"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.divide_y">[docs]</a>    <span class="k">def</span> <span class="nf">divide_y</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">spatial_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="nb">list</span><span class="p">(</span><span class="n">spatial_dims</span><span class="p">)]</span>
+        <span class="n">fixed_spatial_size</span> <span class="o">=</span> <span class="n">find_fixed_spatial_size</span><span class="p">(</span><span class="n">spatial_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_patch_size</span><span class="p">)</span>
+        <span class="n">y_padded</span> <span class="o">=</span> <span class="n">pad_spatial_size</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">fixed_spatial_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">divide_y</span><span class="p">(</span><span class="n">y_padded</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Patch3DFixedPredictor.combine_y"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.combine_y">[docs]</a>    <span class="k">def</span> <span class="nf">combine_y</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_parts</span><span class="p">,</span> <span class="n">x_shape</span><span class="p">):</span>
+        <span class="n">spatial_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_shape</span><span class="p">)[</span><span class="nb">list</span><span class="p">(</span><span class="n">spatial_dims</span><span class="p">)]</span>
+        <span class="n">fixed_spatial_size</span> <span class="o">=</span> <span class="n">find_fixed_spatial_size</span><span class="p">(</span><span class="n">spatial_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_patch_size</span><span class="p">)</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">combine_y</span><span class="p">(</span><span class="n">y_parts</span><span class="p">,</span> <span class="n">compute_shape_from_spatial</span><span class="p">(</span><span class="n">x_shape</span><span class="p">,</span> <span class="n">fixed_spatial_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">))</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">slice_spatial_size</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">spatial_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">y_pred</span></div></div>
+
+
+<span class="nd">@register</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;patch_3d_fixed_quantiles&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Patch3DFixedQuantilesPredictor</span><span class="p">(</span><span class="n">Patch3DFixedPredictor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_patch_sizes</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">padding_mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">x_patch_sizes</span><span class="o">=</span><span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="o">=</span><span class="n">y_patch_size</span><span class="p">,</span>
+                         <span class="n">padding_mode</span><span class="o">=</span><span class="n">padding_mode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_quantiles</span> <span class="o">=</span> <span class="n">n_quantiles</span>
+
+    <span class="k">def</span> <span class="nf">divide_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">xs_parts</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">divide_x</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_quantiles</span><span class="p">))</span>
+        <span class="n">xs_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xs_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">[</span><span class="n">quantiles</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">xs_parts</span>
+
+
+<span class="nd">@register</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;patch_3d_fixed_quantiles_coordinates&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="Patch3DFixedQuantilesPredictor"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedQuantilesPredictor">[docs]</a><span class="k">class</span> <span class="nc">Patch3DFixedQuantilesPredictor</span><span class="p">(</span><span class="n">Patch3DFixedQuantilesPredictor</span><span class="p">):</span>
+<div class="viewcode-block" id="Patch3DFixedQuantilesPredictor.divide_x"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedQuantilesPredictor.divide_x">[docs]</a>    <span class="k">def</span> <span class="nf">divide_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="o">*</span><span class="n">xs_parts</span><span class="p">,</span> <span class="n">quantiles</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">divide_x</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="nb">list</span><span class="p">(</span><span class="n">spatial_dims</span><span class="p">)]</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_coordinate_features</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">shape</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_patch_size</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">xs_parts</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

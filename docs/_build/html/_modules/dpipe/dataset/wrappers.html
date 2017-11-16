@@ -1,0 +1,399 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.dataset.wrappers &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="dpipe  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dpipe.html">dpipe package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dpipe.dataset.wrappers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dpipe.dataset.wrappers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">ChainMap</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">dpipe.medim</span> <span class="k">as</span> <span class="nn">medim</span>
+<span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">Dataset</span>
+
+
+<div class="viewcode-block" id="Proxy"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.Proxy">[docs]</a><span class="k">class</span> <span class="nc">Proxy</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shadowed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span> <span class="o">=</span> <span class="n">shadowed</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+
+<span class="n">register</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">register</span><span class="p">,</span> <span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;dataset_wrapper&#39;</span><span class="p">)</span>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="cached"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.cached">[docs]</a><span class="k">def</span> <span class="nf">cached</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">CachedDataset</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">load_mscan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">load_mscan</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">load_segm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">load_segm</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">load_msegm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">load_msegm</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">CachedDataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></div>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="apply_mask"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.apply_mask">[docs]</a><span class="k">def</span> <span class="nf">apply_mask</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">mask_modality_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+               <span class="n">mask_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+
+    <span class="k">class</span> <span class="nc">MaskedDataset</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">load_mscan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">load_mscan</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">images</span><span class="p">[</span><span class="n">mask_modality_id</span><span class="p">]</span>
+            <span class="n">mask_bin</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">mask_value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mask</span> <span class="o">==</span> <span class="n">mask_value</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask_bin</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;The obtained mask is empty&#39;</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="p">[</span><span class="n">image</span> <span class="o">*</span> <span class="n">mask</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">n_chans_mscan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">n_chans_mscan</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">dataset</span> <span class="k">if</span> <span class="n">mask_modality_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">MaskedDataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></div>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="bbox_extraction"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.bbox_extraction">[docs]</a><span class="k">def</span> <span class="nf">bbox_extraction</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+    <span class="c1"># Use this small cache to speed up data loading. Usually users load</span>
+    <span class="c1"># all scans for the same person at the same time</span>
+    <span class="n">load_mscan</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="mi">3</span><span class="p">)(</span><span class="n">dataset</span><span class="o">.</span><span class="n">load_mscan</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">BBoxedDataset</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">load_mscan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">load_mscan</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">img</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">medim</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">extract</span><span class="p">([</span><span class="n">img</span><span class="p">],</span> <span class="n">mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">load_segm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">load_segm</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">load_mscan</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">medim</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">extract</span><span class="p">([</span><span class="n">img</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">load_msegm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">load_msegm</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">load_mscan</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">medim</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">extract</span><span class="p">([</span><span class="n">img</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">BBoxedDataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></div>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="normalized"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.normalized">[docs]</a><span class="k">def</span> <span class="nf">normalized</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span>
+               <span class="n">drop_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+    <span class="k">class</span> <span class="nc">NormalizedDataset</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">load_mscan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">load_mscan</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">medim</span><span class="o">.</span><span class="n">prep</span><span class="o">.</span><span class="n">normalize_mscan</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
+                                              <span class="n">drop_percentile</span><span class="o">=</span><span class="n">drop_percentile</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">NormalizedDataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></div>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="normalized_sub"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.normalized_sub">[docs]</a><span class="k">def</span> <span class="nf">normalized_sub</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+    <span class="k">class</span> <span class="nc">NormalizedDataset</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">load_mscan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="n">mscan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">load_mscan</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mscan</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">mscan_inner</span> <span class="o">=</span> <span class="n">medim</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">extract</span><span class="p">([</span><span class="n">mscan</span><span class="p">],</span> <span class="n">mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">mscan</span> <span class="o">=</span> <span class="n">mscan</span> <span class="o">/</span> <span class="n">mscan_inner</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">mscan</span>
+
+    <span class="k">return</span> <span class="n">NormalizedDataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></div>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="add_groups_from_df"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.add_groups_from_df">[docs]</a><span class="k">def</span> <span class="nf">add_groups_from_df</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">group_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+    <span class="k">class</span> <span class="nc">GroupedFromMetadata</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">groups</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shadowed</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">group_col</span><span class="p">]</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">GroupedFromMetadata</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></div>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="add_groups_from_ids"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.add_groups_from_ids">[docs]</a><span class="k">def</span> <span class="nf">add_groups_from_ids</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+    <span class="n">roots</span> <span class="o">=</span> <span class="p">[</span><span class="n">pi</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span><span class="p">]</span>
+    <span class="n">root2group</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">roots</span><span class="p">))))</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">root2group</span><span class="p">[</span><span class="n">pi</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+                   <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">GroupsFromIDs</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">groups</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">groups</span>
+
+    <span class="k">return</span> <span class="n">GroupsFromIDs</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></div>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="merge_datasets"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.merge_datasets">[docs]</a><span class="k">def</span> <span class="nf">merge_datasets</span><span class="p">(</span><span class="n">datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dataset</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">segm2msegm_matrix</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">segm2msegm_matrix</span><span class="p">)</span>
+     <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="n">datasets</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
+
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">n_chans_mscan</span> <span class="o">==</span> <span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">n_chans_mscan</span>
+               <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">)</span>
+
+    <span class="n">patient_id2dataset</span> <span class="o">=</span> <span class="n">ChainMap</span><span class="p">(</span><span class="o">*</span><span class="p">({</span><span class="n">pi</span><span class="p">:</span> <span class="n">dataset</span> <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span><span class="p">}</span>
+                                    <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">))</span>
+
+    <span class="n">patient_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">patient_id2dataset</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+    <span class="k">class</span> <span class="nc">MergedDataset</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">patient_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">patient_ids</span>
+
+        <span class="k">def</span> <span class="nf">load_mscan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">patient_id2dataset</span><span class="p">[</span><span class="n">patient_id</span><span class="p">]</span><span class="o">.</span><span class="n">load_mscan</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">load_segm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">patient_id2dataset</span><span class="p">[</span><span class="n">patient_id</span><span class="p">]</span><span class="o">.</span><span class="n">load_segm</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">load_msegm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">patient_id2dataset</span><span class="p">[</span><span class="n">patient_id</span><span class="p">]</span><span class="o">.</span><span class="n">load_msegm</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">MergedDataset</span><span class="p">(</span><span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="weighted"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.wrappers.weighted">[docs]</a><span class="k">def</span> <span class="nf">weighted</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">thickness</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span><span class="p">)</span>
+    <span class="k">class</span> <span class="nc">WeightedBoundariesDataset</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">load_weighted_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">thickness</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">patient_id</span><span class="p">]</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_by_paths</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">image</span>
+
+    <span class="k">return</span> <span class="n">WeightedBoundariesDataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

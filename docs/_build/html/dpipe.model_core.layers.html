@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.model_core.layers package &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="dpipe  documentation" href="index.html"/>
+        <link rel="up" title="dpipe.model_core package" href="dpipe.model_core.html"/>
+        <link rel="next" title="dpipe.split package" href="dpipe.split.html"/>
+        <link rel="prev" title="dpipe.model_core package" href="dpipe.model_core.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dpipe.html">dpipe package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dpipe.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dpipe.batch_iter.html">dpipe.batch_iter package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.batch_predict.html">dpipe.batch_predict package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.config.html">dpipe.config package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.dataset.html">dpipe.dataset package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.medim.html">dpipe.medim package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="dpipe.model_core.html">dpipe.model_core package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="dpipe.model_core.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.base">dpipe.model_core.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.deepmedic_els">dpipe.model_core.deepmedic_els module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.deepmedic_feat">dpipe.model_core.deepmedic_feat module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.deepmedic_feat_coord">dpipe.model_core.deepmedic_feat_coord module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.deepmedic_orig">dpipe.model_core.deepmedic_orig module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.enet">dpipe.model_core.enet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.enet_mixed">dpipe.model_core.enet_mixed module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.enet_with_dropout">dpipe.model_core.enet_with_dropout module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.unet">dpipe.model_core.unet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.split.html">dpipe.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.train.html">dpipe.train package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.batch_iter_factory">dpipe.batch_iter_factory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.commands">dpipe.commands module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.io">dpipe.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.transformers">dpipe.transformers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="dpipe.html">dpipe package</a> &raquo;</li>
+        
+          <li><a href="dpipe.model_core.html">dpipe.model_core package</a> &raquo;</li>
+        
+      <li>dpipe.model_core.layers package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/dpipe.model_core.layers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dpipe-model-core-layers-package">
+<h1>dpipe.model_core.layers package<a class="headerlink" href="#dpipe-model-core-layers-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-dpipe.model_core.layers.layers">
+<span id="dpipe-model-core-layers-layers-module"></span><h2>dpipe.model_core.layers.layers module<a class="headerlink" href="#module-dpipe.model_core.layers.layers" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.model_core.layers.layers.nearest_neighbour">
+<code class="descclassname">dpipe.model_core.layers.layers.</code><code class="descname">nearest_neighbour</code><span class="sig-paren">(</span><em>x: tensorflow.python.framework.ops.Tensor</em>, <em>kernel_size</em>, <em>data_format</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model_core/layers/layers.html#nearest_neighbour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model_core.layers.layers.nearest_neighbour" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.model_core.layers.layers.prelu">
+<code class="descclassname">dpipe.model_core.layers.layers.</code><code class="descname">prelu</code><span class="sig-paren">(</span><em>x</em>, <em>feature_dims</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model_core/layers/layers.html#prelu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model_core.layers.layers.prelu" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.model_core.layers.layers.spatial_batch_norm">
+<code class="descclassname">dpipe.model_core.layers.layers.</code><code class="descname">spatial_batch_norm</code><span class="sig-paren">(</span><em>t</em>, <em>momentum=0.9</em>, <em>center=True</em>, <em>scale=True</em>, <em>training=False</em>, <em>data_format='channels_last'</em>, <em>name='spacial_batch_norm'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model_core/layers/layers.html#spatial_batch_norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model_core.layers.layers.spatial_batch_norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.model_core.layers.utils">
+<span id="dpipe-model-core-layers-utils-module"></span><h2>dpipe.model_core.layers.utils module<a class="headerlink" href="#module-dpipe.model_core.layers.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.model_core.layers.utils.check_data_format">
+<code class="descclassname">dpipe.model_core.layers.utils.</code><code class="descname">check_data_format</code><span class="sig-paren">(</span><em>data_format</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model_core/layers/utils.html#check_data_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model_core.layers.utils.check_data_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.model_core.layers.utils.expand_size">
+<code class="descclassname">dpipe.model_core.layers.utils.</code><code class="descname">expand_size</code><span class="sig-paren">(</span><em>size</em>, <em>ndim</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model_core/layers/utils.html#expand_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model_core.layers.utils.expand_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.model_core.layers.utils.infer_spatial_size">
+<code class="descclassname">dpipe.model_core.layers.utils.</code><code class="descname">infer_spatial_size</code><span class="sig-paren">(</span><em>x: tensorflow.python.framework.ops.Tensor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model_core/layers/utils.html#infer_spatial_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model_core.layers.utils.infer_spatial_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.model_core.layers">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-dpipe.model_core.layers" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="dpipe.split.html" class="btn btn-neutral float-right" title="dpipe.split package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="dpipe.model_core.html" class="btn btn-neutral" title="dpipe.model_core package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
