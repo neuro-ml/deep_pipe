@@ -17,27 +17,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# sys.path.insert(0, '/nmnt/media/home/memax/deep_pipe/dpipe')
 
 import sys
-import unittest.mock
+import os
 
-MOCK_MODULES = '''nibabel
-numpy
-pandas
-sklearn
-scipy
-tensorflow
-tqdm
-snakemake
-pdp
-dpipe
-tensorboard_easy
-resource_manager'''.splitlines()
-
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = unittest.mock.Mock()
+sys.path.insert(0, os.path.abspath('../dpipe/'))
 
 # -- General configuration ------------------------------------------------
 

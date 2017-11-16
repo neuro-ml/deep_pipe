@@ -1,0 +1,11 @@
+nibabel
+numpy
+pandas
+sklearn
+scipy
+tensorflow
+tqdm
+snakemake
+pdp
+tensorboard_easy
+resource_manager
