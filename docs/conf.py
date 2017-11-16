@@ -32,6 +32,7 @@ tensorflow
 tqdm
 snakemake
 pdp
+dpipe
 tensorboard_easy
 resource_manager'''.splitlines()
 
