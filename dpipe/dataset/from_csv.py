@@ -8,6 +8,33 @@ from dpipe.medim.utils import load_image
 from .segmentation import Segmentation, DatasetInt
 
 
+@register()
+class CSV:
+    def __init__(self, path, filename='meta.csv', index_col='id'):
+        self.path = path
+        self.filename = filename
+
+        df = pd.read_csv(os.path.join(path, filename))
+        if index_col is not None:
+            df[index_col] = df[index_col].astype(str)
+            df = df.set_index(index_col).sort_index()
+        self.df = df
+
+        self._ids = list(self.df.index)
+
+    @property
+    def ids(self):
+        return self._ids
+
+    def get(self, index, col):
+        result = self.df.loc[index, col]
+        try:
+            result = result.as_matrix()
+        except AttributeError:
+            pass
+        return result
+
+
 class FromCSV:
     """
     A mixin for the Dataset class. Adds support for csv files.

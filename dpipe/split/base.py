@@ -1,6 +1,5 @@
 import numpy as np
 
-from dpipe.dataset.proto import DataSet
 from .cv import ShuffleGroupKFold, train_test_split_groups
 from sklearn.model_selection import KFold
 from dpipe.dataset import DataSet
