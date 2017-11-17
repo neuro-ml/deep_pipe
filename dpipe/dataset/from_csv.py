@@ -50,7 +50,7 @@ class FromCSVMultiple(FromCSV, Dataset):
 
     def load_segm(self, patient_id) -> np.array:
         image = self.load_msegm(patient_id)
-        weights = np.arange(1, len(self.target_cols))
+        weights = np.arange(1, len(self.target_cols) + 1)
         return np.einsum('ijkl,i', image, weights)
 
     def load_msegm(self, patient_id) -> np.array:

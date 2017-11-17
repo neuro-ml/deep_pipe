@@ -1,0 +1,553 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.batch_iter.patch_3d &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="dpipe  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dpipe.html">dpipe package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dpipe.batch_iter.patch_3d</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dpipe.batch_iter.patch_3d</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="kn">import</span> <span class="nn">pdp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">dpipe.medim</span> <span class="k">import</span> <span class="n">patch</span>
+<span class="kn">from</span> <span class="nn">dpipe.medim.augmentation</span> <span class="k">import</span> <span class="n">spatial_augmentation_strict</span><span class="p">,</span> <span class="n">random_flip</span>
+<span class="kn">from</span> <span class="nn">dpipe.medim.features</span> <span class="k">import</span> <span class="n">get_coordinate_features</span>
+<span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
+
+
+<div class="viewcode-block" id="Patient"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.Patient">[docs]</a><span class="k">class</span> <span class="nc">Patient</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Patient_data&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;patient_id&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">])):</span>
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patient_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_cancer"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.find_cancer">[docs]</a><span class="k">def</span> <span class="nf">find_cancer</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">y</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;wrong number of dimensions &#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">),</span> <span class="n">f</span><span class="s1">&#39;No cancer voxels found&#39;</span>
+    <span class="k">return</span> <span class="n">patch</span><span class="o">.</span><span class="n">find_masked_patch_center_indices</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="n">y_patch_size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_random_center_idx"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.get_random_center_idx">[docs]</a><span class="k">def</span> <span class="nf">get_random_center_idx</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">):</span>
+    <span class="n">y_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">y_patch_size</span> <span class="o">&lt;=</span> <span class="n">y_shape</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">]):</span>
+        <span class="n">spatial_center_idx</span> <span class="o">=</span> <span class="n">patch</span><span class="o">.</span><span class="n">sample_uniform_center_index</span><span class="p">(</span><span class="n">x_shape</span><span class="o">=</span><span class="n">y_shape</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="o">=</span><span class="n">y_patch_size</span><span class="p">,</span>
+                                                               <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">spatial_center_idx</span> <span class="o">=</span> <span class="n">y_shape</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">spatial_center_idx</span></div>
+
+
+<div class="viewcode-block" id="extract_patches"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.extract_patches">[docs]</a><span class="k">def</span> <span class="nf">extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="p">,</span> <span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">patch</span><span class="o">.</span><span class="n">extract_patch</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">spatial_center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">,</span>
+                                <span class="n">spatial_patch_size</span><span class="o">=</span><span class="n">x_patch_size</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="n">padding_values</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x_patch_size</span> <span class="ow">in</span> <span class="n">patch_sizes</span><span class="p">]</span></div>
+
+
+<span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;patch_3d&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="make_patch_3d_iter"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.make_patch_3d_iter">[docs]</a><span class="k">def</span> <span class="nf">make_patch_3d_iter</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">load_x</span><span class="p">,</span> <span class="n">load_y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">):</span>
+    <span class="n">x_patch_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_patch_sizes</span><span class="p">)</span>
+    <span class="n">y_patch_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_patch_size</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">x_patch_sizes</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">y_patch_size</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">spatial_dims</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">random_seq</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">,</span> <span class="n">ids</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_load_patient</span><span class="p">(</span><span class="n">patient_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Patient</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">load_x</span><span class="p">(</span><span class="n">patient_id</span><span class="p">),</span> <span class="n">load_y</span><span class="p">(</span><span class="n">patient_id</span><span class="p">))</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_find_padding_values</span><span class="p">(</span><span class="n">patient</span><span class="p">:</span> <span class="n">Patient</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">patient</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">patient</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">patient</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">spatial_dims</span><span class="p">),</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@pdp</span><span class="o">.</span><span class="n">pack_args</span>
+    <span class="k">def</span> <span class="nf">_extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">padding_values</span><span class="p">):</span>
+        <span class="n">center_idx</span> <span class="o">=</span> <span class="n">get_random_center_idx</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+
+        <span class="n">xs</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="n">padding_values</span><span class="p">,</span>
+                             <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">y_patch_size</span><span class="p">],</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                            <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">xs</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pdp</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">random_seq</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_load_patient</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_find_padding_values</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_extract_patches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Many2One</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">pdp</span><span class="o">.</span><span class="n">combine_batches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">buffer_size</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_cancer_and_padding_values"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.find_cancer_and_padding_values">[docs]</a><span class="k">def</span> <span class="nf">find_cancer_and_padding_values</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">find_cancer</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">spatial_dims</span><span class="p">),</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;patch_3d_strat&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="make_patch_3d_strat_iter"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.make_patch_3d_strat_iter">[docs]</a><span class="k">def</span> <span class="nf">make_patch_3d_strat_iter</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">load_x</span><span class="p">,</span> <span class="n">load_y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">nonzero_fraction</span><span class="p">,</span>
+                             <span class="n">buffer_size</span><span class="p">):</span>
+    <span class="n">x_patch_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_patch_sizes</span><span class="p">)</span>
+    <span class="n">y_patch_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_patch_size</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">x_patch_sizes</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">y_patch_size</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">spatial_dims</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">random_seq</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">,</span> <span class="n">ids</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_load_patient</span><span class="p">(</span><span class="n">patient_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Patient</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">load_x</span><span class="p">(</span><span class="n">patient_id</span><span class="p">),</span> <span class="n">load_y</span><span class="p">(</span><span class="n">patient_id</span><span class="p">))</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_find_cancer_and_padding_values</span><span class="p">(</span><span class="n">patient</span><span class="p">:</span> <span class="n">Patient</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">find_cancer_and_padding_values</span><span class="p">(</span><span class="n">patient</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">patient</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="o">=</span><span class="n">y_patch_size</span><span class="p">,</span>
+                                              <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+
+    <span class="nd">@pdp</span><span class="o">.</span><span class="n">pack_args</span>
+    <span class="k">def</span> <span class="nf">_extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_center_indices</span><span class="p">,</span> <span class="n">padding_values</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">nonzero_fraction</span><span class="p">:</span>
+            <span class="n">center_idx</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">cancer_center_indices</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">center_idx</span> <span class="o">=</span> <span class="n">get_random_center_idx</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+
+        <span class="n">xs</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="n">padding_values</span><span class="p">,</span>
+                             <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">y_patch_size</span><span class="p">],</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                            <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">xs</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">pdp</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">random_seq</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_load_patient</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_find_cancer_and_padding_values</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_extract_patches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Many2One</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">pdp</span><span class="o">.</span><span class="n">combine_batches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">buffer_size</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;patch_3d_strat_quantiles&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">make_patch_3d_strat_iter_quantiles</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">load_x</span><span class="p">,</span> <span class="n">load_y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span>
+                                       <span class="n">nonzero_fraction</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="p">):</span>
+    <span class="n">x_patch_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_patch_sizes</span><span class="p">)</span>
+    <span class="n">y_patch_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_patch_size</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">x_patch_sizes</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">y_patch_size</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">spatial_dims</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">random_seq</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">,</span> <span class="n">ids</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_load_patient</span><span class="p">(</span><span class="n">patient_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Patient</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">load_x</span><span class="p">(</span><span class="n">patient_id</span><span class="p">),</span> <span class="n">load_y</span><span class="p">(</span><span class="n">patient_id</span><span class="p">))</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_find_cancer_and_padding_values_and_quantiles_</span><span class="p">(</span><span class="n">patient</span><span class="p">:</span> <span class="n">Patient</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_ids</span><span class="p">,</span> <span class="n">padding_vals</span> <span class="o">=</span> <span class="n">find_cancer_and_padding_values</span><span class="p">(</span>
+            <span class="n">patient</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">patient</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="o">=</span><span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span>
+        <span class="p">)</span>
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_ids</span><span class="p">,</span> <span class="n">padding_vals</span><span class="p">,</span> <span class="n">quantiles</span>
+
+    <span class="nd">@pdp</span><span class="o">.</span><span class="n">pack_args</span>
+    <span class="k">def</span> <span class="nf">_extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_center_indices</span><span class="p">,</span> <span class="n">padding_values</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">nonzero_fraction</span><span class="p">:</span>
+            <span class="n">center_idx</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">cancer_center_indices</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">center_idx</span> <span class="o">=</span> <span class="n">get_random_center_idx</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+
+        <span class="n">xs</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="n">padding_values</span><span class="p">,</span>
+                             <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">y_patch_size</span><span class="p">],</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                            <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">xs</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pdp</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">random_seq</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_load_patient</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_find_cancer_and_padding_values_and_quantiles_</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_extract_patches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Many2One</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">pdp</span><span class="o">.</span><span class="n">combine_batches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">buffer_size</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;patch_3d_strat_quantiles_coordinates&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="make_patch_3d_strat_iter_quantiles"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.make_patch_3d_strat_iter_quantiles">[docs]</a><span class="k">def</span> <span class="nf">make_patch_3d_strat_iter_quantiles</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">load_x</span><span class="p">,</span> <span class="n">load_y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span>
+                                       <span class="n">nonzero_fraction</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="p">):</span>
+    <span class="n">x_patch_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_patch_sizes</span><span class="p">)</span>
+    <span class="n">y_patch_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_patch_size</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">x_patch_sizes</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">y_patch_size</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">spatial_dims</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">random_seq</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">,</span> <span class="n">ids</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_load_patient</span><span class="p">(</span><span class="n">patient_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Patient</span><span class="p">(</span><span class="n">patient_id</span><span class="p">,</span> <span class="n">load_x</span><span class="p">(</span><span class="n">patient_id</span><span class="p">),</span> <span class="n">load_y</span><span class="p">(</span><span class="n">patient_id</span><span class="p">))</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_find_cancer_and_padding_values_and_quantiles_</span><span class="p">(</span><span class="n">patient</span><span class="p">:</span> <span class="n">Patient</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_ids</span><span class="p">,</span> <span class="n">padding_vals</span> <span class="o">=</span> <span class="n">find_cancer_and_padding_values</span><span class="p">(</span>
+            <span class="n">patient</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">patient</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="o">=</span><span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span>
+        <span class="p">)</span>
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_ids</span><span class="p">,</span> <span class="n">padding_vals</span><span class="p">,</span> <span class="n">quantiles</span>
+
+    <span class="nd">@pdp</span><span class="o">.</span><span class="n">pack_args</span>
+    <span class="k">def</span> <span class="nf">_extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_center_indices</span><span class="p">,</span> <span class="n">padding_values</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">nonzero_fraction</span><span class="p">:</span>
+            <span class="n">center_idx</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">cancer_center_indices</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">center_idx</span> <span class="o">=</span> <span class="n">get_random_center_idx</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+
+        <span class="n">xs</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="n">padding_values</span><span class="p">,</span>
+                             <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">y_patch_size</span><span class="p">],</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                            <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+
+        <span class="n">center_patch</span> <span class="o">=</span> <span class="n">get_coordinate_features</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="n">spatial_dims</span><span class="p">],</span> <span class="n">center_idx</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">xs</span><span class="p">,</span> <span class="n">center_patch</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pdp</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">random_seq</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_load_patient</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_find_cancer_and_padding_values_and_quantiles_</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_extract_patches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Many2One</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">pdp</span><span class="o">.</span><span class="n">combine_batches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">buffer_size</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ExpirationPool"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.ExpirationPool">[docs]</a><span class="k">class</span> <span class="nc">ExpirationPool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expiration_time</span><span class="p">,</span> <span class="n">pool_size</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span> <span class="o">=</span> <span class="n">pool_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expiration_time</span> <span class="o">=</span> <span class="n">expiration_time</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expiration_timer</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="ExpirationPool.is_full"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.ExpirationPool.is_full">[docs]</a>    <span class="k">def</span> <span class="nf">is_full</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span></div>
+
+<div class="viewcode-block" id="ExpirationPool.put"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.ExpirationPool.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_full</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expiration_timer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expiration_time</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExpirationPool.draw"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.ExpirationPool.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_full</span><span class="p">()</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expiration_timer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">expiration_timer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">expiration_timer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">expiration_timer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">value</span></div></div>
+
+
+<span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;patch_3d_strat_augm&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="make_3d_patch_strat_augm_iter"><a class="viewcode-back" href="../../../dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.make_3d_patch_strat_augm_iter">[docs]</a><span class="k">def</span> <span class="nf">make_3d_patch_strat_augm_iter</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">load_x</span><span class="p">,</span> <span class="n">load_y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">nonzero_fraction</span><span class="p">,</span>
+                                  <span class="n">buffer_size</span><span class="p">,</span> <span class="n">expiration_time</span><span class="p">,</span> <span class="n">pool_size</span><span class="p">,</span> <span class="n">n_workers</span><span class="p">):</span>
+    <span class="n">x_patch_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_patch_sizes</span><span class="p">)</span>
+    <span class="n">y_patch_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_patch_size</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">x_patch_sizes</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">y_patch_size</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">spatial_dims</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">random_seq</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">,</span> <span class="n">ids</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_load_patient</span><span class="p">(</span><span class="n">patient_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">load_x</span><span class="p">(</span><span class="n">patient_id</span><span class="p">),</span> <span class="n">load_y</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+
+    <span class="nd">@pdp</span><span class="o">.</span><span class="n">pack_args</span>
+    <span class="k">def</span> <span class="nf">_augment</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">convert</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span>
+        <span class="k">if</span> <span class="n">convert</span><span class="p">:</span>
+            <span class="n">unique</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">y</span> <span class="o">==</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">unique</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">spatial_augmentation_strict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">random_flip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">convert</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c1">#     restoring old int tensor</span>
+            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">unique</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique</span><span class="p">))):</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique</span><span class="p">):</span>
+                    <span class="n">y</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+
+    <span class="nd">@pdp</span><span class="o">.</span><span class="n">pack_args</span>
+    <span class="k">def</span> <span class="nf">_find_cancer_and_padding_values</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">find_cancer_and_padding_values</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="o">=</span><span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">ExpirationPool</span><span class="p">(</span><span class="n">expiration_time</span><span class="o">=</span><span class="n">expiration_time</span><span class="p">,</span> <span class="n">pool_size</span><span class="o">=</span><span class="n">pool_size</span><span class="p">)</span>
+
+    <span class="nd">@pdp</span><span class="o">.</span><span class="n">pack_args</span>
+    <span class="k">def</span> <span class="nf">_augmented_pool_sampling</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_center_indices</span><span class="p">,</span> <span class="n">padding_values</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">pool</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_center_indices</span><span class="p">,</span> <span class="n">padding_values</span><span class="p">))</span>
+        <span class="k">while</span> <span class="n">pool</span><span class="o">.</span><span class="n">is_full</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">pool</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+    <span class="nd">@pdp</span><span class="o">.</span><span class="n">pack_args</span>
+    <span class="k">def</span> <span class="nf">_extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cancer_center_indices</span><span class="p">,</span> <span class="n">padding_values</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">nonzero_fraction</span><span class="p">:</span>
+            <span class="n">center_idx</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">cancer_center_indices</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">center_idx</span> <span class="o">=</span> <span class="n">get_random_center_idx</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+
+        <span class="n">xs</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="n">x_patch_sizes</span><span class="p">,</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="n">padding_values</span><span class="p">,</span>
+                             <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">,</span> <span class="o">=</span> <span class="n">extract_patches</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">patch_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">y_patch_size</span><span class="p">],</span> <span class="n">center_idx</span><span class="o">=</span><span class="n">center_idx</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                            <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">xs</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pdp</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">random_seq</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_load_patient</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_augment</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="n">n_workers</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_find_cancer_and_padding_values</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">pool_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2Many</span><span class="p">(</span><span class="n">_augmented_pool_sampling</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">_extract_patches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">Many2One</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">pdp</span><span class="o">.</span><span class="n">combine_batches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">buffer_size</span><span class="p">)</span>
+    <span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

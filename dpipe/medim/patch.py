@@ -15,11 +15,9 @@ def find_patch_size(shape, spatial_patch_size, spatial_dims):
     return patch_shape
 
 
-def find_patch_start_end_padding(
-        shape: np.ndarray, *, spatial_center_idx: np.array,
-        spatial_patch_size: np.array, spatial_dims: list):
-    assert np.all((spatial_patch_size % 2) == 1), \
-        'even patch size is not supported'
+def find_patch_start_end_padding(shape: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_size: np.array,
+                                 spatial_dims: list):
+    assert np.all((spatial_patch_size % 2) == 1), 'even patch size is not supported'
 
     spatial_start = spatial_center_idx - spatial_patch_size // 2
     spatial_end = spatial_start + spatial_patch_size
@@ -42,15 +40,14 @@ def find_patch_start_end_padding(
     return start, end, padding
 
 
-def extract_patch(x: np.ndarray, *, spatial_center_idx: np.array,
-                  spatial_patch_size: np.array, spatial_dims: list,
+def extract_patch(x: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_size: np.array, spatial_dims: list,
                   padding_values: np.array = None) -> np.array:
-    """Returns extracted patch of specific spatial size and with specified 
+    """Returns extracted patch of specific spatial size and with specified
     center from x.
     Parameters
     ----------
     x
-        Array with data. Some of it's dimensions are spatial. We extract 
+        Array with data. Some of it's dimensions are spatial. We extract
         spatial patch specified by spatial location and spatial size.
     spatial_center_idx
         Location of the center of the patch. Components
@@ -69,12 +66,12 @@ def extract_patch(x: np.ndarray, *, spatial_center_idx: np.array,
     Returns
     -------
     :
-        Patch extracted from x, padded, if necessary. 
- 
+        Patch extracted from x, padded, if necessary.
+
     """
     start, end, padding = find_patch_start_end_padding(
-        np.array(x.shape), spatial_center_idx=spatial_center_idx,
-        spatial_patch_size=spatial_patch_size, spatial_dims=spatial_dims
+        np.array(x.shape), spatial_center_idx=spatial_center_idx, spatial_patch_size=spatial_patch_size,
+        spatial_dims=spatial_dims
     )
     x_slice = x[build_slices(start, end)]
     if padding_values is None:
@@ -91,7 +88,7 @@ def sample_uniform_center_index(x_shape: np.array, spatial_patch_size: np.array,
     """
     Returns spatial center coordinates for the patch, chosen randomly.
     We assume that patch have to belong to the object boundaries.
-    
+
     Parameters
     ----------
     x_shape:
@@ -99,16 +96,18 @@ def sample_uniform_center_index(x_shape: np.array, spatial_patch_size: np.array,
     spatial_patch_size:
         Size of the required patch
     spatial_dims:
-        Elements from x_shape that correspond to spatial dims. Can be negative. 
+        Elements from x_shape that correspond to spatial dims. Can be negative.
 
     Returns
     -------
     :
         Center indices for spatial dims. If patch size was even, center index
-        is shifted to the right. 
+        is shifted to the right.
 
     """
     max_spatial_center_idx = x_shape[spatial_dims] - spatial_patch_size + 1
+
+    np.testing.assert_array_less(0, max_spatial_center_idx, 'x_shape is small')
 
     start_idx = np.random.rand(len(spatial_dims)) * max_spatial_center_idx
     start_idx = np.int32(start_idx)

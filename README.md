@@ -5,35 +5,30 @@ Repository for deep learning experiments with 3d image segmentation
 
 ## Installation:
 ```
-git clone --recursive https://github.com/neuro-ml/deep_pipe.git
+git clone https://github.com/neuro-ml/deep_pipe.git
+
 ```
 Then you need to add the library to the list of python libraries. One of the ways:
 ```
-ln -s /nmnt/media/home/USERNAME/deep_pipe/dpipe ~/env3.6/lib/python3.6/site-packages/ #(for virtualenv)
-ln -s /nmnt/media/home/USERNAME/deep_pipe/dpipe ~/anaconda3/lib/python3.6/site-packages #(for conda)
+ln -s /path/to/deep_pipe/dpipe /path/to/virtualenv/lib/python3.6/site-packages/ # for virtualenv
+# or
+ln -s /path/to/deep_pipe/dpipe /path/to/anaconda/lib/python3.6/site-packages/ # for conda
 ```
 
-## Simple usage
+## Basic usage
 
-1. Create config file, examples are presented in `config_examples`
-2. Choose path to the experiment folder (it will be created for you). We will call it `EXPERIMENT_PATH`.
-3. Run 
+1. Create a config file. There are some examples in `config_examples`
+2. To build the experiment, run 
 ```
-python experiment/build_experiment.py -cp CONFIG_PATH -ep EXPERIMENT_PATH
+python /path/to/deep_pipe/scripts/do.py build_experiment --config_path CONFIG_PATH --experiment_path EXPERIMENT_PATH
 ```
-to make folder with experiment
 
-4. Run 
+3. To start the experiment, run 
 ```
-python experiment/run_experiment_seq.py -ep EXPERIMENT_PATH
+/path/to/deep_pipe/experiment/run_experiment_seq.sh EXPERIMENT_PATH
 ```
 
 ## Requirements
 
-1. Python 3.6
-2. Libraries from requirements.txt
-3. GPU, CUDA
-
-## Style guide:
-- PEP8 style guide, which among other things limits max line length to 80 symbols.
-- Also, it is forbidden to shadow python built-ins
+Only Python 3.6 is supported for now.
+Other requirements are listed in `requirements.txt`.

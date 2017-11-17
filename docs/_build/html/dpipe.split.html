@@ -1,0 +1,455 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.split package &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="dpipe  documentation" href="index.html"/>
+        <link rel="up" title="dpipe package" href="dpipe.html"/>
+        <link rel="next" title="dpipe.train package" href="dpipe.train.html"/>
+        <link rel="prev" title="dpipe.model_core.layers package" href="dpipe.model_core.layers.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dpipe.html">dpipe package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dpipe.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dpipe.batch_iter.html">dpipe.batch_iter package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.batch_predict.html">dpipe.batch_predict package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.config.html">dpipe.config package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.dataset.html">dpipe.dataset package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.medim.html">dpipe.medim package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.model_core.html">dpipe.model_core package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dpipe.split package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.base">dpipe.split.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.cv">dpipe.split.cv module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.cv_11">dpipe.split.cv_11 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.cv_111">dpipe.split.cv_111 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.monte_carlo">dpipe.split.monte_carlo module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.test_cv_111">dpipe.split.test_cv_111 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.test_monte_carlo">dpipe.split.test_monte_carlo module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.train.html">dpipe.train package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.batch_iter_factory">dpipe.batch_iter_factory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.commands">dpipe.commands module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.io">dpipe.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.transformers">dpipe.transformers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="dpipe.html">dpipe package</a> &raquo;</li>
+        
+      <li>dpipe.split package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/dpipe.split.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dpipe-split-package">
+<h1>dpipe.split package<a class="headerlink" href="#dpipe-split-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-dpipe.split.base">
+<span id="dpipe-split-base-module"></span><h2>dpipe.split.base module<a class="headerlink" href="#module-dpipe.split.base" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.split.base.get_cv_11">
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_cv_11</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_cv_11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_cv_11" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.base.get_cv_111">
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_cv_111" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.base.get_group_cv_111">
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_group_cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_group_cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_group_cv_111" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.base.get_groups">
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_groups</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>groups_property='groups'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list which will be used to perform a group-based CV split</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.base.get_loo_cv">
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_loo_cv</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_loo_cv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_loo_cv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leave one group out CV. Validation subset will be selected randomly</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.base.get_subj_ids">
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_subj_ids</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_subj_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_subj_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of subject IDs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.base.indices_to_subj_ids">
+<code class="descclassname">dpipe.split.base.</code><code class="descname">indices_to_subj_ids</code><span class="sig-paren">(</span><em>splits</em>, <em>subj_ids</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#indices_to_subj_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.indices_to_subj_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts split indices to subject IDs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.base.kfold_split">
+<code class="descclassname">dpipe.split.base.</code><code class="descname">kfold_split</code><span class="sig-paren">(</span><em>subj_ids</em>, <em>n_splits</em>, <em>groups=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#kfold_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.kfold_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform kfold (or group kfold) split
+Returns indices: [[train_0, val_0], ..., [train_k, val_k]]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.base.split_train">
+<code class="descclassname">dpipe.split.base.</code><code class="descname">split_train</code><span class="sig-paren">(</span><em>splits</em>, <em>val_size</em>, <em>groups=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#split_train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.split_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add additional splits of train subsets to output of kfold
+Returns indices: [[train_0, val_0, test_0], ..., [train_k, val_k, test_k]]</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.split.cv">
+<span id="dpipe-split-cv-module"></span><h2>dpipe.split.cv module<a class="headerlink" href="#module-dpipe.split.cv" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.split.cv.ShuffleGroupKFold">
+<em class="property">class </em><code class="descclassname">dpipe.split.cv.</code><code class="descname">ShuffleGroupKFold</code><span class="sig-paren">(</span><em>n_splits=3</em>, <em>shuffle=False</em>, <em>random_state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv.html#ShuffleGroupKFold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv.ShuffleGroupKFold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.model_selection._split.KFold</span></code></p>
+<dl class="method">
+<dt id="dpipe.split.cv.ShuffleGroupKFold.split">
+<code class="descname">split</code><span class="sig-paren">(</span><em>*</em>, <em>X</em>, <em>groups</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv.html#ShuffleGroupKFold.split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv.ShuffleGroupKFold.split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.cv.train_test_split_groups">
+<code class="descclassname">dpipe.split.cv.</code><code class="descname">train_test_split_groups</code><span class="sig-paren">(</span><em>X</em>, <em>*</em>, <em>val_size</em>, <em>groups=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv.html#train_test_split_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv.train_test_split_groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.split.cv_11">
+<span id="dpipe-split-cv-11-module"></span><h2>dpipe.split.cv_11 module<a class="headerlink" href="#module-dpipe.split.cv_11" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.split.cv_11.get_cv_11">
+<code class="descclassname">dpipe.split.cv_11.</code><code class="descname">get_cv_11</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_11.html#get_cv_11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_11.get_cv_11" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.split.cv_111">
+<span id="dpipe-split-cv-111-module"></span><h2>dpipe.split.cv_111 module<a class="headerlink" href="#module-dpipe.split.cv_111" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.split.cv_111.ShuffleGroupKFold">
+<em class="property">class </em><code class="descclassname">dpipe.split.cv_111.</code><code class="descname">ShuffleGroupKFold</code><span class="sig-paren">(</span><em>n_splits=3</em>, <em>shuffle=False</em>, <em>random_state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#ShuffleGroupKFold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.ShuffleGroupKFold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.model_selection._split.KFold</span></code></p>
+<dl class="method">
+<dt id="dpipe.split.cv_111.ShuffleGroupKFold.split">
+<code class="descname">split</code><span class="sig-paren">(</span><em>groups</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#ShuffleGroupKFold.split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.ShuffleGroupKFold.split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.cv_111.cv_111">
+<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.cv_111" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.cv_111.extract">
+<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">extract</code><span class="sig-paren">(</span><em>l</em>, <em>ids</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#extract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.extract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.cv_111.group_cv_111">
+<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">group_cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#group_cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.group_cv_111" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>In order to use this splitter, your Dataset needs to have</dt>
+<dd>a &#8216;groups&#8217; property.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.cv_111.group_cv_111_pure_011">
+<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">group_cv_111_pure_011</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#group_cv_111_pure_011"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.group_cv_111_pure_011" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>In order to use this splitter, your Dataset needs to have</dt>
+<dd>a &#8216;groups&#8217; property.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.cv_111.group_train_test_split">
+<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">group_train_test_split</code><span class="sig-paren">(</span><em>x</em>, <em>groups</em>, <em>*</em>, <em>train_size=None</em>, <em>test_size=None</em>, <em>random_state=None</em>, <em>shuffle=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#group_train_test_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.group_train_test_split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.split.monte_carlo">
+<span id="dpipe-split-monte-carlo-module"></span><h2>dpipe.split.monte_carlo module<a class="headerlink" href="#module-dpipe.split.monte_carlo" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.split.monte_carlo.monte_carlo">
+<code class="descclassname">dpipe.split.monte_carlo.</code><code class="descname">monte_carlo</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>train_fraction</em>, <em>val_fraction</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/monte_carlo.html#monte_carlo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.monte_carlo.monte_carlo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Example: train_fraction = 0.8, val_fraction = 0.1, n_splits = 2 will create 2 splits such that 80% of ids are in
+the train sample, 10% - in val sample, 10% - in test sample.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.split.test_cv_111">
+<span id="dpipe-split-test-cv-111-module"></span><h2>dpipe.split.test_cv_111 module<a class="headerlink" href="#module-dpipe.split.test_cv_111" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.split.test_cv_111.TestSplits">
+<em class="property">class </em><code class="descclassname">dpipe.split.test_cv_111.</code><code class="descname">TestSplits</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_cv_111.html#TestSplits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_cv_111.TestSplits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="dpipe.split.test_cv_111.TestSplits.test_split">
+<code class="descname">test_split</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_cv_111.html#TestSplits.test_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_cv_111.TestSplits.test_split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.split.test_monte_carlo">
+<span id="dpipe-split-test-monte-carlo-module"></span><h2>dpipe.split.test_monte_carlo module<a class="headerlink" href="#module-dpipe.split.test_monte_carlo" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.split.test_monte_carlo.TestMonteCarloSplitter">
+<em class="property">class </em><code class="descclassname">dpipe.split.test_monte_carlo.</code><code class="descname">TestMonteCarloSplitter</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#TestMonteCarloSplitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.TestMonteCarloSplitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="dpipe.split.test_monte_carlo.TestMonteCarloSplitter.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#TestMonteCarloSplitter.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_bad_params_value_error">
+<code class="descname">test_bad_params_value_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#TestMonteCarloSplitter.test_bad_params_value_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_bad_params_value_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_successful_split">
+<code class="descname">test_successful_split</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#TestMonteCarloSplitter.test_successful_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_successful_split" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.split.test_monte_carlo.random_string">
+<code class="descclassname">dpipe.split.test_monte_carlo.</code><code class="descname">random_string</code><span class="sig-paren">(</span><em>string_len</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#random_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.random_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.split">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-dpipe.split" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="dpipe.train.html" class="btn btn-neutral float-right" title="dpipe.train package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="dpipe.model_core.layers.html" class="btn btn-neutral" title="dpipe.model_core.layers package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

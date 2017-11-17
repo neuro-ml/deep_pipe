@@ -1,0 +1,535 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.batch_predict package &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="dpipe  documentation" href="index.html"/>
+        <link rel="up" title="dpipe package" href="dpipe.html"/>
+        <link rel="next" title="dpipe.config package" href="dpipe.config.html"/>
+        <link rel="prev" title="dpipe.batch_iter package" href="dpipe.batch_iter.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dpipe.html">dpipe package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dpipe.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dpipe.batch_iter.html">dpipe.batch_iter package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dpipe.batch_predict package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.base">dpipe.batch_predict.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.patch_3d">dpipe.batch_predict.patch_3d module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.patch_3d_fixed">dpipe.batch_predict.patch_3d_fixed module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.slice">dpipe.batch_predict.slice module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.test_patch_3d">dpipe.batch_predict.test_patch_3d module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.test_patch_3d_fixed">dpipe.batch_predict.test_patch_3d_fixed module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.utils">dpipe.batch_predict.utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.config.html">dpipe.config package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.dataset.html">dpipe.dataset package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.medim.html">dpipe.medim package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.model_core.html">dpipe.model_core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.split.html">dpipe.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.train.html">dpipe.train package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.batch_iter_factory">dpipe.batch_iter_factory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.commands">dpipe.commands module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.io">dpipe.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.transformers">dpipe.transformers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="dpipe.html">dpipe package</a> &raquo;</li>
+        
+      <li>dpipe.batch_predict package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/dpipe.batch_predict.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dpipe-batch-predict-package">
+<h1>dpipe.batch_predict package<a class="headerlink" href="#dpipe-batch-predict-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-dpipe.batch_predict.base">
+<span id="dpipe-batch-predict-base-module"></span><h2>dpipe.batch_predict.base module<a class="headerlink" href="#module-dpipe.batch_predict.base" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.batch_predict.base.BatchPredict">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.base.</code><code class="descname">BatchPredict</code><a class="reference internal" href="_modules/dpipe/batch_predict/base.html#BatchPredict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.base.BatchPredict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">abc.ABC</span></code></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.base.BatchPredict.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em>, <em>*</em>, <em>predict_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/base.html#BatchPredict.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.base.BatchPredict.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.base.BatchPredict.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>*</em>, <em>validate_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/base.html#BatchPredict.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.base.BatchPredict.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.batch_predict.patch_3d">
+<span id="dpipe-batch-predict-patch-3d-module"></span><h2>dpipe.batch_predict.patch_3d module<a class="headerlink" href="#module-dpipe.batch_predict.patch_3d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.batch_predict.patch_3d.BatchPredictorShapeState">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.patch_3d.</code><code class="descname">BatchPredictorShapeState</code><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#BatchPredictorShapeState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.BatchPredictorShapeState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.base.BatchPredict" title="dpipe.batch_predict.base.BatchPredict"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.base.BatchPredict</span></code></a></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d.BatchPredictorShapeState.combine_y">
+<code class="descname">combine_y</code><span class="sig-paren">(</span><em>y_parts</em>, <em>x_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#BatchPredictorShapeState.combine_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.BatchPredictorShapeState.combine_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d.BatchPredictorShapeState.divide_x">
+<code class="descname">divide_x</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#BatchPredictorShapeState.divide_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.BatchPredictorShapeState.divide_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d.BatchPredictorShapeState.divide_y">
+<code class="descname">divide_y</code><span class="sig-paren">(</span><em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#BatchPredictorShapeState.divide_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.BatchPredictorShapeState.divide_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d.BatchPredictorShapeState.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em>, <em>*</em>, <em>predict_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#BatchPredictorShapeState.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.BatchPredictorShapeState.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d.BatchPredictorShapeState.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>*</em>, <em>validate_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#BatchPredictorShapeState.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.BatchPredictorShapeState.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dpipe.batch_predict.patch_3d.Patch3DPredictor">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.patch_3d.</code><code class="descname">Patch3DPredictor</code><span class="sig-paren">(</span><em>x_patch_sizes: list</em>, <em>y_patch_size: list</em>, <em>padding_mode: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#Patch3DPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.Patch3DPredictor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.patch_3d.BatchPredictorShapeState" title="dpipe.batch_predict.patch_3d.BatchPredictorShapeState"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.patch_3d.BatchPredictorShapeState</span></code></a></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d.Patch3DPredictor.combine_y">
+<code class="descname">combine_y</code><span class="sig-paren">(</span><em>y_parts</em>, <em>x_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#Patch3DPredictor.combine_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.Patch3DPredictor.combine_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d.Patch3DPredictor.divide_x">
+<code class="descname">divide_x</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#Patch3DPredictor.divide_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.Patch3DPredictor.divide_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d.Patch3DPredictor.divide_y">
+<code class="descname">divide_y</code><span class="sig-paren">(</span><em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#Patch3DPredictor.divide_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.Patch3DPredictor.divide_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.batch_predict.patch_3d_fixed">
+<span id="dpipe-batch-predict-patch-3d-fixed-module"></span><h2>dpipe.batch_predict.patch_3d_fixed module<a class="headerlink" href="#module-dpipe.batch_predict.patch_3d_fixed" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.patch_3d_fixed.</code><code class="descname">Patch3DFixedPredictor</code><span class="sig-paren">(</span><em>x_patch_sizes: list</em>, <em>y_patch_size: list</em>, <em>padding_mode: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DFixedPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.patch_3d.Patch3DPredictor" title="dpipe.batch_predict.patch_3d.Patch3DPredictor"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.patch_3d.Patch3DPredictor</span></code></a></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.combine_y">
+<code class="descname">combine_y</code><span class="sig-paren">(</span><em>y_parts</em>, <em>x_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DFixedPredictor.combine_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.combine_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.divide_x">
+<code class="descname">divide_x</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DFixedPredictor.divide_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.divide_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.divide_y">
+<code class="descname">divide_y</code><span class="sig-paren">(</span><em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DFixedPredictor.divide_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.divide_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedQuantilesPredictor">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.patch_3d_fixed.</code><code class="descname">Patch3DFixedQuantilesPredictor</code><span class="sig-paren">(</span><em>x_patch_sizes: list</em>, <em>y_patch_size: list</em>, <em>n_quantiles: int</em>, <em>padding_mode: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DFixedQuantilesPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedQuantilesPredictor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedQuantilesPredictor" title="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedQuantilesPredictor"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.patch_3d_fixed.Patch3DFixedQuantilesPredictor</span></code></a></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedQuantilesPredictor.divide_x">
+<code class="descname">divide_x</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DFixedQuantilesPredictor.divide_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedQuantilesPredictor.divide_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.batch_predict.patch_3d_fixed.find_fixed_spatial_size">
+<code class="descclassname">dpipe.batch_predict.patch_3d_fixed.</code><code class="descname">find_fixed_spatial_size</code><span class="sig-paren">(</span><em>spatial_size</em>, <em>spatial_patch_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#find_fixed_spatial_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.find_fixed_spatial_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.batch_predict.patch_3d_fixed.pad_spatial_size">
+<code class="descclassname">dpipe.batch_predict.patch_3d_fixed.</code><code class="descname">pad_spatial_size</code><span class="sig-paren">(</span><em>x</em>, <em>spatial_size: &lt;built-in function array&gt;</em>, <em>spatial_dims</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#pad_spatial_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.pad_spatial_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.batch_predict.patch_3d_fixed.slice_spatial_size">
+<code class="descclassname">dpipe.batch_predict.patch_3d_fixed.</code><code class="descname">slice_spatial_size</code><span class="sig-paren">(</span><em>x</em>, <em>spatial_size</em>, <em>spatial_dims</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#slice_spatial_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.slice_spatial_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.batch_predict.slice">
+<span id="dpipe-batch-predict-slice-module"></span><h2>dpipe.batch_predict.slice module<a class="headerlink" href="#module-dpipe.batch_predict.slice" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.batch_predict.slice.Slice2D">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.slice.</code><code class="descname">Slice2D</code><a class="reference internal" href="_modules/dpipe/batch_predict/slice.html#Slice2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.slice.Slice2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.base.BatchPredict" title="dpipe.batch_predict.base.BatchPredict"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.base.BatchPredict</span></code></a></p>
+<p>A predictor that feeds 2D slices along the OZ axis into the network and stacks the predictions.</p>
+<dl class="method">
+<dt id="dpipe.batch_predict.slice.Slice2D.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>*inputs</em>, <em>predict_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/slice.html#Slice2D.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.slice.Slice2D.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.slice.Slice2D.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><em>*inputs</em>, <em>validate_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/slice.html#Slice2D.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.slice.Slice2D.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.batch_predict.test_patch_3d">
+<span id="dpipe-batch-predict-test-patch-3d-module"></span><h2>dpipe.batch_predict.test_patch_3d module<a class="headerlink" href="#module-dpipe.batch_predict.test_patch_3d" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.batch_predict.test_patch_3d.Model">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.test_patch_3d.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>i</em>, <em>y_ndim</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d.Model.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>*inputs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d.html#Model.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d.Model.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d.Model.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><em>*inputs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d.html#Model.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d.Model.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.test_patch_3d.</code><code class="descname">TestPatch3DPredictor</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d.html#TestPatch3DPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d.html#TestPatch3DPredictor.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor.test_patch_3d_predict_call">
+<code class="descname">test_patch_3d_predict_call</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d.html#TestPatch3DPredictor.test_patch_3d_predict_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor.test_patch_3d_predict_call" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor.test_predictor">
+<code class="descname">test_predictor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d.html#TestPatch3DPredictor.test_predictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor.test_predictor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.batch_predict.test_patch_3d_fixed">
+<span id="dpipe-batch-predict-test-patch-3d-fixed-module"></span><h2>dpipe.batch_predict.test_patch_3d_fixed module<a class="headerlink" href="#module-dpipe.batch_predict.test_patch_3d_fixed" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.Model">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.test_patch_3d_fixed.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>i</em>, <em>y_ndim</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.Model.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>*inputs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#Model.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.Model.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.Model.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><em>*inputs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#Model.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.Model.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.test_patch_3d_fixed.</code><code class="descname">TestPatch3DFixedPredictor</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#TestPatch3DFixedPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#TestPatch3DFixedPredictor.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor.test_patch_3d_predict_call">
+<code class="descname">test_patch_3d_predict_call</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#TestPatch3DFixedPredictor.test_patch_3d_predict_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor.test_patch_3d_predict_call" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor.test_predictor">
+<code class="descname">test_predictor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#TestPatch3DFixedPredictor.test_predictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor.test_predictor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor.test_predictor_big">
+<code class="descname">test_predictor_big</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#TestPatch3DFixedPredictor.test_predictor_big"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor.test_predictor_big" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.test_patch_3d_fixed.</code><code class="descname">TestPatch3DFixedQuantilesPredictor</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#TestPatch3DFixedQuantilesPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor.setUp">
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#TestPatch3DFixedQuantilesPredictor.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor.test_divide_x">
+<code class="descname">test_divide_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#TestPatch3DFixedQuantilesPredictor.test_divide_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor.test_divide_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor.test_patch_3d_predict_call">
+<code class="descname">test_patch_3d_predict_call</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/test_patch_3d_fixed.html#TestPatch3DFixedQuantilesPredictor.test_patch_3d_predict_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor.test_patch_3d_predict_call" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.batch_predict.utils">
+<span id="dpipe-batch-predict-utils-module"></span><h2>dpipe.batch_predict.utils module<a class="headerlink" href="#module-dpipe.batch_predict.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.batch_predict.utils.predict_object">
+<code class="descclassname">dpipe.batch_predict.utils.</code><code class="descname">predict_object</code><span class="sig-paren">(</span><em>inputs</em>, <em>*</em>, <em>predict_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/utils.html#predict_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.utils.predict_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.batch_predict.utils.validate_object">
+<code class="descclassname">dpipe.batch_predict.utils.</code><code class="descname">validate_object</code><span class="sig-paren">(</span><em>inputs</em>, <em>*</em>, <em>validate_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/utils.html#validate_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.utils.validate_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.batch_predict">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-dpipe.batch_predict" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="dpipe.config.html" class="btn btn-neutral float-right" title="dpipe.config package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="dpipe.batch_iter.html" class="btn btn-neutral" title="dpipe.batch_iter package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

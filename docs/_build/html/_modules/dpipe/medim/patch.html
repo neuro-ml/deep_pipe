@@ -1,0 +1,347 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.medim.patch &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="dpipe  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dpipe.html">dpipe package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dpipe.medim.patch</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dpipe.medim.patch</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Tools for patch extraction and generation</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">build_slices</span><span class="p">,</span> <span class="n">pad</span>
+
+
+<span class="c1"># FIXME consider what happens if central_idx is outside of x, error is likely</span>
+<span class="c1"># Probably need to rewrite to support it</span>
+<span class="c1"># FIXME even patch size is not supported</span>
+
+
+<div class="viewcode-block" id="find_patch_size"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.patch.find_patch_size">[docs]</a><span class="k">def</span> <span class="nf">find_patch_size</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">):</span>
+    <span class="n">patch_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">patch_shape</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">]</span> <span class="o">=</span> <span class="n">spatial_patch_size</span>
+    <span class="k">return</span> <span class="n">patch_shape</span></div>
+
+
+<div class="viewcode-block" id="find_patch_start_end_padding"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.patch.find_patch_start_end_padding">[docs]</a><span class="k">def</span> <span class="nf">find_patch_start_end_padding</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">spatial_center_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                 <span class="n">spatial_dims</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">spatial_patch_size</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;even patch size is not supported&#39;</span>
+
+    <span class="n">spatial_start</span> <span class="o">=</span> <span class="n">spatial_center_idx</span> <span class="o">-</span> <span class="n">spatial_patch_size</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">spatial_end</span> <span class="o">=</span> <span class="n">spatial_start</span> <span class="o">+</span> <span class="n">spatial_patch_size</span>
+
+    <span class="n">padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">spatial_shape</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">]</span>
+
+    <span class="n">padding</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">spatial_start</span>
+    <span class="n">padding</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">spatial_end</span> <span class="o">-</span> <span class="n">spatial_shape</span>
+    <span class="n">padding</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">padding</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">])</span>
+
+    <span class="n">spatial_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">spatial_start</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">spatial_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">spatial_end</span><span class="p">,</span> <span class="n">spatial_shape</span><span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">start</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">]</span> <span class="o">=</span> <span class="n">spatial_start</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">end</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">]</span> <span class="o">=</span> <span class="n">spatial_end</span>
+
+    <span class="k">return</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">padding</span></div>
+
+
+<div class="viewcode-block" id="extract_patch"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.patch.extract_patch">[docs]</a><span class="k">def</span> <span class="nf">extract_patch</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">spatial_center_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                  <span class="n">padding_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Returns extracted patch of specific spatial size and with specified</span>
+<span class="sd">    center from x.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x</span>
+<span class="sd">        Array with data. Some of it&#39;s dimensions are spatial. We extract</span>
+<span class="sd">        spatial patch specified by spatial location and spatial size.</span>
+<span class="sd">    spatial_center_idx</span>
+<span class="sd">        Location of the center of the patch. Components</span>
+<span class="sd">        correspond to spatial dimensions. If some of patch size components was</span>
+<span class="sd">        even, patch center is supposed to be on the right center pixel.</span>
+<span class="sd">    spatial_patch_size</span>
+<span class="sd">        Spatial patch size. Output will have original shape for</span>
+<span class="sd">        non-spatial dimensions and patch_size shape for spatial dimensions.</span>
+<span class="sd">    spatial_dims</span>
+<span class="sd">        Which of x&#39;s dimensions be consider as spatial. Accepts</span>
+<span class="sd">        negative parameters.</span>
+<span class="sd">    padding_values</span>
+<span class="sd">        Defines values, that will fill padding. Have to be broadcastable to</span>
+<span class="sd">        the resulting patch shape. By default no broadcasting is allowed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :</span>
+<span class="sd">        Patch extracted from x, padded, if necessary.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">find_patch_start_end_padding</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">spatial_center_idx</span><span class="o">=</span><span class="n">spatial_center_idx</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="o">=</span><span class="n">spatial_patch_size</span><span class="p">,</span>
+        <span class="n">spatial_dims</span><span class="o">=</span><span class="n">spatial_dims</span>
+    <span class="p">)</span>
+    <span class="n">x_slice</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">build_slices</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">padding_values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;patch is outside of the x&quot;</span><span class="p">)</span>
+        <span class="n">patch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_slice</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">patch</span> <span class="o">=</span> <span class="n">pad</span><span class="p">(</span><span class="n">x_slice</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">padding_values</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">patch</span></div>
+
+
+<div class="viewcode-block" id="sample_uniform_center_index"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.patch.sample_uniform_center_index">[docs]</a><span class="k">def</span> <span class="nf">sample_uniform_center_index</span><span class="p">(</span><span class="n">x_shape</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                <span class="n">spatial_dims</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns spatial center coordinates for the patch, chosen randomly.</span>
+<span class="sd">    We assume that patch have to belong to the object boundaries.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x_shape:</span>
+<span class="sd">        Object shape.</span>
+<span class="sd">    spatial_patch_size:</span>
+<span class="sd">        Size of the required patch</span>
+<span class="sd">    spatial_dims:</span>
+<span class="sd">        Elements from x_shape that correspond to spatial dims. Can be negative.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :</span>
+<span class="sd">        Center indices for spatial dims. If patch size was even, center index</span>
+<span class="sd">        is shifted to the right.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">max_spatial_center_idx</span> <span class="o">=</span> <span class="n">x_shape</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">]</span> <span class="o">-</span> <span class="n">spatial_patch_size</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_less</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_spatial_center_idx</span><span class="p">,</span> <span class="s1">&#39;x_shape is small&#39;</span><span class="p">)</span>
+
+    <span class="n">start_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spatial_dims</span><span class="p">))</span> <span class="o">*</span> <span class="n">max_spatial_center_idx</span>
+    <span class="n">start_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">start_idx</span><span class="p">)</span>
+    <span class="n">center_idx</span> <span class="o">=</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="n">spatial_patch_size</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">center_idx</span></div>
+
+
+<div class="viewcode-block" id="find_masked_patch_center_indices"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.patch.find_masked_patch_center_indices">[docs]</a><span class="k">def</span> <span class="nf">find_masked_patch_center_indices</span><span class="p">(</span><span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">patch_size</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns array with spatial center indices for patches that completely </span>
+<span class="sd">    belong to spatial_mask and spatial voxel mask is activated.&quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+
+    <span class="n">l_bound</span> <span class="o">=</span> <span class="n">c</span> <span class="o">-</span> <span class="n">patch_size</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">r_bound</span> <span class="o">=</span> <span class="n">c</span> <span class="o">+</span> <span class="n">patch_size</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">patch_size</span> <span class="o">%</span> <span class="mi">2</span>
+
+    <span class="c1"># Remove centers that are too left and too right</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">l_bound</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">r_bound</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">c</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

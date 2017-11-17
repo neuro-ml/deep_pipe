@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.commands &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="dpipe  documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dpipe.html">dpipe package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>dpipe.commands</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dpipe.commands</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">dpipe.batch_predict</span> <span class="k">import</span> <span class="n">BatchPredict</span>
+<span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
+<span class="kn">from</span> <span class="nn">dpipe.dl.model</span> <span class="k">import</span> <span class="n">FrozenModel</span>
+<span class="kn">from</span> <span class="nn">dpipe.medim.metrics</span> <span class="k">import</span> <span class="n">dice_score</span> <span class="k">as</span> <span class="n">dice</span>
+<span class="kn">from</span> <span class="nn">dpipe.medim.metrics</span> <span class="k">import</span> <span class="n">multichannel_dice_score</span>
+
+<span class="n">register_cmd</span> <span class="o">=</span> <span class="n">register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;command&#39;</span><span class="p">)</span>
+
+
+<span class="nd">@register_cmd</span>
+<div class="viewcode-block" id="train_model"><a class="viewcode-back" href="../../dpipe.html#dpipe.commands.train_model">[docs]</a><span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">save_model_path</span><span class="p">,</span> <span class="n">restore_model_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">restore_model_path</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">restore_model_path</span><span class="p">)</span>
+
+    <span class="n">train</span><span class="p">()</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_model_path</span><span class="p">)</span></div>
+
+
+<span class="nd">@register_cmd</span>
+<div class="viewcode-block" id="transform"><a class="viewcode-back" href="../../dpipe.html#dpipe.commands.transform">[docs]</a><span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">transform_fn</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">input_path</span><span class="p">)):</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">f</span><span class="p">),</span> <span class="n">transform_fn</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="n">f</span><span class="p">))))</span></div>
+
+
+<span class="nd">@register_cmd</span>
+<div class="viewcode-block" id="predict"><a class="viewcode-back" href="../../dpipe.html#dpipe.commands.predict">[docs]</a><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">load_x</span><span class="p">,</span> <span class="n">frozen_model</span><span class="p">:</span> <span class="n">FrozenModel</span><span class="p">,</span> <span class="n">batch_predict</span><span class="p">:</span> <span class="n">BatchPredict</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">ids</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">load_x</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">batch_predict</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">predict_fn</span><span class="o">=</span><span class="n">frozen_model</span><span class="o">.</span><span class="n">do_inf_step</span><span class="p">)</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">identifier</span><span class="p">)),</span> <span class="n">y</span><span class="p">)</span>
+        <span class="c1"># saving some memory</span>
+        <span class="k">del</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span></div>
+
+
+<span class="nd">@register_cmd</span>
+<div class="viewcode-block" id="compute_dices"><a class="viewcode-back" href="../../dpipe.html#dpipe.commands.compute_dices">[docs]</a><span class="k">def</span> <span class="nf">compute_dices</span><span class="p">(</span><span class="n">load_msegm</span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">,</span> <span class="n">dices_path</span><span class="p">):</span>
+    <span class="n">dices</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">predictions_path</span><span class="p">)):</span>
+        <span class="n">patient_id</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">y_true</span> <span class="o">=</span> <span class="n">load_msegm</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">predictions_path</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+
+        <span class="n">dices</span><span class="p">[</span><span class="n">patient_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">multichannel_dice_score</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dices_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">dices</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<span class="nd">@register_cmd</span>
+<div class="viewcode-block" id="find_dice_threshold"><a class="viewcode-back" href="../../dpipe.html#dpipe.commands.find_dice_threshold">[docs]</a><span class="k">def</span> <span class="nf">find_dice_threshold</span><span class="p">(</span><span class="n">load_msegm</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">,</span> <span class="n">thresholds_path</span><span class="p">):</span>
+    <span class="n">thresholds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">dices</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">patient_id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+        <span class="n">y_true</span> <span class="o">=</span> <span class="n">load_msegm</span><span class="p">(</span><span class="n">patient_id</span><span class="p">)</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">predictions_path</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{patient_id}</span><span class="s1">.npy&#39;</span><span class="p">))</span>
+
+        <span class="c1"># get dice with individual threshold for each channel</span>
+        <span class="n">channels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">y_pred_chan</span><span class="p">,</span> <span class="n">y_true_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+            <span class="n">channels</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dice</span><span class="p">(</span><span class="n">y_pred_chan</span> <span class="o">&gt;</span> <span class="n">thr</span><span class="p">,</span> <span class="n">y_true_chan</span><span class="p">)</span> <span class="k">for</span> <span class="n">thr</span> <span class="ow">in</span> <span class="n">thresholds</span><span class="p">])</span>
+        <span class="n">dices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">channels</span><span class="p">)</span>
+        <span class="c1"># saving some memory</span>
+        <span class="k">del</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span>
+
+    <span class="n">optimal_thresholds</span> <span class="o">=</span> <span class="n">thresholds</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">thresholds_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">optimal_thresholds</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">file</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

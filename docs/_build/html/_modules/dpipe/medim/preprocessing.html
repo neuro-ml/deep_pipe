@@ -1,0 +1,322 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dpipe.medim.preprocessing &mdash; dpipe  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="dpipe  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> dpipe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dpipe.html">dpipe package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dpipe</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>dpipe.medim.preprocessing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for dpipe.medim.preprocessing</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span>
+
+
+<div class="viewcode-block" id="normalize_scan"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.preprocessing.normalize_scan">[docs]</a><span class="k">def</span> <span class="nf">normalize_scan</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Normalize scan to make mean and std equal to (0, 1) if stated.</span>
+<span class="sd">    Supports robust estimation with drop_percentile.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">drop_percentile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span> <span class="n">drop_percentile</span><span class="p">)</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span> <span class="mi">100</span> <span class="o">-</span> <span class="n">drop_percentile</span><span class="p">)</span>
+
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">scan</span> <span class="o">&gt;</span> <span class="n">bottom</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">scan</span> <span class="o">&lt;</span> <span class="n">top</span><span class="p">)</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">scan</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="n">vals</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">mean</span><span class="p">:</span>
+        <span class="n">scan</span> <span class="o">=</span> <span class="n">scan</span> <span class="o">-</span> <span class="n">vals</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">std</span><span class="p">:</span>
+        <span class="n">scan</span> <span class="o">=</span> <span class="n">scan</span> <span class="o">/</span> <span class="n">vals</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="normalize_mscan"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.preprocessing.normalize_mscan">[docs]</a><span class="k">def</span> <span class="nf">normalize_mscan</span><span class="p">(</span><span class="n">mscan</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Normalize mscan to make mean and std equal to (0, 1) if stated.</span>
+<span class="sd">    Supports robust estimation with drop_percentile.&quot;&quot;&quot;</span>
+    <span class="n">new_mscan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">mscan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mscan</span><span class="p">)):</span>
+        <span class="n">new_mscan</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalize_scan</span><span class="p">(</span><span class="n">mscan</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
+                                      <span class="n">drop_percentile</span><span class="o">=</span><span class="n">drop_percentile</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_mscan</span></div>
+
+
+<div class="viewcode-block" id="scale"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.preprocessing.scale">[docs]</a><span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">spacial_shape</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+          <span class="n">axes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rescale image to `spacial_shape` along the `axes`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image: image to rescale</span>
+<span class="sd">    spacial_shape: final image shape</span>
+<span class="sd">    order: order of interpolation</span>
+<span class="sd">    axes: axes along which the image will be reshaped.</span>
+<span class="sd">        If None - the last `len(spacial_shape)` axes are used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array: reshaped image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">axes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spacial_shape</span><span class="p">)</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">l</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">axes</span><span class="p">))</span>
+
+    <span class="n">old_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="n">axes</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">new_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">spacial_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+    <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">scale_factor</span><span class="p">[</span><span class="n">axes</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_shape</span> <span class="o">/</span> <span class="n">old_shape</span>
+
+    <span class="k">return</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="pad"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.preprocessing.pad">[docs]</a><span class="k">def</span> <span class="nf">pad</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">spacial_shape</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+        <span class="n">axes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pad image to `spacial_shape` along the `axes`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image: image to pad</span>
+<span class="sd">    spacial_shape: final image shape</span>
+<span class="sd">    axes: axes along which the image will be padded.</span>
+<span class="sd">        If None - the last `len(spacial_shape)` axes are used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array: padded image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">axes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spacial_shape</span><span class="p">)</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">l</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">axes</span><span class="p">))</span>
+
+    <span class="n">old_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="n">axes</span><span class="p">]</span>
+    <span class="n">new_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">spacial_shape</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="p">(</span><span class="n">old_shape</span> <span class="o">&lt;=</span> <span class="n">new_shape</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">new_shape</span> <span class="o">-</span> <span class="n">old_shape</span>
+    <span class="n">pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">delta</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">delta</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">image</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
+    <span class="n">padding</span><span class="p">[</span><span class="n">axes</span><span class="p">]</span> <span class="o">=</span> <span class="n">pad</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

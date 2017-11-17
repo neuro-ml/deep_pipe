@@ -38,5 +38,7 @@ if __name__ == '__main__':
     age_data = pd.read_csv(os.path.join(data_path, 'survival_evaluation.csv'),
                            index_col='Brats17ID').to_dict('index')
 
-    metadata = make_metadata(os.listdir(data_path), age_data)
+    patients = next(os.walk(data_path))[1]
+
+    metadata = make_metadata(patients, age_data)
     metadata.to_csv(os.path.join(data_path, 'metadata.csv'), index_label='id')
