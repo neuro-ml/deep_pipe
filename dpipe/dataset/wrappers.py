@@ -4,7 +4,7 @@ from collections import ChainMap
 
 import numpy as np
 import dpipe.medim as medim
-from dpipe.config import register
+from dpipe.config import register, register_inline
 from dpipe.dataset.segmentation import Segmentation
 from .base import DataSet
 
@@ -21,23 +21,16 @@ register = functools.partial(register, module_type='dataset_wrapper')
 
 
 @register()
-def cached(dataset: DataSet) -> DataSet:
-    n = len(dataset.ids)
+def cache_methods(dataset: DataSet, methods):
+    cache = functools.lru_cache(len(dataset.ids))
 
-    class CachedDataset(Proxy):
-        @functools.lru_cache(n)
-        def load_mscan(self, patient_id):
-            return self._shadowed.load_mscan(patient_id)
+    new_methods = {method: staticmethod(cache(getattr(dataset, method))) for method in methods}
+    proxy = type('Cached', (Proxy,), new_methods)
+    return proxy(dataset)
 
-        @functools.lru_cache(n)
-        def load_segm(self, patient_id):
-            return self._shadowed.load_segm(patient_id)
 
-        @functools.lru_cache(n)
-        def load_msegm(self, patient_id):
-            return self._shadowed.load_msegm(patient_id)
-
-    return CachedDataset(dataset)
+cached = functools.partial(cache_methods, methods=['load_x', 'load_y'])
+register_inline(cached, 'cached', 'dataset_wrapper')
 
 
 @register()
@@ -54,7 +47,7 @@ def apply_mask(dataset: DataSet, mask_modality_id: int = None,
 
         @property
         def n_chans_mscan(self):
-            return self._shadowed.n_chans_mscan - 1
+            return self._shadowed.n_chans_x - 1
 
     return dataset if mask_modality_id is None else MaskedDataset(dataset)
 
@@ -167,28 +160,20 @@ def merge_datasets(datasets: List[DataSet]) -> DataSet:
 
 
 @register()
-def msegm(dataset: Segmentation) -> DataSet:
-    class Multimodal(Proxy):
-        def load_y(self, identifier):
-            return self.load_msegm(identifier)
+class Padded(Proxy):
+    def __init__(self, dataset: Segmentation, shape: list, axes: list):
+        super().__init__(dataset)
+        self.shape = shape
+        self.axes = axes
 
-    return Multimodal(dataset)
+    def load_mscan(self, patient_id):
+        img = self._shadowed.load_mscan(patient_id)
+        return medim.preprocessing.pad(img, self.shape, self.axes)
 
+    def load_segm(self, patient_id):
+        img = self._shadowed.load_segm(patient_id)
+        return medim.preprocessing.pad(img, self.shape, self.axes)
 
-# TODO: convert to class
-@register()
-def padded(dataset: Segmentation, shape: list, axes: list) -> DataSet:
-    class Padded(Proxy):
-        def load_mscan(self, patient_id):
-            img = self._shadowed.load_mscan(patient_id)
-            return medim.preprocessing.pad(img, shape, axes)
-
-        def load_segm(self, patient_id):
-            img = self._shadowed.load_segm(patient_id)
-            return medim.preprocessing.pad(img, shape, axes)
-
-        def load_msegm(self, patient_id):
-            img = self._shadowed.load_msegm(patient_id)
-            return medim.preprocessing.pad(img, shape, axes)
-
-    return Padded(dataset)
+    def load_msegm(self, patient_id):
+        img = self._shadowed.load_msegm(patient_id)
+        return medim.preprocessing.pad(img, self.shape, self.axes)

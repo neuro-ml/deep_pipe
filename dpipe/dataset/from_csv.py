@@ -5,7 +5,7 @@ import pandas as pd
 
 from dpipe.config import register
 from dpipe.medim.utils import load_image
-from .segmentation import Segmentation, DatasetInt
+from .segmentation import Segmentation
 
 
 @register()
@@ -37,7 +37,7 @@ class CSV:
 
 class FromCSV:
     """
-    A mixin for the Dataset class. Adds support for csv files.
+    A mixin for the Segmentation class. Adds support for csv files.
     """
 
     def __init__(self, data_path, modalities, metadata_rpath):
@@ -56,14 +56,14 @@ class FromCSV:
         return self._ids
 
     @property
-    def n_chans_mscan(self):
+    def n_chans_x(self):
         return len(self.modality_cols)
 
     def _load_by_paths(self, paths):
         return np.asarray([load_image(os.path.join(self.data_path, path))
                            for path in paths])
 
-    def load_mscan(self, patient_id):
+    def load_x(self, patient_id):
         paths = self.df[self.modality_cols].loc[patient_id]
         return np.array(self._load_by_paths(paths), dtype='float32')
 
@@ -90,6 +90,9 @@ class FromCSVMultiple(FromCSV, Segmentation):
 
         return image
 
+    def load_y(self, identifier):
+        return self.load_msegm(identifier)
+
     @property
     def n_chans_segm(self):
         return self.n_chans_msegm
@@ -100,7 +103,7 @@ class FromCSVMultiple(FromCSV, Segmentation):
 
 
 @register('csv_int')
-class FromCSVInt(FromCSV, DatasetInt):
+class FromCSVInt(FromCSV, Segmentation):
     def __init__(self, data_path, modalities, target, metadata_rpath,
                  segm2msegm_matrix):
         super().__init__(data_path, modalities, metadata_rpath)
@@ -117,3 +120,24 @@ class FromCSVInt(FromCSV, DatasetInt):
     def load_segm(self, patient_id):
         path = self.df[self.target_col].loc[patient_id]
         return load_image(os.path.join(self.data_path, path))
+
+    def load_y(self, identifier):
+        return self.load_segm(identifier)
+
+    def segm2msegm(self, x) -> np.array:
+        assert np.issubdtype(x.dtype, np.integer), \
+            f'Segmentation dtype must be int, but {x.dtype} provided'
+        return np.rollaxis(self.segm2msegm_matrix[x], 3, 0)
+
+    def load_msegm(self, patient_id) -> np.array:
+        """"Method returns multimodal segmentation of shape
+         [n_chans_msegm, x, y, z]. We use this result to compute dice scores"""
+        return self.segm2msegm(self.load_segm(patient_id))
+
+    @property
+    def n_chans_segm(self):
+        return self.segm2msegm_matrix.shape[0]
+
+    @property
+    def n_chans_msegm(self):
+        return self.segm2msegm_matrix.shape[1]

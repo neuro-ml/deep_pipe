@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import torch
 from torch.autograd import Variable
 
@@ -93,7 +94,17 @@ def to_np(x: Variable):
     return x.cpu().data.numpy()
 
 
+validate_dtype = {
+    np.bool: np.float32,
+}
+
+
 def to_var(x, cuda, volatile=False):
+    # torch doesn't support conversion from all numpy types:
+    for dtype in validate_dtype:
+        if x.dtype == dtype:
+            x = x.astype(validate_dtype[dtype])
+            break
     x = Variable(torch.from_numpy(x), volatile=volatile)
     if (torch.cuda.is_available() and cuda is None) or cuda:
         x = x.cuda()

@@ -128,19 +128,18 @@ class ENet2D(nn.Module):
         super().__init__()
 
         self.layers = nn.Sequential(
-            # TODO: this is the FASTEST ENET EVER
-            # self.initial(n_chans_in),
-            # self.stage(16, 64, 5, downsample=True),
-            # self.stage(64, 128, 9, downsample=True),
-            # self.stage(128, 128, 8),
-            # self.stage(128, 64, 3, upsample=True),
-            # self.stage(64, 16, 2, upsample=True),
-            # self.conv_transpose(16, n_chans_out, 2, stride=1, padding=0, output_padding=0, bias=True),
-            nn.Conv2d(n_chans_in, n_chans_out, 1)
+            self.initial(n_chans_in),
+            self.stage(16, 64, 5, downsample=True),
+            self.stage(64, 128, 9, downsample=True),
+            self.stage(128, 128, 8),
+            self.stage(128, 64, 3, upsample=True),
+            self.stage(64, 16, 2, upsample=True),
+            self.conv_transpose(16, n_chans_out, 1),
         )
 
     def forward(self, input):
-        return self.layers(input)
+        size = input.size()[2:]
+        return torch.nn.functional.upsample_bilinear(self.layers(input), size=size)
 
 
 class InitialBlock3D(InitialBlock):

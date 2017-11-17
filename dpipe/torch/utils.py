@@ -19,6 +19,12 @@ def swap_channels(x):
 
 
 @register()
+def bce_logits(logits, target):
+    logits = nn.functional.sigmoid(logits)
+    return nn.functional.binary_cross_entropy(logits, target)
+
+
+@register()
 def softmax_cross_entropy(logits, target):
     target = target.long()
     return nn.functional.cross_entropy(swap_channels(logits).view(-1, logits.size()[1]), target.view(-1))

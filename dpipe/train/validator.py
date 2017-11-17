@@ -23,7 +23,6 @@ def evaluate(data, single: dict = None, multiple: dict = None):
             del y, prediction
 
     if multiple:
-        ys = np.asarray(ys)
         for name, metric in multiple.items():
             value = metric(ys, predictions)
             metrics_multiple[name] = value

@@ -8,6 +8,7 @@ from tensorboard_easy.logger import Logger
 from dpipe.batch_iter_factory import BatchIterFactory
 from dpipe.config import register
 from dpipe.model import Model
+from dpipe.train.logging import log_vector
 from dpipe.train.validator import validate
 from .utils import make_find_next_lr, make_check_loss_decrease
 
@@ -15,8 +16,7 @@ from .utils import make_find_next_lr, make_check_loss_decrease
 @register()
 def train(model: Model, train_batch_iter_factory: BatchIterFactory, validator, n_epochs: int,
           log_path, lr_init, lr_dec_mul, patience, rtol, atol, batch_predict):
-    # lr policy
-    # stopping policy
+    # TODO: lr policy, stopping policy
     logger = Logger(log_path)
 
     find_next_lr = make_find_next_lr(lr_init, lambda lr: lr * lr_dec_mul,
@@ -44,7 +44,11 @@ def train(model: Model, train_batch_iter_factory: BatchIterFactory, validator, n
                 logger.log_histogram(f'metrics/{name}', np.asarray(values), epoch)
 
             for name, value in metrics_multiple.items():
-                logger.log_scalar(f'metrics/{name}', value, epoch)
+                try:
+                    # check if not scalar
+                    log_vector(logger, f'metrics/{name}', value, epoch)
+                except TypeError:
+                    logger.log_scalar(f'metrics/{name}', value, epoch)
 
             val_loss = np.mean(val_losses)
             val_avg_log_write(val_loss)
