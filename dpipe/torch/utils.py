@@ -24,24 +24,14 @@ def bce_logits(logits, target):
     return nn.functional.binary_cross_entropy(logits, target)
 
 
-@register()
-def softmax_cross_entropy(logits, target):
-    target = target.long()
-    return nn.functional.cross_entropy(swap_channels(logits).view(-1, logits.size()[1]), target.view(-1))
-
-
-@register('NormalizedSoftmaxCrossEntropy')
-class NormalizedSoftmaxCrossEntropy:
+@register('softmax_cross_entropy')
+class SoftmaxCrossEntropy:
     def __init__(self, n_classes):
         self.n_classes = n_classes
         self.eye = Variable(torch.eye(n_classes))
 
     def __call__(self, logits, target):
-        target = target.long().view(-1)
-        weight = 1 / self.eye.index_select(0, target).sum(0)
-
-        return nn.functional.cross_entropy(swap_channels(logits).view(-1, self.n_classes),
-                                           target, weight=weight)
+        return torch.sum(self.eye.index_select(0, target.long().view(-1)) * swap_channels(logits).view(-1, self.n_classes))
 
     def cuda(self):
         self.eye = self.eye.cuda()
@@ -50,3 +40,13 @@ class NormalizedSoftmaxCrossEntropy:
     def cpu(self):
         self.eye = self.eye.cpu()
         return self
+
+
+@register('normalized_softmax_cross_entropy')
+class NormalizedSoftmaxCrossEntropy(SoftmaxCrossEntropy):
+    def __call__(self, logits, target):
+        target = target.long().view(-1)
+        weight = 1 / self.eye.index_select(0, target).sum(0)
+
+        return nn.functional.cross_entropy(swap_channels(logits).view(-1, self.n_classes),
+                                           target, weight=weight)
