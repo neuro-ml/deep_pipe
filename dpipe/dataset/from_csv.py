@@ -90,9 +90,6 @@ class FromCSVMultiple(FromCSV, Segmentation):
 
         return image
 
-    def load_y(self, identifier):
-        return self.load_msegm(identifier)
-
     @property
     def n_chans_segm(self):
         return self.n_chans_msegm
@@ -120,9 +117,6 @@ class FromCSVInt(FromCSV, Segmentation):
     def load_segm(self, patient_id):
         path = self.df[self.target_col].loc[patient_id]
         return load_image(os.path.join(self.data_path, path))
-
-    def load_y(self, identifier):
-        return self.load_segm(identifier)
 
     def segm2msegm(self, x) -> np.array:
         assert np.issubdtype(x.dtype, np.integer), \

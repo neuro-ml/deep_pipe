@@ -2,10 +2,8 @@ from abc import abstractmethod
 
 import numpy as np
 
-from dpipe.dataset.base import DataSet
 
-
-class Segmentation(DataSet):
+class Segmentation:
     @abstractmethod
     def load_segm(self, patient_id) -> np.array:
         """"Method returns segmentation of shape [x, y, z], filled with int

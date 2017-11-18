@@ -4,7 +4,7 @@ from collections import ChainMap
 
 import numpy as np
 import dpipe.medim as medim
-from dpipe.config import register, register_inline
+from dpipe.config import register
 from dpipe.dataset.segmentation import Segmentation
 from .base import DataSet
 
@@ -27,10 +27,6 @@ def cache_methods(dataset: DataSet, methods):
     new_methods = {method: staticmethod(cache(getattr(dataset, method))) for method in methods}
     proxy = type('Cached', (Proxy,), new_methods)
     return proxy(dataset)
-
-
-cached = functools.partial(cache_methods, methods=['load_x', 'load_y'])
-register_inline(cached, 'cached', 'dataset_wrapper')
 
 
 @register()

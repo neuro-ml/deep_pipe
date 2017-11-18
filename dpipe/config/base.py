@@ -27,6 +27,7 @@ def load(path, default):
 
 
 def link_externals():
+    os.makedirs(EXTERNALS, exist_ok=True)
     db = json.loads(load(EXTERNALS_DB, '{}'))
     if set(db.values()) ^ set(os.listdir(EXTERNALS)):
         raise OSError('"externally_loaded_resources" not clean. Were some resources manually linked?')

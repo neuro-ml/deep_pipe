@@ -11,6 +11,3 @@ class DataSet(ABC):
     @abstractmethod
     def load_x(self, identifier: Union[str, int]):
         pass
-
-    def load_y(self, identifier: Union[str, int]):
-        raise NotImplementedError
