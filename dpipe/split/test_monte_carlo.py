@@ -15,7 +15,7 @@ class TestMonteCarloSplitter(unittest.TestCase):
         self.ids_num = 100
         ids = np.array([random_string(10) for _ in range(self.ids_num)])
         self.dataset = Mock()
-        self.dataset.patient_ids = ids
+        self.dataset.ids = ids
 
     def test_successful_split(self):
         n_splits = 5
