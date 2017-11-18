@@ -1,11 +1,11 @@
-nibabel
 numpy
+scipy
 pandas
 scikit-learn>=0.19
-scipy
 tensorflow-gpu
-tqdm
 snakemake
+tqdm
+nibabel
 pdp
 tensorboard-easy
 resource-manager

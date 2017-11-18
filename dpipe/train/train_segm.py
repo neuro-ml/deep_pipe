@@ -7,8 +7,8 @@ from tensorboard_easy.logger import Logger
 from dpipe.batch_iter_factory import BatchIterFactory
 from dpipe.batch_predict import BatchPredict
 from dpipe.config import register
-from dpipe.dl.model import Model
 from dpipe.medim.metrics import multichannel_dice_score
+from dpipe.model import Model
 from .logging import make_log_vector
 from .utils import make_find_next_lr, make_check_loss_decrease
 
@@ -26,9 +26,9 @@ def train_segm(model: Model, train_batch_iter_factory: BatchIterFactory, batch_p
                                      partial(make_check_loss_decrease, patience=patience, rtol=rtol, atol=atol))
 
     train_log_write = logger.make_log_scalar('train_loss')
-    train_avg_log_write = logger.make_log_scalar('avg_train_loss')
-    val_avg_log_write = logger.make_log_scalar('avg_val_loss')
-    val_dices_log_write = make_log_vector(logger, 'val_dices')
+    train_avg_log_write = logger.make_log_scalar('average/train_loss')
+    val_avg_log_write = logger.make_log_scalar('average/val_loss')
+    val_dices_log_write = make_log_vector(logger, 'metrics/val_dices')
 
     lr = find_next_lr(math.inf)
     with train_batch_iter_factory, logger:
