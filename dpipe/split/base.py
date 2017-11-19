@@ -49,14 +49,14 @@ def split_train(splits, val_size, groups=None, **kwargs):
 
 @register()
 def indices_to_subj_ids(splits, subj_ids):
-    '''Converts split indices to subject IDs'''
+    """Converts split indices to subject IDs"""
     return [list(map(lambda ids: [subj_ids[i] for i in ids], split))
             for split in splits]
 
 
 @register()
 def get_loo_cv(dataset: DataSet, *, val_size=None):
-    '''Leave one group out CV. Validation subset will be selected randomly'''
+    """Leave one group out CV. Validation subset will be selected randomly"""
     subj_ids = get_subj_ids(dataset)
     groups = get_groups(dataset)
     n_splits = len(np.unique(groups))

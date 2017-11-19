@@ -94,11 +94,12 @@
 <li class="toctree-l3"><a class="reference internal" href="dpipe.batch_predict.html">dpipe.batch_predict package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.config.html">dpipe.config package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.dataset.html">dpipe.dataset package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.medim.html">dpipe.medim package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.model_core.html">dpipe.model_core package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.split.html">dpipe.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.tf.html">dpipe.tf package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.torch.html">dpipe.torch package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.train.html">dpipe.train package</a></li>
 </ul>
 </li>
@@ -106,6 +107,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-dpipe.batch_iter_factory">dpipe.batch_iter_factory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-dpipe.commands">dpipe.commands module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-dpipe.io">dpipe.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-dpipe.meta">dpipe.meta module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-dpipe.model">dpipe.model module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-dpipe.transformers">dpipe.transformers module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-dpipe">Module contents</a></li>
 </ul>
@@ -182,6 +185,7 @@
 <li class="toctree-l1"><a class="reference internal" href="dpipe.batch_iter.html">dpipe.batch_iter package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_iter.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_iter.html#module-dpipe.batch_iter.patch_3d">dpipe.batch_iter.patch_3d module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.batch_iter.html#module-dpipe.batch_iter.patch_3d_sep">dpipe.batch_iter.patch_3d_sep module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_iter.html#module-dpipe.batch_iter.pipeline">dpipe.batch_iter.pipeline module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_iter.html#module-dpipe.batch_iter.simple">dpipe.batch_iter.simple module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_iter.html#module-dpipe.batch_iter.slices">dpipe.batch_iter.slices module</a></li>
@@ -193,6 +197,7 @@
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_predict.html#module-dpipe.batch_predict.base">dpipe.batch_predict.base module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_predict.html#module-dpipe.batch_predict.patch_3d">dpipe.batch_predict.patch_3d module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_predict.html#module-dpipe.batch_predict.patch_3d_fixed">dpipe.batch_predict.patch_3d_fixed module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.batch_predict.html#module-dpipe.batch_predict.simple">dpipe.batch_predict.simple module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_predict.html#module-dpipe.batch_predict.slice">dpipe.batch_predict.slice module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_predict.html#module-dpipe.batch_predict.test_patch_3d">dpipe.batch_predict.test_patch_3d module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.batch_predict.html#module-dpipe.batch_predict.test_patch_3d_fixed">dpipe.batch_predict.test_patch_3d_fixed module</a></li>
@@ -213,25 +218,18 @@
 <li class="toctree-l2"><a class="reference internal" href="dpipe.dataset.html#module-dpipe.dataset.brats">dpipe.dataset.brats module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.dataset.html#module-dpipe.dataset.from_csv">dpipe.dataset.from_csv module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.dataset.html#module-dpipe.dataset.isles">dpipe.dataset.isles module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.dataset.html#module-dpipe.dataset.segmentation">dpipe.dataset.segmentation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.dataset.html#module-dpipe.dataset.whitematter">dpipe.dataset.whitematter module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.dataset.html#module-dpipe.dataset.wrappers">dpipe.dataset.wrappers module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.dataset.html#module-dpipe.dataset">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.dl.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.dl.html#module-dpipe.dl.activations">dpipe.dl.activations module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.dl.html#module-dpipe.dl.model">dpipe.dl.model module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.dl.html#module-dpipe.dl.utils">dpipe.dl.utils module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.dl.html#module-dpipe.dl">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.experiment.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.flat.html">dpipe.experiment.flat package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="dpipe.experiment.flat.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="dpipe.experiment.flat.html#module-dpipe.experiment.flat.base">dpipe.experiment.flat.base module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="dpipe.experiment.flat.html#module-dpipe.experiment.flat">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.experiment.flat.html#dpipe-experiment-flat-base-module">dpipe.experiment.flat.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.experiment.flat.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -251,11 +249,6 @@
 <li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.preprocessing">dpipe.medim.preprocessing module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.shape_utils">dpipe.medim.shape_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.slices">dpipe.medim.slices module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.test_features">dpipe.medim.test_features module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.test_patch">dpipe.medim.test_patch module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.test_shape_utils">dpipe.medim.test_shape_utils module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.test_split">dpipe.medim.test_split module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.test_utils">dpipe.medim.test_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.utils">dpipe.medim.utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim.visualize">dpipe.medim.visualize module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.medim.html#module-dpipe.medim">Module contents</a></li>
@@ -270,6 +263,12 @@
 <li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.layers.html#module-dpipe.model_core.layers">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.model_core.layers_torch.html">dpipe.model_core.layers_torch package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.layers_torch.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.layers_torch.html#dpipe-model-core-layers-torch-blocks-module">dpipe.model_core.layers_torch.blocks module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dpipe.model_core.layers_torch.html#module-dpipe.model_core.layers_torch">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#submodules">Submodules</a></li>
@@ -280,7 +279,10 @@
 <li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.deepmedic_orig">dpipe.model_core.deepmedic_orig module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.enet">dpipe.model_core.enet module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.enet_mixed">dpipe.model_core.enet_mixed module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#dpipe-model-core-enet-torch-module">dpipe.model_core.enet_torch module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.enet_with_dropout">dpipe.model_core.enet_with_dropout module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#dpipe-model-core-res-encoder-module">dpipe.model_core.res_encoder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#dpipe-model-core-tnet-module">dpipe.model_core.tnet module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core.unet">dpipe.model_core.unet module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.model_core.html#module-dpipe.model_core">Module contents</a></li>
 </ul>
@@ -292,17 +294,31 @@
 <li class="toctree-l2"><a class="reference internal" href="dpipe.split.html#module-dpipe.split.cv_11">dpipe.split.cv_11 module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.split.html#module-dpipe.split.cv_111">dpipe.split.cv_111 module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.split.html#module-dpipe.split.monte_carlo">dpipe.split.monte_carlo module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.split.html#module-dpipe.split.test_cv_111">dpipe.split.test_cv_111 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.split.html#module-dpipe.split.test_monte_carlo">dpipe.split.test_monte_carlo module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.split.html#module-dpipe.split">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dpipe.tf.html">dpipe.tf package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.tf.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.tf.html#module-dpipe.tf.activations">dpipe.tf.activations module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.tf.html#module-dpipe.tf.model">dpipe.tf.model module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.tf.html#module-dpipe.tf.utils">dpipe.tf.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.tf.html#module-dpipe.tf">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dpipe.torch.html">dpipe.torch package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.torch.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.torch.html#dpipe-torch-model-module">dpipe.torch.model module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.torch.html#dpipe-torch-utils-module">dpipe.torch.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.torch.html#module-dpipe.torch">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="dpipe.train.html">dpipe.train package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.train.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.train.html#module-dpipe.train.logging">dpipe.train.logging module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dpipe.train.html#module-dpipe.train.train_msegm">dpipe.train.train_msegm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.train.html#module-dpipe.train.train">dpipe.train.train module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.train.html#module-dpipe.train.train_segm">dpipe.train.train_segm module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.train.html#module-dpipe.train.utils">dpipe.train.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.train.html#module-dpipe.train.validator">dpipe.train.validator module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.train.html#module-dpipe.train">Module contents</a></li>
 </ul>
 </li>
@@ -351,13 +367,34 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="dpipe.commands.find_dice_threshold">
-<code class="descclassname">dpipe.commands.</code><code class="descname">find_dice_threshold</code><span class="sig-paren">(</span><em>load_msegm</em>, <em>ids</em>, <em>predictions_path</em>, <em>thresholds_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/commands.html#find_dice_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.commands.find_dice_threshold" title="Permalink to this definition">¶</a></dt>
+<dt id="dpipe.commands.evaluate_cmd">
+<code class="descclassname">dpipe.commands.</code><code class="descname">evaluate_cmd</code><span class="sig-paren">(</span><em>load_y</em>, <em>input_path</em>, <em>output_path</em>, <em>ids</em>, <em>single=None</em>, <em>multiple=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/commands.html#evaluate_cmd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.commands.evaluate_cmd" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="dpipe.commands.find_dice_threshold">
+<code class="descclassname">dpipe.commands.</code><code class="descname">find_dice_threshold</code><span class="sig-paren">(</span><em>load_msegm</em>, <em>ids</em>, <em>predictions_path</em>, <em>thresholds_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/commands.html#find_dice_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.commands.find_dice_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find thresholds for the predicted probabilities that maximize the mean dice score.
+The thresholds are calculated channelwise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>load_msegm</strong> (<em>callable</em><em>(</em><em>id</em><em>)</em>) &#8211; loader for the multimodal segmentation</li>
+<li><strong>ids</strong> (<em>Sequence</em>) &#8211; object ids</li>
+<li><strong>predictions_path</strong> (<em>str</em>) &#8211; path for predicted masks</li>
+<li><strong>thresholds_path</strong> (<em>str</em>) &#8211; path to store the thresholds</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="dpipe.commands.predict">
-<code class="descclassname">dpipe.commands.</code><code class="descname">predict</code><span class="sig-paren">(</span><em>ids</em>, <em>output_path</em>, <em>load_x</em>, <em>frozen_model: dpipe.dl.model.FrozenModel</em>, <em>batch_predict: dpipe.batch_predict.base.BatchPredict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/commands.html#predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.commands.predict" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.commands.</code><code class="descname">predict</code><span class="sig-paren">(</span><em>ids</em>, <em>output_path</em>, <em>load_x</em>, <em>frozen_model: dpipe.model.FrozenModel</em>, <em>batch_predict: dpipe.batch_predict.base.BatchPredict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/commands.html#predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.commands.predict" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -382,6 +419,151 @@
 <dl class="function">
 <dt id="dpipe.io.load_json">
 <code class="descclassname">dpipe.io.</code><code class="descname">load_json</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/io.html#load_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.io.load_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.meta">
+<span id="dpipe-meta-module"></span><h2>dpipe.meta module<a class="headerlink" href="#module-dpipe.meta" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.meta.compose">
+<code class="descclassname">dpipe.meta.</code><code class="descname">compose</code><span class="sig-paren">(</span><em>functions: list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/meta.html#compose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.meta.compose" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.meta.importer">
+<code class="descclassname">dpipe.meta.</code><code class="descname">importer</code><span class="sig-paren">(</span><em>module: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/meta.html#importer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.meta.importer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.model">
+<span id="dpipe-model-module"></span><h2>dpipe.model module<a class="headerlink" href="#module-dpipe.model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.model.FrozenModel">
+<em class="property">class </em><code class="descclassname">dpipe.model.</code><code class="descname">FrozenModel</code><a class="reference internal" href="_modules/dpipe/model.html#FrozenModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model.FrozenModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">abc.ABC</span></code></p>
+<p>Interface for a trained neural network used for inference</p>
+<dl class="method">
+<dt id="dpipe.model.FrozenModel.do_inf_step">
+<code class="descname">do_inf_step</code><span class="sig-paren">(</span><em>*inputs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model.html#FrozenModel.do_inf_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model.FrozenModel.do_inf_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform an inference step</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputs</strong> (<em>Sequence</em>) &#8211; a sequence of batches that will be fed into the network</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>prediction</strong> &#8211; the prediction for the input batch</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">batch</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dpipe.model.Model">
+<em class="property">class </em><code class="descclassname">dpipe.model.</code><code class="descname">Model</code><a class="reference internal" href="_modules/dpipe/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">abc.ABC</span></code></p>
+<p>Interface for training a neural network model</p>
+<dl class="method">
+<dt id="dpipe.model.Model.do_inf_step">
+<code class="descname">do_inf_step</code><span class="sig-paren">(</span><em>*inputs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model.html#Model.do_inf_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model.Model.do_inf_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform an inference step</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputs</strong> (<em>Sequence</em>) &#8211; a sequence of batches that will be fed into the network</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>prediction</strong> &#8211; the prediction for the input batch</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">batch</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="dpipe.model.Model.do_train_step">
+<code class="descname">do_train_step</code><span class="sig-paren">(</span><em>*inputs</em>, <em>lr: float</em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/dpipe/model.html#Model.do_train_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model.Model.do_train_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a train step</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>inputs</strong> (<em>Sequence</em>) &#8211; a sequence of batches that will be fed into the network
+and used to calculate the loss.</li>
+<li><strong>lr</strong> (<em>float</em>) &#8211; the learning rate for the gradient step</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>loss</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="dpipe.model.Model.do_val_step">
+<code class="descname">do_val_step</code><span class="sig-paren">(</span><em>*inputs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model.html#Model.do_val_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model.Model.do_val_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a validation step</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputs</strong> (<em>Sequence</em>) &#8211; a sequence of batches that will be fed into the network
+and used to calculate the loss.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>prediction</strong> (<em>batch</em>) &#8211; the prediction for the input batch</li>
+<li><strong>loss</strong> (<em>float</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="dpipe.model.Model.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model.html#Model.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model.Model.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the network parameters from <cite>path</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>str</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="dpipe.model.Model.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>path: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model.html#Model.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model.Model.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the network parameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>str</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dpipe.model.get_model_path">
+<code class="descclassname">dpipe.model.</code><code class="descname">get_model_path</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/model.html#get_model_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.model.get_model_path" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

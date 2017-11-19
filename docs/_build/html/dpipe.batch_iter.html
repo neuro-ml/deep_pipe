@@ -94,6 +94,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">dpipe.batch_iter package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_iter.patch_3d">dpipe.batch_iter.patch_3d module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_iter.patch_3d_sep">dpipe.batch_iter.patch_3d_sep module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_iter.pipeline">dpipe.batch_iter.pipeline module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_iter.simple">dpipe.batch_iter.simple module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_iter.slices">dpipe.batch_iter.slices module</a></li>
@@ -103,11 +104,12 @@
 <li class="toctree-l3"><a class="reference internal" href="dpipe.batch_predict.html">dpipe.batch_predict package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.config.html">dpipe.config package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.dataset.html">dpipe.dataset package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.medim.html">dpipe.medim package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.model_core.html">dpipe.model_core package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.split.html">dpipe.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.tf.html">dpipe.tf package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.torch.html">dpipe.torch package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.train.html">dpipe.train package</a></li>
 </ul>
 </li>
@@ -115,6 +117,8 @@
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.batch_iter_factory">dpipe.batch_iter_factory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.commands">dpipe.commands module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.io">dpipe.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.meta">dpipe.meta module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.model">dpipe.model module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.transformers">dpipe.transformers module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe">Module contents</a></li>
 </ul>
@@ -239,13 +243,13 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="dpipe.batch_iter.patch_3d.make_3d_patch_strat_augm_iter">
-<code class="descclassname">dpipe.batch_iter.patch_3d.</code><code class="descname">make_3d_patch_strat_augm_iter</code><span class="sig-paren">(</span><em>ids</em>, <em>load_x</em>, <em>load_y</em>, <em>*</em>, <em>batch_size</em>, <em>x_patch_sizes</em>, <em>y_patch_size</em>, <em>nonzero_fraction</em>, <em>buffer_size</em>, <em>expiration_time</em>, <em>pool_size</em>, <em>n_workers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/patch_3d.html#make_3d_patch_strat_augm_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.patch_3d.make_3d_patch_strat_augm_iter" title="Permalink to this definition">¶</a></dt>
+<dt id="dpipe.batch_iter.patch_3d.make_patch_3d_iter">
+<code class="descclassname">dpipe.batch_iter.patch_3d.</code><code class="descname">make_patch_3d_iter</code><span class="sig-paren">(</span><em>ids</em>, <em>load_x</em>, <em>load_y</em>, <em>*</em>, <em>batch_size</em>, <em>x_patch_sizes</em>, <em>y_patch_size</em>, <em>buffer_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/patch_3d.html#make_patch_3d_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.patch_3d.make_patch_3d_iter" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="dpipe.batch_iter.patch_3d.make_patch_3d_iter">
-<code class="descclassname">dpipe.batch_iter.patch_3d.</code><code class="descname">make_patch_3d_iter</code><span class="sig-paren">(</span><em>ids</em>, <em>load_x</em>, <em>load_y</em>, <em>*</em>, <em>batch_size</em>, <em>x_patch_sizes</em>, <em>y_patch_size</em>, <em>buffer_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/patch_3d.html#make_patch_3d_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.patch_3d.make_patch_3d_iter" title="Permalink to this definition">¶</a></dt>
+<dt id="dpipe.batch_iter.patch_3d.make_patch_3d_strat_augm_iter">
+<code class="descclassname">dpipe.batch_iter.patch_3d.</code><code class="descname">make_patch_3d_strat_augm_iter</code><span class="sig-paren">(</span><em>ids</em>, <em>load_x</em>, <em>load_y</em>, <em>*</em>, <em>batch_size</em>, <em>x_patch_sizes</em>, <em>y_patch_size</em>, <em>nonzero_fraction</em>, <em>buffer_size</em>, <em>expiration_time</em>, <em>pool_size</em>, <em>n_workers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/patch_3d.html#make_patch_3d_strat_augm_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.patch_3d.make_patch_3d_strat_augm_iter" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -259,8 +263,26 @@
 <dd></dd></dl>
 
 </div>
+<div class="section" id="module-dpipe.batch_iter.patch_3d_sep">
+<span id="dpipe-batch-iter-patch-3d-sep-module"></span><h2>dpipe.batch_iter.patch_3d_sep module<a class="headerlink" href="#module-dpipe.batch_iter.patch_3d_sep" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.batch_iter.patch_3d_sep.patch_3d_part">
+<code class="descclassname">dpipe.batch_iter.patch_3d_sep.</code><code class="descname">patch_3d_part</code><span class="sig-paren">(</span><em>ids</em>, <em>load_x</em>, <em>load_y</em>, <em>*</em>, <em>x_patch_sizes</em>, <em>y_patch_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/patch_3d_sep.html#patch_3d_part"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.patch_3d_sep.patch_3d_part" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.batch_iter.patch_3d_sep.y_to_volume">
+<code class="descclassname">dpipe.batch_iter.patch_3d_sep.</code><code class="descname">y_to_volume</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/patch_3d_sep.html#y_to_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.patch_3d_sep.y_to_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
 <div class="section" id="module-dpipe.batch_iter.pipeline">
 <span id="dpipe-batch-iter-pipeline-module"></span><h2>dpipe.batch_iter.pipeline module<a class="headerlink" href="#module-dpipe.batch_iter.pipeline" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.batch_iter.pipeline.combine_batches_">
+<code class="descclassname">dpipe.batch_iter.pipeline.</code><code class="descname">combine_batches_</code><span class="sig-paren">(</span><em>inputs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/pipeline.html#combine_batches_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.pipeline.combine_batches_" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="function">
 <dt id="dpipe.batch_iter.pipeline.many2one">
 <code class="descclassname">dpipe.batch_iter.pipeline.</code><code class="descname">many2one</code><span class="sig-paren">(</span><em>chunk_size</em>, <em>buffer_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/pipeline.html#many2one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.pipeline.many2one" title="Permalink to this definition">¶</a></dt>
@@ -278,12 +300,17 @@
 
 <dl class="function">
 <dt id="dpipe.batch_iter.pipeline.pipeline">
-<code class="descclassname">dpipe.batch_iter.pipeline.</code><code class="descname">pipeline</code><span class="sig-paren">(</span><em>source</em>, <em>transformers</em>, <em>batch_size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/pipeline.html#pipeline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.pipeline.pipeline" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.batch_iter.pipeline.</code><code class="descname">pipeline</code><span class="sig-paren">(</span><em>transformers: typing.Sequence</em>, <em>batch_size: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/pipeline.html#pipeline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.pipeline.pipeline" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="dpipe.batch_iter.pipeline.source">
 <code class="descclassname">dpipe.batch_iter.pipeline.</code><code class="descname">source</code><span class="sig-paren">(</span><em>iterable</em>, <em>buffer_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/pipeline.html#source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.pipeline.source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.batch_iter.pipeline.unravel_transformers">
+<code class="descclassname">dpipe.batch_iter.pipeline.</code><code class="descname">unravel_transformers</code><span class="sig-paren">(</span><em>sequence</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_iter/pipeline.html#unravel_transformers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_iter.pipeline.unravel_transformers" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

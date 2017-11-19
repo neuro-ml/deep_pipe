@@ -37,7 +37,7 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="dpipe  documentation" href="index.html"/>
         <link rel="up" title="dpipe package" href="dpipe.html"/>
-        <link rel="prev" title="dpipe.split package" href="dpipe.split.html"/> 
+        <link rel="prev" title="dpipe.torch package" href="dpipe.torch.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -94,17 +94,19 @@
 <li class="toctree-l3"><a class="reference internal" href="dpipe.batch_predict.html">dpipe.batch_predict package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.config.html">dpipe.config package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.dataset.html">dpipe.dataset package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.medim.html">dpipe.medim package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.model_core.html">dpipe.model_core package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.split.html">dpipe.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.tf.html">dpipe.tf package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.torch.html">dpipe.torch package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">dpipe.train package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.logging">dpipe.train.logging module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.train_msegm">dpipe.train.train_msegm module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.train">dpipe.train.train module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.train_segm">dpipe.train.train_segm module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.utils">dpipe.train.utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train.validator">dpipe.train.validator module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.train">Module contents</a></li>
 </ul>
 </li>
@@ -114,6 +116,8 @@
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.batch_iter_factory">dpipe.batch_iter_factory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.commands">dpipe.commands module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.io">dpipe.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.meta">dpipe.meta module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.model">dpipe.model module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.transformers">dpipe.transformers module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe">Module contents</a></li>
 </ul>
@@ -202,19 +206,37 @@
 <dd></dd></dl>
 
 </div>
-<div class="section" id="module-dpipe.train.train_msegm">
-<span id="dpipe-train-train-msegm-module"></span><h2>dpipe.train.train_msegm module<a class="headerlink" href="#module-dpipe.train.train_msegm" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-dpipe.train.train">
+<span id="dpipe-train-train-module"></span><h2>dpipe.train.train module<a class="headerlink" href="#module-dpipe.train.train" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="dpipe.train.train_msegm.train_msegm">
-<code class="descclassname">dpipe.train.train_msegm.</code><code class="descname">train_msegm</code><span class="sig-paren">(</span><em>model: dpipe.dl.model.Model</em>, <em>train_batch_iter_factory: dpipe.batch_iter_factory.BatchIterFactory</em>, <em>batch_predict: dpipe.batch_predict.base.BatchPredict</em>, <em>log_path</em>, <em>val_ids</em>, <em>dataset</em>, <em>*</em>, <em>n_epochs</em>, <em>lr_init</em>, <em>lr_dec_mul=0.5</em>, <em>patience: int</em>, <em>rtol=0</em>, <em>atol=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/train_msegm.html#train_msegm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.train_msegm.train_msegm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="dpipe.train.train.train">
+<code class="descclassname">dpipe.train.train.</code><code class="descname">train</code><span class="sig-paren">(</span><em>model: dpipe.model.Model</em>, <em>train_batch_iter_factory: dpipe.batch_iter_factory.BatchIterFactory</em>, <em>validator</em>, <em>n_epochs: int</em>, <em>log_path: str</em>, <em>lr_init: float</em>, <em>lr_dec_mul: float</em>, <em>patience: int</em>, <em>rtol</em>, <em>atol</em>, <em>batch_predict: dpipe.batch_predict.base.BatchPredict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/train.html#train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.train.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train a model with a decreasing learning rate.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> (<a class="reference internal" href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d.Model" title="dpipe.batch_predict.test_patch_3d.Model"><em>Model</em></a>) &#8211; the model to train</li>
+<li><strong>train_batch_iter_factory</strong> (<a class="reference internal" href="dpipe.html#dpipe.batch_iter_factory.BatchIterFactory" title="dpipe.batch_iter_factory.BatchIterFactory"><em>BatchIterFactory</em></a>) &#8211; a factory of train batch iterators</li>
+<li><strong>validator</strong> (<em>callable</em>) &#8211; a validator that calculates the loss and metrics on the validation set</li>
+<li><strong>n_epochs</strong> (<em>int</em>) &#8211; number of epochs to train</li>
+<li><strong>log_path</strong> (<em>str</em>) &#8211; </li>
+<li><strong>lr_init</strong> (<em>float</em>) &#8211; initial learning rate</li>
+<li><strong>lr_dec_mul</strong> (<em>float</em>) &#8211; the learning rate decreasing multiplier</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 <div class="section" id="module-dpipe.train.train_segm">
 <span id="dpipe-train-train-segm-module"></span><h2>dpipe.train.train_segm module<a class="headerlink" href="#module-dpipe.train.train_segm" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="dpipe.train.train_segm.train_segm">
-<code class="descclassname">dpipe.train.train_segm.</code><code class="descname">train_segm</code><span class="sig-paren">(</span><em>model: dpipe.dl.model.Model</em>, <em>train_batch_iter_factory: dpipe.batch_iter_factory.BatchIterFactory</em>, <em>batch_predict: dpipe.batch_predict.base.BatchPredict</em>, <em>log_path</em>, <em>val_ids</em>, <em>dataset</em>, <em>*</em>, <em>n_epochs</em>, <em>lr_init</em>, <em>lr_dec_mul=0.5</em>, <em>patience: int</em>, <em>rtol=0</em>, <em>atol=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/train_segm.html#train_segm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.train_segm.train_segm" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.train.train_segm.</code><code class="descname">train_segm</code><span class="sig-paren">(</span><em>model: dpipe.model.Model</em>, <em>train_batch_iter_factory: dpipe.batch_iter_factory.BatchIterFactory</em>, <em>batch_predict: dpipe.batch_predict.base.BatchPredict</em>, <em>log_path</em>, <em>val_ids</em>, <em>dataset</em>, <em>*</em>, <em>n_epochs</em>, <em>lr_init</em>, <em>lr_dec_mul=0.5</em>, <em>patience: int</em>, <em>rtol=0</em>, <em>atol=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/train_segm.html#train_segm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.train_segm.train_segm" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -228,6 +250,19 @@
 <dl class="function">
 <dt id="dpipe.train.utils.make_find_next_lr">
 <code class="descclassname">dpipe.train.utils.</code><code class="descname">make_find_next_lr</code><span class="sig-paren">(</span><em>lr</em>, <em>decrease_lr: &lt;built-in function callable&gt;</em>, <em>get_check: &lt;built-in function callable&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/utils.html#make_find_next_lr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.utils.make_find_next_lr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dpipe.train.validator">
+<span id="dpipe-train-validator-module"></span><h2>dpipe.train.validator module<a class="headerlink" href="#module-dpipe.train.validator" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dpipe.train.validator.evaluate">
+<code class="descclassname">dpipe.train.validator.</code><code class="descname">evaluate</code><span class="sig-paren">(</span><em>data</em>, <em>single: dict = None</em>, <em>multiple: dict = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/validator.html#evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.validator.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dpipe.train.validator.validate">
+<code class="descclassname">dpipe.train.validator.</code><code class="descname">validate</code><span class="sig-paren">(</span><em>validate</em>, <em>*</em>, <em>load_x</em>, <em>load_y</em>, <em>ids</em>, <em>single: dict = None</em>, <em>multiple: dict = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/train/validator.html#validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.train.validator.validate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -247,7 +282,7 @@
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="dpipe.split.html" class="btn btn-neutral" title="dpipe.split package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="dpipe.torch.html" class="btn btn-neutral" title="dpipe.torch package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

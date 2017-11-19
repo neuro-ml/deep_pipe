@@ -1,21 +1,41 @@
+import functools
 import math
 from functools import partial
 
-import functools
 import numpy as np
 from tensorboard_easy.logger import Logger
 
 from dpipe.batch_iter_factory import BatchIterFactory
+from dpipe.batch_predict import BatchPredict
 from dpipe.config import register
 from dpipe.model import Model
 from dpipe.train.logging import log_vector
-from dpipe.train.validator import validate
 from .utils import make_find_next_lr, make_check_loss_decrease
 
 
 @register()
 def train(model: Model, train_batch_iter_factory: BatchIterFactory, validator, n_epochs: int,
-          log_path, lr_init, lr_dec_mul, patience, rtol, atol, batch_predict):
+          log_path: str, lr_init: float, lr_dec_mul: float, patience: int, rtol, atol,
+          batch_predict: BatchPredict):
+    """
+    Train a model with a decreasing learning rate.
+
+    Parameters
+    ----------
+    model: Model
+        the model to train
+    train_batch_iter_factory: BatchIterFactory
+        a factory of train batch iterators
+    validator: callable
+        a validator that calculates the loss and metrics on the validation set
+    n_epochs: int
+        number of epochs to train
+    log_path: str
+    lr_init: float
+        initial learning rate
+    lr_dec_mul: float
+        the learning rate decreasing multiplier
+    """
     # TODO: lr policy, stopping policy
     logger = Logger(log_path)
 

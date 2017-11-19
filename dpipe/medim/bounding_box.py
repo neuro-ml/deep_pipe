@@ -11,7 +11,7 @@ def get_idx(mask: np.ndarray):
     for ax in itertools.combinations(range(n), n - 1):
         nonzero = np.any(mask, axis=ax)
         left, right = np.where(nonzero)[0][[0, -1]]
-        out.append([left, right+1])
+        out.append([left, right + 1])
     return np.array(list(reversed(out)))
 
 

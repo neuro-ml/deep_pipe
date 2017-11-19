@@ -83,6 +83,21 @@ def compute_dices(load_msegm, predictions_path, dices_path):
 
 @register_cmd
 def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
+    """
+    Find thresholds for the predicted probabilities that maximize the mean dice score.
+    The thresholds are calculated channelwise.
+
+    Parameters
+    ----------
+    load_msegm: callable(id)
+        loader for the multimodal segmentation
+    ids: Sequence
+        object ids
+    predictions_path: str
+        path for predicted masks
+    thresholds_path: str
+        path to store the thresholds
+    """
     thresholds = np.linspace(0, 1, 20)
     dices = []
 

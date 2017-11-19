@@ -97,6 +97,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.base">dpipe.batch_predict.base module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.patch_3d">dpipe.batch_predict.patch_3d module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.patch_3d_fixed">dpipe.batch_predict.patch_3d_fixed module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.simple">dpipe.batch_predict.simple module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.slice">dpipe.batch_predict.slice module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.test_patch_3d">dpipe.batch_predict.test_patch_3d module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.batch_predict.test_patch_3d_fixed">dpipe.batch_predict.test_patch_3d_fixed module</a></li>
@@ -106,11 +107,12 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.config.html">dpipe.config package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.dataset.html">dpipe.dataset package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.medim.html">dpipe.medim package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.model_core.html">dpipe.model_core package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.split.html">dpipe.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.tf.html">dpipe.tf package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.torch.html">dpipe.torch package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.train.html">dpipe.train package</a></li>
 </ul>
 </li>
@@ -118,6 +120,8 @@
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.batch_iter_factory">dpipe.batch_iter_factory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.commands">dpipe.commands module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.io">dpipe.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.meta">dpipe.meta module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.model">dpipe.model module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.transformers">dpipe.transformers module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe">Module contents</a></li>
 </ul>
@@ -198,15 +202,58 @@
 <dt id="dpipe.batch_predict.base.BatchPredict">
 <em class="property">class </em><code class="descclassname">dpipe.batch_predict.base.</code><code class="descname">BatchPredict</code><a class="reference internal" href="_modules/dpipe/batch_predict/base.html#BatchPredict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.base.BatchPredict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">abc.ABC</span></code></p>
+<p>Interface that realizes the validation and inference logic.</p>
 <dl class="method">
 <dt id="dpipe.batch_predict.base.BatchPredict.predict">
 <code class="descname">predict</code><span class="sig-paren">(</span><em>x</em>, <em>*</em>, <em>predict_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/base.html#BatchPredict.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.base.BatchPredict.predict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Realizes the inference logic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> &#8211; a single input object</li>
+<li><strong>predict_fn</strong> (<em>callable</em><em>(</em><em>x</em><em>) </em><em>-&gt; prediction</em>) &#8211; callable, that receives an input batch
+and returns the prediction batch</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">prediction for the input</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">prediction</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="dpipe.batch_predict.base.BatchPredict.validate">
 <code class="descname">validate</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>*</em>, <em>validate_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/base.html#BatchPredict.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.base.BatchPredict.validate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Realizes the validation logic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> &#8211; a single input object</li>
+<li><strong>y</strong> &#8211; a single ground truth object</li>
+<li><strong>validate_fn</strong> (<em>callable</em><em>(</em><em>x</em><em>, </em><em>y</em><em>) </em><em>-&gt; prediction</em><em>, </em><em>loss</em>) &#8211; callable, that receives an input batch and a ground truth batch
+and returns the prediction batch and the loss</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><em>prediction</em> &#8211; prediction for the input</li>
+<li><strong>loss</strong> (<em>float</em>) &#8211; the validation loss</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -246,7 +293,7 @@
 
 <dl class="class">
 <dt id="dpipe.batch_predict.patch_3d.Patch3DPredictor">
-<em class="property">class </em><code class="descclassname">dpipe.batch_predict.patch_3d.</code><code class="descname">Patch3DPredictor</code><span class="sig-paren">(</span><em>x_patch_sizes: list</em>, <em>y_patch_size: list</em>, <em>padding_mode: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#Patch3DPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.Patch3DPredictor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.patch_3d.</code><code class="descname">Patch3DPredictor</code><span class="sig-paren">(</span><em>x_patch_sizes: list</em>, <em>y_patch_size: list</em>, <em>padding_mode: str = 'min'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d.html#Patch3DPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d.Patch3DPredictor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.patch_3d.BatchPredictorShapeState" title="dpipe.batch_predict.patch_3d.BatchPredictorShapeState"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.patch_3d.BatchPredictorShapeState</span></code></a></p>
 <dl class="method">
 <dt id="dpipe.batch_predict.patch_3d.Patch3DPredictor.combine_y">
@@ -270,7 +317,7 @@
 <span id="dpipe-batch-predict-patch-3d-fixed-module"></span><h2>dpipe.batch_predict.patch_3d_fixed module<a class="headerlink" href="#module-dpipe.batch_predict.patch_3d_fixed" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor">
-<em class="property">class </em><code class="descclassname">dpipe.batch_predict.patch_3d_fixed.</code><code class="descname">Patch3DFixedPredictor</code><span class="sig-paren">(</span><em>x_patch_sizes: list</em>, <em>y_patch_size: list</em>, <em>padding_mode: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DFixedPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.patch_3d_fixed.</code><code class="descname">Patch3DFixedPredictor</code><span class="sig-paren">(</span><em>x_patch_sizes: list</em>, <em>y_patch_size: list</em>, <em>padding_mode: str = 'min'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DFixedPredictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.patch_3d.Patch3DPredictor" title="dpipe.batch_predict.patch_3d.Patch3DPredictor"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.patch_3d.Patch3DPredictor</span></code></a></p>
 <dl class="method">
 <dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.combine_y">
@@ -300,6 +347,22 @@
 
 </dd></dl>
 
+<dl class="class">
+<dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DVolume">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.patch_3d_fixed.</code><code class="descname">Patch3DVolume</code><span class="sig-paren">(</span><em>x_patch_sizes: list</em>, <em>y_patch_size: list</em>, <em>padding_mode: str = 'min'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DVolume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DVolume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor" title="dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor</span></code></a></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DVolume.combine_y">
+<code class="descname">combine_y</code><span class="sig-paren">(</span><em>y_parts</em>, <em>x_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DVolume.combine_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DVolume.combine_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.patch_3d_fixed.Patch3DVolume.divide_y">
+<code class="descname">divide_y</code><span class="sig-paren">(</span><em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#Patch3DVolume.divide_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.Patch3DVolume.divide_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="dpipe.batch_predict.patch_3d_fixed.find_fixed_spatial_size">
 <code class="descclassname">dpipe.batch_predict.patch_3d_fixed.</code><code class="descname">find_fixed_spatial_size</code><span class="sig-paren">(</span><em>spatial_size</em>, <em>spatial_patch_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/patch_3d_fixed.html#find_fixed_spatial_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.patch_3d_fixed.find_fixed_spatial_size" title="Permalink to this definition">¶</a></dt>
@@ -316,21 +379,57 @@
 <dd></dd></dl>
 
 </div>
+<div class="section" id="module-dpipe.batch_predict.simple">
+<span id="dpipe-batch-predict-simple-module"></span><h2>dpipe.batch_predict.simple module<a class="headerlink" href="#module-dpipe.batch_predict.simple" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dpipe.batch_predict.simple.Multiclass">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.simple.</code><code class="descname">Multiclass</code><a class="reference internal" href="_modules/dpipe/batch_predict/simple.html#Multiclass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.simple.Multiclass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.base.BatchPredict" title="dpipe.batch_predict.base.BatchPredict"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.base.BatchPredict</span></code></a></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.simple.Multiclass.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em>, <em>*</em>, <em>predict_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/simple.html#Multiclass.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.simple.Multiclass.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.simple.Multiclass.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>*</em>, <em>validate_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/simple.html#Multiclass.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.simple.Multiclass.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dpipe.batch_predict.simple.Simple">
+<em class="property">class </em><code class="descclassname">dpipe.batch_predict.simple.</code><code class="descname">Simple</code><a class="reference internal" href="_modules/dpipe/batch_predict/simple.html#Simple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.simple.Simple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.base.BatchPredict" title="dpipe.batch_predict.base.BatchPredict"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.base.BatchPredict</span></code></a></p>
+<dl class="method">
+<dt id="dpipe.batch_predict.simple.Simple.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em>, <em>*</em>, <em>predict_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/simple.html#Simple.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.simple.Simple.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dpipe.batch_predict.simple.Simple.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>*</em>, <em>validate_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/simple.html#Simple.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.simple.Simple.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-dpipe.batch_predict.slice">
 <span id="dpipe-batch-predict-slice-module"></span><h2>dpipe.batch_predict.slice module<a class="headerlink" href="#module-dpipe.batch_predict.slice" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="dpipe.batch_predict.slice.Slice2D">
 <em class="property">class </em><code class="descclassname">dpipe.batch_predict.slice.</code><code class="descname">Slice2D</code><a class="reference internal" href="_modules/dpipe/batch_predict/slice.html#Slice2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.slice.Slice2D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dpipe.batch_predict.base.BatchPredict" title="dpipe.batch_predict.base.BatchPredict"><code class="xref py py-class docutils literal"><span class="pre">dpipe.batch_predict.base.BatchPredict</span></code></a></p>
-<p>A predictor that feeds 2D slices along the OZ axis into the network and stacks the predictions.</p>
+<p>Breaks the incoming 3D image into slices along the OZ axis
+and feeds them into the network.</p>
 <dl class="method">
 <dt id="dpipe.batch_predict.slice.Slice2D.predict">
-<code class="descname">predict</code><span class="sig-paren">(</span><em>*inputs</em>, <em>predict_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/slice.html#Slice2D.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.slice.Slice2D.predict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">predict</code><span class="sig-paren">(</span><em>x</em>, <em>predict_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/slice.html#Slice2D.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.slice.Slice2D.predict" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="dpipe.batch_predict.slice.Slice2D.validate">
-<code class="descname">validate</code><span class="sig-paren">(</span><em>*inputs</em>, <em>validate_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/slice.html#Slice2D.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.slice.Slice2D.validate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>validate_fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/batch_predict/slice.html#Slice2D.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.batch_predict.slice.Slice2D.validate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

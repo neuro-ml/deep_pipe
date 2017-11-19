@@ -12,10 +12,10 @@ dpipe\.train\.logging module
     :undoc-members:
     :show-inheritance:
 
-dpipe\.train\.train\_msegm module
----------------------------------
+dpipe\.train\.train module
+--------------------------
 
-.. automodule:: dpipe.train.train_msegm
+.. automodule:: dpipe.train.train
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,6 +32,14 @@ dpipe\.train\.utils module
 --------------------------
 
 .. automodule:: dpipe.train.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe\.train\.validator module
+------------------------------
+
+.. automodule:: dpipe.train.validator
     :members:
     :undoc-members:
     :show-inheritance:

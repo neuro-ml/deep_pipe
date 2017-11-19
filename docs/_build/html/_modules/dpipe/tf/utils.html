@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>dpipe.dl.utils &mdash; dpipe  documentation</title>
+  <title>dpipe.tf.utils &mdash; dpipe  documentation</title>
   
 
   
@@ -134,7 +134,7 @@
         
           <li><a href="../../index.html">Module code</a> &raquo;</li>
         
-      <li>dpipe.dl.utils</li>
+      <li>dpipe.tf.utils</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -151,34 +151,34 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for dpipe.dl.utils</h1><div class="highlight"><pre>
+  <h1>Source code for dpipe.tf.utils</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 <span class="kn">import</span> <span class="nn">tensorflow.contrib.slim</span> <span class="k">as</span> <span class="nn">slim</span>
 
 <span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
 
 
-<span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;tf_optimize&#39;</span><span class="p">,</span> <span class="s1">&#39;optimize&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../../../dpipe.dl.html#dpipe.dl.utils.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tf_optimizer_name</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+<span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;optimize&#39;</span><span class="p">,</span> <span class="s1">&#39;tf&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../../../dpipe.tf.html#dpipe.tf.utils.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tf_optimizer_name</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;optimization&#39;</span><span class="p">):</span>
         <span class="n">optimizer</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="n">tf_optimizer_name</span><span class="p">)(</span><span class="n">lr</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;optimizer&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">slim</span><span class="o">.</span><span class="n">learning</span><span class="o">.</span><span class="n">create_train_op</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span></div>
 
 
-<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;logits2pred&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="softmax"><a class="viewcode-back" href="../../../dpipe.dl.html#dpipe.dl.utils.softmax">[docs]</a><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">):</span>
+<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;tf&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="softmax"><a class="viewcode-back" href="../../../dpipe.tf.html#dpipe.tf.utils.softmax">[docs]</a><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;softmax&#39;</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;logits2pred&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="sigmoid"><a class="viewcode-back" href="../../../dpipe.dl.html#dpipe.dl.utils.sigmoid">[docs]</a><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">logits</span><span class="p">):</span>
+<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;tf&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="sigmoid"><a class="viewcode-back" href="../../../dpipe.tf.html#dpipe.tf.utils.sigmoid">[docs]</a><span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">logits</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">)</span></div>
 
 
-<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;logits2loss&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="sparse_softmax_cross_entropy"><a class="viewcode-back" href="../../../dpipe.dl.html#dpipe.dl.utils.sparse_softmax_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">sparse_softmax_cross_entropy</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">logits</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;sparse_softmax_cross_entropy&#39;</span><span class="p">):</span>
+<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;tf&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="softmax_cross_entropy"><a class="viewcode-back" href="../../../dpipe.tf.html#dpipe.tf.utils.softmax_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">softmax_cross_entropy</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">logits</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;softmax_cross_entropy&#39;</span><span class="p">):</span>
         <span class="n">y_ph_shape</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
         <span class="n">y_ph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">y_ph_shape</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;y_true&#39;</span><span class="p">)</span>
 
@@ -187,14 +187,14 @@
     <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">y_ph</span></div>
 
 
-<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;logits2loss&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="sigmoid_cross_entropy"><a class="viewcode-back" href="../../../dpipe.dl.html#dpipe.dl.utils.sigmoid_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">sigmoid_cross_entropy</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">logits</span><span class="p">):</span>
+<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;tf&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="sigmoid_cross_entropy"><a class="viewcode-back" href="../../../dpipe.tf.html#dpipe.tf.utils.sigmoid_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">sigmoid_cross_entropy</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">logits</span><span class="p">):</span>
     <span class="n">y_ph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;y_true&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">sigmoid_cross_entropy</span><span class="p">(</span><span class="n">y_ph</span><span class="p">,</span> <span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">),</span> <span class="n">y_ph</span></div>
 
 
-<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;logits2loss&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="soft_dice_loss"><a class="viewcode-back" href="../../../dpipe.dl.html#dpipe.dl.utils.soft_dice_loss">[docs]</a><span class="k">def</span> <span class="nf">soft_dice_loss</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">y_ph</span><span class="p">,</span> <span class="n">softness</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">):</span>
+<span class="nd">@register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;tf&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="soft_dice_loss"><a class="viewcode-back" href="../../../dpipe.tf.html#dpipe.tf.utils.soft_dice_loss">[docs]</a><span class="k">def</span> <span class="nf">soft_dice_loss</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">y_ph</span><span class="p">,</span> <span class="n">softness</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">):</span>
     <span class="n">batch</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">y_ph</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="n">y_ph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_ph</span><span class="p">,</span> <span class="p">[</span><span class="n">batch</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>

@@ -152,7 +152,8 @@
            <div itemprop="articleBody">
             
   <h1>Source code for dpipe.batch_iter.simple</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
+<span></span><span class="kn">from</span> <span class="nn">dpipe.batch_iter.slices</span> <span class="k">import</span> <span class="n">combine_batches_even</span>
+<span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
 <span class="kn">from</span> <span class="nn">dpipe.medim.utils</span> <span class="k">import</span> <span class="n">load_by_ids</span>
 
 <span class="kn">import</span> <span class="nn">pdp</span>
@@ -163,7 +164,7 @@
     <span class="k">return</span> <span class="n">pdp</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
         <span class="n">pdp</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">load_by_ids</span><span class="p">(</span><span class="n">load_x</span><span class="p">,</span> <span class="n">load_y</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">shuffle</span><span class="p">),</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">30</span><span class="p">),</span>
         <span class="n">pdp</span><span class="o">.</span><span class="n">Many2One</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
-        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">pdp</span><span class="o">.</span><span class="n">combine_batches</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">pdp</span><span class="o">.</span><span class="n">One2One</span><span class="p">(</span><span class="n">combine_batches_even</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
     <span class="p">)</span></div>
 </pre></div>
 

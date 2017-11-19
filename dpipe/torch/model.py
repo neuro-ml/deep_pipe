@@ -91,6 +91,13 @@ class TorchFrozenModel(FrozenModel):
 
 
 def to_np(x: Variable):
+    """
+    Convert a autograd Variable to a numpy array.
+
+    Parameters
+    ----------
+    x: Variable
+    """
     return x.cpu().data.numpy()
 
 
@@ -99,7 +106,19 @@ validate_dtype = {
 }
 
 
-def to_var(x, cuda, volatile=False):
+def to_var(x: np.array, cuda: bool, volatile: bool = False):
+    """
+    Convert a numpy array to a torch Tensor
+
+    Parameters
+    ----------
+    x: np.array
+        the input tensor
+    cuda: bool
+        move tensor to cuda
+    volatile: bool, optional
+        make tensor volatile
+    """
     # torch doesn't support conversion from all numpy types:
     for dtype in validate_dtype:
         if x.dtype == dtype:

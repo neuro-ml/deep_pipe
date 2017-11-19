@@ -154,7 +154,7 @@
   <h1>Source code for dpipe.split.cv_111</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">KFold</span><span class="p">,</span> <span class="n">train_test_split</span>
-<span class="kn">from</span> <span class="nn">dpipe.dataset</span> <span class="k">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">dpipe.dataset</span> <span class="k">import</span> <span class="n">DataSet</span>
 <span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
 
 
@@ -163,8 +163,28 @@
 
 
 <span class="nd">@register</span><span class="p">()</span>
-<div class="viewcode-block" id="cv_111"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.cv_111.cv_111">[docs]</a><span class="k">def</span> <span class="nf">cv_111</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">val_size</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
-    <span class="n">ids</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span>
+<div class="viewcode-block" id="cv_111"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.cv_111.cv_111">[docs]</a><span class="k">def</span> <span class="nf">cv_111</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">val_size</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Splits the dataset&#39;s ids into triplets (train, validation, test).</span>
+<span class="sd">    The test ids are determined as in the standard K-fold cross-validation setting:</span>
+<span class="sd">    for each fold a different portion of 1/K ids is kept for testing.</span>
+<span class="sd">    The remaining (K-1)/K ids are split into train and validation sets according to `val_size`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset: DataSet</span>
+<span class="sd">    val_size: float, int</span>
+<span class="sd">        If float, should be between 0.0 and 1.0 and represents the proportion</span>
+<span class="sd">        of the `train set` to include in the validation set. If int, represents the</span>
+<span class="sd">        absolute number of validation samples.</span>
+<span class="sd">    n_splits: int</span>
+<span class="sd">        the number of cross-validation folds</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    splits: Sequence of triplets</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">ids</span>
     <span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">n_splits</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">17</span><span class="p">)</span>
 
     <span class="n">train_val_test_ids</span> <span class="o">=</span> <span class="p">[]</span>
@@ -201,12 +221,32 @@
 
 
 <span class="nd">@register</span><span class="p">()</span>
-<div class="viewcode-block" id="group_cv_111"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.cv_111.group_cv_111">[docs]</a><span class="k">def</span> <span class="nf">group_cv_111</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">val_size</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
+<div class="viewcode-block" id="group_cv_111"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.cv_111.group_cv_111">[docs]</a><span class="k">def</span> <span class="nf">group_cv_111</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">val_size</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    In order to use this splitter, your Dataset needs to have</span>
-<span class="sd">     a &#39;groups&#39; property.</span>
+<span class="sd">    Splits the dataset&#39;s ids into triplets (train, validation, test) keeping all the objects</span>
+<span class="sd">    from a group in the same set (either train, validation or test).</span>
+<span class="sd">    The test ids are determined as in the standard K-fold cross-validation setting:</span>
+<span class="sd">    for each fold a different portion of 1/K ids is kept for testing.</span>
+<span class="sd">    The remaining (K-1)/K ids are split into train and validation sets according to `val_size`.</span>
+
+<span class="sd">    The splitter guarantees that no objects belonging to the same group will en up in different sets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset: DataSet</span>
+<span class="sd">        dataset that has a `group` property</span>
+<span class="sd">    val_size: float, int</span>
+<span class="sd">        If float, should be between 0.0 and 1.0 and represents the proportion</span>
+<span class="sd">        of the `train set` to include in the validation set. If int, represents the</span>
+<span class="sd">        absolute number of validation samples.</span>
+<span class="sd">    n_splits: int</span>
+<span class="sd">        the number of cross-validation folds</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    splits: Sequence of triplets</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ids</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">ids</span>
     <span class="n">groups</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">groups</span>
     <span class="n">cv</span> <span class="o">=</span> <span class="n">ShuffleGroupKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">n_splits</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">17</span><span class="p">)</span>
 
@@ -223,10 +263,32 @@
 
 
 <span class="nd">@register</span><span class="p">()</span>
-<div class="viewcode-block" id="group_cv_111_pure_011"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.cv_111.group_cv_111_pure_011">[docs]</a><span class="k">def</span> <span class="nf">group_cv_111_pure_011</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">val_size</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
+<div class="viewcode-block" id="group_cv_111_pure_011"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.cv_111.group_cv_111_pure_011">[docs]</a><span class="k">def</span> <span class="nf">group_cv_111_pure_011</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">val_size</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    In order to use this splitter, your Dataset needs to have</span>
-<span class="sd">     a &#39;groups&#39; property.</span>
+<span class="sd">    Splits the dataset&#39;s ids into triplets (train, validation, test) keeping all the objects</span>
+<span class="sd">    from a group in the same set (either train, validation or test).</span>
+<span class="sd">    The splitter additionally discards all but one object from each group in the</span>
+<span class="sd">    validation and test sets.</span>
+<span class="sd">    The test ids are determined as in the standard K-fold cross-validation setting:</span>
+<span class="sd">    for each fold a different portion of 1/K ids is kept for testing.</span>
+<span class="sd">    The remaining (K-1)/K ids are split into train and validation sets according to `val_size`.</span>
+
+<span class="sd">    The splitter guarantees that no objects belonging to the same group will en up in different sets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset: DataSet</span>
+<span class="sd">        dataset that has a `group` property</span>
+<span class="sd">    val_size: float, int</span>
+<span class="sd">        If float, should be between 0.0 and 1.0 and represents the proportion</span>
+<span class="sd">        of the `train set` to include in the validation set. If int, represents the</span>
+<span class="sd">        absolute number of validation samples.</span>
+<span class="sd">    n_splits: int</span>
+<span class="sd">        the number of cross-validation folds</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    splits: Sequence of triplets</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_extract_pure</span><span class="p">(</span><span class="n">ids</span><span class="p">):</span>

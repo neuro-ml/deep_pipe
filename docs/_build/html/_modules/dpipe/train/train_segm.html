@@ -161,8 +161,8 @@
 <span class="kn">from</span> <span class="nn">dpipe.batch_iter_factory</span> <span class="k">import</span> <span class="n">BatchIterFactory</span>
 <span class="kn">from</span> <span class="nn">dpipe.batch_predict</span> <span class="k">import</span> <span class="n">BatchPredict</span>
 <span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
-<span class="kn">from</span> <span class="nn">dpipe.dl.model</span> <span class="k">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">dpipe.medim.metrics</span> <span class="k">import</span> <span class="n">multichannel_dice_score</span>
+<span class="kn">from</span> <span class="nn">dpipe.model</span> <span class="k">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">.logging</span> <span class="k">import</span> <span class="n">make_log_vector</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">make_find_next_lr</span><span class="p">,</span> <span class="n">make_check_loss_decrease</span>
 
@@ -180,9 +180,9 @@
                                      <span class="n">partial</span><span class="p">(</span><span class="n">make_check_loss_decrease</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="n">patience</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">))</span>
 
     <span class="n">train_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;train_loss&#39;</span><span class="p">)</span>
-    <span class="n">train_avg_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;avg_train_loss&#39;</span><span class="p">)</span>
-    <span class="n">val_avg_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;avg_val_loss&#39;</span><span class="p">)</span>
-    <span class="n">val_dices_log_write</span> <span class="o">=</span> <span class="n">make_log_vector</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="s1">&#39;val_dices&#39;</span><span class="p">)</span>
+    <span class="n">train_avg_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;average/train_loss&#39;</span><span class="p">)</span>
+    <span class="n">val_avg_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;average/val_loss&#39;</span><span class="p">)</span>
+    <span class="n">val_dices_log_write</span> <span class="o">=</span> <span class="n">make_log_vector</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="s1">&#39;metrics/val_dices&#39;</span><span class="p">)</span>
 
     <span class="n">lr</span> <span class="o">=</span> <span class="n">find_next_lr</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">train_batch_iter_factory</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span>

@@ -28,6 +28,14 @@ dpipe\.batch\_predict\.patch\_3d\_fixed module
     :undoc-members:
     :show-inheritance:
 
+dpipe\.batch\_predict\.simple module
+------------------------------------
+
+.. automodule:: dpipe.batch_predict.simple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 dpipe\.batch\_predict\.slice module
 -----------------------------------
 

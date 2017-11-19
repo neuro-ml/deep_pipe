@@ -152,17 +152,19 @@
            <div itemprop="articleBody">
             
   <h1>Source code for dpipe.commands</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">json</span>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
 
 <span class="kn">from</span> <span class="nn">dpipe.batch_predict</span> <span class="k">import</span> <span class="n">BatchPredict</span>
 <span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
-<span class="kn">from</span> <span class="nn">dpipe.dl.model</span> <span class="k">import</span> <span class="n">FrozenModel</span>
 <span class="kn">from</span> <span class="nn">dpipe.medim.metrics</span> <span class="k">import</span> <span class="n">dice_score</span> <span class="k">as</span> <span class="n">dice</span>
 <span class="kn">from</span> <span class="nn">dpipe.medim.metrics</span> <span class="k">import</span> <span class="n">multichannel_dice_score</span>
+<span class="kn">from</span> <span class="nn">dpipe.medim.utils</span> <span class="k">import</span> <span class="n">load_by_ids</span>
+<span class="kn">from</span> <span class="nn">dpipe.model</span> <span class="k">import</span> <span class="n">FrozenModel</span>
+<span class="kn">from</span> <span class="nn">dpipe.train.validator</span> <span class="k">import</span> <span class="n">evaluate</span>
 
 <span class="n">register_cmd</span> <span class="o">=</span> <span class="n">register</span><span class="p">(</span><span class="n">module_type</span><span class="o">=</span><span class="s1">&#39;command&#39;</span><span class="p">)</span>
 
@@ -197,6 +199,28 @@
         <span class="k">del</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span></div>
 
 
+<span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;evaluate&#39;</span><span class="p">,</span> <span class="s1">&#39;command&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="evaluate_cmd"><a class="viewcode-back" href="../../dpipe.html#dpipe.commands.evaluate_cmd">[docs]</a><span class="k">def</span> <span class="nf">evaluate_cmd</span><span class="p">(</span><span class="n">load_y</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">single</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load_prediction</span><span class="p">(</span><span class="n">identifier</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{identifier}</span><span class="s1">.npy&#39;</span><span class="p">))</span>
+
+    <span class="n">metrics_single</span><span class="p">,</span> <span class="n">metrics_multiple</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">load_by_ids</span><span class="p">(</span><span class="n">load_y</span><span class="p">,</span> <span class="n">load_prediction</span><span class="p">,</span> <span class="n">ids</span><span class="p">),</span> <span class="n">single</span><span class="p">,</span> <span class="n">multiple</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">metrics_single</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">*</span><span class="nb">zip</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+        <span class="n">save</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metrics_multiple</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">save</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+
 <span class="nd">@register_cmd</span>
 <div class="viewcode-block" id="compute_dices"><a class="viewcode-back" href="../../dpipe.html#dpipe.commands.compute_dices">[docs]</a><span class="k">def</span> <span class="nf">compute_dices</span><span class="p">(</span><span class="n">load_msegm</span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">,</span> <span class="n">dices_path</span><span class="p">):</span>
     <span class="n">dices</span> <span class="o">=</span> <span class="p">{}</span>
@@ -213,6 +237,21 @@
 
 <span class="nd">@register_cmd</span>
 <div class="viewcode-block" id="find_dice_threshold"><a class="viewcode-back" href="../../dpipe.html#dpipe.commands.find_dice_threshold">[docs]</a><span class="k">def</span> <span class="nf">find_dice_threshold</span><span class="p">(</span><span class="n">load_msegm</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">,</span> <span class="n">thresholds_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find thresholds for the predicted probabilities that maximize the mean dice score.</span>
+<span class="sd">    The thresholds are calculated channelwise.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    load_msegm: callable(id)</span>
+<span class="sd">        loader for the multimodal segmentation</span>
+<span class="sd">    ids: Sequence</span>
+<span class="sd">        object ids</span>
+<span class="sd">    predictions_path: str</span>
+<span class="sd">        path for predicted masks</span>
+<span class="sd">    thresholds_path: str</span>
+<span class="sd">        path to store the thresholds</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">thresholds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
     <span class="n">dices</span> <span class="o">=</span> <span class="p">[]</span>
 

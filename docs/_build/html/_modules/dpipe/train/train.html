@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>dpipe.train.train_msegm &mdash; dpipe  documentation</title>
+  <title>dpipe.train.train &mdash; dpipe  documentation</title>
   
 
   
@@ -134,7 +134,7 @@
         
           <li><a href="../../index.html">Module code</a> &raquo;</li>
         
-      <li>dpipe.train.train_msegm</li>
+      <li>dpipe.train.train</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -151,8 +151,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for dpipe.train.train_msegm</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">math</span>
+  <h1>Source code for dpipe.train.train</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -161,31 +162,49 @@
 <span class="kn">from</span> <span class="nn">dpipe.batch_iter_factory</span> <span class="k">import</span> <span class="n">BatchIterFactory</span>
 <span class="kn">from</span> <span class="nn">dpipe.batch_predict</span> <span class="k">import</span> <span class="n">BatchPredict</span>
 <span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
-<span class="kn">from</span> <span class="nn">dpipe.dl.model</span> <span class="k">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">dpipe.medim.metrics</span> <span class="k">import</span> <span class="n">multichannel_dice_score</span>
-<span class="kn">from</span> <span class="nn">.logging</span> <span class="k">import</span> <span class="n">make_log_vector</span>
+<span class="kn">from</span> <span class="nn">dpipe.model</span> <span class="k">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">dpipe.train.logging</span> <span class="k">import</span> <span class="n">log_vector</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">make_find_next_lr</span><span class="p">,</span> <span class="n">make_check_loss_decrease</span>
 
 
 <span class="nd">@register</span><span class="p">()</span>
-<div class="viewcode-block" id="train_msegm"><a class="viewcode-back" href="../../../dpipe.train.html#dpipe.train.train_msegm.train_msegm">[docs]</a><span class="k">def</span> <span class="nf">train_msegm</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span> <span class="n">train_batch_iter_factory</span><span class="p">:</span> <span class="n">BatchIterFactory</span><span class="p">,</span> <span class="n">batch_predict</span><span class="p">:</span> <span class="n">BatchPredict</span><span class="p">,</span> <span class="n">log_path</span><span class="p">,</span>
-                <span class="n">val_ids</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">,</span> <span class="n">lr_init</span><span class="p">,</span> <span class="n">lr_dec_mul</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">patience</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="n">log_path</span><span class="p">)</span>
+<div class="viewcode-block" id="train"><a class="viewcode-back" href="../../../dpipe.train.html#dpipe.train.train.train">[docs]</a><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span> <span class="n">train_batch_iter_factory</span><span class="p">:</span> <span class="n">BatchIterFactory</span><span class="p">,</span> <span class="n">validator</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+          <span class="n">log_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">lr_init</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lr_dec_mul</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">patience</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="p">,</span>
+          <span class="n">batch_predict</span><span class="p">:</span> <span class="n">BatchPredict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Train a model with a decreasing learning rate.</span>
 
-    <span class="n">mscans_val</span> <span class="o">=</span> <span class="p">[</span><span class="n">dataset</span><span class="o">.</span><span class="n">load_mscan</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">val_ids</span><span class="p">]</span>
-    <span class="n">msegms_val</span> <span class="o">=</span> <span class="p">[</span><span class="n">dataset</span><span class="o">.</span><span class="n">load_msegm</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">val_ids</span><span class="p">]</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: Model</span>
+<span class="sd">        the model to train</span>
+<span class="sd">    train_batch_iter_factory: BatchIterFactory</span>
+<span class="sd">        a factory of train batch iterators</span>
+<span class="sd">    validator: callable</span>
+<span class="sd">        a validator that calculates the loss and metrics on the validation set</span>
+<span class="sd">    n_epochs: int</span>
+<span class="sd">        number of epochs to train</span>
+<span class="sd">    log_path: str</span>
+<span class="sd">    lr_init: float</span>
+<span class="sd">        initial learning rate</span>
+<span class="sd">    lr_dec_mul: float</span>
+<span class="sd">        the learning rate decreasing multiplier</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: lr policy, stopping policy</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="n">log_path</span><span class="p">)</span>
 
     <span class="n">find_next_lr</span> <span class="o">=</span> <span class="n">make_find_next_lr</span><span class="p">(</span><span class="n">lr_init</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">lr</span><span class="p">:</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">lr_dec_mul</span><span class="p">,</span>
                                      <span class="n">partial</span><span class="p">(</span><span class="n">make_check_loss_decrease</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="n">patience</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">))</span>
 
-    <span class="n">train_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;train_loss&#39;</span><span class="p">)</span>
-    <span class="n">train_avg_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;avg_train_loss&#39;</span><span class="p">)</span>
-    <span class="n">val_avg_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;avg_val_loss&#39;</span><span class="p">)</span>
-    <span class="n">val_dices_log_write</span> <span class="o">=</span> <span class="n">make_log_vector</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="s1">&#39;val_dices&#39;</span><span class="p">)</span>
+    <span class="n">train_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;train/loss&#39;</span><span class="p">)</span>
+    <span class="n">lr_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;train/lr&#39;</span><span class="p">)</span>
+    <span class="n">train_avg_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;epoch/train_loss&#39;</span><span class="p">)</span>
+    <span class="n">val_avg_log_write</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">make_log_scalar</span><span class="p">(</span><span class="s1">&#39;epoch/val_loss&#39;</span><span class="p">)</span>
 
+    <span class="n">validate_fn</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">batch_predict</span><span class="o">.</span><span class="n">validate</span><span class="p">,</span> <span class="n">validate_fn</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">do_val_step</span><span class="p">)</span>
     <span class="n">lr</span> <span class="o">=</span> <span class="n">find_next_lr</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">train_batch_iter_factory</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">next</span><span class="p">(</span><span class="n">train_batch_iter_factory</span><span class="p">)</span> <span class="k">as</span> <span class="n">train_batch_iter</span><span class="p">:</span>
                 <span class="n">train_losses</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">inputs</span> <span class="ow">in</span> <span class="n">train_batch_iter</span><span class="p">:</span>
@@ -193,19 +212,22 @@
                     <span class="n">train_log_write</span><span class="p">(</span><span class="n">train_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
                 <span class="n">train_avg_log_write</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_losses</span><span class="p">))</span>
 
-            <span class="n">msegms_pred</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">val_losses</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">mscans_val</span><span class="p">,</span> <span class="n">msegms_val</span><span class="p">):</span>
-                <span class="n">y_pred</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="n">batch_predict</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">validate_fn</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">do_val_step</span><span class="p">)</span>
-                <span class="n">msegms_pred</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_pred</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span>
-                <span class="n">val_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+            <span class="n">val_losses</span><span class="p">,</span> <span class="n">metrics_single</span><span class="p">,</span> <span class="n">metrics_multiple</span> <span class="o">=</span> <span class="n">validator</span><span class="p">(</span><span class="n">validate</span><span class="o">=</span><span class="n">validate_fn</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">metrics_single</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">log_histogram</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;metrics/</span><span class="si">{name}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">epoch</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metrics_multiple</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># check if not scalar</span>
+                    <span class="n">log_vector</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;metrics/</span><span class="si">{name}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">log_scalar</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;metrics/</span><span class="si">{name}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
 
             <span class="n">val_loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">val_losses</span><span class="p">)</span>
             <span class="n">val_avg_log_write</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)</span>
-            <span class="n">val_dices</span> <span class="o">=</span> <span class="p">[</span><span class="n">multichannel_dice_score</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">true</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span><span class="p">,</span> <span class="n">true</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">msegms_pred</span><span class="p">,</span> <span class="n">msegms_val</span><span class="p">)]</span>
-            <span class="n">val_dices_log_write</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">val_dices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
-
-            <span class="n">lr</span> <span class="o">=</span> <span class="n">find_next_lr</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)</span></div>
+            <span class="n">lr</span> <span class="o">=</span> <span class="n">find_next_lr</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)</span>
+            <span class="n">lr_log_write</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

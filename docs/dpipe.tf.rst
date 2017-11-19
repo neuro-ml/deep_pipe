@@ -1,29 +1,29 @@
-dpipe\.dl package
+dpipe\.tf package
 =================
 
 Submodules
 ----------
 
-dpipe\.dl\.activations module
+dpipe\.tf\.activations module
 -----------------------------
 
-.. automodule:: dpipe.dl.activations
+.. automodule:: dpipe.tf.activations
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe\.dl\.model module
+dpipe\.tf\.model module
 -----------------------
 
-.. automodule:: dpipe.dl.model
+.. automodule:: dpipe.tf.model
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe\.dl\.utils module
+dpipe\.tf\.utils module
 -----------------------
 
-.. automodule:: dpipe.dl.utils
+.. automodule:: dpipe.tf.utils
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,7 +32,7 @@ dpipe\.dl\.utils module
 Module contents
 ---------------
 
-.. automodule:: dpipe.dl
+.. automodule:: dpipe.tf
     :members:
     :undoc-members:
     :show-inheritance:

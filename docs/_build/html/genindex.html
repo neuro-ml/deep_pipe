@@ -162,7 +162,6 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
- | <a href="#J"><strong>J</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -175,6 +174,7 @@
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -214,10 +214,6 @@
 </li>
       <li><a href="dpipe.dataset.html#dpipe.dataset.brats.Brats2017">Brats2017 (class in dpipe.dataset.brats)</a>
 </li>
-      <li><a href="dpipe.medim.html#dpipe.medim.shape_utils.broadcast_shape">broadcast_shape() (in module dpipe.medim.shape_utils)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.shape_utils.broadcast_shape_nd">broadcast_shape_nd() (in module dpipe.medim.shape_utils)</a>
-</li>
       <li><a href="dpipe.model_core.html#dpipe.model_core.base.ModelCore.build">build() (dpipe.model_core.base.ModelCore method)</a>
 
       <ul>
@@ -241,8 +237,6 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.html#dpipe.batch_iter_factory.build_contextmanager">build_contextmanager() (in module dpipe.batch_iter_factory)</a>
-</li>
-      <li><a href="dpipe.experiment.flat.html#dpipe.experiment.flat.base.build_flat_structure">build_flat_structure() (in module dpipe.experiment.flat.base)</a>
 </li>
       <li><a href="dpipe.model_core.html#dpipe.model_core.deepmedic_els.build_model">build_model() (in module dpipe.model_core.deepmedic_els)</a>
 
@@ -276,15 +270,13 @@
       </ul></li>
       <li><a href="dpipe.model_core.html#dpipe.model_core.unet.build_res_model">build_res_model() (in module dpipe.model_core.unet)</a>
 </li>
-      <li><a href="dpipe.medim.html#dpipe.medim.utils.build_slices">build_slices() (in module dpipe.medim.utils)</a>
-</li>
   </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.wrappers.cached">cached() (in module dpipe.dataset.wrappers)</a>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.wrappers.cache_methods">cache_methods() (in module dpipe.dataset.wrappers)</a>
 </li>
       <li><a href="dpipe.medim.html#dpipe.medim.metrics.calc_max_dices">calc_max_dices() (in module dpipe.medim.metrics)</a>
 </li>
@@ -306,14 +298,12 @@
       </ul></li>
       <li><a href="dpipe.model_core.layers.html#dpipe.model_core.layers.utils.check_data_format">check_data_format() (in module dpipe.model_core.layers.utils)</a>
 </li>
-      <li><a href="dpipe.medim.html#dpipe.medim.metrics.check_neighborhood">check_neighborhood() (in module dpipe.medim.metrics)</a>
-</li>
       <li><a href="dpipe.medim.html#dpipe.medim.divide.combine">combine() (in module dpipe.medim.divide)</a>
+</li>
+      <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.pipeline.combine_batches_">combine_batches_() (in module dpipe.batch_iter.pipeline)</a>
 </li>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.slices.combine_batches_even">combine_batches_even() (in module dpipe.batch_iter.slices)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d.BatchPredictorShapeState.combine_y">combine_y() (dpipe.batch_predict.patch_3d.BatchPredictorShapeState method)</a>
 
       <ul>
@@ -321,12 +311,14 @@
 </li>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.combine_y">(dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor method)</a>
 </li>
+        <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DVolume.combine_y">(dpipe.batch_predict.patch_3d_fixed.Patch3DVolume method)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dpipe.html#dpipe.meta.compose">compose() (in module dpipe.meta)</a>
+</li>
       <li><a href="dpipe.html#dpipe.commands.compute_dices">compute_dices() (in module dpipe.commands)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.divide.compute_n_parts_per_axis">compute_n_parts_per_axis() (in module dpipe.medim.divide)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.shape_utils.compute_shape_from_spatial">compute_shape_from_spatial() (in module dpipe.medim.shape_utils)</a>
 </li>
       <li><a href="dpipe.html#dpipe.io.ConsoleArguments">ConsoleArguments (class in dpipe.io)</a>
 </li>
@@ -342,6 +334,8 @@
       </ul></li>
       <li><a href="dpipe.medim.html#dpipe.medim.coregister.coregister">coregister() (in module dpipe.medim.coregister)</a>
 </li>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.CSV">CSV (class in dpipe.dataset.from_csv)</a>
+</li>
       <li><a href="dpipe.split.html#dpipe.split.cv_111.cv_111">cv_111() (in module dpipe.split.cv_111)</a>
 </li>
   </ul></td>
@@ -350,9 +344,7 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.Dataset">Dataset (class in dpipe.dataset.base)</a>
-</li>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DatasetInt">DatasetInt (class in dpipe.dataset.base)</a>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DataSet">DataSet (class in dpipe.dataset.base)</a>
 </li>
       <li><a href="dpipe.model_core.html#dpipe.model_core.deepmedic_els.DeepMedicEls">DeepMedicEls (class in dpipe.model_core.deepmedic_els)</a>
 
@@ -369,8 +361,6 @@
       <li><a href="dpipe.medim.html#dpipe.medim.divide.divide">divide() (in module dpipe.medim.divide)</a>
 </li>
       <li><a href="dpipe.medim.html#dpipe.medim.divide.divide_no_padding">divide_no_padding() (in module dpipe.medim.divide)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.divide.divide_spatial">divide_spatial() (in module dpipe.medim.divide)</a>
 </li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d.BatchPredictorShapeState.divide_x">divide_x() (dpipe.batch_predict.patch_3d.BatchPredictorShapeState method)</a>
 
@@ -389,22 +379,38 @@
 </li>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor.divide_y">(dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor method)</a>
 </li>
+        <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DVolume.divide_y">(dpipe.batch_predict.patch_3d_fixed.Patch3DVolume method)</a>
+</li>
       </ul></li>
-      <li><a href="dpipe.dl.html#dpipe.dl.model.FrozenModel.do_inf_step">do_inf_step() (dpipe.dl.model.FrozenModel method)</a>
+      <li><a href="dpipe.html#dpipe.model.FrozenModel.do_inf_step">do_inf_step() (dpipe.model.FrozenModel method)</a>
 
       <ul>
-        <li><a href="dpipe.dl.html#dpipe.dl.model.Model.do_inf_step">(dpipe.dl.model.Model method)</a>
+        <li><a href="dpipe.html#dpipe.model.Model.do_inf_step">(dpipe.model.Model method)</a>
+</li>
+        <li><a href="dpipe.tf.html#dpipe.tf.model.TFFrozenModel.do_inf_step">(dpipe.tf.model.TFFrozenModel method)</a>
+</li>
+        <li><a href="dpipe.tf.html#dpipe.tf.model.TFModel.do_inf_step">(dpipe.tf.model.TFModel method)</a>
 </li>
       </ul></li>
-      <li><a href="dpipe.dl.html#dpipe.dl.model.Model.do_train_step">do_train_step() (dpipe.dl.model.Model method)</a>
+      <li><a href="dpipe.html#dpipe.model.Model.do_train_step">do_train_step() (dpipe.model.Model method)</a>
+
+      <ul>
+        <li><a href="dpipe.tf.html#dpipe.tf.model.TFModel.do_train_step">(dpipe.tf.model.TFModel method)</a>
 </li>
-      <li><a href="dpipe.dl.html#dpipe.dl.model.Model.do_val_step">do_val_step() (dpipe.dl.model.Model method)</a>
+      </ul></li>
+      <li><a href="dpipe.html#dpipe.model.Model.do_val_step">do_val_step() (dpipe.model.Model method)</a>
+
+      <ul>
+        <li><a href="dpipe.tf.html#dpipe.tf.model.TFModel.do_val_step">(dpipe.tf.model.TFModel method)</a>
 </li>
+      </ul></li>
       <li><a href="dpipe.html#module-dpipe">dpipe (module)</a>
 </li>
       <li><a href="dpipe.batch_iter.html#module-dpipe.batch_iter">dpipe.batch_iter (module)</a>
 </li>
       <li><a href="dpipe.batch_iter.html#module-dpipe.batch_iter.patch_3d">dpipe.batch_iter.patch_3d (module)</a>
+</li>
+      <li><a href="dpipe.batch_iter.html#module-dpipe.batch_iter.patch_3d_sep">dpipe.batch_iter.patch_3d_sep (module)</a>
 </li>
       <li><a href="dpipe.batch_iter.html#module-dpipe.batch_iter.pipeline">dpipe.batch_iter.pipeline (module)</a>
 </li>
@@ -421,6 +427,8 @@
       <li><a href="dpipe.batch_predict.html#module-dpipe.batch_predict.patch_3d">dpipe.batch_predict.patch_3d (module)</a>
 </li>
       <li><a href="dpipe.batch_predict.html#module-dpipe.batch_predict.patch_3d_fixed">dpipe.batch_predict.patch_3d_fixed (module)</a>
+</li>
+      <li><a href="dpipe.batch_predict.html#module-dpipe.batch_predict.simple">dpipe.batch_predict.simple (module)</a>
 </li>
       <li><a href="dpipe.batch_predict.html#module-dpipe.batch_predict.slice">dpipe.batch_predict.slice (module)</a>
 </li>
@@ -448,25 +456,15 @@
 </li>
       <li><a href="dpipe.dataset.html#module-dpipe.dataset.isles">dpipe.dataset.isles (module)</a>
 </li>
+      <li><a href="dpipe.dataset.html#module-dpipe.dataset.segmentation">dpipe.dataset.segmentation (module)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.dataset.html#module-dpipe.dataset.whitematter">dpipe.dataset.whitematter (module)</a>
 </li>
       <li><a href="dpipe.dataset.html#module-dpipe.dataset.wrappers">dpipe.dataset.wrappers (module)</a>
 </li>
-      <li><a href="dpipe.dl.html#module-dpipe.dl">dpipe.dl (module)</a>
-</li>
-      <li><a href="dpipe.dl.html#module-dpipe.dl.activations">dpipe.dl.activations (module)</a>
-</li>
-      <li><a href="dpipe.dl.html#module-dpipe.dl.model">dpipe.dl.model (module)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.dl.html#module-dpipe.dl.utils">dpipe.dl.utils (module)</a>
-</li>
       <li><a href="dpipe.experiment.html#module-dpipe.experiment">dpipe.experiment (module)</a>
-</li>
-      <li><a href="dpipe.experiment.flat.html#module-dpipe.experiment.flat">dpipe.experiment.flat (module)</a>
-</li>
-      <li><a href="dpipe.experiment.flat.html#module-dpipe.experiment.flat.base">dpipe.experiment.flat.base (module)</a>
 </li>
       <li><a href="dpipe.html#module-dpipe.io">dpipe.io (module)</a>
 </li>
@@ -492,19 +490,13 @@
 </li>
       <li><a href="dpipe.medim.html#module-dpipe.medim.slices">dpipe.medim.slices (module)</a>
 </li>
-      <li><a href="dpipe.medim.html#module-dpipe.medim.test_features">dpipe.medim.test_features (module)</a>
-</li>
-      <li><a href="dpipe.medim.html#module-dpipe.medim.test_patch">dpipe.medim.test_patch (module)</a>
-</li>
-      <li><a href="dpipe.medim.html#module-dpipe.medim.test_shape_utils">dpipe.medim.test_shape_utils (module)</a>
-</li>
-      <li><a href="dpipe.medim.html#module-dpipe.medim.test_split">dpipe.medim.test_split (module)</a>
-</li>
-      <li><a href="dpipe.medim.html#module-dpipe.medim.test_utils">dpipe.medim.test_utils (module)</a>
-</li>
       <li><a href="dpipe.medim.html#module-dpipe.medim.utils">dpipe.medim.utils (module)</a>
 </li>
       <li><a href="dpipe.medim.html#module-dpipe.medim.visualize">dpipe.medim.visualize (module)</a>
+</li>
+      <li><a href="dpipe.html#module-dpipe.meta">dpipe.meta (module)</a>
+</li>
+      <li><a href="dpipe.html#module-dpipe.model">dpipe.model (module)</a>
 </li>
       <li><a href="dpipe.model_core.html#module-dpipe.model_core">dpipe.model_core (module)</a>
 </li>
@@ -530,6 +522,8 @@
 </li>
       <li><a href="dpipe.model_core.layers.html#module-dpipe.model_core.layers.utils">dpipe.model_core.layers.utils (module)</a>
 </li>
+      <li><a href="dpipe.model_core.layers_torch.html#module-dpipe.model_core.layers_torch">dpipe.model_core.layers_torch (module)</a>
+</li>
       <li><a href="dpipe.model_core.html#module-dpipe.model_core.unet">dpipe.model_core.unet (module)</a>
 </li>
       <li><a href="dpipe.split.html#module-dpipe.split">dpipe.split (module)</a>
@@ -544,19 +538,27 @@
 </li>
       <li><a href="dpipe.split.html#module-dpipe.split.monte_carlo">dpipe.split.monte_carlo (module)</a>
 </li>
-      <li><a href="dpipe.split.html#module-dpipe.split.test_cv_111">dpipe.split.test_cv_111 (module)</a>
+      <li><a href="dpipe.tf.html#module-dpipe.tf">dpipe.tf (module)</a>
 </li>
-      <li><a href="dpipe.split.html#module-dpipe.split.test_monte_carlo">dpipe.split.test_monte_carlo (module)</a>
+      <li><a href="dpipe.tf.html#module-dpipe.tf.activations">dpipe.tf.activations (module)</a>
+</li>
+      <li><a href="dpipe.tf.html#module-dpipe.tf.model">dpipe.tf.model (module)</a>
+</li>
+      <li><a href="dpipe.tf.html#module-dpipe.tf.utils">dpipe.tf.utils (module)</a>
+</li>
+      <li><a href="dpipe.torch.html#module-dpipe.torch">dpipe.torch (module)</a>
 </li>
       <li><a href="dpipe.train.html#module-dpipe.train">dpipe.train (module)</a>
 </li>
       <li><a href="dpipe.train.html#module-dpipe.train.logging">dpipe.train.logging (module)</a>
 </li>
-      <li><a href="dpipe.train.html#module-dpipe.train.train_msegm">dpipe.train.train_msegm (module)</a>
+      <li><a href="dpipe.train.html#module-dpipe.train.train">dpipe.train.train (module)</a>
 </li>
       <li><a href="dpipe.train.html#module-dpipe.train.train_segm">dpipe.train.train_segm (module)</a>
 </li>
       <li><a href="dpipe.train.html#module-dpipe.train.utils">dpipe.train.utils (module)</a>
+</li>
+      <li><a href="dpipe.train.html#module-dpipe.train.validator">dpipe.train.validator (module)</a>
 </li>
       <li><a href="dpipe.html#module-dpipe.transformers">dpipe.transformers (module)</a>
 </li>
@@ -578,17 +580,19 @@
 </li>
       <li><a href="dpipe.model_core.html#dpipe.model_core.enet_mixed.ENetPatch">ENetPatch (class in dpipe.model_core.enet_mixed)</a>
 </li>
-      <li><a href="dpipe.model_core.layers.html#dpipe.model_core.layers.utils.expand_size">expand_size() (in module dpipe.model_core.layers.utils)</a>
+      <li><a href="dpipe.train.html#dpipe.train.validator.evaluate">evaluate() (in module dpipe.train.validator)</a>
+</li>
+      <li><a href="dpipe.html#dpipe.commands.evaluate_cmd">evaluate_cmd() (in module dpipe.commands)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dpipe.model_core.layers.html#dpipe.model_core.layers.utils.expand_size">expand_size() (in module dpipe.model_core.layers.utils)</a>
+</li>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.ExpirationPool">ExpirationPool (class in dpipe.batch_iter.patch_3d)</a>
 </li>
       <li><a href="dpipe.medim.html#dpipe.medim.bounding_box.extract">extract() (in module dpipe.medim.bounding_box)</a>
 
       <ul>
-        <li><a href="dpipe.medim.html#dpipe.medim.utils.extract">(in module dpipe.medim.utils)</a>
-</li>
         <li><a href="dpipe.split.html#dpipe.split.cv_111.extract">(in module dpipe.split.cv_111)</a>
 </li>
       </ul></li>
@@ -612,13 +616,9 @@
 </li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.find_fixed_spatial_size">find_fixed_spatial_size() (in module dpipe.batch_predict.patch_3d_fixed)</a>
 </li>
-      <li><a href="dpipe.medim.html#dpipe.medim.patch.find_masked_patch_center_indices">find_masked_patch_center_indices() (in module dpipe.medim.patch)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.medim.html#dpipe.medim.patch.find_patch_size">find_patch_size() (in module dpipe.medim.patch)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.patch.find_patch_start_end_padding">find_patch_start_end_padding() (in module dpipe.medim.patch)</a>
+      <li><a href="dpipe.medim.html#dpipe.medim.patch.find_masked_patch_center_indices">find_masked_patch_center_indices() (in module dpipe.medim.patch)</a>
 </li>
       <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV">FromCSV (class in dpipe.dataset.from_csv)</a>
 </li>
@@ -626,7 +626,7 @@
 </li>
       <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVMultiple">FromCSVMultiple (class in dpipe.dataset.from_csv)</a>
 </li>
-      <li><a href="dpipe.dl.html#dpipe.dl.model.FrozenModel">FrozenModel (class in dpipe.dl.model)</a>
+      <li><a href="dpipe.html#dpipe.model.FrozenModel">FrozenModel (class in dpipe.model)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -634,7 +634,7 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.medim.html#dpipe.medim.features.get_coordinate_features">get_coordinate_features() (in module dpipe.medim.features)</a>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.CSV.get">get() (dpipe.dataset.from_csv.CSV method)</a>
 </li>
       <li><a href="dpipe.split.html#dpipe.split.base.get_cv_11">get_cv_11() (in module dpipe.split.base)</a>
 
@@ -652,9 +652,7 @@
 </li>
       <li><a href="dpipe.split.html#dpipe.split.base.get_loo_cv">get_loo_cv() (in module dpipe.split.base)</a>
 </li>
-      <li><a href="dpipe.dl.html#dpipe.dl.model.get_model_path">get_model_path() (in module dpipe.dl.model)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.metrics.get_next_bound">get_next_bound() (in module dpipe.medim.metrics)</a>
+      <li><a href="dpipe.html#dpipe.model.get_model_path">get_model_path() (in module dpipe.model)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -692,8 +690,20 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DataSet.ids">ids (dpipe.dataset.base.DataSet attribute)</a>
+
+      <ul>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.CSV.ids">(dpipe.dataset.from_csv.CSV attribute)</a>
+</li>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV.ids">(dpipe.dataset.from_csv.FromCSV attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="dpipe.html#dpipe.meta.importer">importer() (in module dpipe.meta)</a>
+</li>
       <li><a href="dpipe.split.html#dpipe.split.base.indices_to_subj_ids">indices_to_subj_ids() (in module dpipe.split.base)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.model_core.layers.html#dpipe.model_core.layers.utils.infer_spatial_size">infer_spatial_size() (in module dpipe.model_core.layers.utils)</a>
 </li>
       <li><a href="dpipe.model_core.html#dpipe.model_core.enet.init_block">init_block() (in module dpipe.model_core.enet)</a>
@@ -704,19 +714,9 @@
         <li><a href="dpipe.model_core.html#dpipe.model_core.enet_with_dropout.init_block">(in module dpipe.model_core.enet_with_dropout)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.ExpirationPool.is_full">is_full() (dpipe.batch_iter.patch_3d.ExpirationPool method)</a>
 </li>
       <li><a href="dpipe.medim.html#dpipe.medim.slices.iterate_slices">iterate_slices() (in module dpipe.medim.slices)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="J">J</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.medim.html#dpipe.medim.slices.join_result">join_result() (in module dpipe.medim.slices)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -732,38 +732,54 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.dl.html#dpipe.dl.model.Model.load">load() (dpipe.dl.model.Model method)</a>
+      <li><a href="dpipe.config.html#dpipe.config.base.link_externals">link_externals() (in module dpipe.config.base)</a>
 </li>
+      <li><a href="dpipe.html#dpipe.model.Model.load">load() (dpipe.model.Model method)</a>
+
+      <ul>
+        <li><a href="dpipe.tf.html#dpipe.tf.model.TFModel.load">(dpipe.tf.model.TFModel method)</a>
+</li>
+        <li><a href="dpipe.config.html#dpipe.config.base.load">(in module dpipe.config.base)</a>
+</li>
+      </ul></li>
       <li><a href="dpipe.medim.html#dpipe.medim.utils.load_by_ids">load_by_ids() (in module dpipe.medim.utils)</a>
 </li>
       <li><a href="dpipe.medim.html#dpipe.medim.utils.load_image">load_image() (in module dpipe.medim.utils)</a>
 </li>
       <li><a href="dpipe.html#dpipe.io.load_json">load_json() (in module dpipe.io)</a>
 </li>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.Dataset.load_mscan">load_mscan() (dpipe.dataset.base.Dataset method)</a>
-
-      <ul>
-        <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV.load_mscan">(dpipe.dataset.from_csv.FromCSV method)</a>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.wrappers.Padded.load_mscan">load_mscan() (dpipe.dataset.wrappers.Padded method)</a>
 </li>
-      </ul></li>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DatasetInt.load_msegm">load_msegm() (dpipe.dataset.base.DatasetInt method)</a>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.load_msegm">load_msegm() (dpipe.dataset.from_csv.FromCSVInt method)</a>
 
       <ul>
         <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVMultiple.load_msegm">(dpipe.dataset.from_csv.FromCSVMultiple method)</a>
 </li>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.segmentation.Segmentation.load_msegm">(dpipe.dataset.segmentation.Segmentation method)</a>
+</li>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.wrappers.Padded.load_msegm">(dpipe.dataset.wrappers.Padded method)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DatasetInt.load_segm">load_segm() (dpipe.dataset.base.DatasetInt method)</a>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.brats.Brats2017.load_segm">load_segm() (dpipe.dataset.brats.Brats2017 method)</a>
 
       <ul>
-        <li><a href="dpipe.dataset.html#dpipe.dataset.brats.Brats2017.load_segm">(dpipe.dataset.brats.Brats2017 method)</a>
-</li>
         <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.load_segm">(dpipe.dataset.from_csv.FromCSVInt method)</a>
 </li>
         <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVMultiple.load_segm">(dpipe.dataset.from_csv.FromCSVMultiple method)</a>
 </li>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.segmentation.Segmentation.load_segm">(dpipe.dataset.segmentation.Segmentation method)</a>
+</li>
         <li><a href="dpipe.dataset.html#dpipe.dataset.whitematter.Wmh2017.load_segm">(dpipe.dataset.whitematter.Wmh2017 method)</a>
+</li>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.wrappers.Padded.load_segm">(dpipe.dataset.wrappers.Padded method)</a>
+</li>
+      </ul></li>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DataSet.load_x">load_x() (dpipe.dataset.base.DataSet method)</a>
+
+      <ul>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV.load_x">(dpipe.dataset.from_csv.FromCSV method)</a>
 </li>
       </ul></li>
       <li><a href="dpipe.train.html#dpipe.train.logging.log_vector">log_vector() (in module dpipe.train.logging)</a>
@@ -774,8 +790,6 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.make_3d_patch_strat_augm_iter">make_3d_patch_strat_augm_iter() (in module dpipe.batch_iter.patch_3d)</a>
-</li>
       <li><a href="dpipe.train.html#dpipe.train.utils.make_check_loss_decrease">make_check_loss_decrease() (in module dpipe.train.utils)</a>
 </li>
       <li><a href="dpipe.train.html#dpipe.train.utils.make_find_next_lr">make_find_next_lr() (in module dpipe.train.utils)</a>
@@ -784,16 +798,18 @@
 </li>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.make_patch_3d_iter">make_patch_3d_iter() (in module dpipe.batch_iter.patch_3d)</a>
 </li>
+      <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.make_patch_3d_strat_augm_iter">make_patch_3d_strat_augm_iter() (in module dpipe.batch_iter.patch_3d)</a>
+</li>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.make_patch_3d_strat_iter">make_patch_3d_strat_iter() (in module dpipe.batch_iter.patch_3d)</a>
 </li>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.make_patch_3d_strat_iter_quantiles">make_patch_3d_strat_iter_quantiles() (in module dpipe.batch_iter.patch_3d)</a>
 </li>
       <li><a href="dpipe.model_core.html#dpipe.model_core.unet.make_unet">make_unet() (in module dpipe.model_core.unet)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.pipeline.many2one">many2one() (in module dpipe.batch_iter.pipeline)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.html#dpipe.batch_iter_factory.maybe_build_contextmanager">maybe_build_contextmanager() (in module dpipe.batch_iter_factory)</a>
 </li>
       <li><a href="dpipe.dataset.html#dpipe.dataset.wrappers.merge_datasets">merge_datasets() (in module dpipe.dataset.wrappers)</a>
@@ -803,7 +819,7 @@
       <ul>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d_fixed.Model">(class in dpipe.batch_predict.test_patch_3d_fixed)</a>
 </li>
-        <li><a href="dpipe.dl.html#dpipe.dl.model.Model">(class in dpipe.dl.model)</a>
+        <li><a href="dpipe.html#dpipe.model.Model">(class in dpipe.model)</a>
 </li>
       </ul></li>
       <li><a href="dpipe.model_core.html#dpipe.model_core.base.ModelCore">ModelCore (class in dpipe.model_core.base)</a>
@@ -812,32 +828,38 @@
 </li>
       <li><a href="dpipe.medim.html#dpipe.medim.metrics.multichannel_dice_score">multichannel_dice_score() (in module dpipe.medim.metrics)</a>
 </li>
+      <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.simple.Multiclass">Multiclass (class in dpipe.batch_predict.simple)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.Dataset.n_chans_mscan">n_chans_mscan (dpipe.dataset.base.Dataset attribute)</a>
-
-      <ul>
-        <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV.n_chans_mscan">(dpipe.dataset.from_csv.FromCSV attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DatasetInt.n_chans_msegm">n_chans_msegm (dpipe.dataset.base.DatasetInt attribute)</a>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.n_chans_msegm">n_chans_msegm (dpipe.dataset.from_csv.FromCSVInt attribute)</a>
 
       <ul>
         <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVMultiple.n_chans_msegm">(dpipe.dataset.from_csv.FromCSVMultiple attribute)</a>
 </li>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.segmentation.Segmentation.n_chans_msegm">(dpipe.dataset.segmentation.Segmentation attribute)</a>
+</li>
       </ul></li>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DatasetInt.n_chans_segm">n_chans_segm (dpipe.dataset.base.DatasetInt attribute)</a>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.n_chans_segm">n_chans_segm (dpipe.dataset.from_csv.FromCSVInt attribute)</a>
 
       <ul>
         <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVMultiple.n_chans_segm">(dpipe.dataset.from_csv.FromCSVMultiple attribute)</a>
 </li>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.segmentation.Segmentation.n_chans_segm">(dpipe.dataset.segmentation.Segmentation attribute)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV.n_chans_x">n_chans_x (dpipe.dataset.from_csv.FromCSV attribute)</a>
+
+      <ul>
+        <li><a href="dpipe.dataset.html#dpipe.dataset.segmentation.Segmentation.n_chans_x">(dpipe.dataset.segmentation.Segmentation attribute)</a>
+</li>
+      </ul></li>
       <li><a href="dpipe.model_core.layers.html#dpipe.model_core.layers.layers.nearest_neighbour">nearest_neighbour() (in module dpipe.model_core.layers.layers)</a>
 </li>
       <li><a href="dpipe.medim.html#dpipe.medim.preprocessing.normalize_mscan">normalize_mscan() (in module dpipe.medim.preprocessing)</a>
@@ -860,7 +882,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.pipeline.one2one">one2one() (in module dpipe.batch_iter.pipeline)</a>
 </li>
-      <li><a href="dpipe.dl.html#dpipe.dl.utils.optimize">optimize() (in module dpipe.dl.utils)</a>
+      <li><a href="dpipe.tf.html#dpipe.tf.utils.optimize">optimize() (in module dpipe.tf.utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -869,14 +891,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.medim.html#dpipe.medim.preprocessing.pad">pad() (in module dpipe.medim.preprocessing)</a>
-
-      <ul>
-        <li><a href="dpipe.medim.html#dpipe.medim.utils.pad">(in module dpipe.medim.utils)</a>
-</li>
-      </ul></li>
-      <li><a href="dpipe.medim.html#dpipe.medim.augmentation.pad_slice">pad_slice() (in module dpipe.medim.augmentation)</a>
 </li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.pad_spatial_size">pad_spatial_size() (in module dpipe.batch_predict.patch_3d_fixed)</a>
+</li>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.wrappers.Padded">Padded (class in dpipe.dataset.wrappers)</a>
 </li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DFixedPredictor">Patch3DFixedPredictor (class in dpipe.batch_predict.patch_3d_fixed)</a>
 </li>
@@ -884,20 +902,22 @@
 </li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d.Patch3DPredictor">Patch3DPredictor (class in dpipe.batch_predict.patch_3d)</a>
 </li>
+      <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d_fixed.Patch3DVolume">Patch3DVolume (class in dpipe.batch_predict.patch_3d_fixed)</a>
+</li>
+      <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d_sep.patch_3d_part">patch_3d_part() (in module dpipe.batch_iter.patch_3d_sep)</a>
+</li>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d.Patient">Patient (class in dpipe.batch_iter.patch_3d)</a>
 </li>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.Dataset.patient_ids">patient_ids (dpipe.dataset.base.Dataset attribute)</a>
-
-      <ul>
-        <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV.patient_ids">(dpipe.dataset.from_csv.FromCSV attribute)</a>
-</li>
-      </ul></li>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.pipeline.pipeline">pipeline() (in module dpipe.batch_iter.pipeline)</a>
 </li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.base.BatchPredict.predict">predict() (dpipe.batch_predict.base.BatchPredict method)</a>
 
       <ul>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d.BatchPredictorShapeState.predict">(dpipe.batch_predict.patch_3d.BatchPredictorShapeState method)</a>
+</li>
+        <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.simple.Multiclass.predict">(dpipe.batch_predict.simple.Multiclass method)</a>
+</li>
+        <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.simple.Simple.predict">(dpipe.batch_predict.simple.Simple method)</a>
 </li>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.slice.Slice2D.predict">(dpipe.batch_predict.slice.Slice2D method)</a>
 </li>
@@ -918,10 +938,10 @@
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.utils.predict_object">(in module dpipe.batch_predict.utils)</a>
 </li>
       </ul></li>
-      <li><a href="dpipe.dl.html#dpipe.dl.activations.prelu">prelu() (in module dpipe.dl.activations)</a>
+      <li><a href="dpipe.model_core.layers.html#dpipe.model_core.layers.layers.prelu">prelu() (in module dpipe.model_core.layers.layers)</a>
 
       <ul>
-        <li><a href="dpipe.model_core.layers.html#dpipe.model_core.layers.layers.prelu">(in module dpipe.model_core.layers.layers)</a>
+        <li><a href="dpipe.tf.html#dpipe.tf.activations.prelu">(in module dpipe.tf.activations)</a>
 </li>
       </ul></li>
       <li><a href="dpipe.dataset.html#dpipe.dataset.wrappers.Proxy">Proxy (class in dpipe.dataset.wrappers)</a>
@@ -934,10 +954,6 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.medim.html#dpipe.medim.augmentation.random_flip">random_flip() (in module dpipe.medim.augmentation)</a>
-</li>
-      <li><a href="dpipe.split.html#dpipe.split.test_monte_carlo.random_string">random_string() (in module dpipe.split.test_monte_carlo)</a>
-</li>
       <li><a href="dpipe.model_core.html#dpipe.model_core.deepmedic_orig.res_block">res_block() (in module dpipe.model_core.deepmedic_orig)</a>
 
       <ul>
@@ -956,19 +972,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.medim.html#dpipe.medim.patch.sample_uniform_center_index">sample_uniform_center_index() (in module dpipe.medim.patch)</a>
 </li>
-      <li><a href="dpipe.dl.html#dpipe.dl.model.Model.save">save() (dpipe.dl.model.Model method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.preprocessing.scale">scale() (in module dpipe.medim.preprocessing)</a>
-</li>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DatasetInt.segm2msegm">segm2msegm() (dpipe.dataset.base.DatasetInt method)</a>
-</li>
-      <li><a href="dpipe.dataset.html#dpipe.dataset.base.DatasetInt.segm2msegm_matrix">segm2msegm_matrix (dpipe.dataset.base.DatasetInt attribute)</a>
+      <li><a href="dpipe.html#dpipe.model.Model.save">save() (dpipe.model.Model method)</a>
 
       <ul>
-        <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.segm2msegm_matrix">(dpipe.dataset.from_csv.FromCSVInt attribute)</a>
+        <li><a href="dpipe.tf.html#dpipe.tf.model.TFModel.save">(dpipe.tf.model.TFModel method)</a>
 </li>
       </ul></li>
+      <li><a href="dpipe.medim.html#dpipe.medim.preprocessing.scale">scale() (in module dpipe.medim.preprocessing)</a>
+</li>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.segm2msegm">segm2msegm() (dpipe.dataset.from_csv.FromCSVInt method)</a>
+</li>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.segm2msegm_matrix">segm2msegm_matrix (dpipe.dataset.from_csv.FromCSVInt attribute)</a>
+</li>
       <li><a href="dpipe.html#dpipe.transformers.segm_prob2msegm">segm_prob2msegm() (in module dpipe.transformers)</a>
+</li>
+      <li><a href="dpipe.dataset.html#dpipe.dataset.segmentation.Segmentation">Segmentation (class in dpipe.dataset.segmentation)</a>
 </li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor.setUp">setUp() (dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor method)</a>
 
@@ -977,16 +995,6 @@
 </li>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor.setUp">(dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor method)</a>
 </li>
-        <li><a href="dpipe.medim.html#dpipe.medim.test_features.TestCoordinateFeatures.setUp">(dpipe.medim.test_features.TestCoordinateFeatures method)</a>
-</li>
-        <li><a href="dpipe.medim.html#dpipe.medim.test_patch.TestPatch.setUp">(dpipe.medim.test_patch.TestPatch method)</a>
-</li>
-        <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestBroadcastShapeND.setUp">(dpipe.medim.test_shape_utils.TestBroadcastShapeND method)</a>
-</li>
-        <li><a href="dpipe.medim.html#dpipe.medim.test_split.TestSplit.setUp">(dpipe.medim.test_split.TestSplit method)</a>
-</li>
-        <li><a href="dpipe.split.html#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.setUp">(dpipe.split.test_monte_carlo.TestMonteCarloSplitter method)</a>
-</li>
       </ul></li>
       <li><a href="dpipe.split.html#dpipe.split.cv.ShuffleGroupKFold">ShuffleGroupKFold (class in dpipe.split.cv)</a>
 
@@ -994,14 +1002,16 @@
         <li><a href="dpipe.split.html#dpipe.split.cv_111.ShuffleGroupKFold">(class in dpipe.split.cv_111)</a>
 </li>
       </ul></li>
-      <li><a href="dpipe.dl.html#dpipe.dl.utils.sigmoid">sigmoid() (in module dpipe.dl.utils)</a>
+      <li><a href="dpipe.tf.html#dpipe.tf.utils.sigmoid">sigmoid() (in module dpipe.tf.utils)</a>
 </li>
-      <li><a href="dpipe.dl.html#dpipe.dl.utils.sigmoid_cross_entropy">sigmoid_cross_entropy() (in module dpipe.dl.utils)</a>
+      <li><a href="dpipe.tf.html#dpipe.tf.utils.sigmoid_cross_entropy">sigmoid_cross_entropy() (in module dpipe.tf.utils)</a>
+</li>
+      <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.simple.Simple">Simple (class in dpipe.batch_predict.simple)</a>
+</li>
+      <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.simple.simple">simple() (in module dpipe.batch_iter.simple)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.simple.simple">simple() (in module dpipe.batch_iter.simple)</a>
-</li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.slice.Slice2D">Slice2D (class in dpipe.batch_predict.slice)</a>
 </li>
       <li><a href="dpipe.medim.html#dpipe.medim.visualize.slice3d">slice3d() (in module dpipe.medim.visualize)</a>
@@ -1012,19 +1022,15 @@
 </li>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.slices.slices_augmented">slices_augmented() (in module dpipe.batch_iter.slices)</a>
 </li>
-      <li><a href="dpipe.dl.html#dpipe.dl.utils.soft_dice_loss">soft_dice_loss() (in module dpipe.dl.utils)</a>
+      <li><a href="dpipe.tf.html#dpipe.tf.utils.soft_dice_loss">soft_dice_loss() (in module dpipe.tf.utils)</a>
 </li>
       <li><a href="dpipe.medim.html#dpipe.medim.metrics.soft_weighted_dice_score">soft_weighted_dice_score() (in module dpipe.medim.metrics)</a>
 </li>
-      <li><a href="dpipe.dl.html#dpipe.dl.utils.softmax">softmax() (in module dpipe.dl.utils)</a>
+      <li><a href="dpipe.tf.html#dpipe.tf.utils.softmax">softmax() (in module dpipe.tf.utils)</a>
+</li>
+      <li><a href="dpipe.tf.html#dpipe.tf.utils.softmax_cross_entropy">softmax_cross_entropy() (in module dpipe.tf.utils)</a>
 </li>
       <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.pipeline.source">source() (in module dpipe.batch_iter.pipeline)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.augmentation.spacial_augmentation">spacial_augmentation() (in module dpipe.medim.augmentation)</a>
-</li>
-      <li><a href="dpipe.dl.html#dpipe.dl.utils.sparse_softmax_cross_entropy">sparse_softmax_cross_entropy() (in module dpipe.dl.utils)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.augmentation.spatial_augmentation_strict">spatial_augmentation_strict() (in module dpipe.medim.augmentation)</a>
 </li>
       <li><a href="dpipe.model_core.layers.html#dpipe.model_core.layers.layers.spatial_batch_norm">spatial_batch_norm() (in module dpipe.model_core.layers.layers)</a>
 </li>
@@ -1050,49 +1056,7 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dpipe.split.html#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_bad_params_value_error">test_bad_params_value_error() (dpipe.split.test_monte_carlo.TestMonteCarloSplitter method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_features.TestCoordinateFeatures.test_big">test_big() (dpipe.medim.test_features.TestCoordinateFeatures method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestBroadcastShape.test_broadcast_shape">test_broadcast_shape() (dpipe.medim.test_shape_utils.TestBroadcastShape method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestBroadcastShapeND.test_broadcast_shape_nd">test_broadcast_shape_nd() (dpipe.medim.test_shape_utils.TestBroadcastShapeND method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestBroadcastShapeND.test_broadcast_shape_nd_same">test_broadcast_shape_nd_same() (dpipe.medim.test_shape_utils.TestBroadcastShapeND method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestBroadcastShapeND.test_broadcast_shape_nd_value_error">test_broadcast_shape_nd_value_error() (dpipe.medim.test_shape_utils.TestBroadcastShapeND method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestBroadcastShape.test_broadcast_shape_value_error">test_broadcast_shape_value_error() (dpipe.medim.test_shape_utils.TestBroadcastShape method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_split.TestSplit.test_compute_n_parts_per_axis">test_compute_n_parts_per_axis() (dpipe.medim.test_split.TestSplit method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestComputeShapeFromSpatial.test_compute_shape_from_spatial">test_compute_shape_from_spatial() (dpipe.medim.test_shape_utils.TestComputeShapeFromSpatial method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_split.TestSplit.test_divide">test_divide() (dpipe.medim.test_split.TestSplit method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_split.TestSplit.test_divide_combine">test_divide_combine() (dpipe.medim.test_split.TestSplit method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_split.TestSplit.test_divide_no_padding_combine">test_divide_no_padding_combine() (dpipe.medim.test_split.TestSplit method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_split.TestSplit.test_divide_no_padding_n_parts">test_divide_no_padding_n_parts() (dpipe.medim.test_split.TestSplit method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_split.TestSplit.test_divide_spatial_combine">test_divide_spatial_combine() (dpipe.medim.test_split.TestSplit method)</a>
-</li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor.test_divide_x">test_divide_x() (dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_patch.TestPatch.test_extract_padding">test_extract_padding() (dpipe.medim.test_patch.TestPatch method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_patch.TestPatch.test_extract_patch_no_padding">test_extract_patch_no_padding() (dpipe.medim.test_patch.TestPatch method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_patch.TestPatch.test_find_patch_sizes">test_find_patch_sizes() (dpipe.medim.test_patch.TestPatch method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_patch.TestPatch.test_find_patch_start_end_padding">test_find_patch_start_end_padding() (dpipe.medim.test_patch.TestPatch method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_patch.TestPatch.test_get_conditional_center_indices">test_get_conditional_center_indices() (dpipe.medim.test_patch.TestPatch method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_patch.TestPatch.test_get_uniform_center_index">test_get_uniform_center_index() (dpipe.medim.test_patch.TestPatch method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_utils.TestDivide.test_pad">test_pad() (dpipe.medim.test_utils.TestDivide method)</a>
 </li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor.test_patch_3d_predict_call">test_patch_3d_predict_call() (dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor method)</a>
 
@@ -1102,8 +1066,6 @@
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor.test_patch_3d_predict_call">(dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor.test_predictor">test_predictor() (dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor method)</a>
 
       <ul>
@@ -1112,39 +1074,21 @@
       </ul></li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor.test_predictor_big">test_predictor_big() (dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor method)</a>
 </li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_features.TestCoordinateFeatures.test_small">test_small() (dpipe.medim.test_features.TestCoordinateFeatures method)</a>
-</li>
-      <li><a href="dpipe.split.html#dpipe.split.test_cv_111.TestSplits.test_split">test_split() (dpipe.split.test_cv_111.TestSplits method)</a>
-</li>
-      <li><a href="dpipe.split.html#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_successful_split">test_successful_split() (dpipe.split.test_monte_carlo.TestMonteCarloSplitter method)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestBroadcastShape">TestBroadcastShape (class in dpipe.medim.test_shape_utils)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestBroadcastShapeND">TestBroadcastShapeND (class in dpipe.medim.test_shape_utils)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_shape_utils.TestComputeShapeFromSpatial">TestComputeShapeFromSpatial (class in dpipe.medim.test_shape_utils)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_features.TestCoordinateFeatures">TestCoordinateFeatures (class in dpipe.medim.test_features)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_utils.TestDivide">TestDivide (class in dpipe.medim.test_utils)</a>
-</li>
-      <li><a href="dpipe.split.html#dpipe.split.test_monte_carlo.TestMonteCarloSplitter">TestMonteCarloSplitter (class in dpipe.split.test_monte_carlo)</a>
-</li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_patch.TestPatch">TestPatch (class in dpipe.medim.test_patch)</a>
-</li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedPredictor">TestPatch3DFixedPredictor (class in dpipe.batch_predict.test_patch_3d_fixed)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d_fixed.TestPatch3DFixedQuantilesPredictor">TestPatch3DFixedQuantilesPredictor (class in dpipe.batch_predict.test_patch_3d_fixed)</a>
 </li>
       <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d.TestPatch3DPredictor">TestPatch3DPredictor (class in dpipe.batch_predict.test_patch_3d)</a>
 </li>
-      <li><a href="dpipe.medim.html#dpipe.medim.test_split.TestSplit">TestSplit (class in dpipe.medim.test_split)</a>
+      <li><a href="dpipe.tf.html#dpipe.tf.model.TFFrozenModel">TFFrozenModel (class in dpipe.tf.model)</a>
 </li>
-      <li><a href="dpipe.split.html#dpipe.split.test_cv_111.TestSplits">TestSplits (class in dpipe.split.test_cv_111)</a>
+      <li><a href="dpipe.tf.html#dpipe.tf.model.TFModel">TFModel (class in dpipe.tf.model)</a>
+</li>
+      <li><a href="dpipe.train.html#dpipe.train.train.train">train() (in module dpipe.train.train)</a>
 </li>
       <li><a href="dpipe.html#dpipe.commands.train_model">train_model() (in module dpipe.commands)</a>
-</li>
-      <li><a href="dpipe.train.html#dpipe.train.train_msegm.train_msegm">train_msegm() (in module dpipe.train.train_msegm)</a>
 </li>
       <li><a href="dpipe.train.html#dpipe.train.train_segm.train_segm">train_segm() (in module dpipe.train.train_segm)</a>
 </li>
@@ -1159,6 +1103,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.model_core.html#dpipe.model_core.unet.UNet2D">UNet2D (in module dpipe.model_core.unet)</a>
+</li>
+      <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.pipeline.unravel_transformers">unravel_transformers() (in module dpipe.batch_iter.pipeline)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1177,11 +1123,17 @@
       <ul>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.patch_3d.BatchPredictorShapeState.validate">(dpipe.batch_predict.patch_3d.BatchPredictorShapeState method)</a>
 </li>
+        <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.simple.Multiclass.validate">(dpipe.batch_predict.simple.Multiclass method)</a>
+</li>
+        <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.simple.Simple.validate">(dpipe.batch_predict.simple.Simple method)</a>
+</li>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.slice.Slice2D.validate">(dpipe.batch_predict.slice.Slice2D method)</a>
 </li>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d.Model.validate">(dpipe.batch_predict.test_patch_3d.Model method)</a>
 </li>
         <li><a href="dpipe.batch_predict.html#dpipe.batch_predict.test_patch_3d_fixed.Model.validate">(dpipe.batch_predict.test_patch_3d_fixed.Model method)</a>
+</li>
+        <li><a href="dpipe.train.html#dpipe.train.validator.validate">(in module dpipe.train.validator)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1205,6 +1157,14 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dpipe.dataset.html#dpipe.dataset.whitematter.Wmh2017">Wmh2017 (class in dpipe.dataset.whitematter)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dpipe.batch_iter.html#dpipe.batch_iter.patch_3d_sep.y_to_volume">y_to_volume() (in module dpipe.batch_iter.patch_3d_sep)</a>
 </li>
   </ul></td>
 </tr></table>

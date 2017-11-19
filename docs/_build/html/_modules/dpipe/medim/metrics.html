@@ -152,7 +152,9 @@
            <div itemprop="articleBody">
             
   <h1>Source code for dpipe.medim.metrics</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
 
 
@@ -185,8 +187,21 @@
     <span class="k">return</span> <span class="n">swds</span></div>
 
 
-<div class="viewcode-block" id="dice_score"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.metrics.dice_score">[docs]</a><span class="k">def</span> <span class="nf">dice_score</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">empty_val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Dice score between two binary masks.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="dice_score"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.metrics.dice_score">[docs]</a><span class="k">def</span> <span class="nf">dice_score</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">empty_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dice score between two binary masks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x,y : binary tensor</span>
+<span class="sd">    empty_val: float, default = 1</span>
+<span class="sd">        Default value, which is returned if the dice score</span>
+<span class="sd">        is undefined (i.e. division by zero).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dice_score: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">bool</span>
     <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
 
@@ -196,7 +211,22 @@
     <span class="k">return</span> <span class="n">empty_val</span> <span class="k">if</span> <span class="n">den</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">num</span> <span class="o">/</span> <span class="n">den</span></div>
 
 
-<div class="viewcode-block" id="multichannel_dice_score"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.metrics.multichannel_dice_score">[docs]</a><span class="k">def</span> <span class="nf">multichannel_dice_score</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">empty_val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="multichannel_dice_score"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.metrics.multichannel_dice_score">[docs]</a><span class="k">def</span> <span class="nf">multichannel_dice_score</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">empty_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Channelwise dice score between two binary masks.</span>
+<span class="sd">    The first dimension of the tensors is assumed to be the channels.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a,b : binary tensor</span>
+<span class="sd">    empty_val: float, default: 1</span>
+<span class="sd">        Default value, which is returned if the dice score</span>
+<span class="sd">        is undefined (i.e. division by zero).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dice_score: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dices</span> <span class="o">=</span> <span class="p">[</span><span class="n">dice_score</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">empty_val</span><span class="o">=</span><span class="n">empty_val</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)]</span>
     <span class="k">return</span> <span class="n">dices</span></div>
 
@@ -257,38 +287,38 @@
             <span class="n">y</span><span class="p">[</span><span class="n">voxel_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">bw</span>
             <span class="n">bound_indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">voxel_index</span><span class="p">))</span>
 
-        <span class="c1">#   other bounds</span>
+            <span class="c1">#   other bounds</span>
     <span class="k">for</span> <span class="n">bw</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bound_weight</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">bound_indexes</span> <span class="o">=</span> <span class="n">get_next_bound</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">bound_indexes</span><span class="p">,</span> <span class="n">bw</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">y</span></div>
 
 
-<span class="c1"># Before using this module, install the dependencies:</span>
-
-<span class="c1"># git clone https://github.com/mavillan/py-hausdorff.git</span>
-<span class="c1"># pip install Cython</span>
-<span class="c1"># cd py-hausdorff</span>
-<span class="c1"># python setup.py build &amp;&amp; python setup.py install</span>
-<div class="viewcode-block" id="hausdorff"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.metrics.hausdorff">[docs]</a><span class="k">def</span> <span class="nf">hausdorff</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="hausdorff"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.metrics.hausdorff">[docs]</a><span class="k">def</span> <span class="nf">hausdorff</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">weights</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the Hausdorff distance between two masks.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    a, b: ndarray</span>
-<span class="sd">        The arrays containing the masks. Their ndim must match.</span>
-<span class="sd">    label: int, default = 1</span>
-<span class="sd">        The label of the mask</span>
-<span class="sd">    weights: number or array/list/tuple</span>
+<span class="sd">    a,b : bool tensor</span>
+<span class="sd">        The tensors containing the masks. The tensors dimensionality must match.</span>
+<span class="sd">    weights: number, Sequence</span>
 <span class="sd">        The weight along each axis (for anisotropic grids). If array, its length must</span>
-<span class="sd">        match the ndim of the array. If number, all the axes will have the same weight</span>
+<span class="sd">        match the dimensionality of the arrays. If number, all the axes will have the same weight</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Before using this module, install the dependencies:</span>
+<span class="sd">        &gt; git clone https://github.com/mavillan/py-hausdorff.git</span>
+<span class="sd">        &gt; pip install Cython</span>
+<span class="sd">        &gt; cd py-hausdorff</span>
+<span class="sd">        &gt; python setup.py build &amp;&amp; python setup.py install</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    hausdorff(x, y, weights=2) # isotropic, but weighted</span>
-<span class="sd">    hausdorff(x, y, weights=(1,1,1,5)) # anisotropic</span>
+<span class="sd">    &gt;&gt;&gt; hausdorff(x, y, weights=2) # isotropic, but weighted</span>
+<span class="sd">    &gt;&gt;&gt; hausdorff(x, y, weights=(1,1,1,5)) # anisotropic</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">hausdorff</span> <span class="k">import</span> <span class="n">weighted_hausdorff</span>
 
@@ -300,15 +330,30 @@
     <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="s1">&#39;float64&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">prep</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">weighted_hausdorff</span><span class="p">(</span><span class="n">prep</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">prep</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="n">weights</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="calc_max_dices"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.metrics.calc_max_dices">[docs]</a><span class="k">def</span> <span class="nf">calc_max_dices</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+<div class="viewcode-block" id="calc_max_dices"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.metrics.calc_max_dices">[docs]</a><span class="k">def</span> <span class="nf">calc_max_dices</span><span class="p">(</span><span class="n">true_masks</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">predicted_masks</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the dice score between the true and predicted masks.</span>
+<span class="sd">    The threshold is selected to maximize the mean dice.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    true_masks: bool tensor</span>
+<span class="sd">    predicted_masks: float tensor</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dice_score: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">true_masks</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">predicted_masks</span><span class="p">)</span>
+
     <span class="n">dices</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">thresholds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">true</span><span class="p">,</span> <span class="n">pred</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">true</span><span class="p">,</span> <span class="n">pred</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">true_masks</span><span class="p">,</span> <span class="n">predicted_masks</span><span class="p">):</span>
         <span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">true</span><span class="p">)):</span>
             <span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dice_score</span><span class="p">(</span><span class="n">pred</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">thr</span><span class="p">,</span> <span class="n">true</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">))</span>

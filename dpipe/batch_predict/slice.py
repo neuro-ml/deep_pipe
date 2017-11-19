@@ -7,6 +7,11 @@ from dpipe.config import register
 
 @register('slice2d')
 class Slice2D(BatchPredict):
+    """
+    Breaks the incoming 3D image into slices along the OZ axis
+    and feeds them into the network.
+    """
+
     def validate(self, x, y, validate_fn):
         predicted, losses, weights = [], [], []
         for x_slice, y_slice in iterate_slices(x, y, concatenate=0):

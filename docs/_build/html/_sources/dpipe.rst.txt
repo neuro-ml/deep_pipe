@@ -10,11 +10,12 @@ Subpackages
     dpipe.batch_predict
     dpipe.config
     dpipe.dataset
-    dpipe.dl
     dpipe.experiment
     dpipe.medim
     dpipe.model_core
     dpipe.split
+    dpipe.tf
+    dpipe.torch
     dpipe.train
 
 Submodules
@@ -40,6 +41,22 @@ dpipe\.io module
 ----------------
 
 .. automodule:: dpipe.io
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe\.meta module
+------------------
+
+.. automodule:: dpipe.meta
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe\.model module
+-------------------
+
+.. automodule:: dpipe.model
     :members:
     :undoc-members:
     :show-inheritance:
