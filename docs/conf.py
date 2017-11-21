@@ -37,6 +37,10 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinx.ext.viewcode']
 
+# autodoc:
+# autodoc_mock_imports = ['torch', 'torch.nn', 'torch.autograd', 'torch.optim']
+autodoc_inherit_docstrings = True
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

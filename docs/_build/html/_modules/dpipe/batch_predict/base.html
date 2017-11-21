@@ -156,13 +156,51 @@
 
 
 <div class="viewcode-block" id="BatchPredict"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.base.BatchPredict">[docs]</a><span class="k">class</span> <span class="nc">BatchPredict</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Interface that realizes the validation and inference logic.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="BatchPredict.validate"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.base.BatchPredict.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">validate_fn</span><span class="p">):</span>
-        <span class="k">pass</span></div>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Realizes the validation logic.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x:</span>
+<span class="sd">            a single input object</span>
+<span class="sd">        y:</span>
+<span class="sd">            a single ground truth object</span>
+<span class="sd">        validate_fn: callable(x, y) -&gt; prediction, loss</span>
+<span class="sd">            callable, that receives an input batch and a ground truth batch</span>
+<span class="sd">            and returns the prediction batch and the loss</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        prediction:</span>
+<span class="sd">            prediction for the input</span>
+<span class="sd">        loss: float</span>
+<span class="sd">            the validation loss</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="BatchPredict.predict"><a class="viewcode-back" href="../../../dpipe.batch_predict.html#dpipe.batch_predict.base.BatchPredict.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">predict_fn</span><span class="p">):</span>
-        <span class="k">pass</span></div></div>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Realizes the inference logic.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x:</span>
+<span class="sd">            a single input object</span>
+<span class="sd">        predict_fn: callable(x) -&gt; prediction</span>
+<span class="sd">            callable, that receives an input batch</span>
+<span class="sd">            and returns the prediction batch</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        prediction:</span>
+<span class="sd">            prediction for the input</span>
+<span class="sd">        &quot;&quot;&quot;</span></div></div>
 </pre></div>
 
            </div>

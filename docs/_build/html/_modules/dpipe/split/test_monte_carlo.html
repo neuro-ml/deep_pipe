@@ -169,7 +169,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ids_num</span> <span class="o">=</span> <span class="mi">100</span>
         <span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">random_string</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ids_num</span><span class="p">)])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span> <span class="o">=</span> <span class="n">ids</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">ids</span> <span class="o">=</span> <span class="n">ids</span></div>
 
 <div class="viewcode-block" id="TestMonteCarloSplitter.test_successful_split"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_successful_split">[docs]</a>    <span class="k">def</span> <span class="nf">test_successful_split</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">n_splits</span> <span class="o">=</span> <span class="mi">5</span>

@@ -1,14 +1,16 @@
-import os
 import json
+import os
 
 import numpy as np
 from tqdm import tqdm
 
 from dpipe.batch_predict import BatchPredict
 from dpipe.config import register
-from dpipe.dl.model import FrozenModel
 from dpipe.medim.metrics import dice_score as dice
 from dpipe.medim.metrics import multichannel_dice_score
+from dpipe.medim.utils import load_by_ids
+from dpipe.model import FrozenModel
+from dpipe.train.validator import evaluate
 
 register_cmd = register(module_type='command')
 
@@ -43,6 +45,28 @@ def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: 
         del x, y
 
 
+@register('evaluate', 'command')
+def evaluate_cmd(load_y, input_path, output_path, ids, single=None, multiple=None):
+    os.makedirs(output_path)
+
+    def save(name, value):
+        metric = os.path.join(output_path, name)
+        with open(metric, 'w') as f:
+            json.dump(value, f, indent=0)
+
+    def load_prediction(identifier):
+        return np.load(os.path.join(input_path, f'{identifier}.npy'))
+
+    metrics_single, metrics_multiple = evaluate(load_by_ids(load_y, load_prediction, ids), single, multiple)
+
+    for name, values in metrics_single.items():
+        value = dict(*zip(ids, values))
+        save(name, value)
+
+    for name, value in metrics_multiple.items():
+        save(name, value)
+
+
 @register_cmd
 def compute_dices(load_msegm, predictions_path, dices_path):
     dices = {}
@@ -59,6 +83,21 @@ def compute_dices(load_msegm, predictions_path, dices_path):
 
 @register_cmd
 def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
+    """
+    Find thresholds for the predicted probabilities that maximize the mean dice score.
+    The thresholds are calculated channelwise.
+
+    Parameters
+    ----------
+    load_msegm: callable(id)
+        loader for the multimodal segmentation
+    ids: Sequence
+        object ids
+    predictions_path: str
+        path for predicted masks
+    thresholds_path: str
+        path to store the thresholds
+    """
     thresholds = np.linspace(0, 1, 20)
     dices = []
 

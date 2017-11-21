@@ -37,8 +37,8 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="dpipe  documentation" href="index.html"/>
         <link rel="up" title="dpipe package" href="dpipe.html"/>
-        <link rel="next" title="dpipe.train package" href="dpipe.train.html"/>
-        <link rel="prev" title="dpipe.model_core.layers package" href="dpipe.model_core.layers.html"/> 
+        <link rel="next" title="dpipe.tf package" href="dpipe.tf.html"/>
+        <link rel="prev" title="dpipe.model_core.layers_torch package" href="dpipe.model_core.layers_torch.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -95,7 +95,6 @@
 <li class="toctree-l3"><a class="reference internal" href="dpipe.batch_predict.html">dpipe.batch_predict package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.config.html">dpipe.config package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.dataset.html">dpipe.dataset package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dpipe.dl.html">dpipe.dl package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.experiment.html">dpipe.experiment package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.medim.html">dpipe.medim package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.model_core.html">dpipe.model_core package</a></li>
@@ -106,11 +105,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.cv_11">dpipe.split.cv_11 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.cv_111">dpipe.split.cv_111 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.monte_carlo">dpipe.split.monte_carlo module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.test_cv_111">dpipe.split.test_cv_111 module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split.test_monte_carlo">dpipe.split.test_monte_carlo module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-dpipe.split">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.tf.html">dpipe.tf package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dpipe.torch.html">dpipe.torch package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dpipe.train.html">dpipe.train package</a></li>
 </ul>
 </li>
@@ -118,6 +117,8 @@
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.batch_iter_factory">dpipe.batch_iter_factory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.commands">dpipe.commands module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.io">dpipe.io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.meta">dpipe.meta module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.model">dpipe.model module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe.transformers">dpipe.transformers module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dpipe.html#module-dpipe">Module contents</a></li>
 </ul>
@@ -196,34 +197,34 @@
 <span id="dpipe-split-base-module"></span><h2>dpipe.split.base module<a class="headerlink" href="#module-dpipe.split.base" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="dpipe.split.base.get_cv_11">
-<code class="descclassname">dpipe.split.base.</code><code class="descname">get_cv_11</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_cv_11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_cv_11" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_cv_11</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>*</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_cv_11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_cv_11" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="dpipe.split.base.get_cv_111">
-<code class="descclassname">dpipe.split.base.</code><code class="descname">get_cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_cv_111" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_cv_111" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="dpipe.split.base.get_group_cv_111">
-<code class="descclassname">dpipe.split.base.</code><code class="descname">get_group_cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_group_cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_group_cv_111" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_group_cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_group_cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_group_cv_111" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="dpipe.split.base.get_groups">
-<code class="descclassname">dpipe.split.base.</code><code class="descname">get_groups</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>groups_property='groups'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_groups" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_groups</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>groups_property='groups'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list which will be used to perform a group-based CV split</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="dpipe.split.base.get_loo_cv">
-<code class="descclassname">dpipe.split.base.</code><code class="descname">get_loo_cv</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_loo_cv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_loo_cv" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_loo_cv</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>*</em>, <em>val_size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_loo_cv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_loo_cv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Leave one group out CV. Validation subset will be selected randomly</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="dpipe.split.base.get_subj_ids">
-<code class="descclassname">dpipe.split.base.</code><code class="descname">get_subj_ids</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_subj_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_subj_ids" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.split.base.</code><code class="descname">get_subj_ids</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/base.html#get_subj_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.base.get_subj_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of subject IDs</p>
 </dd></dl>
 
@@ -271,7 +272,7 @@ Returns indices: [[train_0, val_0, test_0], ..., [train_k, val_k, test_k]]</p>
 <span id="dpipe-split-cv-11-module"></span><h2>dpipe.split.cv_11 module<a class="headerlink" href="#module-dpipe.split.cv_11" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="dpipe.split.cv_11.get_cv_11">
-<code class="descclassname">dpipe.split.cv_11.</code><code class="descname">get_cv_11</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_11.html#get_cv_11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_11.get_cv_11" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.split.cv_11.</code><code class="descname">get_cv_11</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>*</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_11.html#get_cv_11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_11.get_cv_11" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -290,8 +291,33 @@ Returns indices: [[train_0, val_0, test_0], ..., [train_k, val_k, test_k]]</p>
 
 <dl class="function">
 <dt id="dpipe.split.cv_111.cv_111">
-<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.cv_111" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.cv_111" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits the dataset&#8217;s ids into triplets (train, validation, test).
+The test ids are determined as in the standard K-fold cross-validation setting:
+for each fold a different portion of 1/K ids is kept for testing.
+The remaining (K-1)/K ids are split into train and validation sets according to <cite>val_size</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dataset</strong> (<a class="reference internal" href="dpipe.dataset.html#dpipe.dataset.base.DataSet" title="dpipe.dataset.base.DataSet"><em>DataSet</em></a>) &#8211; </li>
+<li><strong>val_size</strong> (<em>float</em><em>, </em><em>int</em>) &#8211; If float, should be between 0.0 and 1.0 and represents the proportion
+of the <cite>train set</cite> to include in the validation set. If int, represents the
+absolute number of validation samples.</li>
+<li><strong>n_splits</strong> (<em>int</em>) &#8211; the number of cross-validation folds</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>splits</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Sequence of triplets</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="dpipe.split.cv_111.extract">
@@ -300,20 +326,68 @@ Returns indices: [[train_0, val_0, test_0], ..., [train_k, val_k, test_k]]</p>
 
 <dl class="function">
 <dt id="dpipe.split.cv_111.group_cv_111">
-<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">group_cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#group_cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.group_cv_111" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>In order to use this splitter, your Dataset needs to have</dt>
-<dd>a &#8216;groups&#8217; property.</dd>
-</dl>
+<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">group_cv_111</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#group_cv_111"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.group_cv_111" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits the dataset&#8217;s ids into triplets (train, validation, test) keeping all the objects
+from a group in the same set (either train, validation or test).
+The test ids are determined as in the standard K-fold cross-validation setting:
+for each fold a different portion of 1/K ids is kept for testing.
+The remaining (K-1)/K ids are split into train and validation sets according to <cite>val_size</cite>.</p>
+<p>The splitter guarantees that no objects belonging to the same group will en up in different sets.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dataset</strong> (<a class="reference internal" href="dpipe.dataset.html#dpipe.dataset.base.DataSet" title="dpipe.dataset.base.DataSet"><em>DataSet</em></a>) &#8211; dataset that has a <cite>group</cite> property</li>
+<li><strong>val_size</strong> (<em>float</em><em>, </em><em>int</em>) &#8211; If float, should be between 0.0 and 1.0 and represents the proportion
+of the <cite>train set</cite> to include in the validation set. If int, represents the
+absolute number of validation samples.</li>
+<li><strong>n_splits</strong> (<em>int</em>) &#8211; the number of cross-validation folds</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>splits</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Sequence of triplets</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="dpipe.split.cv_111.group_cv_111_pure_011">
-<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">group_cv_111_pure_011</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#group_cv_111_pure_011"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.group_cv_111_pure_011" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>In order to use this splitter, your Dataset needs to have</dt>
-<dd>a &#8216;groups&#8217; property.</dd>
-</dl>
+<code class="descclassname">dpipe.split.cv_111.</code><code class="descname">group_cv_111_pure_011</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>*</em>, <em>val_size</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/cv_111.html#group_cv_111_pure_011"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.cv_111.group_cv_111_pure_011" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits the dataset&#8217;s ids into triplets (train, validation, test) keeping all the objects
+from a group in the same set (either train, validation or test).
+The splitter additionally discards all but one object from each group in the
+validation and test sets.
+The test ids are determined as in the standard K-fold cross-validation setting:
+for each fold a different portion of 1/K ids is kept for testing.
+The remaining (K-1)/K ids are split into train and validation sets according to <cite>val_size</cite>.</p>
+<p>The splitter guarantees that no objects belonging to the same group will en up in different sets.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dataset</strong> (<a class="reference internal" href="dpipe.dataset.html#dpipe.dataset.base.DataSet" title="dpipe.dataset.base.DataSet"><em>DataSet</em></a>) &#8211; dataset that has a <cite>group</cite> property</li>
+<li><strong>val_size</strong> (<em>float</em><em>, </em><em>int</em>) &#8211; If float, should be between 0.0 and 1.0 and represents the proportion
+of the <cite>train set</cite> to include in the validation set. If int, represents the
+absolute number of validation samples.</li>
+<li><strong>n_splits</strong> (<em>int</em>) &#8211; the number of cross-validation folds</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>splits</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Sequence of triplets</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -326,53 +400,10 @@ Returns indices: [[train_0, val_0, test_0], ..., [train_k, val_k, test_k]]</p>
 <span id="dpipe-split-monte-carlo-module"></span><h2>dpipe.split.monte_carlo module<a class="headerlink" href="#module-dpipe.split.monte_carlo" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="dpipe.split.monte_carlo.monte_carlo">
-<code class="descclassname">dpipe.split.monte_carlo.</code><code class="descname">monte_carlo</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.Dataset</em>, <em>*</em>, <em>train_fraction</em>, <em>val_fraction</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/monte_carlo.html#monte_carlo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.monte_carlo.monte_carlo" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dpipe.split.monte_carlo.</code><code class="descname">monte_carlo</code><span class="sig-paren">(</span><em>dataset: dpipe.dataset.base.DataSet</em>, <em>*</em>, <em>train_fraction</em>, <em>val_fraction</em>, <em>n_splits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/monte_carlo.html#monte_carlo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.monte_carlo.monte_carlo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Example: train_fraction = 0.8, val_fraction = 0.1, n_splits = 2 will create 2 splits such that 80% of ids are in
 the train sample, 10% - in val sample, 10% - in test sample.</p>
 </dd></dl>
-
-</div>
-<div class="section" id="module-dpipe.split.test_cv_111">
-<span id="dpipe-split-test-cv-111-module"></span><h2>dpipe.split.test_cv_111 module<a class="headerlink" href="#module-dpipe.split.test_cv_111" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="dpipe.split.test_cv_111.TestSplits">
-<em class="property">class </em><code class="descclassname">dpipe.split.test_cv_111.</code><code class="descname">TestSplits</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_cv_111.html#TestSplits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_cv_111.TestSplits" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
-<dl class="method">
-<dt id="dpipe.split.test_cv_111.TestSplits.test_split">
-<code class="descname">test_split</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_cv_111.html#TestSplits.test_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_cv_111.TestSplits.test_split" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="module-dpipe.split.test_monte_carlo">
-<span id="dpipe-split-test-monte-carlo-module"></span><h2>dpipe.split.test_monte_carlo module<a class="headerlink" href="#module-dpipe.split.test_monte_carlo" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="dpipe.split.test_monte_carlo.TestMonteCarloSplitter">
-<em class="property">class </em><code class="descclassname">dpipe.split.test_monte_carlo.</code><code class="descname">TestMonteCarloSplitter</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#TestMonteCarloSplitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.TestMonteCarloSplitter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
-<dl class="method">
-<dt id="dpipe.split.test_monte_carlo.TestMonteCarloSplitter.setUp">
-<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#TestMonteCarloSplitter.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.setUp" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_bad_params_value_error">
-<code class="descname">test_bad_params_value_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#TestMonteCarloSplitter.test_bad_params_value_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_bad_params_value_error" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_successful_split">
-<code class="descname">test_successful_split</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#TestMonteCarloSplitter.test_successful_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.TestMonteCarloSplitter.test_successful_split" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="dpipe.split.test_monte_carlo.random_string">
-<code class="descclassname">dpipe.split.test_monte_carlo.</code><code class="descname">random_string</code><span class="sig-paren">(</span><em>string_len</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dpipe/split/test_monte_carlo.html#random_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dpipe.split.test_monte_carlo.random_string" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </div>
 <div class="section" id="module-dpipe.split">
@@ -390,10 +421,10 @@ the train sample, 10% - in val sample, 10% - in test sample.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="dpipe.train.html" class="btn btn-neutral float-right" title="dpipe.train package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="dpipe.tf.html" class="btn btn-neutral float-right" title="dpipe.tf package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="dpipe.model_core.layers.html" class="btn btn-neutral" title="dpipe.model_core.layers package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="dpipe.model_core.layers_torch.html" class="btn btn-neutral" title="dpipe.model_core.layers_torch package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

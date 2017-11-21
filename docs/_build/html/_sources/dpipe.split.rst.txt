@@ -44,22 +44,6 @@ dpipe\.split\.monte\_carlo module
     :undoc-members:
     :show-inheritance:
 
-dpipe\.split\.test\_cv\_111 module
-----------------------------------
-
-.. automodule:: dpipe.split.test_cv_111
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.split\.test\_monte\_carlo module
----------------------------------------
-
-.. automodule:: dpipe.split.test_monte_carlo
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

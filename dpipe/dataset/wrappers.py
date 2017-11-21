@@ -5,7 +5,8 @@ from collections import ChainMap
 import numpy as np
 import dpipe.medim as medim
 from dpipe.config import register
-from .base import Dataset
+from dpipe.dataset.segmentation import Segmentation
+from .base import DataSet
 
 
 class Proxy:
@@ -20,29 +21,17 @@ register = functools.partial(register, module_type='dataset_wrapper')
 
 
 @register()
-def cached(dataset: Dataset) -> Dataset:
-    n = len(dataset.patient_ids)
+def cache_methods(dataset: DataSet, methods):
+    cache = functools.lru_cache(len(dataset.ids))
 
-    class CachedDataset(Proxy):
-        @functools.lru_cache(n)
-        def load_mscan(self, patient_id):
-            return self._shadowed.load_mscan(patient_id)
-
-        @functools.lru_cache(n)
-        def load_segm(self, patient_id):
-            return self._shadowed.load_segm(patient_id)
-
-        @functools.lru_cache(n)
-        def load_msegm(self, patient_id):
-            return self._shadowed.load_msegm(patient_id)
-
-    return CachedDataset(dataset)
+    new_methods = {method: staticmethod(cache(getattr(dataset, method))) for method in methods}
+    proxy = type('Cached', (Proxy,), new_methods)
+    return proxy(dataset)
 
 
 @register()
-def apply_mask(dataset: Dataset, mask_modality_id: int = None,
-               mask_value: int = None) -> Dataset:
-
+def apply_mask(dataset: DataSet, mask_modality_id: int = None,
+               mask_value: int = None) -> DataSet:
     class MaskedDataset(Proxy):
         def load_mscan(self, patient_id):
             images = self._shadowed.load_mscan(patient_id)
@@ -54,13 +43,13 @@ def apply_mask(dataset: Dataset, mask_modality_id: int = None,
 
         @property
         def n_chans_mscan(self):
-            return self._shadowed.n_chans_mscan - 1
+            return self._shadowed.n_chans_x - 1
 
     return dataset if mask_modality_id is None else MaskedDataset(dataset)
 
 
 @register()
-def bbox_extraction(dataset: Dataset) -> Dataset:
+def bbox_extraction(dataset: DataSet) -> DataSet:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time
     load_mscan = functools.lru_cache(3)(dataset.load_mscan)
@@ -85,8 +74,8 @@ def bbox_extraction(dataset: Dataset) -> Dataset:
 
 
 @register()
-def normalized(dataset: Dataset, mean, std,
-               drop_percentile: int = None) -> Dataset:
+def normalized(dataset: DataSet, mean, std,
+               drop_percentile: int = None) -> DataSet:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
             img = self._shadowed.load_mscan(patient_id)
@@ -97,7 +86,7 @@ def normalized(dataset: Dataset, mean, std,
 
 
 @register()
-def normalized_sub(dataset: Dataset) -> Dataset:
+def normalized_sub(dataset: DataSet) -> DataSet:
     class NormalizedDataset(Proxy):
         def load_mscan(self, patient_id):
             mscan = self._shadowed.load_mscan(patient_id)
@@ -112,7 +101,7 @@ def normalized_sub(dataset: Dataset) -> Dataset:
 
 
 @register()
-def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
+def add_groups_from_df(dataset: DataSet, group_col: str) -> DataSet:
     class GroupedFromMetadata(Proxy):
         @property
         def groups(self):
@@ -122,11 +111,11 @@ def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
 
 
 @register()
-def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
-    roots = [pi.split(separator)[0] for pi in dataset.patient_ids]
+def add_groups_from_ids(dataset: DataSet, separator: str) -> DataSet:
+    roots = [pi.split(separator)[0] for pi in dataset.ids]
     root2group = dict(map(lambda x: (x[1], x[0]), enumerate(set(roots))))
     groups = tuple(root2group[pi.split(separator)[0]]
-                   for pi in dataset.patient_ids)
+                   for pi in dataset.ids)
 
     class GroupsFromIDs(Proxy):
         @property
@@ -137,22 +126,22 @@ def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
 
 
 @register()
-def merge_datasets(datasets: List[Dataset]) -> Dataset:
+def merge_datasets(datasets: List[DataSet]) -> DataSet:
     [np.testing.assert_array_equal(a.segm2msegm_matrix, b.segm2msegm_matrix)
      for a, b, in zip(datasets, datasets[1:])]
 
     assert all(dataset.n_chans_mscan == datasets[0].n_chans_mscan
                for dataset in datasets)
 
-    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.patient_ids}
+    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.ids}
                                     for dataset in datasets))
 
-    patient_ids = sorted(list(patient_id2dataset.keys()))
+    ids = sorted(list(patient_id2dataset.keys()))
 
     class MergedDataset(Proxy):
         @property
         def patient_ids(self):
-            return patient_ids
+            return ids
 
         def load_mscan(self, patient_id):
             return patient_id2dataset[patient_id].load_mscan(patient_id)
@@ -167,14 +156,35 @@ def merge_datasets(datasets: List[Dataset]) -> Dataset:
 
 
 @register()
-def weighted(dataset: Dataset, thickness: str) -> Dataset:
-    n = len(dataset.patient_ids)
+def weighted(dataset: DataSet, thickness: str) -> DataSet:
+    n = len(dataset.ids)
+
     class WeightedBoundariesDataset(Proxy):
         @functools.lru_cache(n)
         def load_weighted_mask(self, patient_id) -> np.array:
-            paths = self.df[thickness].loc[patient_id]
+            paths = [self.df[thickness].loc[patient_id]]
             image = self._load_by_paths(paths)
 
             return image
 
     return WeightedBoundariesDataset(dataset)
+
+
+@register()
+class Padded(Proxy):
+    def __init__(self, dataset: Segmentation, shape: list, axes: list):
+        super().__init__(dataset)
+        self.shape = shape
+        self.axes = axes
+
+    def load_mscan(self, patient_id):
+        img = self._shadowed.load_mscan(patient_id)
+        return medim.preprocessing.pad(img, self.shape, self.axes)
+
+    def load_segm(self, patient_id):
+        img = self._shadowed.load_segm(patient_id)
+        return medim.preprocessing.pad(img, self.shape, self.axes)
+
+    def load_msegm(self, patient_id):
+        img = self._shadowed.load_msegm(patient_id)
+        return medim.preprocessing.pad(img, self.shape, self.axes)

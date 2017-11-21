@@ -152,9 +152,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for dpipe.train.logging</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
-
-<span class="kn">from</span> <span class="nn">tensorboard_easy</span> <span class="k">import</span> <span class="n">Logger</span>
+<span></span><span class="kn">from</span> <span class="nn">tensorboard_easy</span> <span class="k">import</span> <span class="n">Logger</span>
 
 
 <div class="viewcode-block" id="log_vector"><a class="viewcode-back" href="../../../dpipe.train.html#dpipe.train.logging.log_vector">[docs]</a><span class="k">def</span> <span class="nf">log_vector</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">vector</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
@@ -166,6 +164,7 @@
 <div class="viewcode-block" id="make_log_vector"><a class="viewcode-back" href="../../../dpipe.train.html#dpipe.train.logging.make_log_vector">[docs]</a><span class="k">def</span> <span class="nf">make_log_vector</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">first_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">callable</span><span class="p">:</span>
     <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
         <span class="n">log_vector</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">logger</span><span class="o">.</span><span class="n">_make_log</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">first_step</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span></div>
 </pre></div>
 

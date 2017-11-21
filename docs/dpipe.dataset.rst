@@ -36,6 +36,14 @@ dpipe\.dataset\.isles module
     :undoc-members:
     :show-inheritance:
 
+dpipe\.dataset\.segmentation module
+-----------------------------------
+
+.. automodule:: dpipe.dataset.segmentation
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 dpipe\.dataset\.whitematter module
 ----------------------------------
 

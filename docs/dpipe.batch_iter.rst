@@ -12,6 +12,14 @@ dpipe\.batch\_iter\.patch\_3d module
     :undoc-members:
     :show-inheritance:
 
+dpipe\.batch\_iter\.patch\_3d\_sep module
+-----------------------------------------
+
+.. automodule:: dpipe.batch_iter.patch_3d_sep
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 dpipe\.batch\_iter\.pipeline module
 -----------------------------------
 

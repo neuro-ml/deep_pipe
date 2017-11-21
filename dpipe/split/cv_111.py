@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.model_selection import KFold, train_test_split
-from dpipe.dataset import Dataset
+from dpipe.dataset import DataSet
 from dpipe.config import register
 
 
@@ -9,8 +9,28 @@ def extract(l, ids):
 
 
 @register()
-def cv_111(dataset: Dataset, *, val_size, n_splits):
-    ids = dataset.patient_ids
+def cv_111(dataset: DataSet, *, val_size, n_splits):
+    """
+    Splits the dataset's ids into triplets (train, validation, test).
+    The test ids are determined as in the standard K-fold cross-validation setting:
+    for each fold a different portion of 1/K ids is kept for testing.
+    The remaining (K-1)/K ids are split into train and validation sets according to `val_size`.
+
+    Parameters
+    ----------
+    dataset: DataSet
+    val_size: float, int
+        If float, should be between 0.0 and 1.0 and represents the proportion
+        of the `train set` to include in the validation set. If int, represents the
+        absolute number of validation samples.
+    n_splits: int
+        the number of cross-validation folds
+
+    Returns
+    -------
+    splits: Sequence of triplets
+    """
+    ids = dataset.ids
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=17)
 
     train_val_test_ids = []
@@ -47,12 +67,32 @@ class ShuffleGroupKFold(KFold):
 
 
 @register()
-def group_cv_111(dataset: Dataset, *, val_size, n_splits):
+def group_cv_111(dataset: DataSet, *, val_size, n_splits):
     """
-    In order to use this splitter, your Dataset needs to have
-     a 'groups' property.
+    Splits the dataset's ids into triplets (train, validation, test) keeping all the objects
+    from a group in the same set (either train, validation or test).
+    The test ids are determined as in the standard K-fold cross-validation setting:
+    for each fold a different portion of 1/K ids is kept for testing.
+    The remaining (K-1)/K ids are split into train and validation sets according to `val_size`.
+
+    The splitter guarantees that no objects belonging to the same group will en up in different sets.
+
+    Parameters
+    ----------
+    dataset: DataSet
+        dataset that has a `group` property
+    val_size: float, int
+        If float, should be between 0.0 and 1.0 and represents the proportion
+        of the `train set` to include in the validation set. If int, represents the
+        absolute number of validation samples.
+    n_splits: int
+        the number of cross-validation folds
+
+    Returns
+    -------
+    splits: Sequence of triplets
     """
-    ids = dataset.patient_ids
+    ids = dataset.ids
     groups = dataset.groups
     cv = ShuffleGroupKFold(n_splits=n_splits, shuffle=True, random_state=17)
 
@@ -69,10 +109,32 @@ def group_cv_111(dataset: Dataset, *, val_size, n_splits):
 
 
 @register()
-def group_cv_111_pure_011(dataset: Dataset, *, val_size, n_splits):
+def group_cv_111_pure_011(dataset: DataSet, *, val_size, n_splits):
     """
-    In order to use this splitter, your Dataset needs to have
-     a 'groups' property.
+    Splits the dataset's ids into triplets (train, validation, test) keeping all the objects
+    from a group in the same set (either train, validation or test).
+    The splitter additionally discards all but one object from each group in the
+    validation and test sets.
+    The test ids are determined as in the standard K-fold cross-validation setting:
+    for each fold a different portion of 1/K ids is kept for testing.
+    The remaining (K-1)/K ids are split into train and validation sets according to `val_size`.
+
+    The splitter guarantees that no objects belonging to the same group will en up in different sets.
+
+    Parameters
+    ----------
+    dataset: DataSet
+        dataset that has a `group` property
+    val_size: float, int
+        If float, should be between 0.0 and 1.0 and represents the proportion
+        of the `train set` to include in the validation set. If int, represents the
+        absolute number of validation samples.
+    n_splits: int
+        the number of cross-validation folds
+
+    Returns
+    -------
+    splits: Sequence of triplets
     """
 
     def _extract_pure(ids):

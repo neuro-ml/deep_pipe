@@ -1,0 +1,43 @@
+from dpipe.config import get_paths
+
+
+DO = get_paths()['do']
+
+CONFIG_ARG = '--config_path ../config'
+SAVED_MODEL = 'model'
+TB_LOG = 'train_logs'
+
+TRAIN_IDS = 'train_ids.json'
+VAL_IDS = 'val_ids.json'
+TEST_IDS = 'test_ids.json'
+
+rule all:
+    input:
+        SAVED_MODEL, 'test_metrics'
+
+rule train_model:
+    input:
+        TRAIN_IDS, VAL_IDS
+    output:
+        SAVED_MODEL, TB_LOG
+    shell:
+        'python {DO} train_model {CONFIG_ARG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TB_LOG} --save_model_path {SAVED_MODEL}'
+
+rule predict:
+    input:
+        SAVED_MODEL,
+        ids = '{sample}_ids.json'
+    output:
+        predictions = '{sample}_predictions'
+    shell:
+        'python {DO} predict {CONFIG_ARG} --ids_path {input.ids} --output_path {output.predictions} --restore_model_path {SAVED_MODEL}'
+
+rule evaluate:
+    input:
+        SAVED_MODEL,
+        ids = '{sample}_ids.json',
+        predictions = '{sample}_predictions'
+    output:
+        metrics = '{sample}_metrics'
+    shell:
+        'python {DO} evaluate {CONFIG_ARG} --ids_path {input.ids} --output_path {output.metrics} --input_path {input.predictions}'

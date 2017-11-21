@@ -153,11 +153,12 @@
             
   <h1>Source code for dpipe.split.monte_carlo</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
-<span class="kn">from</span> <span class="nn">dpipe.dataset</span> <span class="k">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">dpipe.dataset</span> <span class="k">import</span> <span class="n">DataSet</span>
 <span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
 
+
 <span class="nd">@register</span><span class="p">()</span>
-<div class="viewcode-block" id="monte_carlo"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.monte_carlo.monte_carlo">[docs]</a><span class="k">def</span> <span class="nf">monte_carlo</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">train_fraction</span><span class="p">,</span> <span class="n">val_fraction</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
+<div class="viewcode-block" id="monte_carlo"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.monte_carlo.monte_carlo">[docs]</a><span class="k">def</span> <span class="nf">monte_carlo</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">train_fraction</span><span class="p">,</span> <span class="n">val_fraction</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Example: train_fraction = 0.8, val_fraction = 0.1, n_splits = 2 will create 2 splits such that 80% of ids are in</span>
 <span class="sd">    the train sample, 10% - in val sample, 10% - in test sample.</span>
@@ -165,7 +166,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">train_fraction</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">val_fraction</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">train_fraction</span> <span class="o">+</span> <span class="n">val_fraction</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span>
 
-    <span class="n">ids</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">ids</span>
     <span class="n">train_val_test_ids</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="n">random_state</span> <span class="o">=</span> <span class="mi">52</span>

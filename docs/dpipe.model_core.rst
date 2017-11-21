@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     dpipe.model_core.layers
+    dpipe.model_core.layers_torch
 
 Submodules
 ----------
@@ -67,10 +68,34 @@ dpipe\.model\_core\.enet\_mixed module
     :undoc-members:
     :show-inheritance:
 
+dpipe\.model\_core\.enet\_torch module
+--------------------------------------
+
+.. automodule:: dpipe.model_core.enet_torch
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 dpipe\.model\_core\.enet\_with\_dropout module
 ----------------------------------------------
 
 .. automodule:: dpipe.model_core.enet_with_dropout
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe\.model\_core\.res\_encoder module
+---------------------------------------
+
+.. automodule:: dpipe.model_core.res_encoder
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe\.model\_core\.tnet module
+-------------------------------
+
+.. automodule:: dpipe.model_core.tnet
     :members:
     :undoc-members:
     :show-inheritance:

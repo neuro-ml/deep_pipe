@@ -154,11 +154,11 @@
   <h1>Source code for dpipe.split.cv_11</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">KFold</span>
 
-<span class="kn">from</span> <span class="nn">dpipe.dataset</span> <span class="k">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">dpipe.dataset</span> <span class="k">import</span> <span class="n">DataSet</span>
 
 
-<div class="viewcode-block" id="get_cv_11"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.cv_11.get_cv_11">[docs]</a><span class="k">def</span> <span class="nf">get_cv_11</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
-    <span class="n">ids</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">patient_ids</span>
+<div class="viewcode-block" id="get_cv_11"><a class="viewcode-back" href="../../../dpipe.split.html#dpipe.split.cv_11.get_cv_11">[docs]</a><span class="k">def</span> <span class="nf">get_cv_11</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_splits</span><span class="p">):</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">ids</span>
     <span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">n_splits</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">17</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span></div>

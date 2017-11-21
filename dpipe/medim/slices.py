@@ -25,7 +25,7 @@ def iterate_slices(*data, axis: int = -1, slices: Union[int, List[int]] = 1,
     Iterate over slices of a series of tensors along a given axis.
 
     ----------
-    data: list, tuple, np.array
+    data: Sequence
     axis: int, optional
     slices: int, List[int], optional
         The number of slices to yield

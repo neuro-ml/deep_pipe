@@ -159,12 +159,39 @@
 
 <span class="kn">from</span> <span class="nn">dpipe.config</span> <span class="k">import</span> <span class="n">register</span>
 <span class="kn">from</span> <span class="nn">dpipe.medim.utils</span> <span class="k">import</span> <span class="n">load_image</span>
-<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DatasetInt</span>
+<span class="kn">from</span> <span class="nn">.segmentation</span> <span class="k">import</span> <span class="n">Segmentation</span>
+
+
+<span class="nd">@register</span><span class="p">()</span>
+<div class="viewcode-block" id="CSV"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.CSV">[docs]</a><span class="k">class</span> <span class="nc">CSV</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;meta.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">index_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">index_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">index_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">index_col</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ids</span>
+
+<div class="viewcode-block" id="CSV.get"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.CSV.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">col</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">result</span></div></div>
 
 
 <div class="viewcode-block" id="FromCSV"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV">[docs]</a><span class="k">class</span> <span class="nc">FromCSV</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A mixin for the Dataset class. Adds support for csv files.</span>
+<span class="sd">    A mixin for the Segmentation class. Adds support for csv files.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">modalities</span><span class="p">,</span> <span class="n">metadata_rpath</span><span class="p">):</span>
@@ -176,27 +203,27 @@
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_patient_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">patient_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_patient_ids</span>
+    <span class="k">def</span> <span class="nf">ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ids</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">n_chans_mscan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">n_chans_x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modality_cols</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_load_by_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paths</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">load_image</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
                            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">])</span>
 
-<div class="viewcode-block" id="FromCSV.load_mscan"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV.load_mscan">[docs]</a>    <span class="k">def</span> <span class="nf">load_mscan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
+<div class="viewcode-block" id="FromCSV.load_x"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSV.load_x">[docs]</a>    <span class="k">def</span> <span class="nf">load_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
         <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">modality_cols</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">patient_id</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_by_paths</span><span class="p">(</span><span class="n">paths</span><span class="p">))</span></div></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_by_paths</span><span class="p">(</span><span class="n">paths</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span></div></div>
 
 
 <span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;csv_multi&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="FromCSVMultiple"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVMultiple">[docs]</a><span class="k">class</span> <span class="nc">FromCSVMultiple</span><span class="p">(</span><span class="n">FromCSV</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+<div class="viewcode-block" id="FromCSVMultiple"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVMultiple">[docs]</a><span class="k">class</span> <span class="nc">FromCSVMultiple</span><span class="p">(</span><span class="n">FromCSV</span><span class="p">,</span> <span class="n">Segmentation</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">modalities</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">metadata_rpath</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">modalities</span><span class="p">,</span> <span class="n">metadata_rpath</span><span class="p">)</span>
 
@@ -227,7 +254,7 @@
 
 
 <span class="nd">@register</span><span class="p">(</span><span class="s1">&#39;csv_int&#39;</span><span class="p">)</span>
-<div class="viewcode-block" id="FromCSVInt"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt">[docs]</a><span class="k">class</span> <span class="nc">FromCSVInt</span><span class="p">(</span><span class="n">FromCSV</span><span class="p">,</span> <span class="n">DatasetInt</span><span class="p">):</span>
+<div class="viewcode-block" id="FromCSVInt"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt">[docs]</a><span class="k">class</span> <span class="nc">FromCSVInt</span><span class="p">(</span><span class="n">FromCSV</span><span class="p">,</span> <span class="n">Segmentation</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">modalities</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">metadata_rpath</span><span class="p">,</span>
                  <span class="n">segm2msegm_matrix</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">modalities</span><span class="p">,</span> <span class="n">metadata_rpath</span><span class="p">)</span>
@@ -243,7 +270,25 @@
 
 <div class="viewcode-block" id="FromCSVInt.load_segm"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.load_segm">[docs]</a>    <span class="k">def</span> <span class="nf">load_segm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">):</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">patient_id</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">load_image</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span></div></div>
+        <span class="k">return</span> <span class="n">load_image</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="FromCSVInt.segm2msegm"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.segm2msegm">[docs]</a>    <span class="k">def</span> <span class="nf">segm2msegm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">),</span> \
+            <span class="n">f</span><span class="s1">&#39;Segmentation dtype must be int, but </span><span class="si">{x.dtype}</span><span class="s1"> provided&#39;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rollaxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segm2msegm_matrix</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FromCSVInt.load_msegm"><a class="viewcode-back" href="../../../dpipe.dataset.html#dpipe.dataset.from_csv.FromCSVInt.load_msegm">[docs]</a>    <span class="k">def</span> <span class="nf">load_msegm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patient_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;&quot;Method returns multimodal segmentation of shape</span>
+<span class="sd">         [n_chans_msegm, x, y, z]. We use this result to compute dice scores&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">segm2msegm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_segm</span><span class="p">(</span><span class="n">patient_id</span><span class="p">))</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_chans_segm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">segm2msegm_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_chans_msegm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">segm2msegm_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
 </pre></div>
 
            </div>

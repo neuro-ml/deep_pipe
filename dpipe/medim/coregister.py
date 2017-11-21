@@ -2,6 +2,7 @@ import shlex
 import subprocess
 import os
 import shutil
+from typing import Sequence
 
 invert = 'ImageMath 3 %s Neg %s'
 register = 'antsRegistrationSyNQuick.sh -d 3 -m %s -f %s -t s -o result -x %s'
@@ -9,11 +10,30 @@ transform = 'antsApplyTransforms -d 3 -i %s -o %s -r ' + \
             'resultWarped.nii.gz -t result1InverseWarp.nii.gz'
 
 
-def coregister(result_path, masks_paths, modalities_paths, ref_path):
+# TODO: split into several smaller modules
+def coregister(result_path: str, masks_paths: Sequence[str], modalities_paths: Sequence[str], ref_path: str):
     """
+    Calculates a coregistration transformation and applies it to all the images
+    taking the lesion masks into account.
+
     The initial transformation will be calculated based on the first entry in
     masks_paths and modalities_paths.
 
+    Parameters
+    ----------
+    result_path: str
+        Path to the transformation results folder
+    masks_paths: Sequence[str]
+        Paths to the lesion masks. Note that the first mask will be used to calculate
+        the coregistration mapping.
+    modalities_paths: Sequence[str]
+        Paths to the brain images. Note that the first image will be used to calculate
+        the coregistration mapping.
+    ref_path: str
+        Path to the reference image which is used as the coregistration taget
+
+    Notes
+    -----
     Be sure to add ANTSPATH to the path before running the script
     """
     os.makedirs(result_path, exist_ok=True)
@@ -33,7 +53,6 @@ def coregister(result_path, masks_paths, modalities_paths, ref_path):
     if not mod_files[0].endswith('gz'):
         mod_files[0] = mod_files[0] + '.gz'
 
-
     # apparently ANTs can't handle comas, so create a symlink:
     filename = ''
     if ',' in ref_path:
@@ -48,6 +67,7 @@ def coregister(result_path, masks_paths, modalities_paths, ref_path):
     warped = os.path.join(result_path, 'resultWarped.nii.gz')
     shutil.copyfile(warped, os.path.join(result_path, mod_files[0]))
 
+    # TODO: the first coregistered brain is somewhat different from others
     # create other modalities
     for file, name in zip(modalities_paths[1:], mod_files[1:]):
         command = transform % (file, name)

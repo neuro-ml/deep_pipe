@@ -153,6 +153,7 @@
             
   <h1>Source code for dpipe.medim.patch</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Tools for patch extraction and generation</span>
+<span class="c1"># For even patch sizes, center is always considered to be close to the right border</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">build_slices</span><span class="p">,</span> <span class="n">pad</span>
@@ -160,19 +161,10 @@
 
 <span class="c1"># FIXME consider what happens if central_idx is outside of x, error is likely</span>
 <span class="c1"># Probably need to rewrite to support it</span>
-<span class="c1"># FIXME even patch size is not supported</span>
-
-
-<div class="viewcode-block" id="find_patch_size"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.patch.find_patch_size">[docs]</a><span class="k">def</span> <span class="nf">find_patch_size</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="p">,</span> <span class="n">spatial_dims</span><span class="p">):</span>
-    <span class="n">patch_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-    <span class="n">patch_shape</span><span class="p">[</span><span class="n">spatial_dims</span><span class="p">]</span> <span class="o">=</span> <span class="n">spatial_patch_size</span>
-    <span class="k">return</span> <span class="n">patch_shape</span></div>
 
 
 <div class="viewcode-block" id="find_patch_start_end_padding"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.patch.find_patch_start_end_padding">[docs]</a><span class="k">def</span> <span class="nf">find_patch_start_end_padding</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">spatial_center_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">spatial_patch_size</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
                                  <span class="n">spatial_dims</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">spatial_patch_size</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;even patch size is not supported&#39;</span>
-
     <span class="n">spatial_start</span> <span class="o">=</span> <span class="n">spatial_center_idx</span> <span class="o">-</span> <span class="n">spatial_patch_size</span> <span class="o">//</span> <span class="mi">2</span>
     <span class="n">spatial_end</span> <span class="o">=</span> <span class="n">spatial_start</span> <span class="o">+</span> <span class="n">spatial_patch_size</span>
 
@@ -275,7 +267,7 @@
     <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
 
     <span class="n">l_bound</span> <span class="o">=</span> <span class="n">c</span> <span class="o">-</span> <span class="n">patch_size</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="n">r_bound</span> <span class="o">=</span> <span class="n">c</span> <span class="o">+</span> <span class="n">patch_size</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">patch_size</span> <span class="o">%</span> <span class="mi">2</span>
+    <span class="n">r_bound</span> <span class="o">=</span> <span class="n">l_bound</span> <span class="o">+</span> <span class="n">patch_size</span>
 
     <span class="c1"># Remove centers that are too left and too right</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">l_bound</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">r_bound</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>

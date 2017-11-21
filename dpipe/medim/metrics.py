@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import numpy as np
 from itertools import product
 
@@ -31,8 +33,21 @@ def soft_weighted_dice_score(a, b, empty_val: float = 0):
     return swds
 
 
-def dice_score(x, y, empty_val=0):
-    """Dice score between two binary masks."""
+def dice_score(x, y, empty_val: float = 1) -> float:
+    """
+    Dice score between two binary masks.
+
+    Parameters
+    ----------
+    x,y : binary tensor
+    empty_val: float, default = 1
+        Default value, which is returned if the dice score
+        is undefined (i.e. division by zero).
+
+    Returns
+    -------
+    dice_score: float
+    """
     assert x.dtype == y.dtype == np.bool
     assert x.shape == y.shape
 
@@ -42,7 +57,22 @@ def dice_score(x, y, empty_val=0):
     return empty_val if den == 0 else num / den
 
 
-def multichannel_dice_score(a, b, empty_val=0):
+def multichannel_dice_score(a, b, empty_val: float = 1):
+    """
+    Channelwise dice score between two binary masks.
+    The first dimension of the tensors is assumed to be the channels.
+
+    Parameters
+    ----------
+    a,b : binary tensor
+    empty_val: float, default: 1
+        Default value, which is returned if the dice score
+        is undefined (i.e. division by zero).
+
+    Returns
+    -------
+    dice_score: float
+    """
     dices = [dice_score(x, y, empty_val=empty_val) for x, y in zip(a, b)]
     return dices
 
@@ -103,38 +133,38 @@ def get_weighted_mask(y, thickness=1):
             y[voxel_index] = bw
             bound_indexes.append(np.asarray(voxel_index))
 
-        #   other bounds
+            #   other bounds
     for bw in range(bound_weight, 1, -1):
         bound_indexes = get_next_bound(y, bound_indexes, bw)
 
     return y
 
 
-# Before using this module, install the dependencies:
-
-# git clone https://github.com/mavillan/py-hausdorff.git
-# pip install Cython
-# cd py-hausdorff
-# python setup.py build && python setup.py install
-def hausdorff(a, b, weights=1, label=1):
+def hausdorff(a, b, weights: float = 1) -> float:
     """
     Calculates the Hausdorff distance between two masks.
 
     Parameters
     ----------
 
-    a, b: ndarray
-        The arrays containing the masks. Their ndim must match.
-    label: int, default = 1
-        The label of the mask
-    weights: number or array/list/tuple
+    a,b : bool tensor
+        The tensors containing the masks. The tensors dimensionality must match.
+    weights: number, Sequence
         The weight along each axis (for anisotropic grids). If array, its length must
-        match the ndim of the array. If number, all the axes will have the same weight
+        match the dimensionality of the arrays. If number, all the axes will have the same weight
+
+    Notes
+    -----
+    Before using this module, install the dependencies:
+        > git clone https://github.com/mavillan/py-hausdorff.git
+        > pip install Cython
+        > cd py-hausdorff
+        > python setup.py build && python setup.py install
 
     Examples
     --------
-    hausdorff(x, y, weights=2) # isotropic, but weighted
-    hausdorff(x, y, weights=(1,1,1,5)) # anisotropic
+    >>> hausdorff(x, y, weights=2) # isotropic, but weighted
+    >>> hausdorff(x, y, weights=(1,1,1,5)) # anisotropic
     """
     from hausdorff import weighted_hausdorff
 
@@ -146,15 +176,30 @@ def hausdorff(a, b, weights=1, label=1):
     weights = np.array(weights, 'float64')
 
     def prep(x):
-        return np.argwhere(x == label).copy(order='C').astype('float64')
+        return x.copy(order='C').astype('float64')
 
     return weighted_hausdorff(prep(a), prep(b), weights)
 
 
-def calc_max_dices(y_true, y_pred):
+def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:
+    """
+    Calculates the dice score between the true and predicted masks.
+    The threshold is selected to maximize the mean dice.
+
+    Parameters
+    ----------
+    true_masks: bool tensor
+    predicted_masks: float tensor
+
+    Returns
+    -------
+    dice_score: float
+    """
+    assert len(true_masks) == len(predicted_masks)
+
     dices = []
     thresholds = np.linspace(0, 1, 20)
-    for true, pred in zip(y_true, y_pred):
+    for true, pred in zip(true_masks, predicted_masks):
         temp = []
         for i in range(len(true)):
             temp.append([dice_score(pred[i] > thr, true[i].astype(bool))

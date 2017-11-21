@@ -46,6 +46,15 @@ class Patch3DFixedPredictor(Patch3DPredictor):
         return y_pred
 
 
+@register(module_name='patch_3d_volume')
+class Patch3DVolume(Patch3DFixedPredictor):
+    def divide_y(self, y):
+        return [x.sum().astype('float32') for x in super().divide_y(y)]
+
+    def combine_y(self, y_parts, x_shape):
+        return sum(y_parts)
+
+
 @register(module_name='patch_3d_fixed_quantiles')
 class Patch3DFixedQuantilesPredictor(Patch3DFixedPredictor):
     def __init__(self, x_patch_sizes: list, y_patch_size: list, n_quantiles: int, padding_mode: str):

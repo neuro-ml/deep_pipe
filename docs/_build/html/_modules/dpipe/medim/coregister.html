@@ -156,6 +156,7 @@
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Sequence</span>
 
 <span class="n">invert</span> <span class="o">=</span> <span class="s1">&#39;ImageMath 3 </span><span class="si">%s</span><span class="s1"> Neg </span><span class="si">%s</span><span class="s1">&#39;</span>
 <span class="n">register</span> <span class="o">=</span> <span class="s1">&#39;antsRegistrationSyNQuick.sh -d 3 -m </span><span class="si">%s</span><span class="s1"> -f </span><span class="si">%s</span><span class="s1"> -t s -o result -x </span><span class="si">%s</span><span class="s1">&#39;</span>
@@ -163,11 +164,30 @@
             <span class="s1">&#39;resultWarped.nii.gz -t result1InverseWarp.nii.gz&#39;</span>
 
 
-<div class="viewcode-block" id="coregister"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.coregister.coregister">[docs]</a><span class="k">def</span> <span class="nf">coregister</span><span class="p">(</span><span class="n">result_path</span><span class="p">,</span> <span class="n">masks_paths</span><span class="p">,</span> <span class="n">modalities_paths</span><span class="p">,</span> <span class="n">ref_path</span><span class="p">):</span>
+<span class="c1"># TODO: split into several smaller modules</span>
+<div class="viewcode-block" id="coregister"><a class="viewcode-back" href="../../../dpipe.medim.html#dpipe.medim.coregister.coregister">[docs]</a><span class="k">def</span> <span class="nf">coregister</span><span class="p">(</span><span class="n">result_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">masks_paths</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">modalities_paths</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">ref_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a coregistration transformation and applies it to all the images</span>
+<span class="sd">    taking the lesion masks into account.</span>
+
 <span class="sd">    The initial transformation will be calculated based on the first entry in</span>
 <span class="sd">    masks_paths and modalities_paths.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    result_path: str</span>
+<span class="sd">        Path to the transformation results folder</span>
+<span class="sd">    masks_paths: Sequence[str]</span>
+<span class="sd">        Paths to the lesion masks. Note that the first mask will be used to calculate</span>
+<span class="sd">        the coregistration mapping.</span>
+<span class="sd">    modalities_paths: Sequence[str]</span>
+<span class="sd">        Paths to the brain images. Note that the first image will be used to calculate</span>
+<span class="sd">        the coregistration mapping.</span>
+<span class="sd">    ref_path: str</span>
+<span class="sd">        Path to the reference image which is used as the coregistration taget</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
 <span class="sd">    Be sure to add ANTSPATH to the path before running the script</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">result_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -187,7 +207,6 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">mod_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;gz&#39;</span><span class="p">):</span>
         <span class="n">mod_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mod_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.gz&#39;</span>
 
-
     <span class="c1"># apparently ANTs can&#39;t handle comas, so create a symlink:</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="k">if</span> <span class="s1">&#39;,&#39;</span> <span class="ow">in</span> <span class="n">ref_path</span><span class="p">:</span>
@@ -202,6 +221,7 @@
     <span class="n">warped</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result_path</span><span class="p">,</span> <span class="s1">&#39;resultWarped.nii.gz&#39;</span><span class="p">)</span>
     <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">warped</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result_path</span><span class="p">,</span> <span class="n">mod_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 
+    <span class="c1"># TODO: the first coregistered brain is somewhat different from others</span>
     <span class="c1"># create other modalities</span>
     <span class="k">for</span> <span class="n">file</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">modalities_paths</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">mod_files</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
         <span class="n">command</span> <span class="o">=</span> <span class="n">transform</span> <span class="o">%</span> <span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>

@@ -1,12 +1,28 @@
 import os
 import json
 import shutil
+from typing import Iterable
 
 from dpipe.config import register, get_resource_manager
 
 
-@register('flat', 'experiment')
-def build_flat_structure(split, config_path, experiment_path, *, makefile):
+@register(module_type='experiment')
+def flat(split: Iterable, config_path: str, experiment_path: str, *, makefile: str):
+    """
+    Generates and experiment with a 'flat' structure: each created subdirectory
+    will contain triplets of ids (train, validation, test) defined in the `split`.
+
+    Parameters
+    ----------
+    split: Iterable
+        an iterable that yield triplets of ids: (train, validation, test)
+    config_path: str
+        the path to the config file
+    experiment_path: str
+        the path where the experiment will be stored
+    makefile: str
+        the path to the Snakemake file with experiment instructions
+    """
     makefile_path = os.path.join(os.path.dirname(__file__), makefile)
     assert os.path.exists(makefile_path), f'no {makefile_path} found'
 
