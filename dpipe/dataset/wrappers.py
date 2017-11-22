@@ -43,7 +43,7 @@ def apply_mask(dataset: DataSet, mask_modality_id: int = None,
 
         @property
         def n_chans_mscan(self):
-            return self._shadowed.n_chans_x - 1
+            return self._shadowed.n_chans_image - 1
 
     return dataset if mask_modality_id is None else MaskedDataset(dataset)
 
