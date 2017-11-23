@@ -56,14 +56,14 @@ class FromCSV:
         return self._ids
 
     @property
-    def n_chans_x(self):
+    def n_chans_image(self):
         return len(self.modality_cols)
 
     def _load_by_paths(self, paths):
         return np.asarray([load_image(os.path.join(self.data_path, path))
                            for path in paths])
 
-    def load_x(self, patient_id):
+    def load_image(self, patient_id):
         paths = self.df[self.modality_cols].loc[patient_id]
         return np.array(self._load_by_paths(paths), dtype='float32')
 
@@ -75,13 +75,13 @@ class FromCSVMultiple(FromCSV, Segmentation):
 
         self.target_cols = targets
 
-    def load_segm(self, patient_id) -> np.array:
-        image = self.load_msegm(patient_id)
+    def load_segm(self, identifier) -> np.array:
+        image = self.load_msegm(identifier)
         weights = np.arange(1, len(self.target_cols) + 1)
         return np.einsum('ijkl,i', image, weights)
 
-    def load_msegm(self, patient_id) -> np.array:
-        paths = self.df[self.target_cols].loc[patient_id]
+    def load_msegm(self, identifier) -> np.array:
+        paths = self.df[self.target_cols].loc[identifier]
         image = self._load_by_paths(paths)
         if not (set(np.unique(image).astype(float)) - {0., 1.}):
             # in this case it's ok to convert to bool
@@ -114,8 +114,8 @@ class FromCSVInt(FromCSV, Segmentation):
     def segm2msegm_matrix(self) -> np.array:
         return self._segm2msegm_matrix
 
-    def load_segm(self, patient_id):
-        path = self.df[self.target_col].loc[patient_id]
+    def load_segm(self, identifier):
+        path = self.df[self.target_col].loc[identifier]
         return load_image(os.path.join(self.data_path, path))
 
     def segm2msegm(self, x) -> np.array:
@@ -123,10 +123,10 @@ class FromCSVInt(FromCSV, Segmentation):
             f'Segmentation dtype must be int, but {x.dtype} provided'
         return np.rollaxis(self.segm2msegm_matrix[x], 3, 0)
 
-    def load_msegm(self, patient_id) -> np.array:
+    def load_msegm(self, identifier) -> np.array:
         """"Method returns multimodal segmentation of shape
          [n_chans_msegm, x, y, z]. We use this result to compute dice scores"""
-        return self.segm2msegm(self.load_segm(patient_id))
+        return self.segm2msegm(self.load_segm(identifier))
 
     @property
     def n_chans_segm(self):

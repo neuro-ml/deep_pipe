@@ -21,8 +21,8 @@ class Brats2017(FromCSVInt):
             ], dtype=bool)
         )
 
-    def load_segm(self, patient_id):
-        segm = super().load_segm(patient_id)
+    def load_segm(self, identifier):
+        segm = super().load_segm(identifier)
         segm[segm == 4] = 3
         return segm
 

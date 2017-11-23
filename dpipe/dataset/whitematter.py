@@ -14,8 +14,8 @@ class Wmh2017(FromCSVInt):
             segm2msegm_matrix=np.array([[0], [1], [0]], dtype=bool)
         )
 
-    def load_segm(self, patient_id):
-        return super().load_segm(patient_id).astype(int)
+    def load_segm(self, identifier):
+        return super().load_segm(identifier).astype(int)
 
     @property
     def groups(self):
