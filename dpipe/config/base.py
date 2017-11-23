@@ -1,4 +1,3 @@
-import functools
 import json
 import os
 
@@ -13,16 +12,13 @@ EXTERNALS = os.path.join(MODULES_FOLDER, 'externally_loaded_resources')
 USER = os.path.expanduser('~')
 RC = os.path.expanduser('~/.dpiperc')
 
-# EXCLUDED_PATHS = ['config', 'medim']
-EXCLUDED_PATHS = []
-
 _modules_were_generated = False
 
 
 def get_module(module_type, module_name):
     global _modules_were_generated
     if not _modules_were_generated:
-        generate_config(MODULES_FOLDER, MODULES_DB, 'dpipe.externally_loaded_resources', exclude=EXCLUDED_PATHS)
+        generate_config(MODULES_FOLDER, MODULES_DB, 'dpipe.externally_loaded_resources')
         _modules_were_generated = True
     return _get_module(module_type, module_name, db_path=EXTERNALS)
 
@@ -62,4 +58,6 @@ def link_externals():
 def get_resource_manager(config_path) -> ResourceManager:
     link_externals()
     rm = ResourceManager(config_path, get_module=get_module)
+    if 'torch' in rm._get_whole_config():
+        import torch
     return rm

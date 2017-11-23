@@ -1,8 +1,6 @@
 from .patch_3d import *
-from dpipe.config import register
 
 
-@register()
 def patch_3d_part(ids, load_x, load_y, *, x_patch_sizes, y_patch_size):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
@@ -38,6 +36,5 @@ def patch_3d_part(ids, load_x, load_y, *, x_patch_sizes, y_patch_size):
     )
 
 
-@register()
 def y_to_volume(x, y):
     return x, [y.sum().astype('float32')]

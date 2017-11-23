@@ -2,10 +2,7 @@ import argparse
 import json
 import re
 
-from dpipe.config import register
 
-
-@register(module_name='json', module_type='io')
 def load_json(path):
     with open(path, 'r') as f:
         return json.load(f)
@@ -14,7 +11,6 @@ def load_json(path):
 console_argument = re.compile(r'^--[^\d\W]\w*$')
 
 
-@register('console', 'io')
 class ConsoleArguments:
     def __init__(self):
         parser = argparse.ArgumentParser()

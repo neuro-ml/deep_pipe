@@ -3,10 +3,9 @@ import json
 import shutil
 from typing import Iterable
 
-from dpipe.config import register, get_resource_manager
+from dpipe.config import get_resource_manager
 
 
-@register(module_type='experiment')
 def flat(split: Iterable, config_path: str, experiment_path: str, *, makefile: str):
     """
     Generates and experiment with a 'flat' structure: each created subdirectory
