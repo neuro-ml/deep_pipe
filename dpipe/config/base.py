@@ -18,9 +18,9 @@ _modules_were_generated = False
 def get_module(module_type, module_name):
     global _modules_were_generated
     if not _modules_were_generated:
-        generate_config(MODULES_FOLDER, MODULES_DB, 'dpipe.externally_loaded_resources')
+        generate_config(EXTERNALS, MODULES_DB, 'dpipe.externally_loaded_resources')
         _modules_were_generated = True
-    return _get_module(module_type, module_name, db_path=EXTERNALS)
+    return _get_module(module_type, module_name, db_path=MODULES_DB)
 
 
 def load(path, default):

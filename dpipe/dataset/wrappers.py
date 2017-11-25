@@ -20,7 +20,6 @@ class Proxy:
 register = functools.partial(register, module_type='dataset_wrapper')
 
 
-@register()
 def cache_methods(dataset: DataSet, methods):
     cache = functools.lru_cache(len(dataset.ids))
 
@@ -29,7 +28,20 @@ def cache_methods(dataset: DataSet, methods):
     return proxy(dataset)
 
 
-@register()
+def apply(instance, methods, function):
+    def decorator(method):
+        method = getattr(instance, method)
+
+        def wrapper(self, *args, **kwargs):
+            return function(method(*args, **kwargs))
+
+        return wrapper
+
+    new_methods = {method: decorator(method) for method in methods}
+    proxy = type('Apply', (Proxy,), new_methods)
+    return proxy(instance)
+
+
 def apply_mask(dataset: DataSet, mask_modality_id: int = None,
                mask_value: int = None) -> DataSet:
     class MaskedDataset(Proxy):
@@ -48,7 +60,6 @@ def apply_mask(dataset: DataSet, mask_modality_id: int = None,
     return dataset if mask_modality_id is None else MaskedDataset(dataset)
 
 
-@register()
 def bbox_extraction(dataset: DataSet) -> DataSet:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time
@@ -73,7 +84,6 @@ def bbox_extraction(dataset: DataSet) -> DataSet:
     return BBoxedDataset(dataset)
 
 
-@register()
 def normalized(dataset: DataSet, mean, std,
                drop_percentile: int = None) -> DataSet:
     class NormalizedDataset(Proxy):
@@ -85,7 +95,6 @@ def normalized(dataset: DataSet, mean, std,
     return NormalizedDataset(dataset)
 
 
-@register()
 def normalized_sub(dataset: DataSet) -> DataSet:
     class NormalizedDataset(Proxy):
         def load_x(self, patient_id):
@@ -100,7 +109,6 @@ def normalized_sub(dataset: DataSet) -> DataSet:
     return NormalizedDataset(dataset)
 
 
-@register()
 def add_groups_from_df(dataset: DataSet, group_col: str) -> DataSet:
     class GroupedFromMetadata(Proxy):
         @property
@@ -110,7 +118,6 @@ def add_groups_from_df(dataset: DataSet, group_col: str) -> DataSet:
     return GroupedFromMetadata(dataset)
 
 
-@register()
 def add_groups_from_ids(dataset: DataSet, separator: str) -> DataSet:
     roots = [pi.split(separator)[0] for pi in dataset.ids]
     root2group = dict(map(lambda x: (x[1], x[0]), enumerate(set(roots))))
@@ -125,7 +132,6 @@ def add_groups_from_ids(dataset: DataSet, separator: str) -> DataSet:
     return GroupsFromIDs(dataset)
 
 
-@register()
 def merge_datasets(datasets: List[DataSet]) -> DataSet:
     [np.testing.assert_array_equal(a.segm2msegm_matrix, b.segm2msegm_matrix)
      for a, b, in zip(datasets, datasets[1:])]
@@ -155,7 +161,6 @@ def merge_datasets(datasets: List[DataSet]) -> DataSet:
     return MergedDataset(datasets[0])
 
 
-@register()
 def weighted(dataset: DataSet, thickness: str) -> DataSet:
     n = len(dataset.ids)
 
@@ -170,7 +175,6 @@ def weighted(dataset: DataSet, thickness: str) -> DataSet:
     return WeightedBoundariesDataset(dataset)
 
 
-@register()
 class Padded(Proxy):
     def __init__(self, dataset: Segmentation, shape: list, axes: list):
         super().__init__(dataset)

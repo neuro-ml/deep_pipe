@@ -4,7 +4,6 @@ from .base import BatchPredict
 from dpipe.config import register
 
 
-@register()
 class Simple(BatchPredict):
     def validate(self, x, y, *, validate_fn):
         prediction, loss = validate_fn(x[None], y[None])
@@ -14,7 +13,6 @@ class Simple(BatchPredict):
         return predict_fn(x[None])[0]
 
 
-@register()
 class Multiclass(BatchPredict):
     def validate(self, x, y, *, validate_fn):
         prediction, loss = validate_fn(x[None], y[None])
