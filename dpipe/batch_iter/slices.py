@@ -17,7 +17,6 @@ def combine_batches_even(inputs):
     return result
 
 
-@register()
 def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1,
            pad=0, concatenate=None):
     def slicer():
@@ -35,7 +34,6 @@ def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1,
     )
 
 
-@register()
 def slices_augmented(ids, load_x, load_y, batch_size, *, shuffle, axis=-1,
                      slices=1, pad=0, concatenate=None):
     def slicer():

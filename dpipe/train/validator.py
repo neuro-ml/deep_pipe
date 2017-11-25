@@ -30,7 +30,6 @@ def evaluate(data, single: dict = None, multiple: dict = None):
     return metrics_single, metrics_multiple
 
 
-@register(module_type='validator')
 def validate(validate, *, load_x, load_y, ids, single: dict = None, multiple: dict = None):
     ys, predictions, losses = [], [], []
 

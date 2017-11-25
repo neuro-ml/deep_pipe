@@ -8,7 +8,6 @@ def extract(l, ids):
     return [l[i] for i in ids]
 
 
-@register()
 def cv_111(dataset: DataSet, *, val_size, n_splits):
     """
     Splits the dataset's ids into triplets (train, validation, test).
@@ -66,7 +65,6 @@ class ShuffleGroupKFold(KFold):
             yield np.where(train)[0], np.where(test)[0]
 
 
-@register()
 def group_cv_111(dataset: DataSet, *, val_size, n_splits):
     """
     Splits the dataset's ids into triplets (train, validation, test) keeping all the objects
@@ -108,7 +106,6 @@ def group_cv_111(dataset: DataSet, *, val_size, n_splits):
     return train_val_test_ids
 
 
-@register()
 def group_cv_111_pure_011(dataset: DataSet, *, val_size, n_splits):
     """
     Splits the dataset's ids into triplets (train, validation, test) keeping all the objects

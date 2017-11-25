@@ -24,7 +24,6 @@ def combine_batches_(inputs):
     return [np.asarray(o) for o in zip(*inputs)]
 
 
-@register
 def pipeline(transformers: Sequence, batch_size: int = None):
     assert len(transformers) > 0
 
@@ -37,25 +36,21 @@ def pipeline(transformers: Sequence, batch_size: int = None):
     return Pipeline(*transformers)
 
 
-@register
 def source(iterable, buffer_size=1):
     return Source(iterable, buffer_size=buffer_size)
 
 
-@register
 def one2one(f, pack=False, n_workers=1, buffer_size=1):
     if pack:
         f = pack_args(f)
     return One2One(f, n_workers=n_workers, buffer_size=buffer_size)
 
 
-@register
 def one2many(f, pack=False, n_workers=1, buffer_size=1):
     if pack:
         f = pack_args(f)
     return One2Many(f, n_workers=n_workers, buffer_size=buffer_size)
 
 
-@register
 def many2one(chunk_size, buffer_size=1):
     return Many2One(chunk_size, buffer_size=buffer_size)

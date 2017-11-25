@@ -43,7 +43,6 @@ def extract_patches(x, patch_sizes, center_idx, padding_values, spatial_dims):
             for x_patch_size in patch_sizes]
 
 
-@register('patch_3d')
 def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, buffer_size):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
@@ -85,7 +84,6 @@ def find_cancer_and_padding_values(x, y, y_patch_size, spatial_dims):
     return x, y, find_cancer(y, y_patch_size), np.min(x, axis=tuple(spatial_dims), keepdims=True)
 
 
-@register('patch_3d_strat')
 def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, nonzero_fraction,
                              buffer_size):
     x_patch_sizes = np.array(x_patch_sizes)
@@ -130,7 +128,6 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
     )
 
 
-@register('patch_3d_strat_quantiles')
 def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size,
                                        nonzero_fraction, buffer_size, n_quantiles):
     x_patch_sizes = np.array(x_patch_sizes)
@@ -177,7 +174,6 @@ def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_pat
     )
 
 
-@register('patch_3d_strat_quantiles_coordinates')
 def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size,
                                        nonzero_fraction, buffer_size, n_quantiles):
     x_patch_sizes = np.array(x_patch_sizes)
@@ -257,7 +253,6 @@ class ExpirationPool:
         return value
 
 
-@register('patch_3d_strat_augm')
 def make_patch_3d_strat_augm_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, nonzero_fraction,
                                   buffer_size, expiration_time, pool_size, n_workers):
     x_patch_sizes = np.array(x_patch_sizes)

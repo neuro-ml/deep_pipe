@@ -13,7 +13,6 @@ from dpipe.train.logging import log_vector
 from .utils import make_find_next_lr, make_check_loss_decrease
 
 
-@register()
 def train(model: Model, train_batch_iter_factory: BatchIterFactory, validator, n_epochs: int,
           log_path: str, lr_init: float, lr_dec_mul: float, patience: int, rtol, atol,
           batch_predict: BatchPredict):

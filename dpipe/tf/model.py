@@ -1,18 +1,29 @@
+import os
+
 import tensorflow as tf
 
-from dpipe.config import register
 from dpipe.model import Model, FrozenModel, get_model_path
 from dpipe.model_core import ModelCore
 
+def get_model_path(path):
+    return os.path.join(path, 'model')
 
-@register('tf', 'model')
+
+def get_variables_to_restore(parent_scope, scopes_to_restore):
+    variables = []
+    for scope in scopes_to_restore:
+        variables += tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="{}/{}".format(parent_scope, scope))
+    return variables
+
+
 class TFModel(Model):
-    def __init__(self, model_core: ModelCore, logits2pred: callable, logits2loss: callable, optimize: callable):
+    def __init__(self, model_core: ModelCore, logits2pred: callable, logits2loss: callable, optimize: callable,
+                 restore_model_path=None):
         self.model_core = model_core
 
-        self._build(logits2pred, logits2loss, optimize)
+        self._build(logits2pred, logits2loss, optimize, restore_model_path)
 
-    def _build(self, logits2pred, logits2loss, optimize):
+    def _build(self, logits2pred, logits2loss, optimize, restore_model_path):
         self.graph = tf.get_default_graph()
 
         training_ph = tf.placeholder('bool', name='is_training')
@@ -26,6 +37,9 @@ class TFModel(Model):
 
         init_op = tf.global_variables_initializer()
         self.saver = tf.train.Saver()
+        self.transfer_saver = tf.train.Saver(
+            get_variables_to_restore('deep_medic', ['detailed', 'context', 'upsample', 'comm_1', 'comm_2'])
+        )
         self.graph.finalize()
 
         # ----------------------------------------------------------------------
@@ -39,6 +53,8 @@ class TFModel(Model):
                                                     [*x_phs, training_ph])
 
         self.session.run(init_op)
+        if restore_model_path:
+            self.saver.restore(self.session, get_model_path(restore_model_path))
 
     def do_train_step(self, *train_inputs, lr):
         _, loss = self.call_train(*train_inputs, lr, True)
@@ -56,8 +72,10 @@ class TFModel(Model):
     def load(self, path):
         self.saver.restore(self.session, get_model_path(path))
 
+    def transfer_load(self, path):
+        self.transfer_saver.restore(self.session, get_model_path(path))
 
-@register('tf', 'frozen_model')
+
 class TFFrozenModel(FrozenModel):
     def __init__(self, model_core: ModelCore, logits2pred: callable, restore_model_path):
         self.model_core = model_core

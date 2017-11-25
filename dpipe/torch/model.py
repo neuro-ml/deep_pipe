@@ -4,11 +4,9 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
-from dpipe.config import register
 from dpipe.model import Model, FrozenModel, get_model_path
 
 
-@register('torch', 'model')
 class TorchModel(Model):
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, logits2loss: callable, optimize, cuda=True):
         if cuda:
@@ -68,7 +66,6 @@ class TorchModel(Model):
         self.model_core.load_state_dict(torch.load(path))
 
 
-@register('torch', 'frozen_model')
 class TorchFrozenModel(FrozenModel):
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path, cuda=True):
         if cuda:

@@ -2,10 +2,8 @@ import numpy as np
 
 from dpipe.medim.slices import iterate_slices
 from .base import BatchPredict
-from dpipe.config import register
 
 
-@register('slice2d')
 class Slice2D(BatchPredict):
     """
     Breaks the incoming 3D image into slices along the OZ axis

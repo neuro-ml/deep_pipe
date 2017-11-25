@@ -4,7 +4,6 @@ import numpy as np
 
 from dpipe.medim.divide import divide_spatial, combine
 from dpipe.medim.shape_utils import compute_shape_from_spatial
-from dpipe.config import register
 from .base import BatchPredict
 from .utils import validate_object, predict_object
 
@@ -41,7 +40,6 @@ class BatchPredictorShapeState(BatchPredict):
         return self.combine_y(y_preds, x.shape)
 
 
-@register(module_name='patch_3d')
 class Patch3DPredictor(BatchPredictorShapeState):
     def __init__(self, x_patch_sizes: list, y_patch_size: list, padding_mode: str = 'min'):
         self.x_patch_sizes = np.array(x_patch_sizes)

@@ -8,7 +8,6 @@ from dpipe.medim.utils import load_image
 from .segmentation import Segmentation
 
 
-@register()
 class CSV:
     def __init__(self, path, filename='meta.csv', index_col='id'):
         self.path = path
@@ -68,7 +67,6 @@ class FromCSV:
         return np.array(self._load_by_paths(paths), dtype='float32')
 
 
-@register('csv_multi')
 class FromCSVMultiple(FromCSV, Segmentation):
     def __init__(self, data_path, modalities, targets, metadata_rpath):
         super().__init__(data_path, modalities, metadata_rpath)
@@ -99,7 +97,6 @@ class FromCSVMultiple(FromCSV, Segmentation):
         return len(self.target_cols)
 
 
-@register('csv_int')
 class FromCSVInt(FromCSV, Segmentation):
     def __init__(self, data_path, modalities, target, metadata_rpath,
                  segm2msegm_matrix):

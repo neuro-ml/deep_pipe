@@ -1,9 +1,7 @@
 import numpy as np
 from .from_csv import FromCSVInt
-from dpipe.config import register
 
 
-@register('wmh2017')
 class Wmh2017(FromCSVInt):
     def __init__(self, data_path, modalities, target):
         super().__init__(
