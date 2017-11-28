@@ -87,6 +87,51 @@ class TorchFrozenModel(FrozenModel):
         return to_np(y_pred)
 
 
+class TorchModelWithDropout(TorchModel):
+    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, logits2loss: callable, optimize, cuda=True,
+                 n: int = 10):
+        super().__init__(model_core=model_core, logits2pred=logits2pred, logits2loss=logits2loss, optimize=optimize,
+                         cuda=cuda)
+        self.n = n
+
+    def do_val_step(self, *inputs):
+        self.model_core.eval()
+        inputs = [to_var(x, self.cuda, volatile=True) for x in inputs]
+        *inputs, target = inputs
+
+        temp_y_pred = []
+        temp_logits = []
+
+        for i in range(self.n):
+            logits = self.model_core(*inputs)
+            y_pred = self.logits2pred(logits)
+            temp_y_pred.append(y_pred)
+            temp_logits.append(logits)
+
+        y_pred = torch.stack(temp_y_pred).mean(dim=0)
+        logits = torch.stack(temp_logits).mean(dim=0)
+
+        loss = self.logits2loss(logits, target)
+
+        return to_np(y_pred), to_np(loss)[0]
+
+    def do_inf_step(self, *inputs):
+        self.model_core.eval()
+        inputs = [to_var(x, self.cuda, volatile=True) for x in inputs]
+
+        temp_y_pred = []
+        # temp_logits = []
+
+        for i in range(self.n):
+            logits = self.model_core(*inputs)
+            y_pred = self.logits2pred(logits)
+            temp_y_pred.append(y_pred)
+            # temp_logits.append(logits)
+
+        y_pred = torch.stack(temp_y_pred).mean(dim=0)
+        return to_np(y_pred)
+
+
 def to_np(x: Variable):
     """
     Convert a autograd Variable to a numpy array.
