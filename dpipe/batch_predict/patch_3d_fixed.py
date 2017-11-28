@@ -72,3 +72,30 @@ class Patch3DFixedQuantilesPredictor(Patch3DFixedQuantilesPredictor):
         shape = np.array(x.shape)[list(spatial_dims)]
         coordinates = [get_coordinate_features(shape, shape // 2, self.y_patch_size)] * len(xs_parts[0])
         return (*xs_parts, coordinates, quantiles)
+
+
+class Patch3DFixedDropoutPredictor(Patch3DFixedPredictor):
+    def __init__(self, x_patch_sizes: list, y_patch_size: list, padding_mode: str = 'min', n: int = 10):
+        super().__init__(x_patch_sizes=x_patch_sizes, y_patch_size=y_patch_size,
+                         padding_mode=padding_mode)
+        self.n = n
+
+    def validate(self, x, y, *, validate_fn):
+        xs_parts = self.divide_x(x)
+        y_parts_true = self.divide_y(y)
+
+        assert len(xs_parts[0]) == len(y_parts_true)
+        temp_y_pred = []
+        for i in range(self.n):
+            y_preds, loss = validate_object(zip(*xs_parts, y_parts_true), validate_fn=validate_fn)
+            temp_y_pred.append(y_preds)
+
+        y_preds = np.array(temp_y_pred).mean(axis=0)
+
+        return self.combine_y(y_preds, x.shape), loss
+
+    def predict(self, x, *, predict_fn):
+        xs_parts = self.divide_x(x)
+        y_preds = np.array([predict_object(zip(*xs_parts), predict_fn=predict_fn) for i in range(self.n)]).mean(axis=0)
+
+        return self.combine_y(y_preds, x.shape)
