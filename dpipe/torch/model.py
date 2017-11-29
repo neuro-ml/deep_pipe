@@ -108,8 +108,8 @@ class TorchModelWithDropout(TorchModel):
             temp_y_pred.append(y_pred)
             temp_logits.append(logits)
 
-        y_pred = torch.stack(temp_y_pred).mean(dim=0)
-        logits = torch.stack(temp_logits).mean(dim=0)
+        y_pred = torch.stack(temp_y_pred).mean(dim=0)[0]
+        logits = torch.stack(temp_logits).mean(dim=0)[0]
 
         loss = self.logits2loss(logits, target)
 
@@ -128,7 +128,7 @@ class TorchModelWithDropout(TorchModel):
             temp_y_pred.append(y_pred)
             # temp_logits.append(logits)
 
-        y_pred = torch.stack(temp_y_pred).mean(dim=0)
+        y_pred = torch.stack(temp_y_pred).mean(dim=0)[0]
         return to_np(y_pred)
 
 
