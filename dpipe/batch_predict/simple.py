@@ -1,7 +1,6 @@
 import numpy as np
 
 from .base import BatchPredict
-from dpipe.config import register
 
 
 class Simple(BatchPredict):
