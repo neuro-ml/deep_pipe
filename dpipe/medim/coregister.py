@@ -1,16 +1,52 @@
+import os
 import shlex
 import subprocess
-import os
-import shutil
 from typing import Sequence
 
-invert = 'ImageMath 3 %s Neg %s'
-register = 'antsRegistrationSyNQuick.sh -d 3 -m %s -f %s -t s -o result -x %s'
-transform = 'antsApplyTransforms -d 3 -i %s -o %s -r ' + \
-            'resultWarped.nii.gz -t result1InverseWarp.nii.gz'
+import nibabel as nib
 
 
-# TODO: split into several smaller modules
+def invert_mask(input_path, output_path):
+    command = 'ImageMath 3 %s Neg %s'
+    command = command % (output_path, input_path)
+    subprocess.check_call(shlex.split(command))
+
+
+def create_transformation(source, reference, neg_mask, result_folder):
+    command = 'antsRegistrationSyNQuick.sh -d 3 -m %s -f %s -t s -o result -x %s'
+    command = command % (reference, source, neg_mask)
+    subprocess.check_call(shlex.split(command), cwd=result_folder)
+
+
+def apply_transformation(input_path, output_path, transform_folder):
+    command = ('antsApplyTransforms -d 3 -i %s -o %s -r '
+               'resultWarped.nii.gz -t result1InverseWarp.nii.gz')
+    command = command % (input_path, output_path)
+    subprocess.check_call(shlex.split(command), cwd=transform_folder)
+
+
+def copy_header(image, data):
+    """
+    Creates a new nifty image from `data`, using the `image`'s header.
+
+    Parameters
+    ----------
+    image: nibabel Nifti image
+    data: np.array
+    """
+    header = image.header
+    if header['sizeof_hdr'] == 348:
+        constructor = nib.Nifti1Image
+    elif header['sizeof_hdr'] == 540:
+        constructor = nib.Nifti2Image
+    else:
+        raise TypeError('Unrecognized image header')
+
+    result = constructor(data, image.affine, header=header)
+    result.set_data_dtype(data.dtype)
+    return result
+
+
 def coregister(result_path: str, masks_paths: Sequence[str], modalities_paths: Sequence[str], ref_path: str):
     """
     Calculates a coregistration transformation and applies it to all the images
@@ -30,7 +66,7 @@ def coregister(result_path: str, masks_paths: Sequence[str], modalities_paths: S
         Paths to the brain images. Note that the first image will be used to calculate
         the coregistration mapping.
     ref_path: str
-        Path to the reference image which is used as the coregistration taget
+        Path to the reference image which is used as the coregistration target
 
     Notes
     -----
@@ -41,51 +77,29 @@ def coregister(result_path: str, masks_paths: Sequence[str], modalities_paths: S
     masks_paths = list(map(os.path.abspath, masks_paths))
     modalities_paths = list(map(os.path.abspath, modalities_paths))
     result_path = os.path.abspath(result_path)
+    neg_masks = [os.path.join(result_path, 'neg_mask%d.nii.gz' % i) for i in range(len(masks_paths))]
 
-    neg_masks = [os.path.join(result_path, 'neg_mask%d.nii.gz' % i)
-                 for i in range(len(masks_paths))]
     for neg_mask, mask in zip(neg_masks, masks_paths):
-        command = invert % (neg_mask, mask)
-        subprocess.call(shlex.split(command), cwd=result_path)
+        invert_mask(mask, neg_mask)
 
-    mask_files = list(map(os.path.basename, masks_paths))
-    mod_files = list(map(os.path.basename, modalities_paths))
-    if not mod_files[0].endswith('gz'):
-        mod_files[0] = mod_files[0] + '.gz'
+    create_transformation(modalities_paths[0], ref_path, neg_masks[0], result_path)
 
-    # apparently ANTs can't handle comas, so create a symlink:
-    filename = ''
-    if ',' in ref_path:
-        filename = os.path.basename(ref_path).replace(',', '')
-        filename = os.path.join(result_path, filename)
-        os.symlink(ref_path, filename)
-        ref_path = filename
+    for file in modalities_paths:
+        name = os.path.basename(file)
+        apply_transformation(file, name, result_path)
 
-    # create the transformation
-    command = register % (ref_path, modalities_paths[0], neg_masks[0])
-    subprocess.call(shlex.split(command), cwd=result_path)
-    warped = os.path.join(result_path, 'resultWarped.nii.gz')
-    shutil.copyfile(warped, os.path.join(result_path, mod_files[0]))
-
-    # TODO: the first coregistered brain is somewhat different from others
-    # create other modalities
-    for file, name in zip(modalities_paths[1:], mod_files[1:]):
-        command = transform % (file, name)
-        subprocess.call(shlex.split(command), cwd=result_path)
-
-    # create the masks
-    for neg_mask, name in zip(neg_masks, mask_files):
+    for neg_mask, orig_mask in zip(neg_masks, masks_paths):
+        name = os.path.basename(neg_mask)
         output = '_' + name
-        command = transform % (neg_mask, output)
-        subprocess.call(shlex.split(command), cwd=result_path)
-        command = invert % (name, output)
-        subprocess.call(shlex.split(command), cwd=result_path)
+        apply_transformation(neg_mask, output, result_path)
+
+        # invert the masks and threshold the result
+        template = nib.load(os.path.join(result_path, output))
+        data = template.get_data()
+        mask = copy_header(template, (data <= .5).astype('uint8'))
+        nib.save(mask, os.path.join(result_path, os.path.basename(orig_mask)))
+
         os.remove(os.path.join(result_path, output))
-
-    if ref_path == filename:
-        os.unlink(ref_path)
-
-    for neg_mask in neg_masks:
         os.remove(neg_mask)
 
 
