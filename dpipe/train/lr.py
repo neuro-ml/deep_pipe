@@ -12,6 +12,7 @@ def decreasing(lr_init: float, lr_dec_mul: float, patience: int, rtol, atol):
     def new_lr(epoch, val_losses, **kwargs):
         if epoch == 0:
             return lr_init
+        assert val_losses, 'This lr policy requires validation losses'
         return find_next_lr(np.mean(val_losses))
 
     return new_lr

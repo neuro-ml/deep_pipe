@@ -5,10 +5,6 @@ import pdp
 
 import numpy as np
 
-from dpipe.config import register
-
-register = register(module_type='pdp')
-
 
 def unravel_transformers(sequence):
     result = []

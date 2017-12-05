@@ -1,7 +1,7 @@
 from typing import Union
 
 import numpy as np
-from tensorboard_easy.logger import Logger
+from tensorboard_easy import Logger
 
 from dpipe.batch_iter_factory import BatchIterFactory
 from dpipe.model import Model
@@ -36,9 +36,9 @@ def train_base(model: Model, batch_iter_factory: BatchIterFactory, n_epochs: int
 
         for epoch in range(n_epochs):
             # get the new learning rate:
-            try:
+            if callable(lr):
                 new_lr = lr(epoch=epoch, train_losses=train_losses, val_losses=val_losses, metrics=metrics)
-            except TypeError:
+            else:
                 new_lr = lr
             logger.log_scalar('train/lr', new_lr, epoch)
 
