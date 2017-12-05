@@ -6,7 +6,6 @@ from tensorboard_easy.logger import Logger
 
 from dpipe.batch_iter_factory import BatchIterFactory
 from dpipe.batch_predict import BatchPredict
-from dpipe.config import register
 from dpipe.medim.metrics import multichannel_dice_score
 from dpipe.model import Model
 from .logging import make_log_vector

@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.model_selection import KFold, train_test_split
+
 from dpipe.dataset import DataSet
-from dpipe.config import register
 
 
 def extract(l, ids):

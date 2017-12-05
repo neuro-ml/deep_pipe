@@ -1,43 +1,21 @@
-from collections import defaultdict
-
-import numpy as np
-
 from dpipe.medim.utils import load_by_ids
-from dpipe.config import register
 
 
-def evaluate(data, single: dict = None, multiple: dict = None):
-    metrics_single = defaultdict(list)
-    metrics_multiple = {}
-    predictions, ys = [], []
-
-    for y, prediction in data:
-        if single:
-            for name, metric in single.items():
-                metrics_single[name].append(metric(y, prediction))
-
-        if multiple:
-            predictions.append(prediction)
-            ys.append(y)
-        else:
-            del y, prediction
-
-    if multiple:
-        for name, metric in multiple.items():
-            value = metric(ys, predictions)
-            metrics_multiple[name] = value
-
-    return metrics_single, metrics_multiple
+def evaluate(y_true, y_pred, metrics: dict):
+    return {name: metric(y_true, y_pred) for name, metric in metrics.items()}
 
 
-def validate(validate, *, load_x, load_y, ids, single: dict = None, multiple: dict = None):
+def validate(validate_fn, load_x, load_y, ids, metrics=None):
     ys, predictions, losses = [], [], []
 
     for x, y in load_by_ids(load_x, load_y, ids):
-        prediction, loss = validate(x, y)
+        prediction, loss = validate_fn(x, y)
         ys.append(y)
         predictions.append(prediction)
         losses.append(loss)
 
-    metrics_single, metrics_multiple = evaluate(zip(ys, predictions), single, multiple)
-    return losses, metrics_single, metrics_multiple
+    if metrics is None:
+        result = {}
+    else:
+        result = evaluate(ys, predictions, metrics)
+    return losses, result
