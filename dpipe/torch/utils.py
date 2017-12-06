@@ -15,18 +15,14 @@ def swap_channels(x):
     return x.contiguous().view(-1, size[-1])
 
 
-def bce_logits(logits, target):
-    logits = nn.functional.sigmoid(logits)
-    return nn.functional.binary_cross_entropy(logits, target)
-
-
 class SoftmaxCrossEntropy:
     def __init__(self, n_classes):
         self.n_classes = n_classes
         self.eye = Variable(torch.eye(n_classes))
 
     def __call__(self, logits, target):
-        return torch.sum(self.eye.index_select(0, target.long().view(-1)) * swap_channels(logits).view(-1, self.n_classes))
+        return torch.sum(
+            self.eye.index_select(0, target.long().view(-1)) * swap_channels(logits).view(-1, self.n_classes))
 
     def cuda(self):
         self.eye = self.eye.cuda()

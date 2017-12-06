@@ -5,6 +5,7 @@ from collections import ChainMap
 import numpy as np
 import dpipe.medim as medim
 from dpipe.dataset.base import Dataset, SegmentationDataset
+from .base import Dataset
 
 
 class Proxy:
@@ -29,14 +30,12 @@ def cache_segmentation_dataset(dataset: Dataset) -> Dataset:
 
 def apply(instance, methods, function):
     def decorator(method):
-        method = getattr(instance, method)
-
         def wrapper(self, *args, **kwargs):
             return function(method(*args, **kwargs))
 
         return wrapper
 
-    new_methods = {method: decorator(method) for method in methods}
+    new_methods = {method: decorator(getattr(instance, method)) for method in methods}
     proxy = type('Apply', (Proxy,), new_methods)
     return proxy(instance)
 
@@ -85,12 +84,14 @@ def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
 
 def normalized(dataset: SegmentationDataset, mean, std, drop_percentile: int = None) -> SegmentationDataset:
     class NormalizedDataset(Proxy):
-        def load_x(self, patient_id):
-            img = self._shadowed.load_image(patient_id)
+        def load_image(self, idx):
+            img = self._shadowed.load_image(idx)
             return medim.prep.normalize_mscan(img, mean=mean, std=std,
                                               drop_percentile=drop_percentile)
 
     return NormalizedDataset(dataset)
+
+
 
 
 def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:

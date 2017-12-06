@@ -35,3 +35,10 @@ class ConsoleArguments:
             return self.args[name]
         except KeyError:
             raise AttributeError(f'Console argument {name} not provided') from None
+
+    def get(self, **kwargs):
+        if len(kwargs) != 1:
+            raise ValueError(f'This method takes exactly one argument, '
+                             f'but {len(kwargs)} were passed.')
+        name = list(kwargs.keys())[0]
+        return self.args.get(name, kwargs[name])
