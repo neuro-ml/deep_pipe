@@ -8,7 +8,6 @@ import numpy as np
 from dpipe.medim import patch
 from dpipe.medim.augmentation import spatial_augmentation_strict, random_flip
 from dpipe.medim.features import get_coordinate_features
-from dpipe.config import register
 
 
 class Patient(collections.namedtuple('Patient_data', ['patient_id', 'x', 'y'])):
@@ -89,8 +88,6 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
 
-    assert np.all(x_patch_sizes % 2 == 1) and np.all(y_patch_size % 2 == 1)
-
     spatial_dims = [-3, -2, -1]
 
     random_seq = iter(functools.partial(random.choice, ids), None)
@@ -132,8 +129,6 @@ def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_pat
                                        nonzero_fraction, buffer_size, n_quantiles):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
-
-    assert np.all(x_patch_sizes % 2 == 1) and np.all(y_patch_size % 2 == 1)
 
     spatial_dims = [-3, -2, -1]
 
@@ -178,8 +173,6 @@ def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_pat
                                        nonzero_fraction, buffer_size, n_quantiles):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
-
-    assert np.all(x_patch_sizes % 2 == 1) and np.all(y_patch_size % 2 == 1)
 
     spatial_dims = [-3, -2, -1]
 
@@ -257,8 +250,6 @@ def make_patch_3d_strat_augm_iter(ids, load_x, load_y, *, batch_size, x_patch_si
                                   buffer_size, expiration_time, pool_size, n_workers):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
-
-    assert np.all(x_patch_sizes % 2 == 1) and np.all(y_patch_size % 2 == 1)
 
     spatial_dims = [-3, -2, -1]
 

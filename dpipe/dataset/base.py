@@ -1,34 +1,97 @@
-from abc import ABC, abstractmethod
-from typing import Sequence, Union
+from abc import abstractmethod, ABC, ABCMeta
+
+import numpy as np
 
 
-class DataSet(ABC):
-    """
-    DataSet interface
-    """
-
+class Dataset(ABC):
     @property
     @abstractmethod
-    def ids(self) -> Sequence[Union[str, int]]:
-        """
-        Returns
-        -------
-        ids: Sequence of str or int
-            the ids of all the objects in the dataset
-        """
+    def ids(self):
+        """Returns tuple of ids of all objects in dataset."""
+        pass
 
+
+class SegmentationDataset(Dataset, metaclass=ABCMeta):
+    """Abstract class that describes a dataset for medical image segmentation."""
     @abstractmethod
-    def load_x(self, identifier: Union[str, int]):
+    def load_image(self, identifier: str) -> np.array:
         """
         Loads a dataset entry given its identifier
 
         Parameters
         ----------
-        identifier: int, str
+        identifier: str
             object's identifier
 
         Returns
         -------
         object:
             The entry corresponding to the identifier
+        """
+
+    @abstractmethod
+    def load_segm(self, identifier: str) -> np.array:
+        """
+        Load the ground truth segmentation
+
+        Parameters
+        ----------
+        identifier: str
+            the object's identifier
+
+        Returns
+        -------
+        segmentation: integer tensor
+            the ground truth segmentation as an integer tensor.
+            Each value must correspond to a class.
+        """
+
+    @abstractmethod
+    def load_msegm(self, identifier) -> np.array:
+        """
+        Load the multimodal ground truth segmentation
+
+        Parameters
+        ----------
+        identifier: str
+            the object's identifier
+
+        Returns
+        -------
+        segmentation: bool tensor
+            the ground truth segmentation as a bool tensor.
+            Each channel must correspond to a class.
+        """
+
+    @property
+    @abstractmethod
+    def n_chans_segm(self):
+        """
+        The number of channels in the segmentation tensor
+
+        Returns
+        -------
+        channels: int
+        """
+
+    @property
+    @abstractmethod
+    def n_chans_msegm(self):
+        """
+        The number of channels in the multimodal segmentation tensor
+
+        Returns
+        -------
+        channels: int
+        """
+
+    @property
+    @abstractmethod
+    def n_chans_image(self) -> int:
+        """
+        The number of channels in the input image's tensor
+        
+        Returns
+        -------
+        channels: int
         """

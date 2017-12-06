@@ -1,14 +1,14 @@
 import numpy as np
 from sklearn.model_selection import KFold, train_test_split
-from dpipe.dataset import DataSet
-from dpipe.config import register
+
+from dpipe.dataset import Dataset
 
 
 def extract(l, ids):
     return [l[i] for i in ids]
 
 
-def cv_111(dataset: DataSet, *, val_size, n_splits):
+def cv_111(dataset, *, val_size, n_splits):
     """
     Splits the dataset's ids into triplets (train, validation, test).
     The test ids are determined as in the standard K-fold cross-validation setting:
@@ -65,7 +65,7 @@ class ShuffleGroupKFold(KFold):
             yield np.where(train)[0], np.where(test)[0]
 
 
-def group_cv_111(dataset: DataSet, *, val_size, n_splits):
+def group_cv_111(dataset: Dataset, *, val_size, n_splits):
     """
     Splits the dataset's ids into triplets (train, validation, test) keeping all the objects
     from a group in the same set (either train, validation or test).
@@ -106,7 +106,7 @@ def group_cv_111(dataset: DataSet, *, val_size, n_splits):
     return train_val_test_ids
 
 
-def group_cv_111_pure_011(dataset: DataSet, *, val_size, n_splits):
+def group_cv_111_pure_011(dataset: Dataset, *, val_size, n_splits):
     """
     Splits the dataset's ids into triplets (train, validation, test) keeping all the objects
     from a group in the same set (either train, validation or test).

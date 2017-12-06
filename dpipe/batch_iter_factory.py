@@ -2,8 +2,6 @@ from itertools import islice
 from abc import abstractmethod, ABC
 from contextlib import suppress, contextmanager
 
-from dpipe.config import register
-
 
 @contextmanager
 def build_contextmanager(o):

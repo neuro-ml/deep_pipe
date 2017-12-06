@@ -1,6 +1,5 @@
 import numpy as np
 
-from dpipe.config import register
 from dpipe.medim.divide import compute_n_parts_per_axis
 from dpipe.medim.shape_utils import compute_shape_from_spatial
 from dpipe.medim.utils import pad
