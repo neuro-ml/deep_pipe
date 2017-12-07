@@ -7,12 +7,12 @@ class Dataset(ABC):
     @property
     @abstractmethod
     def ids(self):
-        """Returns tuple of ids of all objects in dataset."""
-        pass
+        """Returns a tuple of ids of all objects in the dataset."""
 
 
 class SegmentationDataset(Dataset, metaclass=ABCMeta):
     """Abstract class that describes a dataset for medical image segmentation."""
+
     @abstractmethod
     def load_image(self, identifier: str) -> np.array:
         """

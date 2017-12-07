@@ -11,6 +11,9 @@ EXTERNALS_DB = os.path.join(DB_DIR, 'externals_db.json')
 EXTERNALS = os.path.join(MODULES_FOLDER, 'externally_loaded_resources')
 USER = os.path.expanduser('~')
 RC = os.path.expanduser('~/.dpiperc')
+SHORTCUTS = {
+    'dpipe_configs': os.path.join(MODULES_FOLDER, os.pardir, 'config_examples')
+}
 
 _modules_were_generated = False
 
@@ -31,6 +34,7 @@ def load(path, default):
         return default
 
 
+# TODO: externals can be an empty file
 def link_externals():
     os.makedirs(EXTERNALS, exist_ok=True)
     db = json.loads(load(EXTERNALS_DB, '{}'))
@@ -57,7 +61,8 @@ def link_externals():
 
 def get_resource_manager(config_path) -> ResourceManager:
     link_externals()
-    rm = ResourceManager(config_path, get_module=get_module)
+    rm = ResourceManager(config_path, get_module=get_module, path_map=SHORTCUTS)
+    # TODO: a VERY dirty hack. delete it after the release of pytorch 0.3
     if 'torch' in rm._get_whole_config():
         import torch
     return rm

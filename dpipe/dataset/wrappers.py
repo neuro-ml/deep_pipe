@@ -1,11 +1,10 @@
 import functools
-from typing import List
+from typing import List, Sequence
 from collections import ChainMap
 
 import numpy as np
 import dpipe.medim as medim
-from dpipe.dataset.base import Dataset, SegmentationDataset
-from .base import Dataset
+from .base import Dataset, SegmentationDataset
 
 
 class Proxy:
@@ -16,7 +15,21 @@ class Proxy:
         return getattr(self._shadowed, name)
 
 
-def cache_methods(dataset: Dataset, methods) -> Dataset:
+def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
+    """
+    Wrapper that caches the dataset's methods.
+
+    Parameters
+    ----------
+    dataset: Dataset
+    methods: Sequence
+        a sequence of methods names to be cached
+
+    Returns
+    -------
+    cached_dataset: Dataset
+        a wrapped dataset
+    """
     cache = functools.lru_cache(len(dataset.ids))
 
     new_methods = {method: staticmethod(cache(getattr(dataset, method))) for method in methods}
@@ -90,8 +103,6 @@ def normalized(dataset: SegmentationDataset, mean, std, drop_percentile: int = N
                                               drop_percentile=drop_percentile)
 
     return NormalizedDataset(dataset)
-
-
 
 
 def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:

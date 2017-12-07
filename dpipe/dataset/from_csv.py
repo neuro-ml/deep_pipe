@@ -3,12 +3,15 @@ import os
 import numpy as np
 import pandas as pd
 
-from dpipe.config import register
 from dpipe.medim.utils import load_image
 from .base import SegmentationDataset
 
 
 class CSV:
+    """
+    A small wrapper for csv files.
+    """
+
     def __init__(self, path, filename='meta.csv', index_col='id'):
         self.path = path
         self.filename = filename

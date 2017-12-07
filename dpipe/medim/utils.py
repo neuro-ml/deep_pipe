@@ -29,7 +29,8 @@ def pad(x, padding, padding_values):
 def load_image(path: str):
     """
     Load an image located at `path`.
-    For now only `.npy`, `.nii` and `.nii.gz` extensions are supported.
+    The following extensions are supported:
+        npy, tif, hdr, img, nii, nii.gz
 
     Parameters
     ----------
@@ -39,15 +40,16 @@ def load_image(path: str):
     """
     if path.endswith('.npy'):
         return np.load(path)
-    elif path.endswith('.nii') or path.endswith('.nii.gz'):
+    if path.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel as nib
         return nib.load(path).get_data()
-    elif path.endswith('.hdr') or path.endswith('.img'):
-        import nibabel as nib
-        return nib.load(path).get_data()
-    else:
-        raise ValueError(f"Couldn't read scan from path: {path}.\n"
-                         "Unknown data extension.")
+    if path.endswith('.tif'):
+        from PIL import Image
+        with Image.open(path) as image:
+            return np.asarray(image)
+
+    raise ValueError(f"Couldn't read image from path: {path}.\n"
+                     "Unknown file extension.")
 
 
 def load_by_ids(load_x: callable, load_y: callable, ids: Sequence, shuffle: bool = False):

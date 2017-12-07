@@ -1,14 +1,13 @@
-from typing import Union
-
 import numpy as np
 from tensorboard_easy import Logger
 
 from dpipe.batch_iter_factory import BatchIterFactory
 from dpipe.model import Model
 from dpipe.train.logging import log_vector
+from dpipe.train.lr_base import LearningRate
 
 
-def train_base(model: Model, batch_iter_factory: BatchIterFactory, n_epochs: int, lr: Union[float, callable],
+def train_base(model: Model, batch_iter_factory: BatchIterFactory, n_epochs: int, lr_policy: LearningRate,
                log_path: str, validator: callable = None):
     """
     Train a model with a decreasing learning rate.
@@ -21,33 +20,33 @@ def train_base(model: Model, batch_iter_factory: BatchIterFactory, n_epochs: int
         a factory of train batch iterators
     n_epochs: int
         number of epochs to train
-    lr: float, callable
-        the learning rate. If callable it must have the following signature:
-        (epoch, *, train_losses, val_losses, metrics) -> new_lr
+    lr_policy: LearningRate
+        the learning rate policy
     log_path: str
         the path where the logs will be stored
     validator: callable, optional
         a validator that calculates the loss and metrics on the validation set
     """
     # TODO: stopping policy
-    train_losses = val_losses = metrics = None
+    val_losses, metrics = [], {}
     with batch_iter_factory, Logger(log_path) as logger:
-        train_log_write = logger.make_3log_scalar('train/loss')
+        train_log_write = logger.make_log_scalar('train/loss')
+        lr_log_write = logger.make_log_scalar('train/lr')
 
         for epoch in range(n_epochs):
-            # get the new learning rate:
-            if callable(lr):
-                new_lr = lr(epoch=epoch, train_losses=train_losses, val_losses=val_losses, metrics=metrics)
-            else:
-                new_lr = lr
-            logger.log_scalar('train/lr', new_lr, epoch)
+            lr_policy.next_epoch()
 
             # train the model
-            with next(batch_iter_factory) as train_batch_iter:
+            with next(batch_iter_factory) as batch_iterator:
                 train_losses = []
-                for inputs in train_batch_iter:
-                    train_losses.append(model.do_train_step(*inputs, lr=new_lr))
+                for inputs in batch_iterator:
+                    lr_policy.next_step()
+                    lr = lr_policy.next_lr(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
+                    lr_log_write(lr)
+
+                    train_losses.append(model.do_train_step(*inputs, lr=lr))
                     train_log_write(train_losses[-1])
+
                 logger.log_scalar('epoch/train_loss', np.mean(train_losses), epoch)
 
             if validator is not None:
