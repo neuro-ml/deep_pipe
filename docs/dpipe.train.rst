@@ -12,6 +12,22 @@ dpipe\.train\.logging module
     :undoc-members:
     :show-inheritance:
 
+dpipe\.train\.lr\_base module
+-----------------------------
+
+.. automodule:: dpipe.train.lr_base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe\.train\.lr\_policy module
+-------------------------------
+
+.. automodule:: dpipe.train.lr_policy
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 dpipe\.train\.train module
 --------------------------
 

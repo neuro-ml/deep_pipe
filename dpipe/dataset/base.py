@@ -47,7 +47,7 @@ class SegmentationDataset(Dataset, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def load_msegm(self, identifier) -> np.array:
+    def load_msegm(self, identifier: str) -> np.array:
         """
         Load the multimodal ground truth segmentation
 
@@ -65,7 +65,7 @@ class SegmentationDataset(Dataset, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def n_chans_segm(self):
+    def n_chans_segm(self) -> int:
         """
         The number of channels in the segmentation tensor
 
@@ -76,7 +76,7 @@ class SegmentationDataset(Dataset, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def n_chans_msegm(self):
+    def n_chans_msegm(self) -> int:
         """
         The number of channels in the multimodal segmentation tensor
 

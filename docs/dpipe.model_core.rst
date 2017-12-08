@@ -1,5 +1,5 @@
-dpipe\.model\_core package
-==========================
+Model Core
+==========
 
 Subpackages
 -----------
@@ -9,11 +9,8 @@ Subpackages
     dpipe.model_core.layers
     dpipe.model_core.layers_torch
 
-Submodules
-----------
-
-dpipe\.model\_core\.base module
--------------------------------
+The interface
+-------------
 
 .. automodule:: dpipe.model_core.base
     :members:
@@ -104,15 +101,6 @@ dpipe\.model\_core\.unet module
 -------------------------------
 
 .. automodule:: dpipe.model_core.unet
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: dpipe.model_core
     :members:
     :undoc-members:
     :show-inheritance:

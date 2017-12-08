@@ -1,3 +1,5 @@
+"""Contains several wrappers around the `pdp` library"""
+
 from typing import Sequence
 
 from pdp import Pipeline, One2One, Many2One, Source, pack_args, One2Many
@@ -32,10 +34,6 @@ def pipeline(transformers: Sequence, batch_size: int = None):
     return Pipeline(*transformers)
 
 
-def source(iterable, buffer_size=1):
-    return Source(iterable, buffer_size=buffer_size)
-
-
 def one2one(f, pack=False, n_workers=1, buffer_size=1):
     if pack:
         f = pack_args(f)
@@ -46,7 +44,3 @@ def one2many(f, pack=False, n_workers=1, buffer_size=1):
     if pack:
         f = pack_args(f)
     return One2Many(f, n_workers=n_workers, buffer_size=buffer_size)
-
-
-def many2one(chunk_size, buffer_size=1):
-    return Many2One(chunk_size, buffer_size=buffer_size)

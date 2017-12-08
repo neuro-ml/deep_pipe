@@ -1,3 +1,8 @@
+"""
+Contains a few more sophisticated commands
+that are usually accessed via the `do.py` script.
+"""
+
 import json
 import os
 
