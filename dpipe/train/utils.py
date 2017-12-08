@@ -25,6 +25,8 @@ def make_find_next_lr(lr, decrease_lr: callable, get_check: callable):
     def find_next_lr(loss):
         nonlocal lr, check
         if check(loss):
+            # Recreate check so that we would start checking again.
+            # TODO rewrite it without it
             check = get_check()
             lr = decrease_lr(lr)
         return lr
