@@ -47,22 +47,6 @@ dpipe\.batch\_predict\.slice module
     :undoc-members:
     :show-inheritance:
 
-dpipe\.batch\_predict\.test\_patch\_3d module
----------------------------------------------
-
-.. automodule:: dpipe.batch_predict.test_patch_3d
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.batch\_predict\.test\_patch\_3d\_fixed module
-----------------------------------------------------
-
-.. automodule:: dpipe.batch_predict.test_patch_3d_fixed
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 dpipe\.batch\_predict\.utils module
 -----------------------------------
 

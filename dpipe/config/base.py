@@ -59,10 +59,25 @@ def link_externals():
         json.dump(db, f)
 
 
-def get_resource_manager(config_path) -> ResourceManager:
+def get_resource_manager(config_path: str) -> ResourceManager:
+    """
+    Get the ResourceManager corresponding to the config from `config_path`.
+
+    Parameters
+    ----------
+    config_path: str
+        path to the config to parse
+
+    Returns
+    -------
+    resource_manager: ResourceManager
+    """
     link_externals()
-    rm = ResourceManager(config_path, get_module=get_module, path_map=SHORTCUTS)
-    # TODO: a VERY dirty hack. delete it after the release of pytorch 0.3
-    if 'torch' in rm._get_whole_config():
-        import torch
+    try:
+        rm = ResourceManager(config_path, get_module=get_module, path_map=SHORTCUTS)
+    except TypeError:
+        rm = ResourceManager(config_path, get_module=get_module)
+        # TODO: a VERY dirty hack. delete it after the release of pytorch 0.3
+        if 'torch' in rm._get_whole_config():
+            import torch
     return rm

@@ -1,5 +1,7 @@
-# Tools for patch extraction and generation
-# For even patch sizes, center is always considered to be close to the right border
+"""
+Tools for patch extraction and generation
+For even patch sizes, center is always considered to be close to the right border
+"""
 import numpy as np
 
 from .utils import build_slices, pad
@@ -118,3 +120,98 @@ def find_masked_patch_center_indices(mask: np.array, patch_size: np.array):
     # Remove centers that are too left and too right
     c = c[np.all((l_bound >= 0) & (r_bound <= np.array(mask.shape)), axis=1)]
     return c
+
+
+def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1):
+    """
+    Get the shape of a tensor after applying a the convolution with
+    corresponding parameters.
+
+    Parameters
+    ----------
+    shape
+        input shape
+    kernel_size
+        convolution kernel size
+    padding
+        padding sizes
+    stride
+        stride of the convolution
+    dilation
+        dilation of the convolution kernel
+
+    Returns
+    -------
+
+    """
+    padding = np.asarray(padding)
+    shape = np.asarray(shape)
+    dilation = np.asarray(dilation)
+    kernel_size = np.asarray(kernel_size)
+
+    return np.floor((shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
+
+
+def slices_conv(shape, kernel_size, spatial_dims=None, stride=None):
+    """
+    A convolution-like approach to generating slices from a tensor.
+
+    Parameters
+    ----------
+    shape
+        the input tensor's shape
+    kernel_size
+    spatial_dims
+        dimensions along which the slices will be taken
+    stride
+        the stride (step-size) of the slice
+
+    Yields
+    ------
+    start,stop: np.array
+        coordinates of a slice's start and stop
+    """
+    if spatial_dims is None:
+        spatial_dims = list(range(-len(kernel_size), 0))
+    if stride is None:
+        stride = kernel_size
+
+    shape = np.array(shape).copy()
+    spatial_shape = shape[spatial_dims]
+    shape[:] = 1
+    shape[spatial_dims] = shape_after_convolution(spatial_shape, kernel_size, stride=stride)
+
+    whole_patch = np.array(shape).copy()
+    whole_patch[spatial_dims] = kernel_size
+
+    for i in np.ndindex(*shape):
+        i = np.asarray(i) * stride
+        yield i, i + whole_patch
+
+
+def patch_conv(x, patch_size, spatial_dims=None, stride=None, padding=0):
+    """
+    A convolution-like approach to generating patches from a tensor.
+
+    Parameters
+    ----------
+    x: np.array
+        the input tensor
+    patch_size
+    spatial_dims
+        dimensions along which the slices will be taken
+    stride
+        the stride (step-size) of the slice
+    padding
+        padding sizes of the input tensor
+
+    Yields
+    ------
+    x_patch: np.array
+        patches from the input tensor
+    """
+    if padding:
+        x = np.pad(x, pad_width=padding, mode='constant')
+
+    for start, stop in slices_conv(x.shape, patch_size, spatial_dims, stride):
+        yield x[build_slices(start, stop)]

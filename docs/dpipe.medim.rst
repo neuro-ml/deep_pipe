@@ -1,8 +1,7 @@
-dpipe\.medim package
-====================
+Medim
+=====
 
-Submodules
-----------
+This module contains utils for medical imaging pipelines.
 
 dpipe\.medim\.augmentation module
 ---------------------------------
@@ -84,46 +83,6 @@ dpipe\.medim\.slices module
     :undoc-members:
     :show-inheritance:
 
-dpipe\.medim\.test\_features module
------------------------------------
-
-.. automodule:: dpipe.medim.test_features
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.medim\.test\_patch module
---------------------------------
-
-.. automodule:: dpipe.medim.test_patch
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.medim\.test\_shape\_utils module
----------------------------------------
-
-.. automodule:: dpipe.medim.test_shape_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.medim\.test\_split module
---------------------------------
-
-.. automodule:: dpipe.medim.test_split
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.medim\.test\_utils module
---------------------------------
-
-.. automodule:: dpipe.medim.test_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 dpipe\.medim\.utils module
 --------------------------
 
@@ -140,11 +99,3 @@ dpipe\.medim\.visualize module
     :undoc-members:
     :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: dpipe.medim
-    :members:
-    :undoc-members:
-    :show-inheritance:

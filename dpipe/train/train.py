@@ -10,7 +10,7 @@ from dpipe.train.lr_base import LearningRate
 def train_base(model: Model, batch_iter_factory: BatchIterFactory, n_epochs: int, lr_policy: LearningRate,
                log_path: str, validator: callable = None):
     """
-    Train a model with a decreasing learning rate.
+    Train a given model.
 
     Parameters
     ----------

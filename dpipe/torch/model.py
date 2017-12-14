@@ -8,7 +8,24 @@ from dpipe.model import Model, FrozenModel, get_model_path
 
 
 class TorchModel(Model):
-    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, logits2loss: callable, optimize, cuda=True):
+    """`Model` interface implementation for the PyTorch framework."""
+
+    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, logits2loss: callable,
+                 optimize: torch.optim.Optimizer, cuda: bool = True):
+        """
+        Parameters
+        ----------
+        model_core: torch.nn.Module
+            torch model structure
+        logits2pred: callable(logits) -> prediction
+            last layer nonlinearity that maps logits to predictions
+        logits2loss: callable(logits) -> loss
+            the loss function
+        optimize: torch.optim.Optimizer
+            the optimizer
+        cuda: bool, optional
+            whether to move the model's parameters to CUDA
+        """
         if cuda:
             model_core.cuda()
             if hasattr(logits2loss, 'cuda'):
@@ -55,19 +72,31 @@ class TorchModel(Model):
 
         return to_np(y_pred)
 
-    def save(self, path):
+    def save(self, path: str):
         os.makedirs(path, exist_ok=True)
         path = get_model_path(path)
         state_dict = self.model_core.state_dict()
         torch.save(state_dict, path)
 
-    def load(self, path):
+    def load(self, path: str):
         path = get_model_path(path)
         self.model_core.load_state_dict(torch.load(path))
 
 
 class TorchFrozenModel(FrozenModel):
-    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path, cuda=True):
+    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str, cuda=True):
+        """
+        Parameters
+        ----------
+        model_core: torch.nn.Module
+            torch model structure
+        logits2pred: callable(logits) -> prediction
+            last layer nonlinearity that maps logits to predictions
+        restore_model_path: str
+            the path to the trained model
+        cuda: bool, optional
+            whether to move the model's parameters to CUDA
+        """
         if cuda:
             model_core.cuda()
         self.cuda = cuda
@@ -127,7 +156,19 @@ def to_var(x: np.array, cuda: bool, volatile: bool = False):
     return x
 
 
-def set_lr(optimizer: torch.optim.Optimizer, lr):
+def set_lr(optimizer: torch.optim.Optimizer, lr: float):
+    """
+    Change an optimizer's learning rate.
+
+    Parameters
+    ----------
+    optimizer: torch.optim.Optimizer
+    lr: float
+
+    Returns
+    -------
+    optimizer: torch.optim.Optimizer
+    """
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
     return optimizer
