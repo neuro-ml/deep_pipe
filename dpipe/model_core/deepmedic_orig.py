@@ -87,7 +87,6 @@ def build_model(t_det, t_context, kernel_size, n_classes, training, name,
         return logits
 
 
-@register(module_name='deepmedic_orig')
 class DeepMedicOrig(ModelCore):
     def __init__(self, *, n_chans_in, n_chans_out):
         super().__init__(n_chans_in=n_chans_in, n_chans_out=n_chans_out)

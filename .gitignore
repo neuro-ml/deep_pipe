@@ -3,3 +3,4 @@ dpipe/config/modules_db.json
 dpipe/config/externals_db.json
 dpipe/externally_loaded_resources/
 *.log
+docs/_build/

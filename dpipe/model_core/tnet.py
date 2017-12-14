@@ -3,7 +3,6 @@ from itertools import zip_longest
 import torch
 import torch.nn as nn
 
-from dpipe.config import register
 from .layers_torch.blocks import ConvBlock2d, ConvBlock3d, ConvTransposeBlock2d, ConvTransposeBlock3d
 
 
@@ -71,6 +70,3 @@ def _make_tnet(conv_block, conv_transposed_block):
 
 TNet2d = _make_tnet(ConvBlock2d, ConvTransposeBlock2d)
 TNet3d = _make_tnet(ConvBlock3d, ConvTransposeBlock3d)
-
-register('tnet2d')(TNet2d)
-register('tnet3d')(TNet3d)

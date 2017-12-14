@@ -54,7 +54,6 @@ class TestPatch3DFixedPredictor(unittest.TestCase):
 
     def test_predictor_big(self):
         for i, y_ndim in product(range(2), (3, 4)):
-
             self.x_patch_sizes = [[7, 17, 52], [11, 21, 56]]
             self.y_patch_size = [5, 15, 50]
 
@@ -72,7 +71,6 @@ class TestPatch3DFixedPredictor(unittest.TestCase):
                 y = x[0] if y_ndim == 3 else x
                 y_pred = predictor.predict(x, predict_fn=model.predict)
                 np.testing.assert_equal(y_pred, y)
-
 
 
 class TestPatch3DFixedQuantilesPredictor(unittest.TestCase):

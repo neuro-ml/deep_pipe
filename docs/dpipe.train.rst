@@ -1,8 +1,13 @@
-dpipe\.train package
-====================
+Training
+========
 
-Submodules
-----------
+Basic model training
+--------------------
+
+.. automodule:: dpipe.train.train
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 dpipe\.train\.logging module
 ----------------------------
@@ -12,18 +17,18 @@ dpipe\.train\.logging module
     :undoc-members:
     :show-inheritance:
 
-dpipe\.train\.train module
---------------------------
+dpipe\.train\.lr\_base module
+-----------------------------
 
-.. automodule:: dpipe.train.train
+.. automodule:: dpipe.train.lr_base
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe\.train\.train\_segm module
---------------------------------
+dpipe\.train\.lr\_policy module
+-------------------------------
 
-.. automodule:: dpipe.train.train_segm
+.. automodule:: dpipe.train.lr_policy
     :members:
     :undoc-members:
     :show-inheritance:
@@ -44,11 +49,3 @@ dpipe\.train\.validator module
     :undoc-members:
     :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: dpipe.train
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,8 +1,7 @@
-import functools
 import json
 import os
 
-from resource_manager import ResourceManager, get_module, generate_config
+from resource_manager import ResourceManager, get_module as _get_module, generate_config
 
 DB_DIR = os.path.abspath(os.path.dirname(__file__))
 MODULES_FOLDER = os.path.abspath(os.path.join(DB_DIR, os.pardir))
@@ -12,10 +11,19 @@ EXTERNALS_DB = os.path.join(DB_DIR, 'externals_db.json')
 EXTERNALS = os.path.join(MODULES_FOLDER, 'externally_loaded_resources')
 USER = os.path.expanduser('~')
 RC = os.path.expanduser('~/.dpiperc')
+SHORTCUTS = {
+    'dpipe_configs': os.path.join(MODULES_FOLDER, os.pardir, 'config_examples')
+}
 
-EXCLUDED_PATHS = ['config', 'medim']
+_modules_were_generated = False
 
-get_module = functools.partial(get_module, db_path=MODULES_DB)
+
+def get_module(module_type, module_name):
+    global _modules_were_generated
+    if not _modules_were_generated:
+        generate_config(EXTERNALS, MODULES_DB, 'dpipe.externally_loaded_resources')
+        _modules_were_generated = True
+    return _get_module(module_type, module_name, db_path=MODULES_DB)
 
 
 def load(path, default):
@@ -26,6 +34,7 @@ def load(path, default):
         return default
 
 
+# TODO: externals can be an empty file
 def link_externals():
     os.makedirs(EXTERNALS, exist_ok=True)
     db = json.loads(load(EXTERNALS_DB, '{}'))
@@ -50,8 +59,18 @@ def link_externals():
         json.dump(db, f)
 
 
-def get_resource_manager(config_path) -> ResourceManager:
+def get_resource_manager(config_path: str) -> ResourceManager:
+    """
+    Get the ResourceManager corresponding to the config from `config_path`.
+
+    Parameters
+    ----------
+    config_path: str
+        path to the config to parse
+
+    Returns
+    -------
+    resource_manager: ResourceManager
+    """
     link_externals()
-    rm = ResourceManager(config_path, get_module=get_module)
-    generate_config(MODULES_FOLDER, MODULES_DB, 'dpipe', exclude=EXCLUDED_PATHS)
-    return rm
+    return ResourceManager(config_path, get_module=get_module, path_map=SHORTCUTS)

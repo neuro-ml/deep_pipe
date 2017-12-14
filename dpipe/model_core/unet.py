@@ -1,11 +1,8 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import slim
 
-from dpipe.config import register_inline
 from .base import ModelCore
 from .enet import res_block
-from dpipe.medim.slices import iterate_slices
 
 
 def conv_block(inputs, output_channels, training, name, kernel_size=3,
@@ -115,6 +112,3 @@ def make_unet(builder):
 
 UNet2D = make_unet(build_model)
 UResNet2D = make_unet(build_res_model)
-
-register_inline(UNet2D, 'unet2d')
-register_inline(UResNet2D, 'uresnet2d')

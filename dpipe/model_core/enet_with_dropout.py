@@ -143,7 +143,6 @@ def build_model(inputs, classes, name, training, init_channels,
         return inputs
 
 
-@register('enet2d_with_dropout')
 class ENet2D_with_dropout(ModelCore):
     def __init__(self, n_chans_in, n_chans_out, multiplier=1, init_channels=16):
         super().__init__(n_chans_in * multiplier, n_chans_out)

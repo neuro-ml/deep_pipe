@@ -74,7 +74,7 @@ class Model(ABC):
         """
 
     @abstractmethod
-    def load(self, path):
+    def load(self, path: str):
         """
         Load the network parameters from `path`
 

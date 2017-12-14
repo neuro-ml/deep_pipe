@@ -1,7 +1,6 @@
 import pdp
 import numpy as np
 
-from dpipe.config import register
 from dpipe.medim.preprocessing import pad
 from dpipe.medim.slices import iterate_slices
 from dpipe.medim.utils import load_by_ids
@@ -17,9 +16,7 @@ def combine_batches_even(inputs):
     return result
 
 
-@register()
-def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1,
-           pad=0, concatenate=None):
+def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1, pad=0, concatenate=None):
     def slicer():
         for x, y in load_by_ids(load_x, load_y, ids, shuffle):
             for x_slice, y_slice in iterate_slices(
@@ -35,7 +32,6 @@ def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1,
     )
 
 
-@register()
 def slices_augmented(ids, load_x, load_y, batch_size, *, shuffle, axis=-1,
                      slices=1, pad=0, concatenate=None):
     def slicer():

@@ -18,43 +18,25 @@ Subpackages
     dpipe.torch
     dpipe.train
 
-Submodules
-----------
 
-dpipe\.batch\_iter\_factory module
-----------------------------------
-
-.. automodule:: dpipe.batch_iter_factory
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.commands module
-----------------------
+Commands
+--------
 
 .. automodule:: dpipe.commands
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe\.io module
-----------------
+Input/Output
+------------
 
 .. automodule:: dpipe.io
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe\.meta module
+NN model interface
 ------------------
-
-.. automodule:: dpipe.meta
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.model module
--------------------
 
 .. automodule:: dpipe.model
     :members:
@@ -69,11 +51,10 @@ dpipe\.transformers module
     :undoc-members:
     :show-inheritance:
 
+dpipe\.batch\_iter\_factory module
+----------------------------------
 
-Module contents
----------------
-
-.. automodule:: dpipe
+.. automodule:: dpipe.batch_iter_factory
     :members:
     :undoc-members:
     :show-inheritance:

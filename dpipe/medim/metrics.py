@@ -1,10 +1,16 @@
-from typing import Sequence
+from typing import Sequence, Union
+from itertools import product
+import functools
 
 import numpy as np
-from itertools import product
 
 
-def soft_weighted_dice_score(a, b, empty_val: float = 0):
+def array_metric(metric, x, y):
+    """General function compute metric for array of objects from metric on couple of objects."""
+    return np.mean([metric(xi, yi) for xi, yi in zip(x, y)], axis=0)
+
+
+def soft_weighted_dice_score(a, b, empty_val: float = 1):
     """
     Realization of dice metric proposed in https://arxiv.org/pdf/1707.01992.pdf
 
@@ -14,8 +20,9 @@ def soft_weighted_dice_score(a, b, empty_val: float = 0):
         Predicted probability maps
     b: ndarray of np.bool
         Ground truth
-    empty_val: int
-        Default value to avoid division by zero
+    empty_val: int, optional
+        Default value, which is returned if the dice score
+        is undefined (i.e. division by zero).
     """
     assert b.dtype == np.bool
     assert a.shape == b.shape
@@ -40,7 +47,7 @@ def dice_score(x, y, empty_val: float = 1) -> float:
     Parameters
     ----------
     x,y : binary tensor
-    empty_val: float, default = 1
+    empty_val: float, optional
         Default value, which is returned if the dice score
         is undefined (i.e. division by zero).
 
@@ -57,7 +64,7 @@ def dice_score(x, y, empty_val: float = 1) -> float:
     return empty_val if den == 0 else num / den
 
 
-def multichannel_dice_score(a, b, empty_val: float = 1):
+def multichannel_dice_score(a, b, empty_val: float = 1) -> [float]:
     """
     Channelwise dice score between two binary masks.
     The first dimension of the tensors is assumed to be the channels.
@@ -65,16 +72,35 @@ def multichannel_dice_score(a, b, empty_val: float = 1):
     Parameters
     ----------
     a,b : binary tensor
-    empty_val: float, default: 1
+    empty_val: float, optional
         Default value, which is returned if the dice score
         is undefined (i.e. division by zero).
 
     Returns
     -------
-    dice_score: float
+    dice_score: [float]
     """
     dices = [dice_score(x, y, empty_val=empty_val) for x, y in zip(a, b)]
     return dices
+
+
+def dice_scores(x, y, empty_val: float = 1):
+    """
+    Channelwise dice score between arrays of binary masks.
+    The first dimension of the tensors is assumed to be the channels.
+
+    Parameters
+    ----------
+    x, y : binary tensor
+    empty_val: float, optional
+        Default value, which is returned if the dice score
+        is undefined (i.e. division by zero).
+
+    Returns
+    -------
+    dice_scores: [[float]]
+    """
+    return array_metric(x, y, functools.partial(multichannel_dice_score, empty_val=empty_val))
 
 
 def check_neighborhood(y, voxel_index, interested_value: int):
@@ -140,7 +166,7 @@ def get_weighted_mask(y, thickness=1):
     return y
 
 
-def hausdorff(a, b, weights: float = 1) -> float:
+def hausdorff(a, b, weights: Union[float, Sequence] = 1) -> float:
     """
     Calculates the Hausdorff distance between two masks.
 

@@ -118,7 +118,6 @@ class Stage(nn.Module):
         return self.blocks(input)
 
 
-@register('torch_enet2d', 'model_core')
 class ENet2D(nn.Module):
     conv_transpose = nn.ConvTranspose2d
     stage = Stage

@@ -1,8 +1,14 @@
-dpipe\.batch\_iter package
-==========================
+Batch iterators
+===============
 
-Submodules
-----------
+Pipeline
+--------
+
+.. automodule:: dpipe.batch_iter.pipeline
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 dpipe\.batch\_iter\.patch\_3d module
 ------------------------------------
@@ -16,14 +22,6 @@ dpipe\.batch\_iter\.patch\_3d\_sep module
 -----------------------------------------
 
 .. automodule:: dpipe.batch_iter.patch_3d_sep
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.batch\_iter\.pipeline module
------------------------------------
-
-.. automodule:: dpipe.batch_iter.pipeline
     :members:
     :undoc-members:
     :show-inheritance:
@@ -44,11 +42,3 @@ dpipe\.batch\_iter\.slices module
     :undoc-members:
     :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: dpipe.batch_iter
-    :members:
-    :undoc-members:
-    :show-inheritance:

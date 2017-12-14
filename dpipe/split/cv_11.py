@@ -1,9 +1,9 @@
 from sklearn.model_selection import KFold
 
-from dpipe.dataset import DataSet
+from dpipe.dataset import Dataset
 
 
-def get_cv_11(dataset: DataSet, *, n_splits):
+def get_cv_11(dataset: Dataset, *, n_splits):
     ids = dataset.ids
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=17)
 

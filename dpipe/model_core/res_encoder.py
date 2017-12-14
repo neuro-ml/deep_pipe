@@ -1,10 +1,8 @@
 from torch import nn
 
-from dpipe.config import register
 from dpipe.model_core.enet_torch import Stage3D, InitialBlock3D
 
 
-@register()
 class ResRegressor(nn.Module):
     def __init__(self, n_chans_in, units):
         super().__init__()

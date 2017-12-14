@@ -1,6 +1,5 @@
 import numpy as np
 
-from dpipe.config import register
 from dpipe.medim.divide import compute_n_parts_per_axis
 from dpipe.medim.shape_utils import compute_shape_from_spatial
 from dpipe.medim.utils import pad
@@ -24,7 +23,6 @@ def find_fixed_spatial_size(spatial_size, spatial_patch_size):
     return compute_n_parts_per_axis(spatial_size, spatial_patch_size) * spatial_patch_size
 
 
-@register(module_name='patch_3d_fixed')
 class Patch3DFixedPredictor(Patch3DPredictor):
     def divide_x(self, x):
         spatial_size = np.array(x.shape)[list(spatial_dims)]
@@ -46,7 +44,6 @@ class Patch3DFixedPredictor(Patch3DPredictor):
         return y_pred
 
 
-@register(module_name='patch_3d_volume')
 class Patch3DVolume(Patch3DFixedPredictor):
     def divide_y(self, y):
         return [x.sum().astype('float32') for x in super().divide_y(y)]
@@ -55,7 +52,6 @@ class Patch3DVolume(Patch3DFixedPredictor):
         return sum(y_parts)
 
 
-@register(module_name='patch_3d_fixed_quantiles')
 class Patch3DFixedQuantilesPredictor(Patch3DFixedPredictor):
     def __init__(self, x_patch_sizes: list, y_patch_size: list, n_quantiles: int, padding_mode: str):
         super().__init__(x_patch_sizes=x_patch_sizes, y_patch_size=y_patch_size,
@@ -69,7 +65,6 @@ class Patch3DFixedQuantilesPredictor(Patch3DFixedPredictor):
         return xs_parts
 
 
-@register(module_name='patch_3d_fixed_quantiles_coordinates')
 class Patch3DFixedQuantilesPredictor(Patch3DFixedQuantilesPredictor):
     def divide_x(self, x):
         *xs_parts, quantiles = super().divide_x(x)

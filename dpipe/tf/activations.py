@@ -1,9 +1,6 @@
 import tensorflow as tf
 
-from dpipe.config import register
 
-
-@register(module_type='tf')
 def prelu(x, feature_dims):
     with tf.variable_scope('prelu'):
         shape = [s if i in feature_dims else 1

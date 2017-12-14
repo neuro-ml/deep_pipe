@@ -48,19 +48,24 @@ def build_model(t_det_in, t_con_in, kernel_size, n_classes, training, name, *,
         return cb(t_com, n_classes, 1, training, 'C')
 
 
-@register('deepmedic_els')
 class DeepMedicEls(ModelCore):
-    def __init__(self, *, n_chans_in, n_chans_out,  downsampling_type='sampling', with_dropout=True):
+    def __init__(self, *, n_chans_in, n_chans_out,  downsampling_type='sampling', with_dropout=True, dropout_rate=0.5):
         super().__init__(n_chans_in=n_chans_in, n_chans_out=n_chans_out)
 
         self.kernel_size = 3
         self.with_dropout = with_dropout
+        self.dropout_rate = dropout_rate
         self.downsampling_op = downsampling_ops[downsampling_type]
 
     def build(self, training_ph):
         def dropout(x):
             if self.with_dropout:
-                return tf.layers.dropout(x, training=training_ph, noise_shape=(tf.shape(x)[0], tf.shape(x)[1], 1, 1, 1))
+                return tf.layers.dropout(
+                    inputs=x,
+                    rate=self.dropout_rate,
+                    training=training_ph,
+                    noise_shape=(tf.shape(x)[0], tf.shape(x)[1], 1, 1, 1)
+                )
             else:
                 return x
 

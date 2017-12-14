@@ -1,10 +1,8 @@
 from sklearn.model_selection import train_test_split
-from dpipe.dataset import DataSet
-from dpipe.config import register
+from dpipe.dataset import Dataset
 
 
-@register()
-def monte_carlo(dataset: DataSet, *, train_fraction, val_fraction, n_splits):
+def monte_carlo(dataset: Dataset, *, train_fraction, val_fraction, n_splits):
     """
     Example: train_fraction = 0.8, val_fraction = 0.1, n_splits = 2 will create 2 splits such that 80% of ids are in
     the train sample, 10% - in val sample, 10% - in test sample.
