@@ -73,11 +73,4 @@ def get_resource_manager(config_path: str) -> ResourceManager:
     resource_manager: ResourceManager
     """
     link_externals()
-    try:
-        rm = ResourceManager(config_path, get_module=get_module, path_map=SHORTCUTS)
-    except TypeError:
-        rm = ResourceManager(config_path, get_module=get_module)
-        # TODO: a VERY dirty hack. delete it after the release of pytorch 0.3
-        if 'torch' in rm._get_whole_config():
-            import torch
-    return rm
+    return ResourceManager(config_path, get_module=get_module, path_map=SHORTCUTS)
