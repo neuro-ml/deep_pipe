@@ -156,11 +156,11 @@ def get_random_patch(x, patch_size, spatial_dims=None):
     if spatial_dims is None:
         spatial_dims = list(range(-len(patch_size), 0))
 
-    start = np.array(x.shape).copy()
-    spatial = shape_after_convolution(start[spatial_dims], patch_size)
+    start = np.zeros_like(x.shape)
+    stop = np.array(x.shape)
+    spatial = shape_after_convolution(stop[spatial_dims], patch_size)
     start[spatial_dims] = [np.random.uniform(i) for i in spatial]
-    stop = start.copy()
-    stop[spatial_dims] += patch_size
+    stop[spatial_dims] = start[spatial_dims] + patch_size
 
     return x[build_slices(start, stop)]
 
