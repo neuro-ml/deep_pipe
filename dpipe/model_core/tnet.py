@@ -44,7 +44,7 @@ def _make_tnet(conv_block, conv_transposed_block):
             self.up_steps = nn.ModuleList(
                 [conv_transposed_block(n_chans_in=down_level[-1], n_chans_out=level[0] - bridge_level[-1],
                                        padding=padding, kernel_size=kernel_size, stride=stride,
-                                       activation=activation)
+                                       activation=activation, output_padding=stride - 1)
                  for bridge_level, level, down_level in zip(bridge_paths, up_paths, [*up_paths[1:], bridge_paths[-1]])]
             )
 
@@ -62,7 +62,10 @@ def _make_tnet(conv_block, conv_transposed_block):
             bottom_input = bridge_outputs[-1]
             for bridge_output, up_step, up_level in reversed(list(zip(bridge_outputs[:-1], self.up_steps,
                                                                       self.up_levels))):
-                bottom_input = up_level(torch.cat([bridge_output, up_step(bottom_input)], dim=1))
+                up_step_output = up_step(bottom_input)
+                final_size = bridge_output.size()[2:]
+                slc = (...,) + tuple(slice(i) for i in final_size)
+                bottom_input = up_level(torch.cat([bridge_output, up_step_output[slc]], dim=1))
             return self.output_layer(bottom_input)
 
     return TNet

@@ -25,7 +25,7 @@ class Decreasing(LearningRate):
                                                       atol=atol))
 
     def next_lr(self, val_losses, **kwargs):
-        if self.step != 0 or self.epoch == 1:
+        if self.step != 0 or self.epoch == 0:
             return self.last_lr
 
         assert val_losses, 'This policy requires validation losses'

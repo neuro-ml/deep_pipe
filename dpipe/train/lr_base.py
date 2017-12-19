@@ -6,18 +6,24 @@ class LearningRate(ABC):
     """Interface for learning rate policies"""
 
     def __init__(self):
-        self.epoch = 0
-        self.step = 0
+        self.epoch = None
+        self.step = None
         self.total_steps = 0
 
     def next_epoch(self):
         """Indicate that a new epoch has begun"""
-        self.epoch += 1
-        self.step = 0
+        if self.epoch is None:
+            self.epoch = 0
+        else:
+            self.epoch += 1
+        self.step = None
 
     def next_step(self):
         """Indicate that a new training step in the current epoch has begun"""
-        self.step += 1
+        if self.step is None:
+            self.step = 0
+        else:
+            self.step += 1
         self.total_steps += 1
 
     @abstractmethod

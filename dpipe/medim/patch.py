@@ -152,6 +152,19 @@ def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1)
     return np.floor((shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
 
 
+def get_random_patch(x, patch_size, spatial_dims=None):
+    if spatial_dims is None:
+        spatial_dims = list(range(-len(patch_size), 0))
+
+    start = np.array(x.shape).copy()
+    spatial = shape_after_convolution(start[spatial_dims], patch_size)
+    start[spatial_dims] = [np.random.uniform(i) for i in spatial]
+    stop = start.copy()
+    stop[spatial_dims] += patch_size
+
+    return x[build_slices(start, stop)]
+
+
 def slices_conv(shape, kernel_size, spatial_dims=None, stride=None):
     """
     A convolution-like approach to generating slices from a tensor.

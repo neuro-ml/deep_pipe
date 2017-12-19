@@ -4,10 +4,10 @@ import torch.nn as nn
 def _make_conv_block(convolution, batch_norm):
     class ConvBlock(nn.Module):
         def __init__(self, n_chans_in, n_chans_out, kernel_size, activation=lambda x: x, stride=1,
-                     padding=0, dilation=1):
+                     padding=0, dilation=1, **conv_kwargs):
             super().__init__()
             self.convolution = convolution(in_channels=n_chans_in, out_channels=n_chans_out, kernel_size=kernel_size,
-                                           stride=stride, padding=padding, dilation=dilation, bias=False)
+                                           stride=stride, padding=padding, dilation=dilation, bias=False, **conv_kwargs)
             self.batch_norm = batch_norm(num_features=n_chans_out)
             self.activation = activation
 

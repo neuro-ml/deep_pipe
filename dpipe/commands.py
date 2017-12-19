@@ -45,6 +45,9 @@ def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: 
 
 
 def evaluate(load_y, input_path, output_path, ids, metrics):
+    if not metrics:
+        return
+    
     os.makedirs(output_path)
 
     def load_prediction(identifier):
