@@ -62,8 +62,11 @@ def evaluate(load_y, input_path, output_path, ids, metrics):
 
     for name, value in result.items():
         metric = os.path.join(output_path, name)
+        if type(value) is np.ndarray:
+            value = value.tolist()
+
         with open(metric, 'w') as f:
-            json.dump(value, f, indent=0)
+            json.dump(value, f, indent=2)
 
 
 def compute_dices(load_msegm, predictions_path, dices_path):
