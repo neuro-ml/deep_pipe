@@ -142,14 +142,15 @@ def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1)
 
     Returns
     -------
-
+    output_shape
     """
     padding = np.asarray(padding)
     shape = np.asarray(shape)
     dilation = np.asarray(dilation)
     kernel_size = np.asarray(kernel_size)
 
-    return np.floor((shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
+    result = np.floor((shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
+    return result.astype(int)
 
 
 def get_random_patch(x, patch_size, spatial_dims=None):
@@ -189,17 +190,17 @@ def slices_conv(shape, kernel_size, spatial_dims=None, stride=None):
     if stride is None:
         stride = kernel_size
 
-    shape = np.array(shape).copy()
-    spatial_shape = shape[spatial_dims]
-    shape[:] = 1
-    shape[spatial_dims] = shape_after_convolution(spatial_shape, kernel_size, stride=stride)
+    final_shape = np.array(shape).copy()
+    spatial_shape = final_shape[spatial_dims]
+    final_shape[:] = 1
+    final_shape[spatial_dims] = shape_after_convolution(spatial_shape, kernel_size, stride=stride)
 
     whole_patch = np.array(shape).copy()
     whole_patch[spatial_dims] = kernel_size
 
-    for i in np.ndindex(*shape):
+    for i in np.ndindex(*final_shape):
         i = np.asarray(i) * stride
-        yield i, i + whole_patch
+        yield tuple(i), tuple(i + whole_patch)
 
 
 def patch_conv(x, patch_size, spatial_dims=None, stride=None, padding=0):

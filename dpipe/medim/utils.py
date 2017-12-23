@@ -12,6 +12,12 @@ def build_slices(start, end):
     return list(map(slice, start, end))
 
 
+def get_axes(axes, ndim):
+    if axes is None:
+        axes = range(-ndim, 0)
+    return list(sorted(axes))
+
+
 def pad(x, padding, padding_values):
     padding = np.array(padding)
 

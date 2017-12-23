@@ -166,22 +166,3 @@ def weighted(dataset: Dataset, thickness: str) -> Dataset:
             return image
 
     return WeightedBoundariesDataset(dataset)
-
-
-class Padded(Proxy):
-    def __init__(self, dataset: SegmentationDataset, shape: list, axes: list):
-        super().__init__(dataset)
-        self.shape = shape
-        self.axes = axes
-
-    def load_image(self, patient_id):
-        img = self._shadowed.load_image(patient_id)
-        return medim.preprocessing.pad(img, self.shape, self.axes)
-
-    def load_segm(self, patient_id):
-        img = self._shadowed.load_segm(patient_id)
-        return medim.preprocessing.pad(img, self.shape, self.axes)
-
-    def load_msegm(self, patient_id):
-        img = self._shadowed.load_msegm(patient_id)
-        return medim.preprocessing.pad(img, self.shape, self.axes)

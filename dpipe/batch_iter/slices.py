@@ -1,7 +1,7 @@
 import pdp
 import numpy as np
 
-from dpipe.medim.preprocessing import pad
+from dpipe.medim.preprocessing import pad_to_shape
 from dpipe.medim.slices import iterate_slices
 from dpipe.medim.utils import load_by_ids
 from dpipe.medim.augmentation import spacial_augmentation, random_flip
@@ -11,7 +11,7 @@ def combine_batches_even(inputs):
     result = []
     for o in zip(*inputs):
         shapes = np.array([x.shape for x in o])
-        padded = [pad(x, shapes.max(axis=0)) for x in o]
+        padded = [pad_to_shape(x, shapes.max(axis=0)) for x in o]
         result.append(np.array(padded))
     return result
 
