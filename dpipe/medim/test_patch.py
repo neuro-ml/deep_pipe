@@ -1,8 +1,8 @@
 import unittest
 
 import numpy as np
-from .patch import find_patch_start_end_padding, extract_patch, find_masked_patch_center_indices,\
-    sample_uniform_center_index
+from .patch import find_patch_start_end_padding, extract_patch, find_masked_patch_center_indices, \
+    sample_uniform_center_index, get_random_patch, slices_conv
 
 
 class TestPatch(unittest.TestCase):
@@ -60,3 +60,16 @@ class TestPatch(unittest.TestCase):
         c = find_masked_patch_center_indices(self.x > 4, patch_size=np.array([2, 3]))
         np.testing.assert_array_equal(c, [[2, 2]])
 
+
+class TestRandomPatch(unittest.TestCase):
+    def test_no_spatial_dims(self):
+        shape = (3, 4, 10)
+        x = np.empty(shape)
+        patch = get_random_patch(x, [2, 2])
+        self.assertEqual(patch.shape, (3, 2, 2))
+
+    def test_spatial_dims(self):
+        shape = (3, 4, 10)
+        x = np.empty(shape)
+        patch = get_random_patch(x, [2, 2], spatial_dims=[0, 2])
+        self.assertEqual(patch.shape, (2, 4, 2))

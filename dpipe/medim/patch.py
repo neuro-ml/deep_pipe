@@ -4,7 +4,7 @@ For even patch sizes, center is always considered to be close to the right borde
 """
 import numpy as np
 
-from .utils import build_slices, pad
+from .utils import build_slices, pad, get_axes
 
 
 # FIXME consider what happens if central_idx is outside of x, error is likely
@@ -153,7 +153,7 @@ def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1)
     return result.astype(int)
 
 
-def get_random_patch(x, patch_size, spatial_dims=None):
+def get_random_patch(x, patch_size, spatial_dims=None) -> np.ndarray:
     if spatial_dims is None:
         spatial_dims = list(range(-len(patch_size), 0))
 
@@ -178,15 +178,15 @@ def slices_conv(shape, kernel_size, spatial_dims=None, stride=None):
     spatial_dims
         dimensions along which the slices will be taken
     stride
-        the stride (step-size) of the slice
+        the stride (step-size) of the slice. If None, the stride is assumed
+        to be equal to kernel_size.
 
     Yields
     ------
-    start,stop: np.array
+    start,stop: tuple
         coordinates of a slice's start and stop
     """
-    if spatial_dims is None:
-        spatial_dims = list(range(-len(kernel_size), 0))
+    spatial_dims = get_axes(spatial_dims, len(kernel_size))
     if stride is None:
         stride = kernel_size
 
@@ -199,11 +199,12 @@ def slices_conv(shape, kernel_size, spatial_dims=None, stride=None):
     whole_patch[spatial_dims] = kernel_size
 
     for i in np.ndindex(*final_shape):
-        i = np.asarray(i) * stride
+        i = np.asarray(i)
+        i[spatial_dims] *= stride
         yield tuple(i), tuple(i + whole_patch)
 
 
-def patch_conv(x, patch_size, spatial_dims=None, stride=None, padding=0):
+def patch_conv(x, patch_size, spatial_dims=None, stride=None, padding=0) -> np.ndarray:
     """
     A convolution-like approach to generating patches from a tensor.
 
@@ -221,7 +222,7 @@ def patch_conv(x, patch_size, spatial_dims=None, stride=None, padding=0):
 
     Yields
     ------
-    x_patch: np.array
+    x_patch: np.ndarray
         patches from the input tensor
     """
     if padding:
