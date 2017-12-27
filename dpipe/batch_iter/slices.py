@@ -1,3 +1,5 @@
+import functools
+
 import pdp
 import numpy as np
 
@@ -5,6 +7,7 @@ from dpipe.medim.preprocessing import pad_to_shape
 from dpipe.medim.slices import iterate_slices
 from dpipe.medim.utils import load_by_ids
 from dpipe.medim.augmentation import spacial_augmentation, random_flip
+from .pipeline import pipeline, one2many
 
 
 def combine_batches_even(inputs):
@@ -16,20 +19,21 @@ def combine_batches_even(inputs):
     return result
 
 
-def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1, pad=0, concatenate=None):
-    def slicer():
-        for x, y in load_by_ids(load_x, load_y, ids, shuffle):
-            for x_slice, y_slice in iterate_slices(
-                    x, y, axis=axis, slices=slices, pad=pad,
-                    concatenate=concatenate):
-                if y_slice.any():
-                    yield x_slice, y_slice
+def filter_empty(x, y):
+    if y_slice.any():
+        yield x_slice, y_slice
 
-    return pdp.Pipeline(
-        pdp.Source(slicer(), buffer_size=5),
+
+def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1, pad=0, concatenate=None):
+    return pipeline([
+        pdp.Source(load_by_ids(load_x, load_y, ids, shuffle), buffer_size=5),
+        one2many(
+            functools.partial(iterate_slices, axis=axis, slices=slices, pad=pad, concatenate=concatenate),
+            pack=True
+        ),
         pdp.Many2One(chunk_size=batch_size, buffer_size=2),
         pdp.One2One(combine_batches_even, buffer_size=3)
-    )
+    ])
 
 
 def slices_augmented(ids, load_x, load_y, batch_size, *, shuffle, axis=-1,

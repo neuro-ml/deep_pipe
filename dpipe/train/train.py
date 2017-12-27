@@ -1,13 +1,12 @@
 import numpy as np
 from tensorboard_easy import Logger
 
-from dpipe.batch_iter_factory import BatchIterFactory
 from dpipe.model import Model
 from dpipe.train.logging import log_vector
 from dpipe.train.lr_base import LearningRate
 
 
-def train_base(model: Model, batch_iter_factory: BatchIterFactory, n_epochs: int, lr_policy: LearningRate,
+def train_base(model: Model, batch_iterator: callable, n_epochs: int, lr_policy: LearningRate,
                log_path: str, validator: callable = None):
     """
     Train a given model.
@@ -16,8 +15,8 @@ def train_base(model: Model, batch_iter_factory: BatchIterFactory, n_epochs: int
     ----------
     model: Model
         the model to train
-    batch_iter_factory: BatchIterFactory
-        a factory of train batch iterators
+    batch_iterator: callable
+        callable that returns a batch_iterator
     n_epochs: int
         number of epochs to train
     lr_policy: LearningRate
@@ -29,7 +28,7 @@ def train_base(model: Model, batch_iter_factory: BatchIterFactory, n_epochs: int
     """
     # TODO: stopping policy
     val_losses, metrics = [], {}
-    with batch_iter_factory, Logger(log_path) as logger:
+    with Logger(log_path) as logger:
         train_log_write = logger.make_log_scalar('train/loss')
         lr_log_write = logger.make_log_scalar('train/lr')
 
@@ -37,17 +36,17 @@ def train_base(model: Model, batch_iter_factory: BatchIterFactory, n_epochs: int
             lr_policy.next_epoch()
 
             # train the model
-            with next(batch_iter_factory) as batch_iterator:
-                train_losses = []
-                for inputs in batch_iterator:
-                    lr_policy.next_step()
-                    lr = lr_policy.next_lr(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
-                    lr_log_write(lr)
+            train_losses = []
+            for inputs in batch_iterator():
+                lr_policy.next_step()
+                # get the new learning rate
+                lr = lr_policy.next_lr(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
+                lr_log_write(lr)
 
-                    train_losses.append(model.do_train_step(*inputs, lr=lr))
-                    train_log_write(train_losses[-1])
+                train_losses.append(model.do_train_step(*inputs, lr=lr))
+                train_log_write(train_losses[-1])
 
-                logger.log_scalar('epoch/train_loss', np.mean(train_losses), epoch)
+            logger.log_scalar('epoch/train_loss', np.mean(train_losses), epoch)
 
             if validator is not None:
                 val_losses, metrics = validator()

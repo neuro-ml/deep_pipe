@@ -22,6 +22,11 @@ def combine_batches_(inputs):
     return [np.asarray(o) for o in zip(*inputs)]
 
 
+def enter_and_yield(context_manager):
+    with context_manager:
+        yield from context_manager
+
+
 def pipeline(transformers: Sequence, batch_size: int = None):
     assert len(transformers) > 0
 
@@ -31,7 +36,7 @@ def pipeline(transformers: Sequence, batch_size: int = None):
             Many2One(chunk_size=batch_size, buffer_size=2),
             One2One(combine_batches_, buffer_size=2),
         ])
-    return Pipeline(*transformers)
+    yield from enter_and_yield(Pipeline(*transformers))
 
 
 def one2one(f, pack=False, n_workers=1, buffer_size=1):
