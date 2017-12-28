@@ -1,9 +1,10 @@
 from matplotlib import pyplot as plt
+from ipywidgets import interact, IntSlider
 import numpy as np
 
 
 def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
-            colorbar: bool = False, cmap: str = None, vlim = (None, None)):
+            colorbar: bool = False, cmap: str = None, vlim=(None, None)):
     """
     Creates an interactive plot, simultaneously showing slices along a given
     axis for all the passed images.
@@ -18,10 +19,6 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
     colorbar : Whether to display a colorbar.
     cmap : matplotlib cmap
     """
-    # Dirty hack to solve problem between new registry system that scan
-    # everything and ipywidgets
-    from ipywidgets import interact, IntSlider
-
     size = data[0].shape[axis]
     for x in data:
         assert x.shape[axis] == size
@@ -41,4 +38,4 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
         plt.tight_layout()
         plt.show()
 
-    interact(update, idx=IntSlider(min=0, max=size-1, continuous_update=False))
+    interact(update, idx=IntSlider(min=0, max=size - 1, continuous_update=False))

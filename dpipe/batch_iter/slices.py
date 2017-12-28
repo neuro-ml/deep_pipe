@@ -65,9 +65,9 @@ def slices_augmented(ids, load_x, load_y, batch_size, *, shuffle, axis=-1,
 
         return x, y
 
-    return pdp.Pipeline(
+    return pipeline([
         pdp.Source(slicer(), buffer_size=5),
         pdp.One2One(augment, buffer_size=20, n_workers=6),
         pdp.Many2One(chunk_size=batch_size, buffer_size=2),
         pdp.One2One(combine_batches_even, buffer_size=3),
-    )
+    ])

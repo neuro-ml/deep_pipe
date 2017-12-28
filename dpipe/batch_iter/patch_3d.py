@@ -9,6 +9,8 @@ from dpipe.medim import patch
 from dpipe.medim.augmentation import spatial_augmentation_strict, random_flip
 from dpipe.medim.features import get_coordinate_features
 
+from .pipeline import pipeline
+
 
 class Patient(collections.namedtuple('Patient_data', ['patient_id', 'x', 'y'])):
     def __hash__(self):
@@ -69,14 +71,14 @@ def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patc
 
         return (*xs, y)
 
-    return pdp.Pipeline(
+    return pipeline([
         pdp.Source(random_seq, buffer_size=3),
         pdp.One2One(_load_patient, buffer_size=len(ids)),
         pdp.One2One(_find_padding_values, buffer_size=len(ids)),
         pdp.One2One(_extract_patches, buffer_size=batch_size),
         pdp.Many2One(chunk_size=batch_size, buffer_size=3),
         pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
-    )
+    ])
 
 
 def find_cancer_and_padding_values(x, y, y_patch_size, spatial_dims):
@@ -111,18 +113,17 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
         xs = extract_patches(x, patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=padding_values,
                              spatial_dims=spatial_dims)
         y, = extract_patches(y, patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
-                            spatial_dims=spatial_dims)
+                             spatial_dims=spatial_dims)
         return (*xs, y)
 
-
-    return pdp.Pipeline(
+    return pipeline([
         pdp.Source(random_seq, buffer_size=3),
         pdp.One2One(_load_patient, buffer_size=len(ids)),
         pdp.One2One(_find_cancer_and_padding_values, buffer_size=len(ids)),
         pdp.One2One(_extract_patches, buffer_size=batch_size),
         pdp.Many2One(chunk_size=batch_size, buffer_size=3),
         pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
-    )
+    ])
 
 
 def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size,
@@ -156,17 +157,17 @@ def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_pat
         xs = extract_patches(x, patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=padding_values,
                              spatial_dims=spatial_dims)
         y, = extract_patches(y, patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
-                            spatial_dims=spatial_dims)
+                             spatial_dims=spatial_dims)
         return (*xs, quantiles, y)
 
-    return pdp.Pipeline(
+    return pipeline([
         pdp.Source(random_seq, buffer_size=3),
         pdp.One2One(_load_patient, buffer_size=len(ids)),
         pdp.One2One(_find_cancer_and_padding_values_and_quantiles_, buffer_size=len(ids)),
         pdp.One2One(_extract_patches, buffer_size=batch_size),
         pdp.Many2One(chunk_size=batch_size, buffer_size=3),
         pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
-    )
+    ])
 
 
 def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size,
@@ -200,20 +201,20 @@ def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_pat
         xs = extract_patches(x, patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=padding_values,
                              spatial_dims=spatial_dims)
         y, = extract_patches(y, patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
-                            spatial_dims=spatial_dims)
+                             spatial_dims=spatial_dims)
 
         center_patch = get_coordinate_features(np.array(x.shape)[spatial_dims], center_idx, y_patch_size)
 
         return (*xs, center_patch, quantiles, y)
 
-    return pdp.Pipeline(
+    return pipeline([
         pdp.Source(random_seq, buffer_size=3),
         pdp.One2One(_load_patient, buffer_size=len(ids)),
         pdp.One2One(_find_cancer_and_padding_values_and_quantiles_, buffer_size=len(ids)),
         pdp.One2One(_extract_patches, buffer_size=batch_size),
         pdp.Many2One(chunk_size=batch_size, buffer_size=3),
         pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
-    )
+    ])
 
 
 class ExpirationPool:
@@ -303,10 +304,10 @@ def make_patch_3d_strat_augm_iter(ids, load_x, load_y, *, batch_size, x_patch_si
         xs = extract_patches(x, patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=padding_values,
                              spatial_dims=spatial_dims)
         y, = extract_patches(y, patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
-                            spatial_dims=spatial_dims)
+                             spatial_dims=spatial_dims)
         return (*xs, y)
 
-    return pdp.Pipeline(
+    return pipeline([
         pdp.Source(random_seq, buffer_size=3),
         pdp.One2One(_load_patient, buffer_size=len(ids)),
         pdp.One2One(_augment, n_workers=n_workers, buffer_size=3),
@@ -315,4 +316,4 @@ def make_patch_3d_strat_augm_iter(ids, load_x, load_y, *, batch_size, x_patch_si
         pdp.One2One(_extract_patches, buffer_size=batch_size),
         pdp.Many2One(chunk_size=batch_size, buffer_size=3),
         pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
-    )
+    ])

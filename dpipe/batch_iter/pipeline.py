@@ -1,6 +1,6 @@
 """Contains several wrappers around the `pdp` library"""
 
-from typing import Sequence
+from typing import Sequence, Iterable
 
 from pdp import Pipeline, One2One, Many2One, Source, pack_args, One2Many
 import pdp
@@ -27,6 +27,13 @@ def enter_and_yield(context_manager):
         yield from context_manager
 
 
+def make_finite(iterable: Iterable, iterations: int):
+    iterable = iter(iterable)
+    
+    for _ in range(iterations):
+        yield next(iterable)
+
+            
 def pipeline(transformers: Sequence, batch_size: int = None):
     assert len(transformers) > 0
 
