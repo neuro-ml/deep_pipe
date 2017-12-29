@@ -22,19 +22,25 @@ def combine_batches_(inputs):
     return [np.asarray(o) for o in zip(*inputs)]
 
 
-def enter_and_yield(context_manager):
-    with context_manager:
-        yield from context_manager
-
-
-def make_finite(iterable: Iterable, iterations: int):
+def make_finite(iterable: Iterable, n_iterations: int):
+    """Yields n_iterations from an iterable"""
     iterable = iter(iterable)
-    
-    for _ in range(iterations):
+    for _ in range(n_iterations):
         yield next(iterable)
 
-            
+
 def pipeline(transformers: Sequence, batch_size: int = None):
+    """
+    Wrapper around the `pdp` library which returns a regular generator
+    from transformers.
+
+    Parameters
+    ----------
+    transformers: Sequence
+        `pdp` transformers to create a generator from
+    batch_size: int, optional
+        if provided `pdp.Many2One` and `combine_batches` are added to transformers
+    """
     assert len(transformers) > 0
 
     transformers = unravel_transformers(transformers)
@@ -43,7 +49,8 @@ def pipeline(transformers: Sequence, batch_size: int = None):
             Many2One(chunk_size=batch_size, buffer_size=2),
             One2One(combine_batches_, buffer_size=2),
         ])
-    yield from enter_and_yield(Pipeline(*transformers))
+    with Pipeline(*transformers) as p:
+        yield from p
 
 
 def one2one(f, pack=False, n_workers=1, buffer_size=1):

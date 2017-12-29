@@ -122,7 +122,7 @@ def find_masked_patch_center_indices(mask: np.array, patch_size: np.array):
     return c
 
 
-def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1):
+def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1) -> tuple:
     """
     Get the shape of a tensor after applying a the convolution with
     corresponding parameters.
@@ -142,7 +142,7 @@ def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1)
 
     Returns
     -------
-    output_shape
+    output_shape: tuple
     """
     padding = np.asarray(padding)
     shape = np.asarray(shape)

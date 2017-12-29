@@ -1,8 +1,5 @@
-dpipe\.split package
-====================
-
-Submodules
-----------
+Split
+=====
 
 dpipe\.split\.base module
 -------------------------
@@ -40,15 +37,6 @@ dpipe\.split\.monte\_carlo module
 ---------------------------------
 
 .. automodule:: dpipe.split.monte_carlo
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: dpipe.split
     :members:
     :undoc-members:
     :show-inheritance:

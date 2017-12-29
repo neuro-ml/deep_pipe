@@ -57,34 +57,10 @@ dpipe\.model\_core\.enet module
     :undoc-members:
     :show-inheritance:
 
-dpipe\.model\_core\.enet\_mixed module
---------------------------------------
-
-.. automodule:: dpipe.model_core.enet_mixed
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 dpipe\.model\_core\.enet\_torch module
 --------------------------------------
 
 .. automodule:: dpipe.model_core.enet_torch
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.model\_core\.enet\_with\_dropout module
-----------------------------------------------
-
-.. automodule:: dpipe.model_core.enet_with_dropout
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.model\_core\.res\_encoder module
----------------------------------------
-
-.. automodule:: dpipe.model_core.res_encoder
     :members:
     :undoc-members:
     :show-inheritance:

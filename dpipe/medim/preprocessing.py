@@ -67,7 +67,7 @@ def rotate_image(image: np.ndarray, angles: Sequence, axes: Sequence = None, ord
     return result
 
 
-def scale(image: np.array, spatial_shape: list, order: int = 3, axes: list = None) -> np.array:
+def scale(image: np.array, spatial_shape: list, order: int = 3, axes: list = None) -> np.ndarray:
     """
     Rescale image to `spacial_shape` along the `axes`.
 
@@ -85,7 +85,7 @@ def scale(image: np.array, spatial_shape: list, order: int = 3, axes: list = Non
 
     Returns
     -------
-    reshaped image: np.array
+    reshaped image: np.ndarray
     """
     axes = get_axes(axes, len(spatial_shape))
     old_shape = np.array(image.shape)[axes].astype('float64')
@@ -97,7 +97,7 @@ def scale(image: np.array, spatial_shape: list, order: int = 3, axes: list = Non
     return ndimage.zoom(image, scale_factor, order=order)
 
 
-def pad_to_shape(x: np.array, spatial_shape: Sequence, axes: Sequence = None, strict: bool = True) -> np.array:
+def pad_to_shape(x: np.array, spatial_shape: Sequence, axes: Sequence = None, strict: bool = True) -> np.ndarray:
     """
     Pad a tensor to `spacial_shape` along the `axes`.
 
@@ -115,7 +115,7 @@ def pad_to_shape(x: np.array, spatial_shape: Sequence, axes: Sequence = None, st
 
     Returns
     -------
-    padded_tensor: np.array
+    padded_tensor: np.ndarray
     """
     axes = get_axes(axes, len(spatial_shape))
     old_shape = np.array(x.shape)[axes]
@@ -134,7 +134,7 @@ def pad_to_shape(x: np.array, spatial_shape: Sequence, axes: Sequence = None, st
     return np.pad(x, padding, mode='constant')
 
 
-def slice_to_shape(x: np.array, spatial_shape: Sequence, axes: Sequence = None, strict: bool = True) -> np.array:
+def slice_to_shape(x: np.array, spatial_shape: Sequence, axes: Sequence = None, strict: bool = True) -> np.ndarray:
     """
     Slice a tensor to `spacial_shape` along the `axes`.
 
@@ -152,7 +152,7 @@ def slice_to_shape(x: np.array, spatial_shape: Sequence, axes: Sequence = None, 
 
     Returns
     -------
-    tensor_slice: np.array
+    tensor_slice: np.ndarray
     """
     axes = get_axes(axes, len(spatial_shape))
     old_shape = np.array(x.shape)[axes]

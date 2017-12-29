@@ -6,7 +6,6 @@ Pipeline
 
 .. automodule:: dpipe.batch_iter.pipeline
     :members:
-    :undoc-members:
     :show-inheritance:
 
 

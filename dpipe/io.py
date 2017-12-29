@@ -72,7 +72,7 @@ class ConsoleArguments:
         except KeyError:
             raise AttributeError(f'Console argument {name} not provided') from None
 
-    def get(self, **kwargs):
+    def __call__(self, **kwargs):
         """
         Get a corresponding console argument, or return `default` if not provided.
 
@@ -86,7 +86,7 @@ class ConsoleArguments:
         --------
         >>> console = ConsoleArguments()
         >>> # return `data_path` or '/some/default/path', if not provided
-        >>> x = console.get(data_path='/some/default/path')
+        >>> x = console(data_path='/some/default/path')
         """
         if len(kwargs) != 1:
             raise ValueError(f'This method takes exactly one argument, '
