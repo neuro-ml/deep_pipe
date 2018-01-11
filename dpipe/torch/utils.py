@@ -3,16 +3,12 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 
-def softmax(x):
-    e = torch.exp(x)
-    return e / e.sum(dim=1, keepdim=True)
-
-
 def swap_channels(x):
     size = x.size()
+    assert len(size) >= 2
     if len(size) > 2:
         x = x.permute(0, *range(2, len(size)), 1)
-    return x.contiguous().view(-1, size[-1])
+    return x.contiguous().view(-1, size[1])
 
 
 class SoftmaxCrossEntropy:
