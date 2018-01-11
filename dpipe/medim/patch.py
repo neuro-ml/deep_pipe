@@ -153,16 +153,21 @@ def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1)
     return result.astype(int)
 
 
-def get_random_patch(x, patch_size, spatial_dims=None) -> np.ndarray:
+def get_random_slice(shape, patch_size, spatial_dims=None):
     if spatial_dims is None:
         spatial_dims = list(range(-len(patch_size), 0))
 
-    start = np.zeros_like(x.shape)
-    stop = np.array(x.shape)
+    start = np.zeros_like(shape)
+    stop = np.array(shape)
     spatial = shape_after_convolution(stop[spatial_dims], patch_size)
     start[spatial_dims] = [np.random.uniform(i) for i in spatial]
     stop[spatial_dims] = start[spatial_dims] + patch_size
 
+    return start, stop
+
+
+def get_random_patch(x: np.ndarray, patch_size, spatial_dims=None) -> np.ndarray:
+    start, stop = get_random_slice(x.shape, patch_size, spatial_dims)
     return x[build_slices(start, stop)]
 
 
