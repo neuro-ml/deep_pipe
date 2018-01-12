@@ -1,13 +1,7 @@
 from typing import Sequence, Union
 from itertools import product
-import functools
 
 import numpy as np
-
-
-def array_metric(x, y, metric):
-    """General function compute metric for array of objects from metric on couple of objects."""
-    return np.mean([metric(xi, yi) for xi, yi in zip(x, y)], axis=0)
 
 
 def soft_weighted_dice_score(a, b, empty_val: float = 1):
@@ -80,27 +74,9 @@ def multichannel_dice_score(a, b, empty_val: float = 1) -> [float]:
     -------
     dice_score: [float]
     """
+    assert len(a) == len(b), f'number of channels is different: {len(a)} != {len(b)}'
     dices = [dice_score(x, y, empty_val=empty_val) for x, y in zip(a, b)]
     return dices
-
-
-def dice_scores(x, y, empty_val: float = 1):
-    """
-    Channelwise dice score between arrays of binary masks.
-    The first dimension of the tensors is assumed to be the channels.
-
-    Parameters
-    ----------
-    x, y : binary tensor
-    empty_val: float, optional
-        Default value, which is returned if the dice score
-        is undefined (i.e. division by zero).
-
-    Returns
-    -------
-    dice_scores: [[float]]
-    """
-    return array_metric(x, y, functools.partial(multichannel_dice_score, empty_val=empty_val))
 
 
 def check_neighborhood(y, voxel_index, interested_value: int):
@@ -233,3 +209,16 @@ def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:
         dices.append(temp)
     dices = np.asarray(dices)
     return dices.mean(axis=0).max(axis=1)
+
+
+def average_metric(xs, ys, metric):
+    """Compute metric for array of objects from metric on couple of objects."""
+    return np.mean([metric(x, y) for x, y in zip(xs, ys)], axis=0)
+
+
+def compute_segm_dices(segm_true, segm_pred_prob, segm2msegm, empty_val: float = 1):
+    """
+    Channelwise dice score between msegms for predicted segmentation and true segmentation.
+    """
+    return multichannel_dice_score(segm2msegm(segm_true), segm2msegm(np.argmax(segm_pred_prob, axis=0)),
+                                   empty_val=empty_val)

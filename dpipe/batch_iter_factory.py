@@ -39,13 +39,13 @@ class BatchIterFactoryFin(BatchIterFactory):
 
 
 class BatchIterFactoryInf(BatchIterFactory):
-    def __init__(self, get_batch_iter, n_iters_per_batch):
+    def __init__(self, get_batch_iter, n_iters_per_epoch):
         self.inf_batch_iter = get_batch_iter()
-        self.n_iters_per_batch = n_iters_per_batch
+        self.n_iters_per_epoch = n_iters_per_epoch
 
     def __next__(self):
         return build_contextmanager(
-            islice(self.inf_batch_iter, self.n_iters_per_batch))
+            islice(self.inf_batch_iter, self.n_iters_per_epoch))
 
     def __enter__(self):
         with suppress(AttributeError):
