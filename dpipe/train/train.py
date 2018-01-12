@@ -1,3 +1,5 @@
+from typing import Callable
+
 import numpy as np
 from tensorboard_easy import Logger
 
@@ -6,8 +8,8 @@ from dpipe.train.logging import log_vector
 from dpipe.train.lr_base import LearningRate
 
 
-def train_base(model: Model, batch_iterator: callable, n_epochs: int, lr_policy: LearningRate,
-               log_path: str, validator: callable = None):
+def train_base(model: Model, batch_generator: Callable, n_epochs: int, lr_policy: LearningRate,
+               log_path: str, validator: Callable = None):
     """
     Train a given model.
 
@@ -15,7 +17,7 @@ def train_base(model: Model, batch_iterator: callable, n_epochs: int, lr_policy:
     ----------
     model: Model
         the model to train
-    batch_iterator: callable
+    batch_generator: callable
         callable that returns a batch_iterator
     n_epochs: int
         number of epochs to train
@@ -37,7 +39,7 @@ def train_base(model: Model, batch_iterator: callable, n_epochs: int, lr_policy:
 
             # train the model
             train_losses = []
-            for inputs in batch_iterator():
+            for inputs in batch_generator():
                 lr_policy.next_step()
                 # get the new learning rate
                 lr = lr_policy.next_lr(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
