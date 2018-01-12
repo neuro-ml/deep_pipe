@@ -5,7 +5,7 @@ import functools
 import numpy as np
 
 
-def array_metric(metric, x, y):
+def array_metric(x, y, metric):
     """General function compute metric for array of objects from metric on couple of objects."""
     return np.mean([metric(xi, yi) for xi, yi in zip(x, y)], axis=0)
 
