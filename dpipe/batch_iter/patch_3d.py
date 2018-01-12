@@ -98,8 +98,11 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
 
     @functools.lru_cache(len(ids))
     def _find_cancer_and_padding_values(patient: Patient):
-        return find_cancer_and_padding_values(patient.x, patient.y, y_patch_size=y_patch_size,
-                                              spatial_dims=spatial_dims)
+        x, y, cancer, padding = find_cancer_and_padding_values(patient.x, patient.y, y_patch_size=y_patch_size,
+                                                               spatial_dims=spatial_dims)
+
+        assert len(cancer) > 0, f'Patient {patient.patient_id}: no cancer found'
+        return x, y, cancer, padding
 
     @pdp.pack_args
     def _extract_patches(x, y, cancer_center_indices, padding_values):
