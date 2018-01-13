@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import torch
+from torch.nn import Module
 from torch.autograd import Variable
 
 from dpipe.model import Model, FrozenModel, get_model_path
@@ -28,7 +29,7 @@ class TorchModel(Model):
         """
         if cuda:
             model_core.cuda()
-            if hasattr(logits2loss, 'cuda'):
+            if isinstance(logits2loss, Module):
                 logits2loss.cuda()
 
         self.cuda = cuda
