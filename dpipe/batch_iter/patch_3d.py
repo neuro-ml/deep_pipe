@@ -7,7 +7,8 @@ import numpy as np
 
 from dpipe.medim import patch
 from dpipe.medim.augmentation import spatial_augmentation_strict, random_flip
-from dpipe.medim.features import get_coordinate_features
+
+spatial_dims = (-3, -2, -1)
 
 
 class Patient(collections.namedtuple('Patient_data', ['patient_id', 'x', 'y'])):
@@ -45,8 +46,6 @@ def extract_patches(x, patch_sizes, center_idx, padding_values, spatial_dims):
 def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, buffer_size):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
-
-    spatial_dims = [-3, -2, -1]
 
     random_seq = iter(functools.partial(random.choice, ids), None)
 
@@ -88,8 +87,6 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
 
-    spatial_dims = [-3, -2, -1]
-
     random_seq = iter(functools.partial(random.choice, ids), None)
 
     @functools.lru_cache(len(ids))
@@ -122,97 +119,6 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
         pdp.Source(random_seq, buffer_size=3),
         pdp.One2One(_load_patient, buffer_size=len(ids)),
         pdp.One2One(_find_cancer_and_padding_values, buffer_size=len(ids)),
-        pdp.One2One(_extract_patches, buffer_size=batch_size),
-        pdp.Many2One(chunk_size=batch_size, buffer_size=3),
-        pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
-    )
-
-
-def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size,
-                                       nonzero_fraction, buffer_size, n_quantiles):
-    x_patch_sizes = np.array(x_patch_sizes)
-    y_patch_size = np.array(y_patch_size)
-
-    spatial_dims = [-3, -2, -1]
-
-    random_seq = iter(functools.partial(random.choice, ids), None)
-
-    @functools.lru_cache(len(ids))
-    def _load_patient(patient_id):
-        return Patient(patient_id, load_x(patient_id), load_y(patient_id))
-
-    @functools.lru_cache(len(ids))
-    def _find_cancer_and_padding_values_and_quantiles_(patient: Patient):
-        x, y, cancer_ids, padding_vals = find_cancer_and_padding_values(
-            patient.x, patient.y, y_patch_size=y_patch_size, spatial_dims=spatial_dims
-        )
-        quantiles = np.percentile(x, np.linspace(0, 100, n_quantiles))
-        return x, y, cancer_ids, padding_vals, quantiles
-
-    @pdp.pack_args
-    def _extract_patches(x, y, cancer_center_indices, padding_values, quantiles):
-        if np.random.uniform() < nonzero_fraction:
-            center_idx = random.choice(cancer_center_indices)
-        else:
-            center_idx = get_random_center_idx(y, y_patch_size, spatial_dims=spatial_dims)
-
-        xs = extract_patches(x, patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=padding_values,
-                             spatial_dims=spatial_dims)
-        y, = extract_patches(y, patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
-                            spatial_dims=spatial_dims)
-        return (*xs, quantiles, y)
-
-    return pdp.Pipeline(
-        pdp.Source(random_seq, buffer_size=3),
-        pdp.One2One(_load_patient, buffer_size=len(ids)),
-        pdp.One2One(_find_cancer_and_padding_values_and_quantiles_, buffer_size=len(ids)),
-        pdp.One2One(_extract_patches, buffer_size=batch_size),
-        pdp.Many2One(chunk_size=batch_size, buffer_size=3),
-        pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
-    )
-
-
-def make_patch_3d_strat_iter_quantiles(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size,
-                                       nonzero_fraction, buffer_size, n_quantiles):
-    x_patch_sizes = np.array(x_patch_sizes)
-    y_patch_size = np.array(y_patch_size)
-
-    spatial_dims = [-3, -2, -1]
-
-    random_seq = iter(functools.partial(random.choice, ids), None)
-
-    @functools.lru_cache(len(ids))
-    def _load_patient(patient_id):
-        return Patient(patient_id, load_x(patient_id), load_y(patient_id))
-
-    @functools.lru_cache(len(ids))
-    def _find_cancer_and_padding_values_and_quantiles_(patient: Patient):
-        x, y, cancer_ids, padding_vals = find_cancer_and_padding_values(
-            patient.x, patient.y, y_patch_size=y_patch_size, spatial_dims=spatial_dims
-        )
-        quantiles = np.percentile(x, np.linspace(0, 100, n_quantiles))
-        return x, y, cancer_ids, padding_vals, quantiles
-
-    @pdp.pack_args
-    def _extract_patches(x, y, cancer_center_indices, padding_values, quantiles):
-        if np.random.uniform() < nonzero_fraction:
-            center_idx = random.choice(cancer_center_indices)
-        else:
-            center_idx = get_random_center_idx(y, y_patch_size, spatial_dims=spatial_dims)
-
-        xs = extract_patches(x, patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=padding_values,
-                             spatial_dims=spatial_dims)
-        y, = extract_patches(y, patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
-                            spatial_dims=spatial_dims)
-
-        center_patch = get_coordinate_features(np.array(x.shape)[spatial_dims], center_idx, y_patch_size)
-
-        return (*xs, center_patch, quantiles, y)
-
-    return pdp.Pipeline(
-        pdp.Source(random_seq, buffer_size=3),
-        pdp.One2One(_load_patient, buffer_size=len(ids)),
-        pdp.One2One(_find_cancer_and_padding_values_and_quantiles_, buffer_size=len(ids)),
         pdp.One2One(_extract_patches, buffer_size=batch_size),
         pdp.Many2One(chunk_size=batch_size, buffer_size=3),
         pdp.One2One(pdp.combine_batches, buffer_size=buffer_size)
@@ -253,8 +159,6 @@ def make_patch_3d_strat_augm_iter(ids, load_x, load_y, *, batch_size, x_patch_si
                                   buffer_size, expiration_time, pool_size, n_workers):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
-
-    spatial_dims = [-3, -2, -1]
 
     random_seq = iter(functools.partial(random.choice, ids), None)
 
