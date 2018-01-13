@@ -62,7 +62,7 @@ def get_resource_manager(config_path: str) -> ResourceManager:
     resource_manager: ResourceManager
     """
     link_externals()
-    return ResourceManager(config_path, get_module=get_module, path_map=SHORTCUTS)
+    return ResourceManager(config_path, get_module=get_module, shortcuts=SHORTCUTS)
 
 
 if __name__ == '__main__':
