@@ -1,6 +1,7 @@
 import random
 
 import pdp
+from pdp import product_generator
 import numpy as np
 
 from dpipe.medim import patch
@@ -68,8 +69,8 @@ def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patc
 
         return (*xs, y)
 
-    return pdp.Pipeline(
-        make_source_random(3),
+    return product_generator(
+        make_source_random(ids),
         make_block_load_x_y(load_x, load_y, buffer_size=len(ids)),
         make_block_find_padding(buffer_size=len(ids)),
         pdp.One2One(_extract_patches, buffer_size=batch_size),
@@ -90,11 +91,12 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
 
         xs = extract_patches(o['x'], patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=o['padding'],
                              spatial_dims=spatial_dims)
+
         y, = extract_patches(o['y'], patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
                              spatial_dims=spatial_dims)
         return (*xs, y)
 
-    return pdp.Pipeline(
+    return product_generator(
         make_source_random(ids),
         make_block_load_x_y(load_x, load_y, buffer_size=len(ids)),
         make_block_find_padding(len(ids)),

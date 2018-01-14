@@ -1,11 +1,7 @@
-from typing import Sequence
-
 import numpy as np
 from scipy import ndimage
 from scipy.ndimage.interpolation import map_coordinates, zoom
 from scipy.ndimage.filters import gaussian_filter
-
-from .utils import pad, get_axes
 
 
 def elastic_transform(x, alpha, sigma, axes=None, order=1):

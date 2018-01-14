@@ -32,7 +32,7 @@ Input/Output
 
 .. automodule:: dpipe.io
     :members:
-    :undoc-members:
+    :special-members:
     :show-inheritance:
 
 NN model interface
@@ -47,14 +47,6 @@ dpipe\.transformers module
 --------------------------
 
 .. automodule:: dpipe.transformers
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe\.batch\_iter\_factory module
-----------------------------------
-
-.. automodule:: dpipe.batch_iter_factory
     :members:
     :undoc-members:
     :show-inheritance:

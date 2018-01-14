@@ -12,7 +12,7 @@ def compress_to_2d(x):
 def softmax_cross_entropy(logits, target, weight=None, reduce=True):
     """Softmax cross entropy loss for Nd data."""
     # This is dangerous, as any force cast. Contact with Egor before using it.
-    # target = target.long()
+    target = target.long()
     if target.dim() > 4:
         logits = compress_to_2d(logits)
         target = compress_to_2d(target)
@@ -30,7 +30,7 @@ class Eye(nn.Module, metaclass=ABCMeta):
 class NormalizedSoftmaxCrossEntropy(Eye):
     def forward(self, logits, target):
         # This is dangerous, as any force cast. Contact with Egor before using it.
-        # target = target.long()
+        target = target.long()
         flat_target = target.view(-1)
         count = self.eye.index_select(0, flat_target).sum(0)
         weight = flat_target.size()[0] / count

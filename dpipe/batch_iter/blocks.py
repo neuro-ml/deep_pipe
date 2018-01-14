@@ -40,6 +40,7 @@ def make_batch_blocks(batch_size, buffer_size):
 
 
 class ExpirationPool:
+    """Class to store data for pdp pipelines"""
     def __init__(self, expiration_time, pool_size):
         self.pool_size = pool_size
         self.expiration_time = expiration_time
