@@ -22,7 +22,7 @@ class Brats2017(FromCSVInt):
     def load_segm(self, identifier):
         segm = super().load_segm(identifier)
         segm[segm == 4] = 3
-        return segm
+        return np.uint8(segm)
 
 # For Brats 2015
 # segm2msegm = np.array([

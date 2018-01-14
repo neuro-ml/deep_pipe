@@ -13,6 +13,7 @@ from .utils import build_slices, pad, get_axes
 
 def find_patch_start_end_padding(shape: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_size: np.array,
                                  spatial_dims: list):
+    spatial_dims = list(spatial_dims)
     spatial_start = spatial_center_idx - spatial_patch_size // 2
     spatial_end = spatial_start + spatial_patch_size
 
@@ -99,6 +100,7 @@ def sample_uniform_center_index(x_shape: np.array, spatial_patch_size: np.array,
         is shifted to the right.
 
     """
+    spatial_dims = list(spatial_dims)
     max_spatial_center_idx = x_shape[spatial_dims] - spatial_patch_size + 1
 
     np.testing.assert_array_less(0, max_spatial_center_idx, 'x_shape is small')
@@ -156,6 +158,8 @@ def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1)
 def get_random_slice(shape, patch_size, spatial_dims=None):
     if spatial_dims is None:
         spatial_dims = list(range(-len(patch_size), 0))
+    else:
+        spatial_dims = list(spatial_dims)
 
     start = np.zeros_like(shape)
     stop = np.array(shape)
