@@ -35,18 +35,23 @@ def train_base(model: Model, batch_generator: Callable, n_epochs: int, lr_policy
         lr_log_write = logger.make_log_scalar('train/lr')
 
         for epoch in range(n_epochs):
+            print(f'Epoch {epoch} started', flush=True)
             lr_policy.next_epoch()
 
             # train the model
             train_losses = []
             for inputs in batch_generator():
+                print('train step start', flush=True)
                 lr_policy.next_step()
                 # get the new learning rate
                 lr = lr_policy.next_lr(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
                 lr_log_write(lr)
 
+                print('start train training...', flush=True)
                 train_losses.append(model.do_train_step(*inputs, lr=lr))
                 train_log_write(train_losses[-1])
+
+                print('train step finished', flush=True)
 
             logger.log_scalar('epoch/train_loss', np.mean(train_losses), epoch)
 
@@ -60,3 +65,5 @@ def train_base(model: Model, batch_generator: Callable, n_epochs: int, lr_policy
                         logger.log_scalar(f'metrics/{name}', value, epoch)
 
                 logger.log_scalar('epoch/val_loss', np.mean(val_losses), epoch)
+
+            print(f'Epoch {epoch} finished', flush=True)

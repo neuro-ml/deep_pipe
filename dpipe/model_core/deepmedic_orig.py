@@ -3,8 +3,6 @@ import tensorflow as tf
 from .base import ModelCore
 from .layers import spatial_batch_norm
 
-from dpipe.config import register
-
 
 def activation(t):
     return tf.nn.relu(t)
