@@ -38,7 +38,7 @@ class DeepMedicEls(nn.Module):
         self.context_path = build_path(path_structure, 3)
 
         self.downsample_op = downsample_ops[downsample]
-        self.upsample_op = get_upsample_op(upsample, n_chans_in, n_chans_out)
+        self.upsample_op = get_upsample_op(upsample, path_structure[-1], path_structure[-1])
 
         common_path_structure = [2 * path_structure[-1], 150, 150]
         self.common_path = build_path(common_path_structure, 1)
