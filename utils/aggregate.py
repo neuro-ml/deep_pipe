@@ -1,3 +1,4 @@
+"""Compute some metric across values from json formatted input, fed to stdin"""
 import sys
 import json
 import argparse

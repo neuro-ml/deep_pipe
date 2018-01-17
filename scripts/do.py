@@ -1,3 +1,4 @@
+"""Script that runs command from config."""
 import argparse
 
 from dpipe.config import get_resource_manager
