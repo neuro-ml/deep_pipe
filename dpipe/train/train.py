@@ -61,5 +61,3 @@ def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: Le
                         logger.log_scalar(f'metrics/{name}', value, epoch)
 
                 logger.log_scalar('epoch/val_loss', np.mean(val_losses), epoch)
-
-            print(f'Epoch {epoch} finished', flush=True)
