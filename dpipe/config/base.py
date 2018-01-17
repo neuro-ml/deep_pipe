@@ -10,7 +10,8 @@ EXTERNALS = os.path.join(MODULES_FOLDER, 'externals')
 USER = os.path.expanduser('~')
 RC = os.path.expanduser('~/.dpiperc')
 SHORTCUTS = {
-    'dpipe_configs': os.path.join(MODULES_FOLDER, os.pardir, 'config_examples')
+    'dpipe_configs': os.path.join(MODULES_FOLDER, os.pardir, 'config_examples'),
+    'config_examples': os.path.join(MODULES_FOLDER, os.pardir, 'config_examples')
 }
 
 _modules_were_generated = False

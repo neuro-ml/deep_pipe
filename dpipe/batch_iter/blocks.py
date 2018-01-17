@@ -4,6 +4,10 @@ import functools
 import pdp
 
 
+def make_source_sequence(ids):
+    return pdp.Source([{'id': i} for i in ids], buffer_size=3)
+
+
 def make_source_random(ids):
     return pdp.Source(iter(lambda: {'id': random.choice(ids)}, None), buffer_size=3)
 

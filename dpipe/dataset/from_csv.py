@@ -107,8 +107,8 @@ class FromCSVInt(FromCSV, SegmentationDataset):
         assert type(target) is str
         self.target_col = target
 
-        assert np.issubdtype(segm2msegm_matrix.dtype, np.bool)
-        self._segm2msegm_matrix = np.array(segm2msegm_matrix, dtype=bool)
+        assert segm2msegm_matrix.dtype == bool
+        self._segm2msegm_matrix = np.array(segm2msegm_matrix)
 
     @property
     def segm2msegm_matrix(self) -> np.array:

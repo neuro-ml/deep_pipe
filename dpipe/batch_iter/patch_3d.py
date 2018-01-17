@@ -1,7 +1,6 @@
 import random
 
 import pdp
-from pdp import product_generator
 import numpy as np
 
 from dpipe.medim import patch
@@ -69,19 +68,19 @@ def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patc
 
         return (*xs, y)
 
-    return product_generator(
-        make_source_random(ids),
-        make_block_load_x_y(load_x, load_y, buffer_size=len(ids)),
-        make_block_find_padding(buffer_size=len(ids)),
-        pdp.One2One(_extract_patches, buffer_size=batch_size),
-        *make_batch_blocks(batch_size, buffer_size=buffer_size)
-    )
+    return pdp.Pipeline(make_source_random(ids),
+                        make_block_load_x_y(load_x, load_y, buffer_size=len(ids)),
+                        make_block_find_padding(buffer_size=len(ids)),
+                        pdp.One2One(_extract_patches, buffer_size=batch_size),
+                        *make_batch_blocks(batch_size, buffer_size=buffer_size))
 
 
 def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, nonzero_fraction,
                              buffer_size):
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
+
+    pdp.logging.getLogger().setLevel(pdp.logging.DEBUG)
 
     def _extract_patches(o):
         if np.random.uniform() < nonzero_fraction:
@@ -96,12 +95,9 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
                              spatial_dims=spatial_dims)
         return (*xs, y)
 
-    return product_generator(
-        make_source_random(ids),
-        make_block_load_x_y(load_x, load_y, buffer_size=len(ids)),
-        make_block_find_padding(len(ids)),
-        make_block_find_cancer(y_patch_size, buffer_size=len(ids)),
-        pdp.One2One(_extract_patches, buffer_size=batch_size),
-        *make_batch_blocks(batch_size, buffer_size=buffer_size)
-    )
-
+    return pdp.Pipeline(make_source_random(ids),
+                        make_block_load_x_y(load_x, load_y, buffer_size=len(ids)),
+                        make_block_find_padding(len(ids)),
+                        make_block_find_cancer(y_patch_size, buffer_size=len(ids)),
+                        pdp.One2One(_extract_patches, buffer_size=batch_size),
+                        *make_batch_blocks(batch_size, buffer_size=buffer_size))
