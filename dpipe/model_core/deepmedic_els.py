@@ -18,6 +18,7 @@ def get_upsample_op(name, n_chans_in, n_chans_out):
     if name == 'neighbour':
         return partial(nn.functional.upsample, scale_factor=3)
     elif name == 'tconv':
+        raise NotImplementedError
         return ConvTransposeBlock3d(n_chans_in, n_chans_out, kernel_size=3)
     else:
         raise ValueError(f"unknown upsample op name: {name}")
