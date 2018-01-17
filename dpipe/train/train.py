@@ -6,10 +6,11 @@ from tensorboard_easy import Logger
 from dpipe.model import Model
 from dpipe.train.logging import log_vector
 from dpipe.train.lr_base import LearningRate
+from .batch_iter import BatchIter
 
 
-def train_base(model: Model, batch_generator: Callable, n_epochs: int, lr_policy: LearningRate,
-               log_path: str, validator: Callable = None):
+def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: LearningRate, log_path: str,
+               validator: Callable = None):
     """
     Train a given model.
 
@@ -17,8 +18,8 @@ def train_base(model: Model, batch_generator: Callable, n_epochs: int, lr_policy
     ----------
     model: Model
         the model to train
-    batch_generator: callable
-        callable that returns a batch_iterator
+    batch_iter: BatchIter
+        batch iterator
     n_epochs: int
         number of epochs to train
     lr_policy: LearningRate
@@ -30,28 +31,23 @@ def train_base(model: Model, batch_generator: Callable, n_epochs: int, lr_policy
     """
     # TODO: stopping policy
     val_losses, metrics = [], {}
-    with Logger(log_path) as logger:
+    with Logger(log_path) as logger, batch_iter:
         train_log_write = logger.make_log_scalar('train/loss')
         lr_log_write = logger.make_log_scalar('train/lr')
 
         for epoch in range(n_epochs):
-            print(f'Epoch {epoch} started', flush=True)
             lr_policy.next_epoch()
 
             # train the model
             train_losses = []
-            for inputs in batch_generator():
-                print('train step start', flush=True)
+            for inputs in batch_iter:
                 lr_policy.next_step()
                 # get the new learning rate
                 lr = lr_policy.next_lr(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
                 lr_log_write(lr)
 
-                print('start train training...', flush=True)
                 train_losses.append(model.do_train_step(*inputs, lr=lr))
                 train_log_write(train_losses[-1])
-
-                print('train step finished', flush=True)
 
             logger.log_scalar('epoch/train_loss', np.mean(train_losses), epoch)
 
