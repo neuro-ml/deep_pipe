@@ -13,4 +13,4 @@ if __name__ == '__main__':
     op = getattr(np, args.mode)
 
     values = list(json.loads(sys.stdin.read()).values())
-    print(op(values, axis=0))
+    print(list(op(values, axis=0)))

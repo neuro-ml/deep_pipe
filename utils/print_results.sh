@@ -1,10 +1,11 @@
 # Simple script to print metrics across experiments
 # Example ./print_results mean ~/exp/brats_deepmedic/ test_dices
 
+set -e
+
 UTILS_PATH=$(dirname $0)
-DICES_FILES="$2/experiment_*/$3.json"
 
-N_RESULTS=$(echo $DICES_FILES | wc -w)
-echo Experiment resuts found: $N_RESULTS
-$UTILS_PATH/jq -s add $2/experiment_*/test_dices.json | python $UTILS_PATH/aggregate.py $1
+RESULT_FILES=$(find $2/experiment_* -maxdepth 1 -name $3.json)
 
+echo $(echo ${RESULT_FILES} | wc -w) experiment resuts found
+${UTILS_PATH}/jq -s add ${RESULT_FILES} | python ${UTILS_PATH}/aggregate.py $1

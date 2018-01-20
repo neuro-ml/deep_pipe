@@ -30,7 +30,7 @@ def normalize_scan(scan, mean=True, std=True, drop_percentile: int = None):
 
 
 def normalize_mscan(mscan, mean=True, std=True, drop_percentile: int = None):
-    """Normalize mscan to make mean and std equal to (0, 1) if stated.
+    """Normalize multimodal scan (each modality independently) to make mean and std equal to (0, 1) if stated.
     Supports robust estimation with drop_percentile."""
     new_mscan = np.zeros_like(mscan, dtype=np.float32)
     for i in range(len(mscan)):
