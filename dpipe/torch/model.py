@@ -100,12 +100,16 @@ class TorchFrozenModel(FrozenModel):
         """
         if cuda:
             model_core.cuda()
+            map_location = None
+        else:
+            map_location = lambda storage, location: storage
         self.cuda = cuda
         self.model_core = model_core
         self.logits2pred = logits2pred
 
         path = get_model_path(restore_model_path)
-        self.model_core.load_state_dict(torch.load(path))
+        self.model_core.load_state_dict(torch.load(path, map_location=map_location)
+        )
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
