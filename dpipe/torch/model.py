@@ -113,7 +113,7 @@ class TorchFrozenModel(FrozenModel):
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
-        inputs = [to_var(x, self.cuda) for x in inputs]
+        inputs = [to_var(x, self.cuda, volatile=True) for x in inputs]
 
         logits = self.model_core(*inputs)
         y_pred = self.logits2pred(logits)
