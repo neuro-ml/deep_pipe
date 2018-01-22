@@ -108,8 +108,7 @@ class TorchFrozenModel(FrozenModel):
         self.logits2pred = logits2pred
 
         path = get_model_path(restore_model_path)
-        self.model_core.load_state_dict(torch.load(path, map_location=map_location)
-        )
+        self.model_core.load_state_dict(torch.load(path, map_location=map_location))
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
