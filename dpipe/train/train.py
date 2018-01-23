@@ -5,12 +5,12 @@ from tensorboard_easy import Logger
 
 from dpipe.model import Model
 from dpipe.train.logging import log_vector
-from dpipe.train.lr_base import LearningRate
+from dpipe.train.lr_base import LearningRatePolicy
 from .batch_iter import BatchIter
 
 
-def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: LearningRate, log_path: str,
-               validator: Callable = None):
+def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: LearningRatePolicy, log_path: str,
+               validate: Callable = None):
     """
     Train a given model.
 
@@ -26,33 +26,30 @@ def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: Le
         the learning rate policy
     log_path: str
         the path where the logs will be stored
-    validator: callable, optional
-        a validator that calculates the loss and metrics on the validation set
+    validate: callable, optional
+        a function that calculates the loss and metrics on the validation set
     """
     # TODO: stopping policy
-    val_losses, metrics = [], {}
+    val_losses, metrics = None, None
     with Logger(log_path) as logger, batch_iter:
         train_log_write = logger.make_log_scalar('train/loss')
         lr_log_write = logger.make_log_scalar('train/lr')
 
         for epoch in range(n_epochs):
-            lr_policy.next_epoch()
-
             # train the model
             train_losses = []
             for inputs in batch_iter:
-                lr_policy.next_step()
-                # get the new learning rate
-                lr = lr_policy.next_lr(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
-                lr_log_write(lr)
+                train_losses.append(model.do_train_step(*inputs, lr=lr_policy.lr))
 
-                train_losses.append(model.do_train_step(*inputs, lr=lr))
                 train_log_write(train_losses[-1])
+                lr_log_write(lr_policy.lr)
+
+                lr_policy.step_finished(train_losses[-1])
 
             logger.log_scalar('epoch/train_loss', np.mean(train_losses), epoch)
 
-            if validator is not None:
-                val_losses, metrics = validator()
+            if validate is not None:
+                val_losses, metrics = validate()
                 for name, value in metrics.items():
                     # check if not scalar
                     try:
@@ -61,3 +58,5 @@ def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: Le
                         logger.log_scalar(f'metrics/{name}', value, epoch)
 
                 logger.log_scalar('epoch/val_loss', np.mean(val_losses), epoch)
+
+            lr_policy.epoch_finished(train_losses, val_losses, metrics)
