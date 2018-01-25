@@ -1,33 +1,34 @@
-from functools import partial
+from typing import Sequence
 
 import numpy as np
 
-from .lr_base import LearningRate
-from .utils import make_find_next_lr, make_check_loss_decrease
+from .lr_base import LearningRatePolicy
 
 
-class Constant(LearningRate):
-    def __init__(self, value):
-        super().__init__()
-        self.value = value
+class Decreasing(LearningRatePolicy):
+    def __init__(self, *, lr_init: float, lr_dec_mul: float, patience: int, trace_train=False,
+                 trace_val=False, rtol, atol):
+        """Learning rate policy that traces average train loss or val loss (trace_train or trace_val parameter) and if
+        it didn't decrease according to atol or rtol for patience epochs, multiply lr by lr_dec_mul."""
+        super().__init__(lr_init)
 
-    def next_lr(self, **kwargs):
-        return self.value
+        assert (trace_train ^ trace_val), 'either trace_train or trace_val should be activated'
 
+        self.lr_dec_mul = lr_dec_mul
+        self.patience = patience
+        self.epochs_waited = 0
+        self.trace_train = trace_train
+        self.get_margin_loss = lambda loss: max([loss * (1 - rtol), loss - atol])
+        self.margin_loss = np.inf
 
-class Decreasing(LearningRate):
-    def __init__(self, lr_init: float, lr_dec_mul: float, patience: int, rtol, atol):
-        super().__init__()
+    def epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None, **kwargs):
+        loss = np.mean(train_losses if self.trace_train else val_losses)
+        if loss < self.margin_loss:
+            self.margin_loss = self.get_margin_loss(loss)
+            self.epochs_waited = 0
+        else:
+            self.epochs_waited += 1
 
-        self.last_lr = lr_init
-        self.find_next_lr = make_find_next_lr(lr_init, lambda lr: lr * lr_dec_mul,
-                                              partial(make_check_loss_decrease, patience=patience, rtol=rtol,
-                                                      atol=atol))
-
-    def next_lr(self, val_losses, **kwargs):
-        if self.step != 0 or self.epoch == 0:
-            return self.last_lr
-
-        assert val_losses, 'This policy requires validation losses'
-        self.last_lr = self.find_next_lr(np.mean(val_losses))
-        return self.last_lr
+            if self.epochs_waited > self.patience:
+                self.lr *= self.lr_dec_mul
+                self.epochs_waited = 0
