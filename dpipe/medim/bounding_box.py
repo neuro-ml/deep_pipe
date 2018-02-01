@@ -27,21 +27,3 @@ def extract(arrays, mask: np.ndarray):
      mask."""
     s = [...] + get_slice(mask)
     return [np.array(a[s]) for a in arrays]
-
-
-def extract_fixed(*arrays, mask: np.array, size):
-    """Extract bounding boxes of size=size from the last dims of all arrays
-    according to the mask."""
-    size = np.array(size)
-    limits = get_idx(mask)
-
-    s = limits[:, 1] - limits[:, 0]
-
-    dif = size - s
-    assert np.all(dif >= 0)
-    limits[:, 0] = limits[:, 0] - dif
-    limits[:, 1] = limits[:, 1] + np.maximum(-limits[:, 0], 0)
-    limits[:, 0] = np.maximum(limits[:, 0], 0)
-
-    slices = [...] + [slice(l, r) for l, r in limits]
-    return [np.array(a[slices]) for a in arrays]
