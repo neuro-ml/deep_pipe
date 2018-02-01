@@ -3,8 +3,8 @@ Contains a few more sophisticated commands
 that are usually accessed via the `do.py` script.
 """
 
-import json
 import os
+import json
 
 import numpy as np
 from tqdm import tqdm
@@ -18,7 +18,7 @@ from dpipe.train.validator import evaluate as evaluate_fn
 
 
 def train_model(train, model, save_model_path, restore_model_path=None):
-    if restore_model_path:
+    if restore_model_path is not None:
         model.load(restore_model_path)
 
     train()
