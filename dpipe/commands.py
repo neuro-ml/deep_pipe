@@ -80,14 +80,14 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
     for filename in tqdm(sorted(os.listdir(predictions_path))):
         identifier = filename.strip('.npy')
 
-        y_prob = np.load(filename)
+        y_prob = np.load(os.path.join(predictions_path, filename))
         y_true = load_y_true(identifier)
 
         for metric_name, metric in metrics.items():
             results[metric_name][identifier] = metric(y_true, y_prob)
 
     for metric_name, result in results.items():
-        with open(os.path.join(results_path, metric_name), 'w') as f:
+        with open(os.path.join(results_path, metric_name + '.json'), 'w') as f:
             json.dump(result, f, indent=0)
 
 

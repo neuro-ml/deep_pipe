@@ -3,8 +3,8 @@ from typing import Sequence
 import numpy as np
 
 
-def segm_prob2msegm(x, dataset):
-    return dataset.segm2msegm(np.argmax(x, axis=0))
+def segm_prob2msegm(x, segm2msegm):
+    return segm2msegm(np.argmax(x, axis=0))
 
 
 def binarize(x, thresholds):
