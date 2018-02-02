@@ -216,9 +216,15 @@ def average_metric(xs, ys, metric):
     return np.mean([metric(x, y) for x, y in zip(xs, ys)], axis=0)
 
 
-def compute_segm_dices(segm_true, segm_pred_prob, segm2msegm, empty_val: float = 1):
+def compute_dices_from_segm_prob(segm_true, segm_prob, segm2msegm, empty_val: float = 1):
     """
     Channelwise dice score between msegms for predicted segmentation and true segmentation.
     """
-    return multichannel_dice_score(segm2msegm(segm_true), segm2msegm(np.argmax(segm_pred_prob, axis=0)),
-                                   empty_val=empty_val)
+    return multichannel_dice_score(segm2msegm(segm_true), segm2msegm(np.argmax(segm_prob, axis=0)), empty_val=empty_val)
+
+
+def compute_dices_from_msegm_prob(msegm_true, msegm_prob, empty_val: float = 1):
+    """
+    Channelwise dice score between msegms for predicted msegm and true msegm.
+    """
+    return multichannel_dice_score(msegm_true, msegm_prob > 0.5, empty_val=empty_val)

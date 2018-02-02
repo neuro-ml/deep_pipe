@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from .utils import pad
+from .patch import pad
 
 
 class TestDivide(unittest.TestCase):

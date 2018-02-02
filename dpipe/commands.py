@@ -3,8 +3,8 @@ Contains a few more sophisticated commands
 that are usually accessed via the `do.py` script.
 """
 
-import json
 import os
+import json
 
 import numpy as np
 from tqdm import tqdm
@@ -18,7 +18,7 @@ from dpipe.train.validator import evaluate as evaluate_fn
 
 
 def train_model(train, model, save_model_path, restore_model_path=None):
-    if restore_model_path:
+    if restore_model_path is not None:
         model.load(restore_model_path)
 
     train()
@@ -44,6 +44,7 @@ def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: 
         del x, y
 
 
+# TODO change signature and possibly, structure
 def evaluate(load_y, input_path, output_path, ids, metrics):
     if not metrics:
         return
@@ -90,6 +91,7 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
             json.dump(result, f, indent=0)
 
 
+# TODO move to more general function
 def compute_dices(load_msegm, predictions_path, dices_path):
     dices = {}
     for f in tqdm(os.listdir(predictions_path)):

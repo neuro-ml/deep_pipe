@@ -12,9 +12,10 @@ class TestSimple(unittest.TestCase):
         x, y = np.random.randn(2, 100)
         ids = list(range(len(x)))
 
-        for i, (xs, ys) in enumerate(simple(ids, x.__getitem__, y.__getitem__, 1)):
-            self.assertEqual(xs, x[[i]])
-            self.assertEqual(ys, y[[i]])
+        with simple(ids, x.__getitem__, y.__getitem__, 1) as pipeline:
+            for i, (xs, ys) in enumerate(pipeline):
+                self.assertEqual(xs, x[[i]])
+                self.assertEqual(ys, y[[i]])
 
 
 class TestSlices(unittest.TestCase):
@@ -25,26 +26,33 @@ class TestSlices(unittest.TestCase):
                                           load_y=self.y.__getitem__, shuffle=False)
 
     def test_basic(self):
-        for i, (xs, ys) in enumerate(self.iterator(batch_size=1)):
-            np.testing.assert_array_equal(xs, self.x[..., i])
-            np.testing.assert_array_equal(ys, self.y[..., i])
+        with self.iterator(batch_size=1) as pipeline:
+            for i, (xs, ys) in enumerate(pipeline):
+                np.testing.assert_array_equal(xs, self.x[..., i])
+                np.testing.assert_array_equal(ys, self.y[..., i])
 
     def test_batch(self):
         batch_size = 3
-        for i, (xs, ys) in enumerate(self.iterator(batch_size=batch_size)):
-            i *= batch_size
-            np.testing.assert_array_equal(xs, self.x[0, ..., i:i + batch_size].T)
-            np.testing.assert_array_equal(ys, self.y[0, ..., i:i + batch_size].T)
+
+        with self.iterator(batch_size=batch_size) as pipeline:
+            for i, (xs, ys) in enumerate(pipeline):
+                i *= batch_size
+                np.testing.assert_array_equal(xs, self.x[0, ..., i:i + batch_size].T)
+                np.testing.assert_array_equal(ys, self.y[0, ..., i:i + batch_size].T)
 
     def test_slices(self):
         num_slices = 3
-        for i, (xs, ys) in enumerate(self.iterator(batch_size=1, slices=num_slices)):
-            np.testing.assert_array_equal(xs, self.x[..., i:i + num_slices])
-            np.testing.assert_array_equal(ys, self.y[..., i:i + num_slices])
+
+        with self.iterator(batch_size=1, slices=num_slices) as pipeline:
+            for i, (xs, ys) in enumerate(pipeline):
+                np.testing.assert_array_equal(xs, self.x[..., i:i + num_slices])
+                np.testing.assert_array_equal(ys, self.y[..., i:i + num_slices])
 
     def test_slices_concat(self):
         num_slices = 3
-        for i, (xs, ys) in enumerate(self.iterator(batch_size=1, slices=num_slices, concatenate=0)):
-            # basically this crazy reshape stuff does the same as concatenating along the first axis
-            np.testing.assert_array_equal(xs, self.x[0, ..., i:i + num_slices].T.reshape(1, -1))
-            np.testing.assert_array_equal(ys, self.y[0, ..., i:i + num_slices].T.reshape(1, -1))
+
+        with self.iterator(batch_size=1, slices=num_slices, concatenate=0) as pipeline:
+            for i, (xs, ys) in enumerate(pipeline):
+                # basically this crazy reshape stuff does the same as concatenating along the first axis
+                np.testing.assert_array_equal(xs, self.x[0, ..., i:i + num_slices].T.reshape(1, -1))
+                np.testing.assert_array_equal(ys, self.y[0, ..., i:i + num_slices].T.reshape(1, -1))

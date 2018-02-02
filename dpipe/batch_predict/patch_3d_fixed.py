@@ -2,7 +2,7 @@ import numpy as np
 
 from dpipe.medim.divide import compute_n_parts_per_axis
 from dpipe.medim.shape_utils import compute_shape_from_spatial
-from dpipe.medim.utils import pad
+from dpipe.medim.patch import pad
 from dpipe.medim.features import get_coordinate_features
 from .patch_3d import Patch3DPredictor, spatial_dims
 

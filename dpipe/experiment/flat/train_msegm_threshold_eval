@@ -25,7 +25,7 @@ rule train_model:
     output:
         SAVED_MODEL, TF_LOG
     shell:
-        'python {DO} train_model {CONFIG_ARG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TF_LOG} --save_model_path {SAVED_MODEL} --restore_model_path ""'
+        'python {DO} train_model {CONFIG_ARG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TF_LOG} --save_model_path {SAVED_MODEL}'
 
 rule predict:
     input:
