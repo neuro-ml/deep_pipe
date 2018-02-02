@@ -1,6 +1,6 @@
 import functools
 
-from .from_csv import FromCSVMultiple
+from .segmentation import FromCSVMultiple
 
 Isles2017 = functools.partial(
     FromCSVMultiple,

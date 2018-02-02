@@ -1,6 +1,6 @@
 import numpy as np
 
-from .from_csv import FromCSVInt
+from .segmentation import FromCSVInt
 
 
 # We need this class because in the original data segm values are [0, 1, 2, 4]

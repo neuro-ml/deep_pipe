@@ -55,6 +55,18 @@ def apply(instance, methods, function):
     return proxy(instance)
 
 
+def apply_dict(instance, **methods):
+    def decorator(method, func):
+        def wrapper(self, *args, **kwargs):
+            return func(method(*args, **kwargs))
+
+        return wrapper
+
+    new_methods = {method: decorator(getattr(instance, method), func) for method, func in methods.items()}
+    proxy = type('Apply', (Proxy,), new_methods)
+    return proxy(instance)
+
+
 def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,
                mask_value: int = None) -> SegmentationDataset:
     class MaskedDataset(Proxy):

@@ -15,7 +15,7 @@ class Simple(BatchPredict):
 class Multiclass(BatchPredict):
     def validate(self, x, y, *, validate_fn):
         prediction, loss = validate_fn(x[None], y[None])
-        return np.argmax(prediction), loss
+        return np.argmax(prediction[0], axis=0), loss
 
     def predict(self, x, *, predict_fn):
-        return np.argmax(predict_fn(x[None]))
+        return np.argmax(predict_fn(x[None])[0], axis=0)
