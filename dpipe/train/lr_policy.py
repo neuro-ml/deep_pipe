@@ -6,10 +6,13 @@ from .lr_base import LearningRatePolicy
 
 
 class Decreasing(LearningRatePolicy):
+    """
+    Learning rate policy that traces average train loss or val loss (trace_train or trace_val parameter) and if
+    it didn't decrease according to atol or rtol for patience epochs, multiply lr by lr_dec_mul.
+    """
+
     def __init__(self, *, lr_init: float, lr_dec_mul: float, patience: int, trace_train=False,
                  trace_val=False, rtol, atol):
-        """Learning rate policy that traces average train loss or val loss (trace_train or trace_val parameter) and if
-        it didn't decrease according to atol or rtol for patience epochs, multiply lr by lr_dec_mul."""
         super().__init__(lr_init)
 
         assert (trace_train ^ trace_val), 'either trace_train or trace_val should be activated'
@@ -32,3 +35,19 @@ class Decreasing(LearningRatePolicy):
             if self.epochs_waited > self.patience:
                 self.lr *= self.lr_dec_mul
                 self.epochs_waited = 0
+
+
+class Exponential(LearningRatePolicy):
+    def __init__(self, initial, multiplier, step_length=1, floordiv=True):
+        super().__init__(initial)
+        self.multiplier = multiplier
+        self.initial = initial
+        self.step_length = step_length
+        self.floordiv = floordiv
+
+    def epoch_finished(self, **kwargs):
+        if self.floordiv:
+            power = self.epoch // self.step_length
+        else:
+            power = self.epoch / self.step_length
+        self.lr = self.initial * self.multiplier ** power

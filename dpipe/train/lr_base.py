@@ -11,7 +11,7 @@ class LearningRatePolicy:
         self.lr = lr_init
 
     def epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None,
-                       metrics: dict):
+                       metrics: dict = None):
         """Indicate that an epoch has finished, with corresponding losses and metrics."""
         self.step = 0
         self.epoch += 1

@@ -1,5 +1,5 @@
 import numpy as np
-from .from_csv import FromCSVInt
+from .segmentation import FromCSVInt
 from dpipe.config import register
 
 

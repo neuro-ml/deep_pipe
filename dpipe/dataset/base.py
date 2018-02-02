@@ -9,12 +9,8 @@ class Dataset(ABC):
     def ids(self):
         """Returns a tuple of ids of all objects in the dataset."""
 
-
-class SegmentationDataset(Dataset, metaclass=ABCMeta):
-    """Abstract class that describes a dataset for medical image segmentation."""
-
     @abstractmethod
-    def load_image(self, identifier: str) -> np.array:
+    def load_image(self, identifier: str) -> np.ndarray:
         """
         Loads a dataset entry given its identifier
 
@@ -29,8 +25,23 @@ class SegmentationDataset(Dataset, metaclass=ABCMeta):
             The entry corresponding to the identifier
         """
 
+    @property
     @abstractmethod
-    def load_segm(self, identifier: str) -> np.array:
+    def n_chans_image(self) -> int:
+        """
+        The number of channels in the input image's tensor
+
+        Returns
+        -------
+        channels: int
+        """
+
+
+class SegmentationDataset(Dataset):
+    """Abstract class that describes a dataset for medical image segmentation."""
+
+    @abstractmethod
+    def load_segm(self, identifier: str) -> np.ndarray:
         """
         Load the ground truth segmentation
 
@@ -47,7 +58,7 @@ class SegmentationDataset(Dataset, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def load_msegm(self, identifier: str) -> np.array:
+    def load_msegm(self, identifier: str) -> np.ndarray:
         """
         Load the multimodal ground truth segmentation
 
@@ -85,13 +96,32 @@ class SegmentationDataset(Dataset, metaclass=ABCMeta):
         channels: int
         """
 
-    @property
+
+class ClassificationDataset(Dataset):
+    """Abstract class that describes a dataset for classification."""
+
     @abstractmethod
-    def n_chans_image(self) -> int:
+    def load_label(self, identifier: str) -> int:
         """
-        The number of channels in the input image's tensor
-        
+        Loads a dataset entry's label given its identifier
+
+        Parameters
+        ----------
+        identifier: str
+            object's identifier
+
         Returns
         -------
-        channels: int
+        label: int
+            The entry's label corresponding to the identifier
+        """
+
+    @property
+    @abstractmethod
+    def n_classes(self) -> int:
+        """
+        Returns
+        -------
+        num_classes: int
+            the number of unique classes present in the dataset
         """

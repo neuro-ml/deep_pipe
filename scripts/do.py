@@ -9,4 +9,4 @@ if __name__ == '__main__':
     parser.add_argument('--config_path')
     args = parser.parse_known_args()[0]
 
-    getattr(get_resource_manager(args.config_path), args.command)
+    get_resource_manager(args.config_path).get_resource(args.command)
