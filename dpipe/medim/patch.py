@@ -4,7 +4,7 @@ For even patch sizes, center is always considered to be close to the right borde
 """
 import numpy as np
 
-from .utils import build_slices, pad, get_axes
+from .utils import build_slices, get_axes
 
 
 # FIXME consider what happens if central_idx is outside of x, error is likely
@@ -239,3 +239,17 @@ def patch_conv(x, patch_size, spatial_dims=None, stride=None, padding=0) -> np.n
 
     for start, stop in slices_conv(x.shape, patch_size, spatial_dims, stride):
         yield x[build_slices(start, stop)]
+
+
+def pad(x, padding, padding_values):
+    padding = np.array(padding)
+
+    new_shape = np.array(x.shape) + np.sum(padding, axis=1)
+    new_x = np.zeros(new_shape, dtype=x.dtype)
+    new_x[:] = padding_values
+
+    start = padding[:, 0]
+    end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
+    new_x[build_slices(start, end)] = x
+
+    return new_x

@@ -2,7 +2,7 @@ from itertools import product
 
 import numpy as np
 
-from .utils import pad
+from .patch import pad
 
 
 def compute_n_parts_per_axis(x_shape, patch_size):
