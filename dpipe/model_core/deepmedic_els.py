@@ -25,13 +25,20 @@ def get_upsample_op(name, n_chans_in, n_chans_out):
 
 
 class DeepMedicEls(nn.Module):
-    def __init__(self, n_chans_in, n_chans_out, downsample, upsample, activation):
+    def __init__(self, n_chans_in, n_chans_out, downsample, upsample, activation, dropout=False):
         super().__init__()
 
-        def build_path(path_structure, kernel_size):
+        def build_path(path_structure, kernel_size, dropout=False):
             path = []
+
+            if dropout:
+                path.append(nn.Dropout3d())
+
             for n_chans_in, n_chans_out in zip(path_structure[:-1], path_structure[1:]):
                 path.append(ConvBlock3d(n_chans_in, n_chans_out, kernel_size, activation=activation))
+
+                if dropout:
+                    path.append(nn.Dropout3d())
             return nn.Sequential(*path)
 
         path_structure = [n_chans_in, 30, 30, 40, 40, 40, 40, 50, 50]
@@ -42,7 +49,7 @@ class DeepMedicEls(nn.Module):
         self.upsample_op = get_upsample_op(upsample, path_structure[-1], path_structure[-1])
 
         common_path_structure = [2 * path_structure[-1], 150, 150]
-        self.common_path = build_path(common_path_structure, 1)
+        self.common_path = build_path(common_path_structure, 1, dropout=True)
 
         self.logits_layer = ConvBlock3d(common_path_structure[-1], n_chans_out, 1)
 
