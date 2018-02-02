@@ -16,7 +16,6 @@ def find_cancer(y, y_patch_size):
         mask = np.any(y, axis=0)
     else:
         raise ValueError('wrong number of dimensions ')
-    assert np.any(mask), f'No cancer voxels found'
     return patch.find_masked_patch_center_indices(mask, patch_size=y_patch_size)
 
 
@@ -83,7 +82,7 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
     pdp.logging.getLogger().setLevel(pdp.logging.DEBUG)
 
     def _extract_patches(o):
-        if np.random.uniform() < nonzero_fraction:
+        if len(o['cancer']) > 0 and np.random.uniform() < nonzero_fraction:
             center_idx = random.choice(o['cancer'])
         else:
             center_idx = get_random_center_idx(o['y'], y_patch_size, spatial_dims=spatial_dims)
