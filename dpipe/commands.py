@@ -44,10 +44,11 @@ def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: 
         del x, y
 
 
+# TODO change signature and possibly, structure
 def evaluate(load_y, input_path, output_path, ids, metrics):
     if not metrics:
         return
-    
+
     os.makedirs(output_path)
 
     def load_prediction(identifier):
@@ -69,6 +70,7 @@ def evaluate(load_y, input_path, output_path, ids, metrics):
             json.dump(value, f, indent=2)
 
 
+# TODO move to more general function
 def compute_dices(load_msegm, predictions_path, dices_path):
     dices = {}
     for f in tqdm(os.listdir(predictions_path)):
