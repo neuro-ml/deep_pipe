@@ -47,7 +47,7 @@ def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: 
 def evaluate(load_y, input_path, output_path, ids, metrics):
     if not metrics:
         return
-    
+
     os.makedirs(output_path)
 
     def load_prediction(identifier):
@@ -67,6 +67,27 @@ def evaluate(load_y, input_path, output_path, ids, metrics):
 
         with open(metric, 'w') as f:
             json.dump(value, f, indent=2)
+
+
+def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path):
+    assert len(metrics) > 0, 'No metric provided'
+
+    os.makedirs(results_path)
+
+    results = {metric_name: {} for metric_name in metrics}
+
+    for filename in tqdm(sorted(os.listdir(predictions_path))):
+        identifier = filename.strip('.npy')
+
+        y_prob = np.load(filename)
+        y_true = load_y_true(identifier)
+
+        for metric_name, metric in metrics.items():
+            results[metric_name][identifier] = metric(y_true, y_prob)
+
+    for metric_name, result in results.items():
+        with open(os.path.join(results_path, metric_name), 'w') as f:
+            json.dump(result, f, indent=0)
 
 
 def compute_dices(load_msegm, predictions_path, dices_path):
