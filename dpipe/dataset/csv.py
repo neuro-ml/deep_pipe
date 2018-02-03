@@ -6,10 +6,12 @@ import pandas as pd
 from dpipe.medim.utils import load_image
 
 
+def multiple_columns(method, index, columns):
+    return np.array([method(index, col) for col in columns])
+
+
 class CSV:
-    """
-    A small wrapper for csv files.
-    """
+    """A small wrapper for csv files."""
 
     def __init__(self, path, filename='meta.csv', index_col='id'):
         self.path = path
@@ -21,45 +23,22 @@ class CSV:
             df = df.set_index(index_col).sort_index()
         self.df: pd.DataFrame = df
 
-        self._ids = list(self.df.index)
-
-    @staticmethod
-    def _as_matrix(value):
-        try:
-            return value.as_matrix()
-        except AttributeError:
-            return value
+        self._ids = tuple(self.df.index)
 
     @property
     def ids(self):
         return self._ids
 
     def get(self, index, col):
-        return self._as_matrix(self.df.loc[index, col])
+        return self.df.loc[index, col]
 
-    def get_global_path(self, index, col) -> np.ndarray:
+    def get_global_path(self, index: str, col: str) -> str:
         """
         Join the slice's result with the data frame's `path`.
         Often data frames contain path to data, this is a convenient way to obtain
         the global path.
-
-        Parameters
-        ----------
-        index,col: same as in pandas.DataFrame.loc
-
-        Returns
-        -------
-        np.ndarray
         """
-        slc = self.df.loc[index, col]
-        if type(slc) is str:
-            slc = os.path.join(self.path, slc)
-        else:
-            slc = slc.apply(lambda x: os.path.join(self.path, x))
-        return self._as_matrix(slc)
+        return os.path.join(self.path, self.get(index, col))
 
-    def load(self, index, col, loader=load_image):
-        paths = self.get_global_path(index, col)
-        shape = paths.shape
-        result = np.array(list(map(loader, paths.flatten())))
-        return result.reshape(shape + result[0].shape)
+    def load(self, index: str, col: str, loader=load_image):
+        return loader(self.get_global_path(index, col))

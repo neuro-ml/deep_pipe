@@ -1,6 +1,6 @@
 import numpy as np
 
-from .csv import CSV
+from .csv import CSV, multiple_columns
 from .base import SegmentationDataset
 
 
@@ -15,7 +15,7 @@ class FromCSVMultiple(CSV, SegmentationDataset):
         return len(self.modality_cols)
 
     def load_image(self, identifier):
-        return self.load(identifier, self.modality_cols)
+        return multiple_columns(self.load, identifier, self.modality_cols)
 
     def load_segm(self, identifier) -> np.array:
         image = self.load_msegm(identifier)
@@ -23,7 +23,7 @@ class FromCSVMultiple(CSV, SegmentationDataset):
         return np.einsum('ijkl,i', image, weights)
 
     def load_msegm(self, identifier) -> np.array:
-        image = self.load(identifier, self.modality_cols)
+        image = multiple_columns(self.load, identifier, self.target_cols)
         assert image.dtype == np.bool
 
         return image
@@ -52,7 +52,7 @@ class FromCSVInt(CSV, SegmentationDataset):
         return len(self.modality_cols)
 
     def load_image(self, identifier):
-        return self.load(identifier, self.modality_cols)
+        return multiple_columns(self.load, identifier, self.modality_cols)
 
     @property
     def segm2msegm_matrix(self) -> np.array:
