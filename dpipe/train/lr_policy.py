@@ -24,7 +24,7 @@ class Decreasing(LearningRatePolicy):
         self.get_margin_loss = lambda loss: max([loss * (1 - rtol), loss - atol])
         self.margin_loss = np.inf
 
-    def epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None, **kwargs):
+    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None, **kwargs):
         loss = np.mean(train_losses if self.trace_train else val_losses)
         if loss < self.margin_loss:
             self.margin_loss = self.get_margin_loss(loss)
@@ -45,7 +45,7 @@ class Exponential(LearningRatePolicy):
         self.step_length = step_length
         self.floordiv = floordiv
 
-    def epoch_finished(self, **kwargs):
+    def on_epoch_finished(self, **kwargs):
         if self.floordiv:
             power = self.epoch // self.step_length
         else:
