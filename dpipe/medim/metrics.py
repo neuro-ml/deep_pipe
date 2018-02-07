@@ -4,36 +4,6 @@ from itertools import product
 import numpy as np
 
 
-def soft_weighted_dice_score(a, b, empty_val: float = 1):
-    """
-    Realization of dice metric proposed in https://arxiv.org/pdf/1707.01992.pdf
-
-    Parameters
-    ----------
-    a: ndarray
-        Predicted probability maps
-    b: ndarray of np.bool
-        Ground truth
-    empty_val: int, optional
-        Default value, which is returned if the dice score
-        is undefined (i.e. division by zero).
-    """
-    assert b.dtype == np.bool
-    assert a.shape == b.shape
-
-    swds = 0
-    num_classes = a.shape[0]
-
-    for x, y in zip(a, b):
-        num = 2 * np.sum(x * y)
-        den = np.sum(y) + np.sum(x ** 2)
-
-        swds += empty_val if den == 0 else num / den
-
-    swds = swds / num_classes
-    return swds
-
-
 def dice_score(x, y, empty_val: float = 1) -> float:
     """
     Dice score between two binary masks.
@@ -77,69 +47,6 @@ def multichannel_dice_score(a, b, empty_val: float = 1) -> [float]:
     assert len(a) == len(b), f'number of channels is different: {len(a)} != {len(b)}'
     dices = [dice_score(x, y, empty_val=empty_val) for x, y in zip(a, b)]
     return dices
-
-
-def check_neighborhood(y, voxel_index, interested_value: int):
-    if y[voxel_index] != 1:
-        return False
-    voxel_index = np.asarray(voxel_index)
-    values = [-1, 0, 1]
-    n = y.ndim
-
-    for delta in product(values, repeat=n):
-        if sum(np.abs(delta)) == 0:
-            continue
-        if y[tuple(voxel_index + delta)] == interested_value:
-            return True
-
-    return False
-
-
-def get_next_bound(y, bound_indexes, next_bound_value, default_value=1):
-    new_bound = []
-    values = [-1, 0, 1]
-    n = y.ndim
-
-    for bv in bound_indexes:
-        for delta in product(values, repeat=n):
-            if sum(np.abs(delta)) == 0:
-                continue
-            if y[tuple(bv + delta)] == default_value:
-                y[tuple(bv + delta)] = next_bound_value
-                new_bound.append(bv + delta)
-
-    return new_bound
-
-
-def get_weighted_mask(y, thickness=1):
-    """
-
-    Parameters
-    ----------
-    y: ndarray of type np.bool
-        Binary mask (all dimensions must be spatial)
-    thickness: int
-        The thickness of the boundary
-    """
-    assert y.dtype == np.bool
-
-    y = y.astype(np.int)
-    bound_weight = thickness
-    bw = bound_weight + 1
-    bound_indexes = []
-
-    #   firstly let's find the first bound
-    #   bound arrays must contain np.arrays, not tuples
-    for voxel_index in np.ndindex(*y.shape):
-        if check_neighborhood(y, voxel_index, interested_value=0):
-            y[voxel_index] = bw
-            bound_indexes.append(np.asarray(voxel_index))
-
-            #   other bounds
-    for bw in range(bound_weight, 1, -1):
-        bound_indexes = get_next_bound(y, bound_indexes, bw)
-
-    return y
 
 
 def hausdorff(a, b, weights: Union[float, Sequence] = 1) -> float:
@@ -211,9 +118,9 @@ def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:
     return dices.mean(axis=0).max(axis=1)
 
 
-def average_metric(xs, ys, metric):
+def aggregate_metric(xs, ys, metric, aggregate_fn=np.mean):
     """Compute metric for array of objects from metric on couple of objects."""
-    return np.mean([metric(x, y) for x, y in zip(xs, ys)], axis=0)
+    return aggregate_fn([metric(x, y) for x, y in zip(xs, ys)])
 
 
 def compute_dices_from_segm_prob(segm_true, segm_prob, segm2msegm, empty_val: float = 1):

@@ -4,6 +4,7 @@ For even patch sizes, center is always considered to be close to the right borde
 """
 import numpy as np
 
+from dpipe.medim.shape_utils import shape_after_convolution
 from .utils import build_slices, get_axes
 
 
@@ -122,37 +123,6 @@ def find_masked_patch_center_indices(mask: np.array, patch_size: np.array):
     # Remove centers that are too left and too right
     c = c[np.all((l_bound >= 0) & (r_bound <= np.array(mask.shape)), axis=1)]
     return c
-
-
-def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1) -> tuple:
-    """
-    Get the shape of a tensor after applying a the convolution with
-    corresponding parameters.
-
-    Parameters
-    ----------
-    shape
-        input shape
-    kernel_size
-        convolution kernel size
-    padding
-        padding sizes
-    stride
-        stride of the convolution
-    dilation
-        dilation of the convolution kernel
-
-    Returns
-    -------
-    output_shape: tuple
-    """
-    padding = np.asarray(padding)
-    shape = np.asarray(shape)
-    dilation = np.asarray(dilation)
-    kernel_size = np.asarray(kernel_size)
-
-    result = np.floor((shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
-    return result.astype(int)
 
 
 def get_random_slice(shape, patch_size, spatial_dims=None):
