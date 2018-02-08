@@ -40,4 +40,3 @@ class TestComputeShapeFromSpatial(unittest.TestCase):
             [4, 240, 245, 255], [12, 12, 12], [-3, -2, -1]
         )
         np.testing.assert_equal(complete_shape, [4, 12, 12, 12])
-

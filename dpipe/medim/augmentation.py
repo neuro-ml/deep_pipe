@@ -1,9 +1,7 @@
 import numpy as np
-from scipy.ndimage import rotate
+from scipy import ndimage
 from scipy.ndimage.interpolation import map_coordinates, zoom
 from scipy.ndimage.filters import gaussian_filter
-
-from .utils import pad
 
 
 def elastic_transform(x, alpha, sigma, axes=None, order=1):
@@ -71,8 +69,8 @@ def spacial_augmentation(x, y, axes=None, order=1):
     cval = x.take(0)
     angles = np.random.normal(0, 5, len(axes))
     for angle, *axis in zip(angles, axes, axes[1:]):
-        x = rotate(x, angle, axes=axis, reshape=False, order=order, cval=cval)
-        y = rotate(y, angle, axes=axis, reshape=False, order=order)
+        x = ndimage.rotate(x, angle, axes=axis, reshape=False, order=order, cval=cval)
+        y = ndimage.rotate(y, angle, axes=axis, reshape=False, order=order)
 
     stack = np.concatenate((x, y))
     stack = elastic_transform(stack, alpha=1, sigma=1, axes=axes)
@@ -99,8 +97,8 @@ def spatial_augmentation_strict(x, y, axes=None, order=1):
     cval = x.take(0)
     angles = np.random.normal(0, 5, len(axes))
     for angle, *axis in zip(angles, axes, axes[1:]):
-        x = rotate(x, angle, axes=axis, reshape=False, order=order, cval=cval)
-        y = rotate(y, angle, axes=axis, reshape=False, order=order)
+        x = ndimage.rotate(x, angle, axes=axis, reshape=False, order=order, cval=cval)
+        y = ndimage.rotate(y, angle, axes=axis, reshape=False, order=order)
 
     stack = np.concatenate((x, y))
     stack = elastic_transform(stack, alpha=1, sigma=1, axes=axes, order=order)

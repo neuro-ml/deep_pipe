@@ -55,6 +55,18 @@ def apply(instance, methods, function):
     return proxy(instance)
 
 
+def apply_dict(instance, **methods):
+    def decorator(method, func):
+        def wrapper(self, *args, **kwargs):
+            return func(method(*args, **kwargs))
+
+        return wrapper
+
+    new_methods = {method: decorator(getattr(instance, method), func) for method, func in methods.items()}
+    proxy = type('Apply', (Proxy,), new_methods)
+    return proxy(instance)
+
+
 def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,
                mask_value: int = None) -> SegmentationDataset:
     class MaskedDataset(Proxy):
@@ -166,22 +178,3 @@ def weighted(dataset: Dataset, thickness: str) -> Dataset:
             return image
 
     return WeightedBoundariesDataset(dataset)
-
-
-class Padded(Proxy):
-    def __init__(self, dataset: SegmentationDataset, shape: list, axes: list):
-        super().__init__(dataset)
-        self.shape = shape
-        self.axes = axes
-
-    def load_image(self, patient_id):
-        img = self._shadowed.load_image(patient_id)
-        return medim.preprocessing.pad(img, self.shape, self.axes)
-
-    def load_segm(self, patient_id):
-        img = self._shadowed.load_segm(patient_id)
-        return medim.preprocessing.pad(img, self.shape, self.axes)
-
-    def load_msegm(self, patient_id):
-        img = self._shadowed.load_msegm(patient_id)
-        return medim.preprocessing.pad(img, self.shape, self.axes)

@@ -1,38 +1,31 @@
-from abc import abstractmethod, ABC
 from typing import Sequence
 
 
-class LearningRate(ABC):
-    """Interface for learning rate policies"""
+class LearningRatePolicy:
+    """Interface for learning rate policies. lr attribute is a current learning rate."""
 
-    def __init__(self):
+    def __init__(self, lr_init):
         self.epoch = 0
         self.step = 0
         self.total_steps = 0
+        self.lr = lr_init
 
-    def next_epoch(self):
-        """Indicate that a new epoch has begun"""
-        self.epoch += 1
+    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None,
+                          metrics: dict = None):
+        pass
+
+    def epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None,
+                       metrics: dict = None):
+        """Indicate that an epoch has finished, with corresponding losses and metrics."""
+        self.on_epoch_finished(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
         self.step = 0
+        self.epoch += 1
 
-    def next_step(self):
-        """Indicate that a new training step in the current epoch has begun"""
+    def on_step_finished(self, train_loss: float):
+        pass
+
+    def step_finished(self, train_loss: float):
+        """Indicate that a new training step in the current epoch has finished."""
+        self.on_step_finished(train_loss)
         self.step += 1
         self.total_steps += 1
-
-    @abstractmethod
-    def next_lr(self, train_losses: Sequence, val_losses: Sequence, metrics: dict) -> float:
-        """
-        Get the next learning rate.
-
-        Parameters
-        ----------
-        train_losses: Sequence
-        val_losses: Sequence
-        metrics: dict
-            a dict containing the metrics calculated on the validation set
-
-        Returns
-        -------
-        learning_rate: float
-        """

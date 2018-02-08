@@ -44,14 +44,15 @@ def validate(validate_fn, load_x, load_y, ids: Sequence[str], metrics: dict = No
     """
     ys, predictions, losses = [], [], []
 
-    for x, y in load_by_ids(load_x, load_y, ids):
+    for x, y in load_by_ids(load_x, load_y, ids=ids):
         prediction, loss = validate_fn(x, y)
-        ys.append(y)
-        predictions.append(prediction)
         losses.append(loss)
+        if metrics:
+            ys.append(y)
+            predictions.append(prediction)
 
-    if metrics is None:
-        result = {}
-    else:
+    if metrics:
         result = evaluate(ys, predictions, metrics)
+    else:
+        result = {}
     return losses, result

@@ -3,8 +3,8 @@ Contains a few more sophisticated commands
 that are usually accessed via the `do.py` script.
 """
 
-import json
 import os
+import json
 
 import numpy as np
 from tqdm import tqdm
@@ -18,7 +18,7 @@ from dpipe.train.validator import evaluate as evaluate_fn
 
 
 def train_model(train, model, save_model_path, restore_model_path=None):
-    if restore_model_path:
+    if restore_model_path is not None:
         model.load(restore_model_path)
 
     train()
@@ -44,14 +44,18 @@ def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: 
         del x, y
 
 
+# TODO change signature and possibly, structure
 def evaluate(load_y, input_path, output_path, ids, metrics):
+    if not metrics:
+        return
+
     os.makedirs(output_path)
 
     def load_prediction(identifier):
         return np.load(os.path.join(input_path, f'{identifier}.npy'))
 
     ys, predictions = [], []
-    for y, prediction in load_by_ids(load_y, load_prediction, ids):
+    for y, prediction in load_by_ids(load_y, load_prediction, ids=ids):
         ys.append(y)
         predictions.append(prediction)
 
@@ -59,10 +63,35 @@ def evaluate(load_y, input_path, output_path, ids, metrics):
 
     for name, value in result.items():
         metric = os.path.join(output_path, name)
+        if type(value) is np.ndarray:
+            value = value.tolist()
+
         with open(metric, 'w') as f:
-            json.dump(value, f, indent=0)
+            json.dump(value, f, indent=2)
 
 
+def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path):
+    assert len(metrics) > 0, 'No metric provided'
+
+    os.makedirs(results_path)
+
+    results = {metric_name: {} for metric_name in metrics}
+
+    for filename in tqdm(sorted(os.listdir(predictions_path))):
+        identifier = filename.strip('.npy')
+
+        y_prob = np.load(os.path.join(predictions_path, filename))
+        y_true = load_y_true(identifier)
+
+        for metric_name, metric in metrics.items():
+            results[metric_name][identifier] = metric(y_true, y_prob)
+
+    for metric_name, result in results.items():
+        with open(os.path.join(results_path, metric_name + '.json'), 'w') as f:
+            json.dump(result, f, indent=0)
+
+
+# TODO move to more general function
 def compute_dices(load_msegm, predictions_path, dices_path):
     dices = {}
     for f in tqdm(os.listdir(predictions_path)):

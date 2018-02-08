@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import torch
+from torch.nn import Module
 from torch.autograd import Variable
 
 from dpipe.model import Model, FrozenModel, get_model_path
@@ -28,7 +29,7 @@ class TorchModel(Model):
         """
         if cuda:
             model_core.cuda()
-            if hasattr(logits2loss, 'cuda'):
+            if isinstance(logits2loss, Module):
                 logits2loss.cuda()
 
         self.cuda = cuda
@@ -99,16 +100,19 @@ class TorchFrozenModel(FrozenModel):
         """
         if cuda:
             model_core.cuda()
+            map_location = None
+        else:
+            map_location = lambda storage, location: storage
         self.cuda = cuda
         self.model_core = model_core
         self.logits2pred = logits2pred
 
         path = get_model_path(restore_model_path)
-        self.model_core.load_state_dict(torch.load(path))
+        self.model_core.load_state_dict(torch.load(path, map_location=map_location))
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
-        inputs = [to_var(x, self.cuda) for x in inputs]
+        inputs = [to_var(x, self.cuda, volatile=True) for x in inputs]
 
         logits = self.model_core(*inputs)
         y_pred = self.logits2pred(logits)

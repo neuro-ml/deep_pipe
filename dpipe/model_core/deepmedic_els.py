@@ -1,81 +1,63 @@
-import functools
+from functools import partial
 
-import tensorflow as tf
+import torch
+import torch.nn as nn
+import torch.nn.functional
 
-from dpipe.config import register
-from .base import ModelCore
-from .layers import spatial_batch_norm, prelu, nearest_neighbour
+from .layers_torch.blocks import ConvBlock3d, ConvTransposeBlock3d
 
-activation = functools.partial(prelu, feature_dims=[1])
+context_slice = tuple(2 * [slice(None)] + 3 * [slice(1, -1, 3)])
 
-
-def cb(t, n_chans, kernel_size, training, name):
-    with tf.variable_scope(name):
-        t = tf.layers.conv3d(t, n_chans, kernel_size, use_bias=False, data_format='channels_first')
-        t = spatial_batch_norm(t, training=training, data_format='channels_first')
-        return t
-
-
-def cba(t, n_chans, kernel_size, training, name):
-    with tf.variable_scope(name):
-        return activation(cb(t, n_chans, kernel_size, training, 'cb'))
-
-
-def build_path(t, blocks, kernel_size, training, name):
-    with tf.variable_scope(name):
-        for i, n_chans in enumerate(blocks):
-            t = cba(t, n_chans, kernel_size, training, f'cba_{i}_a')
-            t = cba(t, n_chans, kernel_size, training, f'cba_{i}_b')
-        return t
-
-
-downsampling_ops = {
-    'average': lambda x: tf.layers.average_pooling3d(x, 3, 3, 'same', 'channels_first'),
-    'sampling': lambda x: x[:, :, 1:-1:3, 1:-1:3, 1:-1:3]
+downsample_ops = {
+    'sample': lambda x: x[context_slice],
+    'avg': partial(nn.functional.avg_pool3d, kernel_size=3)
 }
 
 
-def build_model(t_det_in, t_con_in, kernel_size, n_classes, training, name, *,
-                path_blocks=(30, 40, 40, 50), n_chans_com=150, dropout):
-    with tf.variable_scope(name):
-        t_det = build_path(t_det_in, path_blocks, kernel_size, training, 'detailed')
-        t_con = build_path(t_con_in, path_blocks, kernel_size, training, 'context')
-        t_con = nearest_neighbour(t_con, 3, data_format='channels_first', name='upsample')
-
-        t_com = tf.concat([t_con, t_det], axis=1)
-        t_com = cba(dropout(t_com), n_chans_com, 1, training, name='comm_1')
-        t_com = cba(dropout(t_com), n_chans_com, 1, training, name='comm_2')
-        return cb(t_com, n_classes, 1, training, 'C')
+def get_upsample_op(name, n_chans_in, n_chans_out):
+    if name == 'neighbour':
+        return partial(nn.functional.upsample, scale_factor=3)
+    elif name == 'tconv':
+        raise NotImplementedError
+        return ConvTransposeBlock3d(n_chans_in, n_chans_out, kernel_size=3)
+    else:
+        raise ValueError(f"unknown upsample op name: {name}")
 
 
-class DeepMedicEls(ModelCore):
-    def __init__(self, *, n_chans_in, n_chans_out,  downsampling_type='sampling', with_dropout=True, dropout_rate=0.5):
-        super().__init__(n_chans_in=n_chans_in, n_chans_out=n_chans_out)
+class DeepMedicEls(nn.Module):
+    def __init__(self, n_chans_in, n_chans_out, downsample, upsample, activation, dropout=False):
+        super().__init__()
 
-        self.kernel_size = 3
-        self.with_dropout = with_dropout
-        self.dropout_rate = dropout_rate
-        self.downsampling_op = downsampling_ops[downsampling_type]
+        def build_path(path_structure, kernel_size, dropout=False):
+            path = []
 
-    def build(self, training_ph):
-        def dropout(x):
-            if self.with_dropout:
-                return tf.layers.dropout(
-                    inputs=x,
-                    rate=self.dropout_rate,
-                    training=training_ph,
-                    noise_shape=(tf.shape(x)[0], tf.shape(x)[1], 1, 1, 1)
-                )
-            else:
-                return x
+            if dropout:
+                path.append(nn.Dropout3d())
 
-        input_shape = (None, self.n_chans_in, None, None, None)
-        x_det_ph = tf.placeholder(tf.float32, input_shape, name='x_det')
-        x_con_ph = tf.placeholder(tf.float32, input_shape, name='x_con')
+            for n_chans_in, n_chans_out in zip(path_structure[:-1], path_structure[1:]):
+                path.append(ConvBlock3d(n_chans_in, n_chans_out, kernel_size, activation=activation))
 
-        x_con = self.downsampling_op(x_con_ph)
+                if dropout:
+                    path.append(nn.Dropout3d())
+            return nn.Sequential(*path)
 
-        logits = build_model(x_det_ph, x_con, self.kernel_size, self.n_chans_out, training_ph, name='deep_medic',
-                             dropout=dropout)
+        path_structure = [n_chans_in, 30, 30, 40, 40, 40, 40, 50, 50]
+        self.detailed_path = build_path(path_structure, 3)
+        self.context_path = build_path(path_structure, 3)
 
-        return [x_det_ph, x_con_ph], logits
+        self.downsample_op = downsample_ops[downsample]
+        self.upsample_op = get_upsample_op(upsample, path_structure[-1], path_structure[-1])
+
+        common_path_structure = [2 * path_structure[-1], 150, 150]
+        self.common_path = build_path(common_path_structure, 1, dropout=True)
+
+        self.logits_layer = ConvBlock3d(common_path_structure[-1], n_chans_out, 1)
+
+    def forward(self, detailed_input, context_input):
+        detailed = self.detailed_path(detailed_input)
+        context = self.upsample_op(self.context_path(self.downsample_op(context_input)))
+
+        common_input = torch.cat([detailed, context], 1)
+        common = self.common_path(common_input)
+
+        return self.logits_layer(common)

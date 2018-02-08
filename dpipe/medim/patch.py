@@ -4,7 +4,8 @@ For even patch sizes, center is always considered to be close to the right borde
 """
 import numpy as np
 
-from .utils import build_slices, pad
+from .shape_utils import shape_after_convolution
+from .utils import build_slices, get_axes
 
 
 # FIXME consider what happens if central_idx is outside of x, error is likely
@@ -13,6 +14,7 @@ from .utils import build_slices, pad
 
 def find_patch_start_end_padding(shape: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_size: np.array,
                                  spatial_dims: list):
+    spatial_dims = list(spatial_dims)
     spatial_start = spatial_center_idx - spatial_patch_size // 2
     spatial_end = spatial_start + spatial_patch_size
 
@@ -99,6 +101,7 @@ def sample_uniform_center_index(x_shape: np.array, spatial_patch_size: np.array,
         is shifted to the right.
 
     """
+    spatial_dims = list(spatial_dims)
     max_spatial_center_idx = x_shape[spatial_dims] - spatial_patch_size + 1
 
     np.testing.assert_array_less(0, max_spatial_center_idx, 'x_shape is small')
@@ -122,96 +125,32 @@ def find_masked_patch_center_indices(mask: np.array, patch_size: np.array):
     return c
 
 
-def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1):
-    """
-    Get the shape of a tensor after applying a the convolution with
-    corresponding parameters.
+def get_random_patch_start_stop(shape, patch_size, spatial_dims=None):
+    spatial_dims = get_axes(spatial_dims, len(patch_size))
 
-    Parameters
-    ----------
-    shape
-        input shape
-    kernel_size
-        convolution kernel size
-    padding
-        padding sizes
-    stride
-        stride of the convolution
-    dilation
-        dilation of the convolution kernel
+    start = np.zeros_like(shape)
+    stop = np.array(shape)
+    spatial = shape_after_convolution(stop[spatial_dims], patch_size)
+    start[spatial_dims] = [np.random.uniform(i) for i in spatial]
+    stop[spatial_dims] = start[spatial_dims] + patch_size
 
-    Returns
-    -------
-
-    """
-    padding = np.asarray(padding)
-    shape = np.asarray(shape)
-    dilation = np.asarray(dilation)
-    kernel_size = np.asarray(kernel_size)
-
-    return np.floor((shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
+    return start, stop
 
 
-def slices_conv(shape, kernel_size, spatial_dims=None, stride=None):
-    """
-    A convolution-like approach to generating slices from a tensor.
-
-    Parameters
-    ----------
-    shape
-        the input tensor's shape
-    kernel_size
-    spatial_dims
-        dimensions along which the slices will be taken
-    stride
-        the stride (step-size) of the slice
-
-    Yields
-    ------
-    start,stop: np.array
-        coordinates of a slice's start and stop
-    """
-    if spatial_dims is None:
-        spatial_dims = list(range(-len(kernel_size), 0))
-    if stride is None:
-        stride = kernel_size
-
-    shape = np.array(shape).copy()
-    spatial_shape = shape[spatial_dims]
-    shape[:] = 1
-    shape[spatial_dims] = shape_after_convolution(spatial_shape, kernel_size, stride=stride)
-
-    whole_patch = np.array(shape).copy()
-    whole_patch[spatial_dims] = kernel_size
-
-    for i in np.ndindex(*shape):
-        i = np.asarray(i) * stride
-        yield i, i + whole_patch
+def get_random_patch(x: np.ndarray, patch_size, spatial_dims=None) -> np.ndarray:
+    start, stop = get_random_patch_start_stop(x.shape, patch_size, spatial_dims)
+    return x[build_slices(start, stop)]
 
 
-def patch_conv(x, patch_size, spatial_dims=None, stride=None, padding=0):
-    """
-    A convolution-like approach to generating patches from a tensor.
+def pad(x, padding, padding_values):
+    padding = np.array(padding)
 
-    Parameters
-    ----------
-    x: np.array
-        the input tensor
-    patch_size
-    spatial_dims
-        dimensions along which the slices will be taken
-    stride
-        the stride (step-size) of the slice
-    padding
-        padding sizes of the input tensor
+    new_shape = np.array(x.shape) + np.sum(padding, axis=1)
+    new_x = np.zeros(new_shape, dtype=x.dtype)
+    new_x[:] = padding_values
 
-    Yields
-    ------
-    x_patch: np.array
-        patches from the input tensor
-    """
-    if padding:
-        x = np.pad(x, pad_width=padding, mode='constant')
+    start = padding[:, 0]
+    end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
+    new_x[build_slices(start, end)] = x
 
-    for start, stop in slices_conv(x.shape, patch_size, spatial_dims, stride):
-        yield x[build_slices(start, stop)]
+    return new_x

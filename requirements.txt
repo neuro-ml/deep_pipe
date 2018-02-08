@@ -6,6 +6,6 @@ tensorflow-gpu
 snakemake
 tqdm
 nibabel
-pdp
+pdp>=0.2.1,<0.3
 tensorboard-easy
-resource-manager>=0.3.6
+resource-manager>=0.5,<0.6
