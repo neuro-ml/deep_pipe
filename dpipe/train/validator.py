@@ -44,7 +44,7 @@ def validate(validate_fn, load_x, load_y, ids: Sequence[str], metrics: dict = No
     """
     ys, predictions, losses = [], [], []
 
-    for x, y in load_by_ids(load_x, load_y, ids):
+    for x, y in load_by_ids(load_x, load_y, ids=ids):
         prediction, loss = validate_fn(x, y)
         losses.append(loss)
         if metrics:

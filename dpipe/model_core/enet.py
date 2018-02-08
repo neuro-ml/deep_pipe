@@ -1,11 +1,7 @@
-import numpy as np
 import tensorflow as tf
 
-from dpipe.config import register
 from .layers import spatial_batch_norm
 from .base import ModelCore
-
-from dpipe.medim.slices import iterate_slices
 
 
 def init_block(inputs, name, training, output_channels, kernel_size=3,

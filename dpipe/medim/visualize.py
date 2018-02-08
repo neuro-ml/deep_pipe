@@ -18,7 +18,7 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
     max_columns : the maximal number of figures in a row.
                     None - all figures will be in the same row.
     colorbar : Whether to display a colorbar.
-    cmap : matplotlib cmap
+    cmap,vlim : parameters passed to matplotlib.pyplot.imshow
     """
     size = data[0].shape[axis]
     for x in data:
