@@ -1,7 +1,7 @@
 import numpy as np
 
 from .csv import CSV, multiple_columns
-from .base import SegmentationDataset
+from .base import IntSegmentationDataset, SegmentationDataset
 
 
 class FromCSVMultiple(CSV, SegmentationDataset):
@@ -9,6 +9,7 @@ class FromCSVMultiple(CSV, SegmentationDataset):
         super().__init__(data_path, metadata_rpath)
         self.modality_cols = modalities
         self.target_cols = targets
+        self.n_chans_msegm = len(modalities)
 
     @property
     def n_chans_image(self):
@@ -18,26 +19,10 @@ class FromCSVMultiple(CSV, SegmentationDataset):
         return multiple_columns(self.load, identifier, self.modality_cols)
 
     def load_segm(self, identifier) -> np.array:
-        image = self.load_msegm(identifier)
-        weights = np.arange(1, len(self.target_cols) + 1)
-        return np.einsum('ijkl,i', image, weights)
-
-    def load_msegm(self, identifier) -> np.array:
-        image = multiple_columns(self.load, identifier, self.target_cols)
-        assert image.dtype == np.bool
-
-        return image
-
-    @property
-    def n_chans_segm(self):
-        return self.n_chans_msegm
-
-    @property
-    def n_chans_msegm(self):
-        return len(self.target_cols)
+        return multiple_columns(self.load, identifier, self.target_cols)
 
 
-class FromCSVInt(CSV, SegmentationDataset):
+class FromCSVInt(CSV, IntSegmentationDataset):
     def __init__(self, data_path, modalities, target, metadata_rpath, segm2msegm_matrix):
         super().__init__(data_path, metadata_rpath)
         assert type(target) is str
