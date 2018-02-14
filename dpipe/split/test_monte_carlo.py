@@ -1,8 +1,9 @@
-import unittest
-from unittest.mock import Mock
 import random
 import string
+import unittest
+
 import numpy as np
+
 from .monte_carlo import monte_carlo
 
 
@@ -13,9 +14,7 @@ def random_string(string_len):
 class TestMonteCarloSplitter(unittest.TestCase):
     def setUp(self):
         self.ids_num = 100
-        ids = np.array([random_string(10) for _ in range(self.ids_num)])
-        self.dataset = Mock()
-        self.dataset.ids = ids
+        self.ids = np.array([random_string(10) for _ in range(self.ids_num)])
 
     def test_successful_split(self):
         n_splits = 5
@@ -23,7 +22,7 @@ class TestMonteCarloSplitter(unittest.TestCase):
         train_fraction = 0.8
         val_fraction = 0.1
         splits = monte_carlo(
-            self.dataset, train_fraction=train_fraction, val_fraction=val_fraction, n_splits=n_splits
+            self.ids, train_fraction=train_fraction, val_fraction=val_fraction, n_splits=n_splits
         )
 
         assert(len(splits) == n_splits)
@@ -35,4 +34,4 @@ class TestMonteCarloSplitter(unittest.TestCase):
 
     def test_bad_params_value_error(self):
         with self.assertRaises(ValueError):
-            monte_carlo(self.dataset, train_fraction=0.9, val_fraction=0.5, n_splits=5)
+            monte_carlo(self.ids, train_fraction=0.9, val_fraction=0.5, n_splits=5)
