@@ -1,5 +1,4 @@
 from typing import Sequence, Union
-from itertools import product
 
 import numpy as np
 

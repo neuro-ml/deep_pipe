@@ -55,7 +55,7 @@ def evaluate(load_y, input_path, output_path, ids, metrics):
         return np.load(os.path.join(input_path, f'{identifier}.npy'))
 
     ys, predictions = [], []
-    for y, prediction in load_by_ids(load_y, load_prediction, ids):
+    for y, prediction in load_by_ids(load_y, load_prediction, ids=ids):
         ys.append(y)
         predictions.append(prediction)
 

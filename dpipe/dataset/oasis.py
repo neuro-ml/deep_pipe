@@ -1,9 +1,7 @@
 import numpy as np
 from .segmentation import FromCSVInt
-from dpipe.config import register
 
 
-@register('oasis')
 class Oasis(FromCSVInt):
     def __init__(self, data_path, metadata_rpath='metadata.csv'):
         super().__init__(
@@ -22,7 +20,7 @@ class Oasis(FromCSVInt):
 
     def load_image(self, patient_id):
         mscan = super().load_image(patient_id)
-        assert(len(mscan) == 1)
+        assert (len(mscan) == 1)
         scan = mscan[0]
         scan.resize(scan.shape[:-1])
         # Though resizing happens in place, for some reason resizing mscan[0], it's shape claims that it is unchanged.

@@ -1,9 +1,6 @@
 import torch
 import torch.optim
 import torch.nn as nn
-import torch.nn.functional as F
-
-from dpipe.config import register
 
 
 class InitialBlock(nn.Module):
@@ -22,7 +19,7 @@ class InitialBlock(nn.Module):
     def forward(self, input):
         output = torch.cat([self.convolution(input), self.max_pool(input)], 1)
         output = self.batch_norm(output)
-        return F.relu(output)
+        return nn.functional.relu(output)
 
 
 class ResBlock(nn.Module):
@@ -101,7 +98,7 @@ class ResBlock(nn.Module):
         if self.upsample:
             main_path = self.unpool(main_path)
 
-        return F.relu(conv_path + main_path)
+        return nn.functional.relu(conv_path + main_path)
 
 
 class Stage(nn.Module):

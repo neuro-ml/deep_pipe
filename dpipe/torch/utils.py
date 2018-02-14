@@ -53,8 +53,8 @@ class PyramidPooling(nn.Module):
 
         for level in range(self.levels):
             level = 2 ** level
-            stride = tuple(np.floor(shape / level).astype(int))
-            kernel_size = tuple(np.ceil(shape / level).astype(int))
+            stride = tuple(map(int, np.floor(shape / level)))
+            kernel_size = tuple(map(int, np.ceil(shape / level)))
             temp = self.convolution(x, kernel_size=kernel_size, stride=stride)
             pyramid.append(temp.view(batch_size, -1))
 
