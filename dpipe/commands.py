@@ -39,6 +39,10 @@ def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: 
         x = load_x(identifier)
         y = batch_predict.predict(x, predict_fn=frozen_model.do_inf_step)
 
+        # To save disk space
+        if np.issubdtype(y.dtype, np.floating):
+            y = y.astype(np.float16)
+
         np.save(os.path.join(output_path, str(identifier)), y)
         # saving some memory
         del x, y
