@@ -6,7 +6,7 @@ from collections import ChainMap
 
 import numpy as np
 import dpipe.medim as medim
-from .base import Dataset, IntSegmentationDataset
+from .base import Dataset, SegmentationDataset, IntSegmentationDataset
 
 
 class Proxy:
@@ -109,7 +109,7 @@ def bbox_extraction(dataset: IntSegmentationDataset) -> IntSegmentationDataset:
     return BBoxedDataset(dataset)
 
 
-def normalized(dataset: IntSegmentationDataset, mean, std, drop_percentile: int = None) -> IntSegmentationDataset:
+def normalized(dataset: SegmentationDataset, mean, std, drop_percentile: int = None) -> SegmentationDataset:
     class NormalizedDataset(Proxy):
         def load_image(self, idx):
             img = self._shadowed.load_image(idx)

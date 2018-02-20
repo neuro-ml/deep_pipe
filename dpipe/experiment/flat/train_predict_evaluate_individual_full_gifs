@@ -1,0 +1,64 @@
+from dpipe.config import get_paths
+
+DO = get_paths()['do']
+
+CONFIG_ARG = '--config_path ../config'
+SAVED_MODEL = 'model'
+TRAINING_LOG = 'train_logs'
+
+TRAIN_IDS = 'train_ids.json'
+VAL_IDS = 'val_ids.json'
+TEST_IDS = 'test_ids.json'
+
+SETS = ['train', 'val', 'test']
+
+
+rule all:
+    input:
+        SAVED_MODEL, *expand('{sets}_metrics', sets=SETS), *expand('{sets}_gifs', sets=SETS)
+
+rule train_model:
+    input:
+        TRAIN_IDS, VAL_IDS
+    output:
+        SAVED_MODEL, TRAINING_LOG
+    shell:
+        """
+        rm -rf {SAVED_MODEL} {TRAINING_LOG}
+        python {DO} train_model {CONFIG_ARG} --train_ids_path {TRAIN_IDS} --val_ids_path {VAL_IDS} --log_path {TRAINING_LOG} --save_model_path {SAVED_MODEL}
+        """
+
+rule predict:
+    input:
+        SAVED_MODEL,
+        ids = '{sample}_ids.json'
+    output:
+        predictions = '{sample}_predictions'
+    shell:
+        """
+        rm -rf {output.predictions}
+        python {DO} predict {CONFIG_ARG} --ids_path {input.ids} --output_path {output.predictions} --restore_model_path {SAVED_MODEL}
+        """
+
+rule evaluate:
+    input:
+        SAVED_MODEL,
+        predictions = '{sample}_predictions'
+    output:
+        metrics = '{sample}_metrics'
+    shell:
+        """
+        rm -rf {output.metrics}
+        python {DO} evaluate {CONFIG_ARG} --predictions_path {input.predictions} --results_path {output.metrics}
+        """
+
+rule gifs:
+    input:
+        predictions = '{sample}_predictions'
+    output:
+        gifs_path = '{sample}_gifs'
+    shell:
+        """
+        rm -rf {output.gifs_path}
+        python {DO} generate_gifs {CONFIG_ARG} --predictions_path {input.predictions} --gifs_path {output.gifs_path}
+        """
