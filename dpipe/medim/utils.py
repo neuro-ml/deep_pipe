@@ -14,6 +14,15 @@ def get_axes(axes, ndim):
     return list(sorted(axes))
 
 
+def scale(x):
+    x = x - x.min()
+    return x / x.max()
+
+
+def bytescale(x):
+    return np.uint8(np.round(255 * scale(x)))
+
+
 def load_image(path: str):
     """
     Load an image located at `path`.

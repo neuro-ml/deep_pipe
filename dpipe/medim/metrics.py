@@ -1,3 +1,4 @@
+import warnings
 from typing import Sequence, Union
 
 import numpy as np
@@ -126,6 +127,7 @@ def compute_dices_from_segm_prob(segm_true, segm_prob, segm2msegm, empty_val: fl
     """
     Channelwise dice score between msegms for predicted segmentation and true segmentation.
     """
+    warnings.warn('Use lambda with aggregated_metric and multichannel_dice_score', DeprecationWarning)
     return multichannel_dice_score(segm2msegm(segm_true), segm2msegm(np.argmax(segm_prob, axis=0)), empty_val=empty_val)
 
 
@@ -133,4 +135,5 @@ def compute_dices_from_msegm_prob(msegm_true, msegm_prob, empty_val: float = 1):
     """
     Channelwise dice score between msegms for predicted msegm and true msegm.
     """
+    warnings.warn('Use lambda with aggregated_metric and multichannel_dice_score', DeprecationWarning)
     return multichannel_dice_score(msegm_true, msegm_prob > 0.5, empty_val=empty_val)
