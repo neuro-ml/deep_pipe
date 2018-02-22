@@ -2,6 +2,8 @@ import numpy as np
 from ipywidgets import interact, IntSlider
 from matplotlib import pyplot as plt
 
+from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmentation_probabilities
+
 
 def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
             colorbar: bool = False, cmap: str = None, vlim=(None, None)):
