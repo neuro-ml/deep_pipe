@@ -14,4 +14,4 @@ if __name__ == '__main__':
 
     values = list(json.loads(sys.stdin.read()).values())
     result = op(values, axis=0)
-    print(result if not hasattr(result, '__iter__') else list(result))
+    print(result if not type(result) == np.ndarray else result.tolist())
