@@ -3,9 +3,9 @@ from typing import Sequence
 import numpy as np
 
 
-def build_slices(start, end):
-    assert len(start) == len(end)
-    return list(map(slice, start, end))
+def build_slices(start, stop):
+    assert len(start) == len(stop)
+    return list(map(slice, start, stop))
 
 
 def get_axes(axes, ndim):
