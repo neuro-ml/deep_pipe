@@ -1,10 +1,11 @@
 import numpy as np
+import warnings
 
 from .csv import CSV, multiple_columns
 from .base import IntSegmentationDataset, SegmentationDataset
 
 
-class FromCSVMultiple(CSV, SegmentationDataset):
+class SegmentationFromCSV(CSV, SegmentationDataset):
     def __init__(self, data_path, modalities, targets, metadata_rpath):
         super().__init__(data_path, metadata_rpath)
         self.modality_cols = modalities
@@ -22,8 +23,20 @@ class FromCSVMultiple(CSV, SegmentationDataset):
         return multiple_columns(self.load, identifier, self.target_cols)
 
 
+class SegmentationFromCSVInt(SegmentationFromCSV):
+    def __init__(self, data_path, modalities, target, metadata_rpath):
+        assert type(target) is str
+        super().__init__(data_path, modalities=modalities, targets=[target], metadata_rpath=metadata_rpath)
+
+    def load_segm(self, identifier) -> np.array:
+        return super().load_segm(identifier)[0]
+
+# Deprecated
+# ----------
+
 class FromCSVInt(CSV, IntSegmentationDataset):
     def __init__(self, data_path, modalities, target, metadata_rpath, segm2msegm_matrix):
+        warnings.warn('From CSV Int is deprecated, use SegmentationFromCSVInt instead.', DeprecationWarning)
         super().__init__(data_path, metadata_rpath)
         assert type(target) is str
         self.target_col = target

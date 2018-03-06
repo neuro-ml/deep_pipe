@@ -3,6 +3,11 @@ from typing import Sequence
 import numpy as np
 
 
+def decode_segmentation(x, segm_decoding_matrix) -> np.array:
+    assert np.issubdtype(x.dtype, np.integer), f'Segmentation dtype must be int, but {x.dtype} provided'
+    return np.rollaxis(segm_decoding_matrix[x], -1)
+
+
 def build_slices(start, end):
     assert len(start) == len(end)
     return list(map(slice, start, end))
