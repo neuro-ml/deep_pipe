@@ -8,9 +8,9 @@ def decode_segmentation(x, segm_decoding_matrix) -> np.array:
     return np.rollaxis(segm_decoding_matrix[x], -1)
 
 
-def build_slices(start, end):
-    assert len(start) == len(end)
-    return list(map(slice, start, end))
+def build_slices(start, stop):
+    assert len(start) == len(stop)
+    return list(map(slice, start, stop))
 
 
 def get_axes(axes, ndim):

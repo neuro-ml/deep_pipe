@@ -142,13 +142,9 @@ def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
 
 
 def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDataset:
-    [np.testing.assert_array_equal(a.segm2msegm_matrix, b.segm2msegm_matrix)
-     for a, b, in zip(datasets, datasets[1:])]
-
     assert all(dataset.n_chans_image == datasets[0].n_chans_image for dataset in datasets)
 
-    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.ids}
-                                    for dataset in datasets))
+    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.ids} for dataset in datasets))
 
     ids = sorted(list(patient_id2dataset.keys()))
 
@@ -162,9 +158,6 @@ def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDat
 
         def load_segm(self, patient_id):
             return patient_id2dataset[patient_id].load_segm(patient_id)
-
-        def load_msegm(self, patient_id):
-            return patient_id2dataset[patient_id].load_msegm(patient_id)
 
     return MergedDataset(datasets[0])
 

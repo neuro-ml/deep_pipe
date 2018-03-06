@@ -23,11 +23,9 @@ class CSV:
             df = df.set_index(index_col).sort_index()
         self.df: pd.DataFrame = df
 
-        self._ids = tuple(self.df.index)
-
     @property
     def ids(self):
-        return self._ids
+        return tuple(self.df.index)
 
     def get(self, index, col):
         return self.df.loc[index, col]
