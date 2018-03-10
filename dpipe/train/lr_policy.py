@@ -51,3 +51,14 @@ class Exponential(LearningRatePolicy):
         else:
             power = self.epoch / self.step_length
         self.lr = self.initial * self.multiplier ** power
+
+
+class Schedule(LearningRatePolicy):
+    def __init__(self, lr_init, epoch2lr_dec_mul):
+        super().__init__(lr_init)
+        self.epoch2lr_dec_mul = epoch2lr_dec_mul
+
+    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None,
+                          metrics: dict = None):
+        if self.epoch in self.epoch2lr_dec_mul:
+            self.lr *= self.epoch2lr_dec_mul[self.epoch]
