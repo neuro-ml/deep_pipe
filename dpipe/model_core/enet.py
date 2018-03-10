@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from .layers import spatial_batch_norm
+from .layers_tf.layers import spatial_batch_norm
 from .base import ModelCore
 
 
