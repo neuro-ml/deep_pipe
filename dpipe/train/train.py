@@ -10,7 +10,7 @@ from .batch_iter import BatchIter
 
 
 def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: LearningRatePolicy, log_path: str,
-               validate: Callable = None):
+               validate: Callable = None, log_iteration=False):
     """
     Train a given model.
 
@@ -41,8 +41,9 @@ def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: Le
             for inputs in batch_iter:
                 train_losses.append(model.do_train_step(*inputs, lr=lr_policy.lr))
 
-                train_log_write(train_losses[-1])
-                lr_log_write(lr_policy.lr)
+                if log_iteration:
+                    train_log_write(train_losses[-1])
+                    lr_log_write(lr_policy.lr)
 
                 lr_policy.step_finished(train_losses[-1])
 
