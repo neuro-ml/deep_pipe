@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional
 
-from .layers_torch.blocks import ConvBlock3d, ConvTransposeBlock3d
+from .layers.block import ConvBlock3d, ConvTransposeBlock3d
 
 context_slice = tuple(2 * [slice(None)] + 3 * [slice(1, -1, 3)])
 
@@ -41,7 +41,7 @@ class DeepMedicEls(nn.Module):
         self.upsample_op = partial(nn.functional.upsample, scale_factor=3)
 
         common_path_structure = [2 * path_structure[-1], 150, 150]
-        self.common_path = build_path(common_path_structure, 1, dropout=True)
+        self.common_path = build_path(common_path_structure, 1, dropout=dropout)
 
         self.logits_layer = ConvBlock3d(common_path_structure[-1], n_chans_out, 1)
 
