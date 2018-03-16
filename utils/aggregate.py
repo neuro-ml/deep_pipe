@@ -13,4 +13,5 @@ if __name__ == '__main__':
     op = getattr(np, args.mode)
 
     values = list(json.loads(sys.stdin.read()).values())
-    print(list(op(values, axis=0)))
+    result = op(values, axis=0)
+    print(result if not type(result) == np.ndarray else result.tolist())

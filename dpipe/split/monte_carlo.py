@@ -1,8 +1,7 @@
 from sklearn.model_selection import train_test_split
-from dpipe.dataset import Dataset
 
 
-def monte_carlo(dataset: Dataset, *, train_fraction, val_fraction, n_splits):
+def monte_carlo(ids, *, train_fraction, val_fraction, n_splits):
     """
     Example: train_fraction = 0.8, val_fraction = 0.1, n_splits = 2 will create 2 splits such that 80% of ids are in
     the train sample, 10% - in val sample, 10% - in test sample.
@@ -10,7 +9,6 @@ def monte_carlo(dataset: Dataset, *, train_fraction, val_fraction, n_splits):
     if not (train_fraction > 0 and val_fraction >= 0 and train_fraction + val_fraction <= 1):
         raise ValueError
 
-    ids = dataset.ids
     train_val_test_ids = []
 
     random_state = 52

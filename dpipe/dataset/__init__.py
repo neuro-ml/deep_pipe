@@ -1,1 +1,1 @@
-from .base import Dataset, SegmentationDataset
+from .base import Dataset, IntSegmentationDataset

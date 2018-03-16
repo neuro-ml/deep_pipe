@@ -2,24 +2,25 @@ import itertools
 
 import numpy as np
 
+from .utils import build_slices
 
-def get_idx(mask: np.ndarray):
+
+def get_start_stop(mask: np.ndarray):
     """Find indices of a box that contains all true values of mask, so that if
      you use them in slice() you will extract box with all true values."""
-    n = mask.ndim
-    out = []
-    for ax in itertools.combinations(range(n), n - 1):
+    start, stop = [], []
+    for ax in itertools.combinations(range(mask.ndim), mask.ndim - 1):
         nonzero = np.any(mask, axis=ax)
         left, right = np.where(nonzero)[0][[0, -1]]
-        out.append([left, right + 1])
-    return np.array(list(reversed(out)))
+        start.insert(0, left)
+        stop.insert(0, right + 1)
+    return np.array(start), np.array(stop)
 
 
 def get_slice(mask: np.ndarray):
     """Find slices of a box that contains all true values of mask, so that if
      you use them in mask[slices] you will extract box with all true values."""
-    limits = get_idx(mask)
-    return [slice(*l) for l in limits]
+    return build_slices(*get_start_stop(mask))
 
 
 def extract(arrays, mask: np.ndarray):

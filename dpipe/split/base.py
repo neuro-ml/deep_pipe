@@ -2,22 +2,6 @@ import numpy as np
 
 from .cv import ShuffleGroupKFold, train_test_split_groups
 from sklearn.model_selection import KFold
-from dpipe.dataset import Dataset
-
-
-def get_subj_ids(dataset: Dataset):
-    """Returns a list of subject IDs """
-    return dataset.ids
-
-
-def get_groups(dataset: Dataset, groups_property='groups'):
-    """Returns a list which will be used to perform a group-based CV split"""
-    try:
-        groups = getattr(dataset, groups_property)
-    except AttributeError:
-        raise ('Dataset must have {} property containing groups\' ids'
-               ''.format(groups_property))
-    return groups
 
 
 def kfold_split(subj_ids, n_splits, groups=None, **kwargs):
@@ -44,39 +28,75 @@ def split_train(splits, val_size, groups=None, **kwargs):
 
 def indices_to_subj_ids(splits, subj_ids):
     """Converts split indices to subject IDs"""
-    return [list(map(lambda ids: [subj_ids[i] for i in ids], split))
-            for split in splits]
+    return [list(map(lambda ids: [subj_ids[i] for i in ids], split)) for split in splits]
 
 
-def get_loo_cv(dataset: Dataset, *, val_size=None):
+def get_loo_cv(ids, groups, *, val_size=None, random_state=42):
     """Leave one group out CV. Validation subset will be selected randomly"""
-    subj_ids = get_subj_ids(dataset)
-    groups = get_groups(dataset)
     n_splits = len(np.unique(groups))
-    splits = kfold_split(subj_ids, n_splits, groups=groups)
+    splits = kfold_split(ids, n_splits, groups=groups)
     if val_size is not None:
-        splits = split_train(splits, val_size)
-    print(indices_to_subj_ids(splits, subj_ids))
-    return indices_to_subj_ids(splits, subj_ids)
+        splits = split_train(splits, val_size, random_state=random_state)
+    print(indices_to_subj_ids(splits, ids))
+    return indices_to_subj_ids(splits, ids)
 
 
-# non registered examples
-def get_cv_11(dataset: Dataset, *, n_splits):
-    subj_ids = get_subj_ids(dataset)
-    split_indices = kfold_split(subj_ids, n_splits)
-    return indices_to_subj_ids(split_indices, subj_ids)
+def get_cv_11(ids, *, n_splits, random_state=42):
+    split_indices = kfold_split(ids, n_splits, random_state=random_state)
+    return indices_to_subj_ids(split_indices, ids)
 
 
-def get_cv_111(dataset: Dataset, *, val_size, n_splits):
-    subj_ids = get_subj_ids(dataset=dataset)
-    split_indices = kfold_split(subj_ids=subj_ids, n_splits=n_splits)
-    split_indices = split_train(splits=split_indices, val_size=val_size)
-    return indices_to_subj_ids(splits=split_indices, subj_ids=subj_ids)
+def get_cv_111(ids, *, val_size, n_splits, random_state=42):
+    """
+    Splits the dataset's ids into triplets (train, validation, test).
+    The test ids are determined as in the standard K-fold cross-validation setting:
+    for each fold a different portion of 1/K ids is kept for testing.
+    The remaining (K-1)/K ids are split into train and validation sets according to `val_size`.
+
+    Parameters
+    ----------
+    ids
+    val_size: float, int
+        If float, should be between 0.0 and 1.0 and represents the proportion
+        of the `train set` to include in the validation set. If int, represents the
+        absolute number of validation samples.
+    n_splits: int
+        the number of cross-validation folds
+
+    Returns
+    -------
+    splits: Sequence of triplets
+    """
+    split_indices = kfold_split(subj_ids=ids, n_splits=n_splits, random_state=random_state)
+    split_indices = split_train(splits=split_indices, val_size=val_size, random_state=random_state)
+    return indices_to_subj_ids(splits=split_indices, subj_ids=ids)
 
 
-def get_group_cv_111(dataset: Dataset, *, val_size, n_splits):
-    subj_ids = get_subj_ids(dataset)
-    groups = get_groups(dataset)
-    split_indices = kfold_split(subj_ids, n_splits, groups=groups)
-    split_indices = split_train(split_indices, val_size, groups=groups)
-    return indices_to_subj_ids(split_indices, subj_ids)
+def get_group_cv_111(ids, groups: np.array, *, val_size, n_splits, random_state=42):
+    """
+    Splits the dataset's ids into triplets (train, validation, test) keeping all the objects
+    from a group in the same set (either train, validation or test).
+    The test ids are determined as in the standard K-fold cross-validation setting:
+    for each fold a different portion of 1/K ids is kept for testing.
+    The remaining (K-1)/K ids are split into train and validation sets according to `val_size`.
+
+    The splitter guarantees that no objects belonging to the same group will en up in different sets.
+
+    Parameters
+    ----------
+    ids
+    groups: np.array[int]
+    val_size: float, int
+        If float, should be between 0.0 and 1.0 and represents the proportion
+        of the `train set` to include in the validation set. If int, represents the
+        absolute number of validation samples.
+    n_splits: int
+        the number of cross-validation folds
+
+    Returns
+    -------
+    splits: Sequence of triplets
+    """
+    split_indices = kfold_split(ids, n_splits, groups=groups, random_state=random_state)
+    split_indices = split_train(split_indices, val_size, groups=groups, random_state=random_state)
+    return indices_to_subj_ids(split_indices, ids)

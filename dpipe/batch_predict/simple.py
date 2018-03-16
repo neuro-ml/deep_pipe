@@ -1,21 +1,26 @@
 import numpy as np
 
-from .base import BatchPredict
+from .divide_combine import DivideCombine
 
 
-class Simple(BatchPredict):
-    def validate(self, x, y, *, validate_fn):
-        prediction, loss = validate_fn(x[None], y[None])
-        return prediction[0], loss
-
-    def predict(self, x, *, predict_fn):
-        return predict_fn(x[None])[0]
+def add_dimension(*data):
+    result = tuple(x[None] for x in data)
+    if len(result) == 1:
+        result = result[0]
+    yield result
 
 
-class Multiclass(BatchPredict):
-    def validate(self, x, y, *, validate_fn):
-        prediction, loss = validate_fn(x[None], y[None])
-        return np.argmax(prediction[0], axis=0), loss
+def extract_dimension(predictions):
+    predictions = list(predictions)
+    assert len(predictions) == 1 and len(predictions[0]) == 1
+    return predictions[0][0]
 
-    def predict(self, x, *, predict_fn):
-        return np.argmax(predict_fn(x[None])[0], axis=0)
+
+class Simple(DivideCombine):
+    def __init__(self):
+        super().__init__(add_dimension, extract_dimension)
+
+
+class MultiClass(DivideCombine):
+    def __init__(self):
+        super().__init__(add_dimension, lambda x: np.argmax(extract_dimension(x), axis=0))

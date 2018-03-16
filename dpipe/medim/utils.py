@@ -3,15 +3,29 @@ from typing import Sequence
 import numpy as np
 
 
-def build_slices(start, end):
-    assert len(start) == len(end)
-    return list(map(slice, start, end))
+def decode_segmentation(x, segm_decoding_matrix) -> np.array:
+    assert np.issubdtype(x.dtype, np.integer), f'Segmentation dtype must be int, but {x.dtype} provided'
+    return np.rollaxis(segm_decoding_matrix[x], -1)
+
+
+def build_slices(start, stop):
+    assert len(start) == len(stop)
+    return list(map(slice, start, stop))
 
 
 def get_axes(axes, ndim):
     if axes is None:
         axes = range(-ndim, 0)
     return list(sorted(axes))
+
+
+def scale(x):
+    x = x - x.min()
+    return x / x.max()
+
+
+def bytescale(x):
+    return np.uint8(np.round(255 * scale(x)))
 
 
 def load_image(path: str):

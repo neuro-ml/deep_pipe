@@ -38,7 +38,27 @@ class Dataset(ABC):
 
 
 class SegmentationDataset(Dataset):
-    """Abstract class that describes a dataset for medical image segmentation."""
+    """Abstract class that describes a dataset for medical image segmentation with labels for pixel."""
+
+    @abstractmethod
+    def load_segm(self, identifier: str) -> np.ndarray:
+        """
+        Load the ground truth segmentation.
+
+        Parameters
+        ----------
+        identifier: str
+            the object's identifier
+
+        Returns
+        -------
+        segmentation: tensor
+            the ground truth segmentation.
+        """
+
+
+class IntSegmentationDataset(Dataset):
+    """Abstract class that describes a dataset for medical image segmentation with int values in segmentation."""
 
     @abstractmethod
     def load_segm(self, identifier: str) -> np.ndarray:

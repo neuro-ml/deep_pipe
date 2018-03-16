@@ -6,7 +6,7 @@ from collections import ChainMap
 
 import numpy as np
 import dpipe.medim as medim
-from .base import Dataset, SegmentationDataset
+from .base import Dataset, SegmentationDataset, IntSegmentationDataset
 
 
 class Proxy:
@@ -67,8 +67,8 @@ def apply_dict(instance, **methods):
     return proxy(instance)
 
 
-def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,
-               mask_value: int = None) -> SegmentationDataset:
+def apply_mask(dataset: IntSegmentationDataset, mask_modality_id: int = None,
+               mask_value: int = None) -> IntSegmentationDataset:
     class MaskedDataset(Proxy):
         def load_image(self, patient_id):
             images = self._shadowed.load_image(patient_id)
@@ -85,7 +85,7 @@ def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,
     return dataset if mask_modality_id is None else MaskedDataset(dataset)
 
 
-def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
+def bbox_extraction(dataset: IntSegmentationDataset) -> IntSegmentationDataset:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time
     load_image = functools.lru_cache(3)(dataset.load_image)
@@ -141,14 +141,10 @@ def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
     return GroupsFromIDs(dataset)
 
 
-def merge_datasets(datasets: List[SegmentationDataset]) -> SegmentationDataset:
-    [np.testing.assert_array_equal(a.segm2msegm_matrix, b.segm2msegm_matrix)
-     for a, b, in zip(datasets, datasets[1:])]
-
+def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDataset:
     assert all(dataset.n_chans_image == datasets[0].n_chans_image for dataset in datasets)
 
-    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.ids}
-                                    for dataset in datasets))
+    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.ids} for dataset in datasets))
 
     ids = sorted(list(patient_id2dataset.keys()))
 
@@ -162,9 +158,6 @@ def merge_datasets(datasets: List[SegmentationDataset]) -> SegmentationDataset:
 
         def load_segm(self, patient_id):
             return patient_id2dataset[patient_id].load_segm(patient_id)
-
-        def load_msegm(self, patient_id):
-            return patient_id2dataset[patient_id].load_msegm(patient_id)
 
     return MergedDataset(datasets[0])
 

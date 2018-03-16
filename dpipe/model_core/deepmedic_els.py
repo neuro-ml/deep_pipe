@@ -4,28 +4,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional
 
-from .layers_torch.blocks import ConvBlock3d, ConvTransposeBlock3d
+from .layers.block import ConvBlock3d, ConvTransposeBlock3d
 
 context_slice = tuple(2 * [slice(None)] + 3 * [slice(1, -1, 3)])
 
 downsample_ops = {
-    'sample': lambda x: x[context_slice],
-    'avg': partial(nn.functional.avg_pool3d, kernel_size=3)
+    'avg': partial(nn.functional.avg_pool3d, kernel_size=3),
+    'max': partial(nn.functional.max_pool3d, kernel_size=3),
+    # 'sample': lambda x: x[context_slice],
 }
 
 
-def get_upsample_op(name, n_chans_in, n_chans_out):
-    if name == 'neighbour':
-        return partial(nn.functional.upsample, scale_factor=3)
-    elif name == 'tconv':
-        raise NotImplementedError
-        return ConvTransposeBlock3d(n_chans_in, n_chans_out, kernel_size=3)
-    else:
-        raise ValueError(f"unknown upsample op name: {name}")
-
-
 class DeepMedicEls(nn.Module):
-    def __init__(self, n_chans_in, n_chans_out, downsample, upsample, activation, dropout=False):
+    def __init__(self, n_chans_in, n_chans_out, downsample='avg', upsample='neighbour',
+                 activation=nn.ReLU(inplace=True), dropout=False):
         super().__init__()
 
         def build_path(path_structure, kernel_size, dropout=False):
@@ -46,10 +38,10 @@ class DeepMedicEls(nn.Module):
         self.context_path = build_path(path_structure, 3)
 
         self.downsample_op = downsample_ops[downsample]
-        self.upsample_op = get_upsample_op(upsample, path_structure[-1], path_structure[-1])
+        self.upsample_op = partial(nn.functional.upsample, scale_factor=3)
 
         common_path_structure = [2 * path_structure[-1], 150, 150]
-        self.common_path = build_path(common_path_structure, 1, dropout=True)
+        self.common_path = build_path(common_path_structure, 1, dropout=dropout)
 
         self.logits_layer = ConvBlock3d(common_path_structure[-1], n_chans_out, 1)
 

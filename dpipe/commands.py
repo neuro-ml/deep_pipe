@@ -39,6 +39,10 @@ def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: 
         x = load_x(identifier)
         y = batch_predict.predict(x, predict_fn=frozen_model.do_inf_step)
 
+        # To save disk space
+        if np.issubdtype(y.dtype, np.floating):
+            y = y.astype(np.float16)
+
         np.save(os.path.join(output_path, str(identifier)), y)
         # saving some memory
         del x, y
@@ -84,7 +88,10 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
         y_true = load_y_true(identifier)
 
         for metric_name, metric in metrics.items():
-            results[metric_name][identifier] = metric(y_true, y_prob)
+            score = metric(y_true, y_prob)
+            if hasattr(score, 'tolist'):
+                score = score.tolist()
+            results[metric_name][identifier] = score
 
     for metric_name, result in results.items():
         with open(os.path.join(results_path, metric_name + '.json'), 'w') as f:

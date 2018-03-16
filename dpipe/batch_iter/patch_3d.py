@@ -79,8 +79,6 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
 
-    pdp.logging.getLogger().setLevel(pdp.logging.DEBUG)
-
     def _extract_patches(o):
         if len(o['cancer']) > 0 and np.random.uniform() < nonzero_fraction:
             center_idx = random.choice(o['cancer'])

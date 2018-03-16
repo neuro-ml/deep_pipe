@@ -1,3 +1,4 @@
 {
-  "do": "scripts/do.py"
+  "do": "scripts/do.py",
+  "rules": "dpipe/experiment/flat/rules"
 }
