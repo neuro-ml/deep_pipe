@@ -20,8 +20,8 @@ def get_axes(axes, ndim):
 
 
 def scale(x):
-    x = x - x.min()
-    return x / x.max()
+    x_min, x_max = x.min(), x.max()
+    return (x - x_min) / (x_max - x_min)
 
 
 def bytescale(x):
