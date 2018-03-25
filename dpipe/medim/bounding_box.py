@@ -11,15 +11,19 @@ def get_start_stop(mask: np.ndarray):
     start, stop = [], []
     for ax in itertools.combinations(range(mask.ndim), mask.ndim - 1):
         nonzero = np.any(mask, axis=ax)
-        left, right = np.where(nonzero)[0][[0, -1]]
+        if np.any(nonzero):
+            left, right = np.where(nonzero)[0][[0, -1]]
+        else:
+            left, right = 0, 0
         start.insert(0, left)
         stop.insert(0, right + 1)
-    return np.array(start), np.array(stop)
+    return np.array([start, stop])
 
 
 def get_slice(mask: np.ndarray):
     """Find slices of a box that contains all true values of mask, so that if
      you use them in mask[slices] you will extract box with all true values."""
+    assert np.any(mask)
     return build_slices(*get_start_stop(mask))
 
 
