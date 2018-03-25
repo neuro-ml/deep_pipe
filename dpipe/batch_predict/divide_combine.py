@@ -9,6 +9,8 @@ class DivideCombine(BatchPredict):
         self.val_combine, self.test_combine = val_combine, test_combine or val_combine
 
     def validate(self, x, y, *, validate_fn):
+        mean_loss, size = 0, 0
+
         def separate_prediction():
             nonlocal size, mean_loss
             for prediction, loss in starmap(validate_fn, self.val_divide(x, y)):
@@ -16,7 +18,6 @@ class DivideCombine(BatchPredict):
                 mean_loss += loss.sum()
                 yield prediction
 
-        mean_loss = size = 0
         return self.val_combine(separate_prediction()), mean_loss / size
 
     def predict(self, x, *, predict_fn):
