@@ -10,8 +10,6 @@ class SegmentationFromCSV(CSV, SegmentationDataset):
         super().__init__(data_path, metadata_rpath)
         self.modality_cols = modalities
         self.target_cols = targets
-        self.n_chans_msegm = len(modalities)
-        self.n_chans_segm = len(modalities)
 
     @property
     def n_chans_image(self):
