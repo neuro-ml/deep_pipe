@@ -8,4 +8,4 @@ tqdm
 nibabel
 pdp>=0.2.1,<0.3
 tensorboard-easy
-resource-manager~=0.6.4
+resource-manager~=0.6.5

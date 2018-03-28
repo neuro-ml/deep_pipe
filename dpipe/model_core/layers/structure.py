@@ -15,3 +15,13 @@ class SplitCat(nn.Module):
 
     def forward(self, x):
         return torch.cat([path(x) for path in self.paths], dim=1)
+
+
+class SplitReduce(nn.Module):
+    def __init__(self, *paths, reduce):
+        super().__init__()
+        self.reduce = reduce
+        self.paths = nn.ModuleList(list(paths))
+
+    def forward(self, x):
+        return self.reduce([path(x) for path in self.paths])

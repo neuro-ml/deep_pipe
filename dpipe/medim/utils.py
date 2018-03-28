@@ -49,7 +49,9 @@ def load_image(path: str):
         from PIL import Image
         with Image.open(path) as image:
             return np.asarray(image)
-
+    if path.endswith(('.png', '.jpg')):
+        from imageio import imread
+        return imread(path)
     raise ValueError(f"Couldn't read image from path: {path}.\n"
                      "Unknown file extension.")
 

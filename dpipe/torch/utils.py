@@ -3,7 +3,9 @@ from abc import ABCMeta
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn import functional
 from torch.autograd import Variable
+from torch.nn.modules.loss import _Loss
 
 
 def compress_3d_to_2d(x):
@@ -40,10 +42,10 @@ class NormalizedSoftmaxCrossEntropy(Eye):
 
 
 class PyramidPooling(nn.Module):
-    def __init__(self, convolution, levels: int = 1):
+    def __init__(self, pooling, levels: int = 1):
         super().__init__()
         self.levels = levels
-        self.convolution = convolution
+        self.pooling = pooling
 
     def forward(self, x):
         assert x.dim() > 2
@@ -55,7 +57,53 @@ class PyramidPooling(nn.Module):
             level = 2 ** level
             stride = tuple(map(int, np.floor(shape / level)))
             kernel_size = tuple(map(int, np.ceil(shape / level)))
-            temp = self.convolution(x, kernel_size=kernel_size, stride=stride)
+            temp = self.pooling(x, kernel_size=kernel_size, stride=stride)
             pyramid.append(temp.view(batch_size, -1))
 
         return torch.cat(pyramid, dim=-1)
+
+
+class LinearFocalLoss(_Loss):
+    def __init__(self, gamma, beta, size_average=True):
+        super().__init__(size_average)
+        self.beta = beta
+        self.gamma = gamma
+
+    def forward(self, logits, target):
+        return functional.binary_cross_entropy_with_logits(
+            self.gamma * logits + self.beta, target, size_average=self.size_average
+        ) / self.gamma
+
+
+def focal_weight(probs, target, gamma):
+    weight = (1 - 2 * probs) * target + probs
+    return weight ** gamma
+
+
+# TODO: unify
+class FocalLossWithLogits(_Loss):
+    def __init__(self, gamma, size_average=True):
+        super().__init__(size_average)
+        self.gamma = gamma
+
+    def forward(self, logits, target):
+        bce = functional.binary_cross_entropy_with_logits(logits, target, size_average=False)
+        loss = focal_weight(torch.sigmoid(logits), target, self.gamma) * bce
+
+        if self.size_average:
+            return loss.mean()
+        return loss.sum()
+
+
+class FocalLoss(_Loss):
+    def __init__(self, gamma, size_average=True):
+        super().__init__(size_average)
+        self.gamma = gamma
+
+    def forward(self, input, target):
+        bce = functional.binary_cross_entropy(input, target, size_average=False)
+        loss = focal_weight(input, target, self.gamma) * bce
+
+        if self.size_average:
+            return loss.mean()
+        return loss.sum()
