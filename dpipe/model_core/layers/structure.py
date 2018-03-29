@@ -30,3 +30,13 @@ class SplitAdd(nn.Module):
             result += path(x)
 
         return result
+
+
+class SplitReduce(nn.Module):
+    def __init__(self, *paths, reduce):
+        super().__init__()
+        self.reduce = reduce
+        self.paths = nn.ModuleList(list(paths))
+
+    def forward(self, x):
+        return self.reduce([path(x) for path in self.paths])

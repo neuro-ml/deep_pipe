@@ -60,10 +60,11 @@ class ResBlock(nn.Module):
         else:
             self.t = identity
 
-        self.shortcut = lambda x: self.t(self.crop(x))
+    def _shortcut(self, x):
+        return self.t(self.crop(x))
 
     def forward(self, x):
-        return self.fe(x) + self.shortcut(x)
+        return self.fe(x) + self._shortcut(x)
 
 
 ResBlock2d = partial(ResBlock, get_convolution=nn.Conv2d, get_batch_norm=nn.BatchNorm2d, dims=2)
