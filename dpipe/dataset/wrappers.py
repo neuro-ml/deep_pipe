@@ -155,7 +155,7 @@ def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDat
     return MergedDataset(datasets[0])
 
 
-def merge(*datasets: Dataset, methods=None, separator: str = '@'):
+def merge(*datasets: Dataset, methods=None, separator: str = None):
     """
     Merge several datasets into one by preserving the provided methods.
     The resulting ids are guaranteed to be unique.
@@ -171,13 +171,24 @@ def merge(*datasets: Dataset, methods=None, separator: str = '@'):
     """
 
     def get_dataset(id_: str):
-        parts = id_.split(separator)
-        idx = int(parts[-1])
-        return datasets[idx], separator.join(parts[:-1])
+        if separator is not None:
+            parts = id_.split(separator)
+            if len(parts) > 1:
+                idx = int(parts[-1])
+                return datasets[idx], separator.join(parts[:-1])
+        else:
+            for dataset in datasets:
+                if id_ in dataset.ids:
+                    return dataset, id_
+        raise ValueError(f'Id "{id_}" not present in dataset.')
 
     if methods is None:
         methods = []
-    ids = tuple(f'{id_}{separator}{i}' for i, dataset in enumerate(datasets) for id_ in dataset.ids)
+    if separator is None:
+        ids = tuple(id_ for dataset in datasets for id_ in dataset.ids)
+        assert len(set(ids)) == len(ids), 'The ids are not unique'
+    else:
+        ids = tuple(f'{id_}{separator}{i}' for i, dataset in enumerate(datasets) for id_ in dataset.ids)
 
     def decorator(method_name):
         def wrapper(identifier):
