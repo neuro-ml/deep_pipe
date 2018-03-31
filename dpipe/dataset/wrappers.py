@@ -2,7 +2,7 @@
 
 import functools
 from typing import List, Sequence
-from collections import ChainMap
+from collections import ChainMap, namedtuple
 
 import numpy as np
 import dpipe.medim as medim
@@ -39,23 +39,12 @@ def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
     return proxy(dataset)
 
 
+# TODO: deprecated
 def cache_segmentation_dataset(dataset: Dataset) -> Dataset:
     return cache_methods(dataset, ("load_image", "load_segm", "load_msegm"))
 
 
-def apply(instance, methods, function):
-    def decorator(method):
-        def wrapper(self, *args, **kwargs):
-            return function(method(*args, **kwargs))
-
-        return wrapper
-
-    new_methods = {method: decorator(getattr(instance, method)) for method in methods}
-    proxy = type('Apply', (Proxy,), new_methods)
-    return proxy(instance)
-
-
-def apply_dict(instance, **methods):
+def apply(instance, **methods):
     def decorator(method, func):
         def wrapper(self, *args, **kwargs):
             return func(method(*args, **kwargs))
@@ -65,6 +54,10 @@ def apply_dict(instance, **methods):
     new_methods = {method: decorator(getattr(instance, method), func) for method, func in methods.items()}
     proxy = type('Apply', (Proxy,), new_methods)
     return proxy(instance)
+
+
+# TODO: deprecated
+apply_dict = apply
 
 
 def apply_mask(dataset: IntSegmentationDataset, mask_modality_id: int = None,
@@ -160,6 +153,41 @@ def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDat
             return patient_id2dataset[patient_id].load_segm(patient_id)
 
     return MergedDataset(datasets[0])
+
+
+def merge(*datasets: Dataset, methods=None, separator: str = '@'):
+    """
+    Merge several datasets into one by preserving the provided methods.
+    The resulting ids are guaranteed to be unique.
+
+    Parameters
+    ----------
+    datasets: List[Dataset]
+    methods: List[str], optional
+        the list of methods to be preserved. Each method must take a single
+        argument - the identifier.
+    separator: str, optional
+        the separator for the resulting ids.
+    """
+
+    def get_dataset(id_: str):
+        parts = id_.split(separator)
+        idx = int(parts[-1])
+        return datasets[idx], separator.join(parts[:-1])
+
+    if methods is None:
+        methods = []
+    ids = tuple(f'{id_}{separator}{i}' for i, dataset in enumerate(datasets) for id_ in dataset.ids)
+
+    def decorator(method_name):
+        def wrapper(identifier):
+            ds, id_ = get_dataset(identifier)
+            return getattr(ds, method_name)(id_)
+
+        return wrapper
+
+    Merged = namedtuple('Merged', methods + ['ids'])
+    return Merged(*([decorator(method) for method in methods] + [ids]))
 
 
 def weighted(dataset: Dataset, thickness: str) -> Dataset:
