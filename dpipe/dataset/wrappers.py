@@ -155,10 +155,9 @@ def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDat
     return MergedDataset(datasets[0])
 
 
-def merge(*datasets: Dataset, methods=None, separator: str = None):
+def merge(*datasets: Dataset, methods=None) -> Dataset:
     """
     Merge several datasets into one by preserving the provided methods.
-    The resulting ids are guaranteed to be unique.
 
     Parameters
     ----------
@@ -166,39 +165,29 @@ def merge(*datasets: Dataset, methods=None, separator: str = None):
     methods: List[str], optional
         the list of methods to be preserved. Each method must take a single
         argument - the identifier.
-    separator: str, optional
-        the separator for the resulting ids.
+
+    Returns
+    -------
+    merged_dataset: Dataset
     """
 
-    def get_dataset(id_: str):
-        if separator is not None:
-            parts = id_.split(separator)
-            if len(parts) > 1:
-                idx = int(parts[-1])
-                return datasets[idx], separator.join(parts[:-1])
-        else:
-            for dataset in datasets:
-                if id_ in dataset.ids:
-                    return dataset, id_
-        raise ValueError(f'Id "{id_}" not present in dataset.')
+    ids = tuple(id_ for dataset in datasets for id_ in dataset.ids)
+    assert len(set(ids)) == len(ids), 'The ids are not unique'
+    n_chans_images = {dataset.n_chans_image for dataset in datasets}
+    assert len(n_chans_images) == 1, 'Each dataset must have same number of channels'
 
-    if methods is None:
-        methods = []
-    if separator is None:
-        ids = tuple(id_ for dataset in datasets for id_ in dataset.ids)
-        assert len(set(ids)) == len(ids), 'The ids are not unique'
-    else:
-        ids = tuple(f'{id_}{separator}{i}' for i, dataset in enumerate(datasets) for id_ in dataset.ids)
+    id_to_dataset = ChainMap(*({id_: dataset for id_ in dataset.ids} for dataset in datasets))
+    n_chans_image = list(n_chans_images)[0]
+    methods = list(set(methods or []) | {'load_image'})
 
     def decorator(method_name):
         def wrapper(identifier):
-            ds, id_ = get_dataset(identifier)
-            return getattr(ds, method_name)(id_)
+            return getattr(id_to_dataset[identifier], method_name)(identifier)
 
         return wrapper
 
-    Merged = namedtuple('Merged', methods + ['ids'])
-    return Merged(*([decorator(method) for method in methods] + [ids]))
+    Merged = namedtuple('Merged', methods + ['ids', 'n_chans_image'])
+    return Merged(*([decorator(method) for method in methods] + [ids, n_chans_image]))
 
 
 def weighted(dataset: Dataset, thickness: str) -> Dataset:
