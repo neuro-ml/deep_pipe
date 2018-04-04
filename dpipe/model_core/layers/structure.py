@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.nn import functional
 
 
 def compose_blocks(structure, get_block):
@@ -40,3 +41,14 @@ class SplitReduce(nn.Module):
 
     def forward(self, x):
         return self.reduce([path(x) for path in self.paths])
+
+
+class UpsampleToInput(nn.Module):
+    def __init__(self, path, mode='nearest'):
+        super().__init__()
+        self.path = path
+        self.mode = mode
+
+    def forward(self, x):
+        shape = x.shape[2:]
+        return functional.upsample(self.path(x), size=shape, mode=self.mode)

@@ -99,11 +99,11 @@ def focal_loss_with_logits(logits, target, gamma=2, weight=None, size_average=Tr
 
     min_val = - logits.clamp(min=0)
     max_val = (-logits).clamp(min=0)
-    
+
     prob = (min_val + logits).exp() / (min_val.exp() + (min_val + logits).exp())
-    
-    loss = ( (1 - 2*prob)*target + prob ) ** gamma \
-    * ( logits - logits * target + max_val + ((-max_val).exp() + (-logits - max_val).exp()).log() )
+
+    loss = ((1 - 2 * prob) * target + prob) ** gamma \
+           * (logits - logits * target + max_val + ((-max_val).exp() + (-logits - max_val).exp()).log())
     # * F.binary_cross_entropy_with_logits(logits, target, reduce=False)
 
     if weight is not None:
