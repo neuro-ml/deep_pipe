@@ -62,6 +62,14 @@ class PyramidPooling(nn.Module):
 
         return torch.cat(pyramid, dim=-1)
 
+    @staticmethod
+    def get_multiplier(levels, ndim):
+        return (2 ** (ndim * levels) - 1) // (2 ** ndim - 1)
+
+    @staticmethod
+    def get_out_features(in_features, levels, ndim):
+        return in_features * PyramidPooling.get_multiplier(levels, ndim)
+
 
 class LinearFocalLoss(_Loss):
     def __init__(self, gamma, beta, size_average=True):
