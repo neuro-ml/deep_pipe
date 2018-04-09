@@ -12,14 +12,25 @@ from .utils import build_slices, get_axes
 # Probably need to rewrite to support it
 
 
+def check_len(*arrays):
+    length = len(arrays[0])
+    for i, a in enumerate(arrays):
+        assert length == len(a), f'Different len: {arrays}'
+
+
 def find_patch_start_end_padding(shape: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_size: np.array,
-                                 spatial_dims: list):
+                                 spatial_dims):
+    check_len(spatial_center_idx, spatial_patch_size, spatial_dims)
+
     spatial_dims = list(spatial_dims)
     spatial_start = spatial_center_idx - spatial_patch_size // 2
     spatial_end = spatial_start + spatial_patch_size
 
     padding = np.zeros((len(shape), 2), dtype=int)
     spatial_shape = shape[spatial_dims]
+
+    import pdb
+    pdb.set_trace()
 
     padding[spatial_dims, 0] = -spatial_start
     padding[spatial_dims, 1] = spatial_end - spatial_shape
@@ -65,6 +76,8 @@ def extract_patch(x: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_
         Patch extracted from x, padded, if necessary.
 
     """
+    check_len(spatial_center_idx, spatial_patch_size, spatial_dims)
+
     start, end, padding = find_patch_start_end_padding(
         np.array(x.shape), spatial_center_idx=spatial_center_idx, spatial_patch_size=spatial_patch_size,
         spatial_dims=spatial_dims
@@ -79,8 +92,7 @@ def extract_patch(x: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_
     return patch
 
 
-def sample_uniform_center_index(x_shape: np.array, spatial_patch_size: np.array,
-                                spatial_dims: list) -> np.array:
+def sample_uniform_center_index(x_shape: np.array, spatial_patch_size: np.array, spatial_dims: list) -> np.ndarray:
     """
     Returns spatial center coordinates for the patch, chosen randomly.
     We assume that patch have to belong to the object boundaries.
@@ -101,6 +113,8 @@ def sample_uniform_center_index(x_shape: np.array, spatial_patch_size: np.array,
         is shifted to the right.
 
     """
+    check_len(spatial_patch_size, spatial_dims)
+
     spatial_dims = list(spatial_dims)
     max_spatial_center_idx = x_shape[spatial_dims] - spatial_patch_size + 1
 
@@ -115,8 +129,9 @@ def sample_uniform_center_index(x_shape: np.array, spatial_patch_size: np.array,
 def find_masked_patch_center_indices(mask: np.array, patch_size: np.array):
     """Returns array with spatial center indices for patches that completely 
     belong to spatial_mask and spatial voxel mask is activated."""
-    c = np.argwhere(mask)
+    assert len(mask.shape) == len(patch_size), f'{mask}.shape != len({patch_size})'
 
+    c = np.argwhere(mask)
     l_bound = c - patch_size // 2
     r_bound = l_bound + patch_size
 
@@ -144,6 +159,7 @@ def get_random_patch(x: np.ndarray, patch_size, spatial_dims=None) -> np.ndarray
 
 def pad(x, padding, padding_values):
     padding = np.array(padding)
+    assert len(x.shape) == padding.shape[0], f'{x.shape}, {padding}'
 
     new_shape = np.array(x.shape) + np.sum(padding, axis=1)
     new_x = np.zeros(new_shape, dtype=x.dtype)

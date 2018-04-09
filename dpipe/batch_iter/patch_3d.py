@@ -53,9 +53,16 @@ def extract_patches(x, patch_sizes, center_idx, padding_values, spatial_dims):
             for x_patch_size in patch_sizes]
 
 
+def check_y_patch_size(y_patch_size):
+    assert len(y_patch_size) == len(spatial_dims), f'y_patch_size is {y_patch_size}'
+
+
 def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, buffer_size):
+    check_y_patch_size(y_patch_size)
+
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
+
 
     def _extract_patches(o):
         center_idx = get_random_center_idx(o['y'], y_patch_size, spatial_dims=spatial_dims)
@@ -76,6 +83,8 @@ def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patc
 
 def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, nonzero_fraction,
                              buffer_size):
+    check_y_patch_size(y_patch_size)
+
     x_patch_sizes = np.array(x_patch_sizes)
     y_patch_size = np.array(y_patch_size)
 
