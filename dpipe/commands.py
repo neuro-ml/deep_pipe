@@ -32,12 +32,12 @@ def transform(input_path, output_path, transform_fn):
         np.save(os.path.join(output_path, f), transform_fn(np.load(os.path.join(input_path, f))))
 
 
-def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: BatchPredict):
+def predict(ids, output_path, load_x, predict_fn):
     os.makedirs(output_path)
 
     for identifier in tqdm(ids):
         x = load_x(identifier)
-        y = batch_predict.predict(x, predict_fn=frozen_model.do_inf_step)
+        y = predict_fn(x)
 
         # To save disk space
         if np.issubdtype(y.dtype, np.floating):
