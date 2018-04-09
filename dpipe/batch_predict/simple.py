@@ -1,6 +1,6 @@
 import numpy as np
 
-from .divide_combine import DivideCombine
+from dpipe.batch_predict.base import DivideCombine
 
 
 def add_dimension(*data):

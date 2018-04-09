@@ -68,5 +68,7 @@ class Patch3DPredictor(BatchPredictorShapeState):
                               spatial_intersection_size=zero_spatial_intersection_size)
 
     def combine_y(self, y_parts, x_shape):
+        print(x_shape)
+        print(len(y_parts), y_parts[0].shape)
         complete_shape = compute_shape_from_spatial(y_parts[0].shape, x_shape[-3:], spatial_dims=spatial_dims)
         return combine(y_parts, complete_shape)
