@@ -29,9 +29,6 @@ def find_patch_start_end_padding(shape: np.ndarray, *, spatial_center_idx: np.ar
     padding = np.zeros((len(shape), 2), dtype=int)
     spatial_shape = shape[spatial_dims]
 
-    import pdb
-    pdb.set_trace()
-
     padding[spatial_dims, 0] = -spatial_start
     padding[spatial_dims, 1] = spatial_end - spatial_shape
     padding[spatial_dims] = np.maximum(0, padding[spatial_dims])
