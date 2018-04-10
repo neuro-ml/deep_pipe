@@ -50,7 +50,7 @@ class TFModel(Model):
     def save(self, path):
         self.saver.save(self.session, get_model_path(path))
 
-    def load(self, path):
+    def load(self, path, _):
         self.saver.restore(self.session, get_model_path(path))
 
 
