@@ -126,7 +126,7 @@ def sample_uniform_center_index(x_shape: np.array, spatial_patch_size: np.array,
 def find_masked_patch_center_indices(mask: np.array, patch_size: np.array):
     """Returns array with spatial center indices for patches that completely 
     belong to spatial_mask and spatial voxel mask is activated."""
-    assert len(mask.shape) == len(patch_size), f'{mask}.shape != len({patch_size})'
+    assert len(mask.shape) == len(patch_size), f'{mask.shape} != len({patch_size})'
 
     c = np.argwhere(mask)
     l_bound = c - patch_size // 2
