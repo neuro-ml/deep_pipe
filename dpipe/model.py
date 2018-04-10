@@ -74,13 +74,17 @@ class Model(ABC):
         """
 
     @abstractmethod
-    def load(self, path: str):
+    def load(self, path: str, modify_state_fn: callable):
         """
-        Load the network parameters from `path`
+        Load the network parameters from `path`. Possibly modify them using `modify_state_fn`.
 
         Parameters
         ----------
         path: str
+        modify_state_fn: callable
+            if not None, two arguments will be passed to the function: current state of the model and the state loaded
+            from the path. This function should modify states as needed and return the final state to load. This
+            function can be handy if you want to transfer weights from similar but not completely equal architecture.
         """
 
 

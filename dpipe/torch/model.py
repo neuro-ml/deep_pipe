@@ -79,9 +79,13 @@ class TorchModel(Model):
         state_dict = self.model_core.state_dict()
         torch.save(state_dict, path)
 
-    def load(self, path: str):
+    def load(self, path: str, modify_state_fn: callable = None):
         path = get_model_path(path)
-        self.model_core.load_state_dict(torch.load(path))
+        state_to_load = torch.load(path)
+        if modify_state_fn is not None:
+            current_state = self.model_core.state_dict()
+            state_to_load = modify_state_fn(current_state, state_to_load)
+        self.model_core.load_state_dict(state_to_load)
 
 
 class TorchFrozenModel(FrozenModel):
