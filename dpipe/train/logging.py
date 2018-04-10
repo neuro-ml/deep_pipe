@@ -24,40 +24,32 @@ def make_log_vector(logger: tensorboard_easy.Logger, tag: str, first_step: int =
 
 
 class Logger:
-    def train(self, train_losses):
+    def train(self, train_losses, step):
         pass
 
-    def validation(self, val_losses):
+    def validation(self, val_losses, step):
         pass
 
-    def lr(self, lr):
+    def lr(self, lr, step):
         pass
 
-    def metrics(self, metrics, epoch):
+    def metrics(self, metrics, step):
         pass
 
 
 class TBLogger(Logger):
     def __init__(self, log_path):
-        logger = tensorboard_easy.Logger(log_path)
-        self.logger = logger
-        self.train_log = logger.make_log_scalar('train/loss')
-        self.lr_log = logger.make_log_scalar('train/lr')
-        self.val_log = logger.make_log_scalar('val/loss')
+        self.logger = tensorboard_easy.Logger(log_path)
 
-    def train(self, train_losses):
-        self.train_log(np.mean(train_losses, axis=0))
+    def train(self, train_losses, step):
+        log_scalar_or_vector(self.logger, 'train/loss', np.mean(train_losses, axis=0), step)
 
-    def validation(self, val_losses):
-        self.train_log(np.mean(val_losses, axis=0))
+    def lr(self, lr, step):
+        log_scalar_or_vector(self.logger, 'train/lr', lr, step)
 
-    def lr(self, lr):
-        self.lr_log(lr)
+    def validation(self, val_losses, step):
+        log_scalar_or_vector(self.logger, 'val/loss', np.mean(val_losses, axis=0), step)
 
-    def metrics(self, metrics, epoch):
+    def metrics(self, metrics, step):
         for name, value in metrics.items():
-            # check if not scalar
-            try:
-                log_vector(self.logger, f'metrics/{name}', value, epoch)
-            except TypeError:
-                self.logger.log_scalar(f'metrics/{name}', value, epoch)
+            log_scalar_or_vector(self.logger, f'val/metrics/{name}', value, step)
