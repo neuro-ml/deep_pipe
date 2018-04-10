@@ -10,7 +10,7 @@ def decode_segmentation(x, segm_decoding_matrix) -> np.array:
 
 def build_slices(start, stop):
     assert len(start) == len(stop)
-    return list(map(slice, start, stop))
+    return tuple(map(slice, start, stop))
 
 
 def get_axes(axes, ndim):
