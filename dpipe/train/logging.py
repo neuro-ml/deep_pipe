@@ -9,7 +9,7 @@ def log_vector(logger: tensorboard_easy.Logger, tag: str, vector, step: int):
 
 
 def log_scalar_or_vector(logger, tag, value: np.ndarray, step):
-    value = value.squeeze()
+    value = np.asarray(value).squeeze()
     if value.size > 1:
         log_vector(logger, tag, value, step)
     else:
