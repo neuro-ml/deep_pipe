@@ -135,7 +135,7 @@ def to_np(x: Variable):
     return x.cpu().data.numpy()
 
 
-def to_var(x: np.array, cuda: bool, volatile: bool = False):
+def to_var(x: np.ndarray, cuda: bool, volatile: bool = False):
     """
     Convert a numpy array to a torch Tensor
 
@@ -148,7 +148,7 @@ def to_var(x: np.array, cuda: bool, volatile: bool = False):
     volatile: bool, optional
         make tensor volatile
     """
-    x = Variable(torch.from_numpy(x), volatile=volatile)
+    x = Variable(torch.from_numpy(np.asarray(x)), volatile=volatile)
     if (torch.cuda.is_available() and cuda is None) or cuda:
         x = x.cuda()
     return x
