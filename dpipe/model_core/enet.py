@@ -1,145 +1,162 @@
-import tensorflow as tf
-
-from .layers_tf.layers import spatial_batch_norm
-from .base import ModelCore
-
-
-def init_block(inputs, name, training, output_channels, kernel_size=3,
-               conv_layer=tf.layers.conv2d, pool_layer=tf.layers.max_pooling2d):
-    with tf.variable_scope(name):
-        inp_channels = int(inputs.shape[1])
-        conv = conv_layer(inputs, output_channels - inp_channels, kernel_size,
-                          strides=2, padding='same', use_bias=False,
-                          data_format='channels_first')
-        pool = pool_layer(inputs, pool_size=2, strides=2, padding='same',
-                          data_format='channels_first')
-
-        inputs = tf.concat([conv, pool], 1)
-        inputs = spatial_batch_norm(inputs, training=training,
-                                    data_format='channels_first')
-        return tf.nn.relu(inputs)
+import torch
+import torch.optim
+import torch.nn as nn
 
 
-def conv_block(inputs, channels, kernel_size, strides, training, padding='same',
-               activation=tf.nn.relu, layer=tf.layers.conv2d, name=None):
-    with tf.variable_scope(name):
-        inputs = layer(inputs, channels, kernel_size=kernel_size,
-                       strides=strides, padding=padding, use_bias=False,
-                       data_format='channels_first', name=name)
-        inputs = spatial_batch_norm(inputs, training=training,
-                                    data_format='channels_first')
-        return activation(inputs)
+class InitialBlock(nn.Module):
+    conv = nn.Conv2d
+    pool = nn.MaxPool2d
+    batch = nn.BatchNorm2d
+
+    def __init__(self, nchannels, kernel_size=3):
+        super().__init__()
+
+        self.convolution = self.conv(nchannels, 16 - nchannels, kernel_size,
+                                     stride=2, padding=1, bias=True)
+        self.max_pool = self.pool(2, stride=2, ceil_mode=True)
+        self.batch_norm = self.batch(16, eps=1e-3)
+
+    def forward(self, input):
+        output = torch.cat([self.convolution(input), self.max_pool(input)], 1)
+        output = self.batch_norm(output)
+        return nn.functional.relu(output)
 
 
-def res_block(inputs, name, output_channels, training, kernel_size=3,
-              downsample=False, upsample=False, dropout_prob=.1,
-              internal_scale=4, conv_down=tf.layers.conv2d,
-              conv_up=tf.layers.conv2d_transpose,
-              pool_layer=tf.layers.max_pooling2d):
-    # it can be either upsampling or downsampling:
-    assert not (upsample and downsample)
+class ResBlock(nn.Module):
+    conv = nn.Conv2d
+    conv_transpose = nn.ConvTranspose2d
+    pool = nn.MaxPool2d
+    batch = nn.BatchNorm2d
+    dropout = nn.Dropout2d
 
-    input_channels = int(inputs.shape[1])
-    internal_channels = output_channels // internal_scale
-    input_stride = downsample and 2 or 1
+    def __init__(self, input_channels, output_channels, kernel_size=3, downsample=False, upsample=False,
+                 dropout_prob=.1, internal_scale=4):
+        # it can be either upsampling or downsampling:
+        assert not (upsample and downsample)
+        super().__init__()
 
-    with tf.variable_scope(name):
-        # conv path
-        # TODO: use prelu
-        conv = conv_block(inputs, internal_channels, kernel_size=input_stride,
-                          strides=input_stride, training=training, name='conv1',
-                          layer=conv_down)
+        internal_channels = output_channels // internal_scale
+        input_stride = downsample and 2 or 1
+
+        self.downsample = downsample
+        self.upsample = upsample
+        self.output_channels = output_channels
+        self.input_channels = input_channels
+
+        conv_block = [
+            self.conv(input_channels, internal_channels, input_stride,
+                      stride=input_stride, padding=0, bias=False),
+            self.batch(internal_channels, eps=1e-03),
+            nn.PReLU(),
+        ]
 
         if upsample:
-            conv = conv_block(conv, internal_channels, kernel_size,
-                              strides=2, training=training,
-                              layer=conv_up, name='upsample')
+            conv_block.append(self.conv_transpose(
+                internal_channels, internal_channels, kernel_size, stride=2, padding=1, output_padding=1, bias=True
+            ))
         else:
             # TODO: use dilated and asymmetric convolutions
-            conv = conv_block(conv, internal_channels, kernel_size, strides=1,
-                              training=training, name='no_upsample',
-                              layer=conv_down)
-        conv = conv_block(conv, output_channels, kernel_size=1, strides=1,
-                          training=training, name='conv3', layer=conv_down)
-        conv = tf.layers.dropout(conv, dropout_prob, training=training)
+            conv_block.append(self.conv(
+                internal_channels, internal_channels, kernel_size, stride=1, padding=1, bias=True
+            ))
+
+        conv_block.extend([
+            self.batch(internal_channels, eps=1e-03),
+            nn.PReLU(),
+            self.conv(internal_channels, output_channels, 1,
+                      stride=1, padding=0, bias=False),
+            self.batch(output_channels, eps=1e-03),
+            self.dropout(dropout_prob),
+        ])
+
+        self.conv_block = nn.Sequential(*conv_block)
 
         # main path
-        main = inputs
         if downsample:
-            main = pool_layer(
-                inputs, pool_size=2, strides=2,
-                padding='same', data_format='channels_first')
-        if output_channels != input_channels:
-            main = conv_block(main, output_channels, kernel_size=1, strides=1,
-                              activation=tf.identity, training=training,
-                              name='justify', layer=conv_down)
+            self.max_pool = self.pool(2, stride=2)
         if upsample:
-            main = conv_up(
-                main, output_channels, kernel_size, strides=2, padding='same',
-                use_bias=False, data_format='channels_first',
-                name='justify_upsample')
-        return tf.nn.relu(conv + main)
+            # TODO: implement unpooling
+            self.unpool = self.conv_transpose(
+                output_channels, output_channels, kernel_size, stride=2, padding=1, output_padding=1, bias=True
+            )
+
+        if output_channels != input_channels:
+            self.adjust = nn.Sequential(
+                self.conv(input_channels, output_channels, 1,
+                          stride=1, padding=0, bias=False),
+                self.batch(output_channels, eps=1e-03),
+            )
+
+    def forward(self, input):
+        conv_path = self.conv_block(input)
+        main_path = input
+
+        if self.downsample:
+            main_path = self.max_pool(main_path)
+        if self.output_channels != self.input_channels:
+            main_path = self.adjust(main_path)
+        if self.upsample:
+            main_path = self.unpool(main_path)
+
+        return nn.functional.relu(conv_path + main_path)
 
 
-def stage(inputs, output_channels, num_blocks, name, training,
-          downsample=False, upsample=False, conv_down=tf.layers.conv2d,
-          conv_up=tf.layers.conv2d_transpose,
-          pool_layer=tf.layers.max_pooling2d):
-    layers = dict(conv_down=conv_down, conv_up=conv_up, pool_layer=pool_layer)
-    with tf.variable_scope(name):
-        inputs = res_block(inputs, 'res0', output_channels, training=training,
-                           downsample=downsample, upsample=upsample, **layers)
-        for i in range(num_blocks - 1):
-            inputs = res_block(inputs, f'res%d' % (i + 1), output_channels,
-                               training=training, **layers)
-        return inputs
+class Stage(nn.Module):
+    res_block = ResBlock
+
+    def __init__(self, input_channels, output_channels, num_blocks, downsample=False, upsample=False):
+        super().__init__()
+
+        blocks = [self.res_block(input_channels, output_channels, downsample=downsample, upsample=upsample)]
+        blocks.extend([self.res_block(output_channels, output_channels) for _ in range(num_blocks - 1)])
+        self.blocks = nn.Sequential(*blocks)
+
+    def forward(self, input):
+        return self.blocks(input)
 
 
-def build_model(inputs, classes, name, training, init_channels,
-                conv_down=tf.layers.conv2d, conv_up=tf.layers.conv2d_transpose,
-                pool_layer=tf.layers.max_pooling2d):
-    layers = dict(conv_down=conv_down, conv_up=conv_up, pool_layer=pool_layer)
-    with tf.variable_scope(name):
-        input_shape = tf.shape(inputs)[2:]
+class ENet2D(nn.Module):
+    conv_transpose = nn.ConvTranspose2d
+    stage = Stage
+    initial = InitialBlock
 
-        inputs = init_block(inputs, 'init', training, init_channels,
-                            conv_layer=conv_down, pool_layer=pool_layer)
-        inputs = stage(inputs, 64, 5, 'stage1', training, downsample=True,
-                       **layers)
-        inputs = stage(inputs, 128, 9, 'stage2', training, downsample=True,
-                       **layers)
-        inputs = stage(inputs, 128, 8, 'stage3', training,
-                       **layers)
-        inputs = stage(inputs, 64, 3, 'stage4', training, upsample=True,
-                       **layers)
-        inputs = stage(inputs, 16, 2, 'stage5', training, upsample=True,
-                       **layers)
-        inputs = conv_up(
-            inputs, classes, kernel_size=2, strides=2, use_bias=True,
-            data_format='channels_first')
+    def __init__(self, n_chans_in, n_chans_out):
+        super().__init__()
 
-        # crop
-        output_shape = tf.shape(inputs)[2:]
-        begin = (output_shape - input_shape) // 2
-        end = begin + input_shape
-        idx = [Ellipsis]
-        for i in range(begin.shape[0]):
-            idx.append(slice(begin[i], end[i]))
-        inputs = inputs[idx]
-        return inputs
-
-
-class ENet2D(ModelCore):
-    def __init__(self, n_chans_in, n_chans_out, multiplier=1, init_channels=16):
-        super().__init__(n_chans_in * multiplier, n_chans_out)
-        self.init_channels = init_channels
-        self.multiplier = multiplier
-
-    def build(self, training_ph):
-        x_ph = tf.placeholder(
-            tf.float32, (None, self.n_chans_in, None, None), name='input'
+        self.layers = nn.Sequential(
+            self.initial(n_chans_in),
+            self.stage(16, 64, 5, downsample=True),
+            self.stage(64, 128, 9, downsample=True),
+            self.stage(128, 128, 8),
+            self.stage(128, 64, 3, upsample=True),
+            self.stage(64, 16, 2, upsample=True),
+            self.conv_transpose(16, n_chans_out, 1),
         )
 
-        logits = build_model(x_ph, self.n_chans_out, 'enet_2d',
-                             training_ph, self.init_channels)
-        return [x_ph], logits
+    def forward(self, input):
+        size = input.size()[2:]
+        return torch.nn.functional.upsample_bilinear(self.layers(input), size=size)
+
+
+class InitialBlock3D(InitialBlock):
+    conv = nn.Conv3d
+    pool = nn.MaxPool3d
+    batch = nn.BatchNorm3d
+
+
+class ResBlock3D(ResBlock):
+    conv = nn.Conv3d
+    conv_transpose = nn.ConvTranspose3d
+    pool = nn.MaxPool3d
+    batch = nn.BatchNorm3d
+    dropout = nn.Dropout3d
+
+
+class Stage3D(Stage):
+    res_block = ResBlock3D
+
+
+class ENet3D(ENet2D):
+    conv_transpose = nn.ConvTranspose3d
+    stage = Stage3D
+    initial = InitialBlock3D

@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from dpipe.batch_iter.simple import simple
+from dpipe.batch_iter.simple import load_combine
 from dpipe.batch_iter.slices import slices
 
 
@@ -12,7 +12,7 @@ class TestSimple(unittest.TestCase):
         x, y = np.random.randn(2, 100)
         ids = list(range(len(x)))
 
-        with simple(ids, x.__getitem__, y.__getitem__, 1) as pipeline:
+        with load_combine(ids, x.__getitem__, y.__getitem__, 1) as pipeline:
             for i, (xs, ys) in enumerate(pipeline):
                 self.assertEqual(xs, x[[i]])
                 self.assertEqual(ys, y[[i]])

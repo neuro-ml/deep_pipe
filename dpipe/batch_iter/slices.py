@@ -1,19 +1,11 @@
-import pdp
 import numpy as np
+import pdp
 
 from dpipe.medim.augmentation import spacial_augmentation, random_flip
-from dpipe.medim.preprocessing import pad_to_shape
 from dpipe.medim.slices import iterate_slices
 from dpipe.medim.utils import load_by_ids
 
-
-def combine_batches_even(inputs):
-    result = []
-    for o in zip(*inputs):
-        shapes = np.array([x.shape for x in o])
-        padded = [pad_to_shape(x, shapes.max(axis=0)) for x in o]
-        result.append(np.array(padded))
-    return result
+from .utils import combine_batches_even
 
 
 def slices(ids, load_x, load_y, batch_size, *, shuffle, axis=-1, slices=1, pad=0, concatenate=None):
