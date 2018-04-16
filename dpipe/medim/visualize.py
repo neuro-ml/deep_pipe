@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmentation_probabilities
 
 
-def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
+def slice3d(*data, axis: int = -1, figsize: int = 5, max_columns: int = None,
             colorbar: bool = False, cmap: str = None, vlim=(None, None)):
     """
     Creates an interactive plot, simultaneously showing slices along a given
@@ -15,7 +15,7 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
     ----------
     data : list of numpy arrays
     axis : the axis along which the slices will be taken
-    fig_size : the size of the image of a single slice
+    figsize : the size of the image of a single slice
     max_columns : the maximal number of figures in a row.
                     None - all figures will be in the same row.
     colorbar : Whether to display a colorbar.
@@ -31,7 +31,7 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
         rows = (len(data) - 1) // columns + 1
 
     def update(idx):
-        fig, axes = plt.subplots(rows, columns, figsize=(fig_size * columns, fig_size * rows))
+        fig, axes = plt.subplots(rows, columns, figsize=(figsize * columns, figsize * rows))
         axes = np.array(axes).flatten()
         for ax, x in zip(axes, data):
             im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vlim[0], vmax=vlim[1])
