@@ -157,6 +157,8 @@ def get_random_patch(x: np.ndarray, patch_size, spatial_dims=None) -> np.ndarray
 def pad(x, padding, padding_values):
     padding = np.array(padding)
     assert len(x.shape) == padding.shape[0], f'{x.shape}, {padding}'
+    if padding.ndim == 1:
+        padding = np.repeat(padding[:, None], 2, axis=1)
 
     new_shape = np.array(x.shape) + np.sum(padding, axis=1)
     new_x = np.zeros(new_shape, dtype=x.dtype)
