@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.nn import functional
 
 
-def compose_blocks(structure, get_block):
+def make_blocks(structure, get_block):
     assert all([type(s) is int for s in structure]), f'{structure}'
     return nn.Sequential(*[
         get_block(n_chans_in, n_chans_out) for n_chans_in, n_chans_out in zip(structure[:-1], structure[1:])
