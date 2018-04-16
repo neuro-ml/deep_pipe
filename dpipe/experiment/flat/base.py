@@ -37,4 +37,4 @@ def flat(split: Iterable, config_path: str, experiment_path: str, *, makefile: s
 
     # resource manager is needed here, because there may be inheritance
     rm = get_resource_manager(config_path)
-    rm.save_config(os.path.join(experiment_path, 'config'))
+    rm.save_config(os.path.join(experiment_path, 'resources.config'))

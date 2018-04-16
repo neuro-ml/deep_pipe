@@ -3,7 +3,7 @@ from dpipe.config import get_paths
 
 DO = get_paths()['do']
 
-CONFIG_ARG = '--config_path ../config'
+CONFIG_ARG = '--config_path ../resources.config'
 SAVED_MODEL = 'model'
 TB_LOG = 'train_logs'
 

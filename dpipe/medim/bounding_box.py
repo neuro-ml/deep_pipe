@@ -30,5 +30,5 @@ def get_slice(mask: np.ndarray):
 def extract(arrays, mask: np.ndarray):
     """Extract bounding boxes from the last dims of all arrays according to the
      mask."""
-    s = [...] + get_slice(mask)
+    s = (Ellipsis, *get_slice(mask))
     return [np.array(a[s]) for a in arrays]
