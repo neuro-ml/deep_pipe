@@ -3,11 +3,20 @@ import torch.nn as nn
 from torch.nn import functional
 
 
-def make_blocks(structure, get_block):
+def make_pipeline(structure, make_transformer):
     assert all([type(s) is int for s in structure]), f'{structure}'
     return nn.Sequential(*[
-        get_block(n_chans_in, n_chans_out) for n_chans_in, n_chans_out in zip(structure[:-1], structure[1:])
+        make_transformer(n_chans_in, n_chans_out) for n_chans_in, n_chans_out in zip(structure[:-1], structure[1:])
     ])
+
+
+def make_blocks_with_splitters(structure, make_block, make_splitter):
+    if len(structure) == 1:
+        return make_block(structure[0])
+    else:
+        return nn.Sequential(make_block(structure[0]),
+                             make_splitter(),
+                             make_blocks_with_splitters(structure[1:], make_block, make_splitter))
 
 
 class SplitCat(nn.Module):
