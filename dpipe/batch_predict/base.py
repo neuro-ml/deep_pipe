@@ -59,7 +59,7 @@ def validate_parts(inputs_iterator, *, validate_fn):
         losses.append(loss)
         weights.append(y_pred.size)
 
-    loss = np.average(losses, weights=weights)
+    loss = np.average(losses, weights=weights, axis=0)
     return y_preds, loss
 
 
@@ -72,9 +72,9 @@ class DivideCombine(BatchPredict):
         self.val_divide, self.test_divide = val_divide, test_divide or val_divide
         self.val_combine, self.test_combine = val_combine, test_combine or val_combine
 
-    def validate(self, x, y, *, validate_fn):
-        y_preds, loss = validate_parts(self.val_divide(x, y), validate_fn=validate_fn)
+    def validate(self, *inputs, validate_fn):
+        y_preds, loss = validate_parts(self.val_divide(*inputs), validate_fn=validate_fn)
         return self.val_combine(y_preds), loss
 
-    def predict(self, x, *, predict_fn):
-        return self.test_combine(predict_parts(self.test_divide(x), predict_fn=predict_fn))
+    def predict(self, *inputs, predict_fn):
+        return self.test_combine(predict_parts(self.test_divide(*inputs), predict_fn=predict_fn))

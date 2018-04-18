@@ -61,3 +61,11 @@ class UpsampleToInput(nn.Module):
     def forward(self, x):
         shape = x.shape[2:]
         return functional.upsample(self.path(x), size=shape, mode=self.mode)
+
+
+# backwards compatibility
+
+# Deprecated
+# ----------
+
+compose_blocks = make_pipeline
