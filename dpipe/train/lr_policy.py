@@ -62,3 +62,12 @@ class Schedule(LearningRatePolicy):
                           metrics: dict = None):
         if self.epoch in self.epoch2lr_dec_mul:
             self.lr *= self.epoch2lr_dec_mul[self.epoch]
+
+
+class LambdaEpoch(LearningRatePolicy):
+    def __init__(self, lr_init, func):
+        super().__init__(lr_init)
+        self.func = func
+
+    def on_epoch_finished(self, **kwargs):
+        self.lr = self.func(self.epoch)
