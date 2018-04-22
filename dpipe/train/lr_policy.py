@@ -65,8 +65,8 @@ class Schedule(LearningRatePolicy):
 
 
 class LambdaEpoch(LearningRatePolicy):
-    def __init__(self, lr_init, func):
-        super().__init__(lr_init)
+    def __init__(self, func):
+        super().__init__(func(0))
         self.func = func
 
     def on_epoch_finished(self, **kwargs):
