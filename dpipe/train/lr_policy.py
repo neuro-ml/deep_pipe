@@ -70,4 +70,4 @@ class LambdaEpoch(LearningRatePolicy):
         self.func = func
 
     def on_epoch_finished(self, **kwargs):
-        self.lr = self.func(self.epoch)
+        self.lr = self.func(self.epoch + 1)

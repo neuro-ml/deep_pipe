@@ -9,6 +9,10 @@ from dpipe.train.lr_base import LearningRatePolicy
 from .batch_iter import BatchIter
 
 
+# Deprecated
+# ----------
+
+
 def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: LearningRatePolicy, log_path: str,
                validate: Callable = None, log_iteration=False):
     """

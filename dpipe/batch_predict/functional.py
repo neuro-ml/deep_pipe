@@ -8,7 +8,7 @@ def validate_fn_with_shape(y_pred_loss, x_shape, f):
 
 
 def add_batch_dim(x):
-    return x[None, :]
+    return x[None]
 
 
 def remove_batch_dim(x):
