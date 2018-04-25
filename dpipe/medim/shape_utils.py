@@ -2,15 +2,17 @@ import numpy as np
 
 
 def compute_shape_from_spatial(complete_shape, spatial_shape, spatial_dims):
+    if spatial_dims is None:
+        spatial_dims = range(-len(spatial_shape), 0)
     shape = np.array(complete_shape)
     shape[list(spatial_dims)] = spatial_shape
-    return shape
+    return tuple(shape)
 
 
 def broadcast_shape_nd(shape, n):
     if len(shape) > n:
         raise ValueError(f'len({shape}) > {n}')
-    return [1] * (n - len(shape)) + list(shape)
+    return (1,) * (n - len(shape)) + tuple(shape)
 
 
 def broadcast_shape(x_shape, y_shape):

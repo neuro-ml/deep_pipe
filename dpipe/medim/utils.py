@@ -1,3 +1,4 @@
+from collections import Sized
 from typing import Sequence
 
 import numpy as np
@@ -16,7 +17,7 @@ def build_slices(start, stop):
 def get_axes(axes, ndim):
     if axes is None:
         axes = range(-ndim, 0)
-    return list(sorted(axes))
+    return tuple(sorted(axes))
 
 
 def scale(x):
@@ -76,3 +77,11 @@ def load_by_ids(*loaders, ids: Sequence, shuffle: bool = False):
         if len(result) == 1:
             result = result[0]
         yield result
+
+
+def zip_equal(*args: Sized):
+    # TODO: generalize to not sized
+    if not all(len(x) == len(args[0]) for x in args):
+        raise ValueError('All the iterables must have the same size')
+
+    return zip(*args)

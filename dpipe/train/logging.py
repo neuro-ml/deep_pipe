@@ -53,3 +53,6 @@ class TBLogger(Logger):
     def metrics(self, metrics, step):
         for name, value in metrics.items():
             log_scalar_or_vector(self.logger, f'val/metrics/{name}', value, step)
+
+    def __getattr__(self, item):
+        return getattr(self.logger, item)

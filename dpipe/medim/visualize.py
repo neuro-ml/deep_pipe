@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmentation_probabilities
 
 
-def slice3d(*data, axis: int = -1, figsize: int = 5, max_columns: int = None,
+def slice3d(*data: np.ndarray, axis: int = -1, figsize: int = 5, max_columns: int = None,
             colorbar: bool = False, cmap: str = None, vlim=(None, None)):
     """
     Creates an interactive plot, simultaneously showing slices along a given
@@ -13,7 +13,7 @@ def slice3d(*data, axis: int = -1, figsize: int = 5, max_columns: int = None,
 
     Parameters
     ----------
-    data : list of numpy arrays
+    data : np.ndarray
     axis : the axis along which the slices will be taken
     figsize : the size of the image of a single slice
     max_columns : the maximal number of figures in a row.
