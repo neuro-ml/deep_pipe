@@ -56,6 +56,15 @@ def apply(instance, **methods):
     return proxy(instance)
 
 
+def rebind(instance, methods):
+    """
+    Binds the `methods` to the last proxy.
+    """
+    new_methods = {method: getattr(instance, method).__func__ for method in methods}
+    proxy = type('Rebound', (Proxy,), new_methods)
+    return proxy(instance)
+
+
 # TODO: deprecated
 apply_dict = apply
 
@@ -155,14 +164,14 @@ def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDat
     return MergedDataset(datasets[0])
 
 
-def merge(*datasets: Dataset, methods=None) -> Dataset:
+def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
     """
     Merge several datasets into one by preserving the provided methods.
 
     Parameters
     ----------
-    datasets: List[Dataset]
-    methods: List[str], optional
+    datasets: Dataset
+    methods: Sequence[str], optional
         the list of methods to be preserved. Each method must take a single
         argument - the identifier.
 
