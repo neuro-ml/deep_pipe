@@ -2,13 +2,8 @@ import numpy as np
 
 
 def iterate_slices(*data: np.ndarray, axis: int = -1):
-    """
-    Iterate over slices of a series of tensors along a given axis.
+    """Iterate over slices of a series of tensors along a given axis."""
 
-    ----------
-    data: Sequence
-    axis: int, optional
-    """
     size = data[0].shape[axis]
     assert all(x.shape[axis] == size for x in data)
 

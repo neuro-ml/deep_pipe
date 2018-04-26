@@ -6,7 +6,7 @@ from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmen
 
 
 def slice3d(*data: np.ndarray, axis: int = -1, figsize: int = 5, max_columns: int = None,
-            colorbar: bool = False, grid: bool = True, cmap: str = None, vlim=(None, None)):
+            colorbar: bool = False, show_axes: bool = True, cmap: str = None, vlim=(None, None)):
     """
     Creates an interactive plot, simultaneously showing slices along a given
     axis for all the passed images.
@@ -19,12 +19,12 @@ def slice3d(*data: np.ndarray, axis: int = -1, figsize: int = 5, max_columns: in
     max_columns : the maximal number of figures in a row.
                     None - all figures will be in the same row.
     colorbar : Whether to display a colorbar.
-    grid: Whether to do display grid on the image.
+    show_axes: Whether to do display grid on the image.
     cmap,vlim : parameters passed to matplotlib.pyplot.imshow
     """
     size = data[0].shape[axis]
-    for x in data:
-        assert x.shape[axis] == size
+    assert all(x.shape[axis] == size for x in data)
+
     if max_columns is None:
         rows, columns = 1, len(data)
     else:
@@ -38,7 +38,8 @@ def slice3d(*data: np.ndarray, axis: int = -1, figsize: int = 5, max_columns: in
             im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vlim[0], vmax=vlim[1])
             if colorbar:
                 fig.colorbar(im, ax=ax, orientation='horizontal')
-        plt.axis('on' if grid else 'off')
+            if not show_axes:
+                ax.set_axis_off()
         plt.tight_layout()
         plt.show()
 
