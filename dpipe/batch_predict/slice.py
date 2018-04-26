@@ -1,31 +1,13 @@
+from functools import partial
+
 import numpy as np
 
 from dpipe.medim.slices import iterate_slices
-from .base import BatchPredict
+from .base import DivideCombine
 
 
-class Slice2D(BatchPredict):
-    """
-    Breaks the incoming 3D image into slices along the OZ axis
-    and feeds them into the network.
-    """
+class Slice(DivideCombine):
+    """Breaks the incoming tensor into slices along the given axis and feeds them into the network."""
 
-    def validate(self, x, y, validate_fn):
-        predicted, losses, weights = [], [], []
-        for x_slice, y_slice in iterate_slices(x, y, concatenate=0):
-            y_pred, loss = validate_fn(x_slice[None], y_slice[None])
-
-            predicted.extend(y_pred)
-            losses.append(loss)
-            weights.append(y_pred.size)
-
-        loss = np.average(losses, weights=weights)
-        return np.stack(predicted, axis=-1), loss
-
-    def predict(self, x, predict_fn):
-        predicted = []
-        for x_slice in iterate_slices(x, concatenate=0):
-            y_pred = predict_fn(x_slice[None])
-            predicted.extend(y_pred)
-
-        return np.stack(predicted, axis=-1)
+    def __init__(self, axis: int = -1):
+        super().__init__(partial(iterate_slices, axis=axis), partial(np.stack, axis=axis))

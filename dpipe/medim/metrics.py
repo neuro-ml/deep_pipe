@@ -1,5 +1,4 @@
-import warnings
-from typing import Sequence, Union
+from typing import Sequence
 
 import numpy as np
 
@@ -47,47 +46,6 @@ def multichannel_dice_score(a, b, empty_val: float = 1) -> [float]:
     assert len(a) == len(b), f'number of channels is different: {len(a)} != {len(b)}'
     dices = [dice_score(x, y, empty_val=empty_val) for x, y in zip(a, b)]
     return dices
-
-
-def hausdorff(a, b, weights: Union[float, Sequence] = 1) -> float:
-    """
-    Calculates the Hausdorff distance between two masks.
-
-    Parameters
-    ----------
-
-    a,b : bool tensor
-        The tensors containing the masks. The tensors dimensionality must match.
-    weights: number, Sequence
-        The weight along each axis (for anisotropic grids). If array, its length must
-        match the dimensionality of the arrays. If number, all the axes will have the same weight
-
-    Notes
-    -----
-    Before using this module, install the dependencies:
-        > git clone https://github.com/mavillan/py-hausdorff.git
-        > pip install Cython
-        > cd py-hausdorff
-        > python setup.py build && python setup.py install
-
-    Examples
-    --------
-    >>> hausdorff(x, y, weights=2) # isotropic, but weighted
-    >>> hausdorff(x, y, weights=(1,1,1,5)) # anisotropic
-    """
-    from hausdorff import weighted_hausdorff
-
-    try:
-        # check if array
-        len(weights)
-    except TypeError:
-        weights = [weights] * a.ndim
-    weights = np.array(weights, 'float64')
-
-    def prep(x):
-        return x.copy(order='C').astype('float64')
-
-    return weighted_hausdorff(prep(a), prep(b), weights)
 
 
 def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:

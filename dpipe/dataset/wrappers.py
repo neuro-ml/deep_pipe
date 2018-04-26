@@ -39,17 +39,12 @@ def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
     return proxy(dataset)
 
 
-# TODO: deprecated
-def cache_segmentation_dataset(dataset: Dataset) -> Dataset:
-    return cache_methods(dataset, ("load_image", "load_segm", "load_msegm"))
-
-
 def apply(instance, **methods):
     def decorator(method, func):
-        def wrapper(self, *args, **kwargs):
+        def wrapper(*args, **kwargs):
             return func(method(*args, **kwargs))
 
-        return wrapper
+        return staticmethod(wrapper)
 
     new_methods = {method: decorator(getattr(instance, method), func) for method, func in methods.items()}
     proxy = type('Apply', (Proxy,), new_methods)
@@ -57,16 +52,11 @@ def apply(instance, **methods):
 
 
 def rebind(instance, methods):
-    """
-    Binds the `methods` to the last proxy.
-    """
+    """Binds the `methods` to the last proxy."""
+
     new_methods = {method: getattr(instance, method).__func__ for method in methods}
     proxy = type('Rebound', (Proxy,), new_methods)
     return proxy(instance)
-
-
-# TODO: deprecated
-apply_dict = apply
 
 
 def apply_mask(dataset: IntSegmentationDataset, mask_modality_id: int = None,

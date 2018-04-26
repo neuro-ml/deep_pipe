@@ -33,7 +33,6 @@ def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: Le
     validate: callable, optional
         a function that calculates the loss and metrics on the validation set
     """
-    # TODO: stopping policy
     val_losses, metrics = None, None
     with Logger(log_path) as logger, batch_iter:
         train_log_write = logger.make_log_scalar('train/batch/loss')
