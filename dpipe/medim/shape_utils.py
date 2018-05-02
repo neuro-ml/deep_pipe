@@ -60,4 +60,4 @@ def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1)
 
     # TODO: raise if division is not even
     result = np.floor((shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
-    return result.astype(int)
+    return tuple(result.astype(int))

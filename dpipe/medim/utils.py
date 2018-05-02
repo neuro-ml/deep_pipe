@@ -17,7 +17,7 @@ def build_slices(start, stop):
 def get_axes(axes, ndim):
     if axes is None:
         axes = range(-ndim, 0)
-    return tuple(sorted(axes))
+    return list(sorted(axes))
 
 
 def scale(x):

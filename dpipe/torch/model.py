@@ -132,7 +132,7 @@ def to_np(x: Variable):
     ----------
     x: Variable
     """
-    return x.cpu().data.numpy()
+    return x.data.cpu().numpy()
 
 
 def to_var(x: np.ndarray, cuda: bool, volatile: bool = False):
