@@ -116,7 +116,8 @@ def pad_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None, padding_
     padded_tensor: np.ndarray
     """
     old_shape, new_shape = np.array(x.shape), np.array(compute_shape_from_spatial(x.shape, shape, axes))
-    assert (old_shape <= new_shape).all()
+    if (old_shape > new_shape).any():
+        raise ValueError(f'The resulting shape cannot be smaller than the original: {old_shape} vs {new_shape}')
 
     delta = new_shape - old_shape
     padding_width = np.array((delta // 2, (delta + 1) // 2)).T.astype(int)
@@ -143,7 +144,8 @@ def slice_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None) -> np.
     sliced_tensor: np.ndarray
     """
     old_shape, new_shape = np.array(x.shape), np.array(compute_shape_from_spatial(x.shape, shape, axes))
-    assert (old_shape >= new_shape).all()
+    if (old_shape < new_shape).any():
+        raise ValueError(f'The resulting shape cannot be greater than the original: {old_shape} vs {new_shape}')
 
     start = ((old_shape - new_shape) // 2).astype(int)
     return x[build_slices(start, start + new_shape)]

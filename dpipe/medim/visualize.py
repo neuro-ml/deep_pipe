@@ -23,7 +23,8 @@ def slice3d(*data: np.ndarray, axis: int = -1, figsize: int = 5, max_columns: in
     cmap,vlim : parameters passed to matplotlib.pyplot.imshow
     """
     size = data[0].shape[axis]
-    assert all(x.shape[axis] == size for x in data)
+    if any(x.shape[axis] != size for x in data):
+        raise ValueError('All the tensors must have the same size along the given axis')
 
     if max_columns is None:
         rows, columns = 1, len(data)

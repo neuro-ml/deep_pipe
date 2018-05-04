@@ -40,7 +40,7 @@ def predict(ids, output_path, load_x, predict_fn):
         y = predict_fn(x)
 
         # To save disk space
-        if np.issubdtype(y.dtype, np.floating):
+        if isinstance(y, np.ndarray) and np.issubdtype(y.dtype, np.floating):
             y = y.astype(np.float16)
 
         np.save(os.path.join(output_path, str(identifier)), y)
@@ -67,7 +67,7 @@ def evaluate(load_y, input_path, output_path, ids, metrics):
 
     for name, value in result.items():
         metric = os.path.join(output_path, name)
-        if type(value) is np.ndarray:
+        if isinstance(value, np.ndarray):
             value = value.tolist()
 
         with open(metric, 'w') as f:
