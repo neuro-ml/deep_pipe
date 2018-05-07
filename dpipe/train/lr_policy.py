@@ -38,10 +38,10 @@ class Decreasing(LearningRatePolicy):
 
 
 class Exponential(LearningRatePolicy):
-    def __init__(self, initial, multiplier, step_length=1, floordiv=True):
-        super().__init__(initial)
+    def __init__(self, lr_init, multiplier, step_length=1, floordiv=True):
+        super().__init__(lr_init)
         self.multiplier = multiplier
-        self.initial = initial
+        self.initial = lr_init
         self.step_length = step_length
         self.floordiv = floordiv
 

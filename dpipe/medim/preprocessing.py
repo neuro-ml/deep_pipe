@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Union
 
 import numpy as np
 from scipy import ndimage
@@ -95,7 +95,8 @@ def scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None, order:
     return ndimage.zoom(x, new_shape / old_shape, order=order)
 
 
-def pad_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None, padding_values: Sequence = 0) -> np.ndarray:
+def pad_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None,
+                 padding_values: Union[float, Sequence] = 0) -> np.ndarray:
     """
     Pad a tensor to `shape` along the `axes`.
 

@@ -17,6 +17,5 @@ rule predict:
         predictions = '{sample}_predictions'
     shell:
         """
-        rm -rf {output.predictions}
         python {DO} predict {CONFIG_ARG} --ids_path {input.ids} --output_path {output.predictions} --restore_model_path {SAVED_MODEL}
         """

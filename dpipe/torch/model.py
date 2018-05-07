@@ -8,6 +8,21 @@ from torch.autograd import Variable
 from dpipe.model import Model, FrozenModel, get_model_path
 
 
+def load_model_state(model_core: torch.nn.Module, path: str, cuda: bool = True, modify_state_fn: callable = None):
+    if cuda:
+        map_location = None
+    else:
+        def map_location(storage, location):
+            return storage
+
+    state_to_load = torch.load(path, map_location=map_location)
+    if modify_state_fn is not None:
+        current_state = model_core.state_dict()
+        state_to_load = modify_state_fn(current_state, state_to_load)
+    model_core.load_state_dict(state_to_load)
+    return model_core
+
+
 class TorchModel(Model):
     """`Model` interface implementation for the PyTorch framework."""
 
@@ -80,16 +95,12 @@ class TorchModel(Model):
         torch.save(state_dict, path)
 
     def load(self, path: str, modify_state_fn: callable = None):
-        path = get_model_path(path)
-        state_to_load = torch.load(path)
-        if modify_state_fn is not None:
-            current_state = self.model_core.state_dict()
-            state_to_load = modify_state_fn(current_state, state_to_load)
-        self.model_core.load_state_dict(state_to_load)
+        load_model_state(self.model_core, get_model_path(path), modify_state_fn=modify_state_fn, cuda=self.cuda)
 
 
 class TorchFrozenModel(FrozenModel):
-    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str, cuda=True):
+    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str,
+                 cuda: bool = True, modify_state_fn: callable = None):
         """
         Parameters
         ----------
@@ -104,15 +115,10 @@ class TorchFrozenModel(FrozenModel):
         """
         if cuda:
             model_core.cuda()
-            map_location = None
-        else:
-            map_location = lambda storage, location: storage
+        self.model_core = load_model_state(model_core, get_model_path(restore_model_path),
+                                           modify_state_fn=modify_state_fn, cuda=cuda)
         self.cuda = cuda
-        self.model_core = model_core
         self.logits2pred = logits2pred
-
-        path = get_model_path(restore_model_path)
-        self.model_core.load_state_dict(torch.load(path, map_location=map_location))
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
