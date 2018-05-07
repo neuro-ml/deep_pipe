@@ -4,6 +4,7 @@ from scipy.ndimage.interpolation import map_coordinates, zoom
 from scipy.ndimage.filters import gaussian_filter
 
 
+# TODO: simplify
 def elastic_transform(x, alpha, sigma, axes=None, order=1):
     """
     Apply a gaussian elastic transform to a np.array along given axes.
@@ -50,6 +51,7 @@ def pad_slice(x, shape, pad_value=None):
     return x
 
 
+# TODO: deprecated
 def spacial_augmentation(x, y, axes=None, order=1):
     if axes is None:
         axes = range(x.ndim)

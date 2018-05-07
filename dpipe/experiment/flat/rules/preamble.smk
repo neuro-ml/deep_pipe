@@ -6,7 +6,7 @@ from dpipe.config import get_paths
 DO = get_paths()['do']
 RULES_PATH = get_paths()['rules']
 
-CONFIG_ARG = '--config_path ../config'
+CONFIG_ARG = '--config_path ../resources.config'
 SAVED_MODEL = 'model'
 TRAINING_LOG = 'train_logs'
 

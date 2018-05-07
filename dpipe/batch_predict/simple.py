@@ -1,17 +1,13 @@
 import numpy as np
 
-from .divide_combine import DivideCombine
+from dpipe.batch_predict.base import DivideCombine
 
 
 def add_dimension(*data):
-    result = tuple(x[None] for x in data)
-    if len(result) == 1:
-        result = result[0]
-    yield result
+    return tuple(x[None] for x in data)
 
 
 def extract_dimension(predictions):
-    predictions = list(predictions)
     assert len(predictions) == 1 and len(predictions[0]) == 1
     return predictions[0][0]
 

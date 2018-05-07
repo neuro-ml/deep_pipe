@@ -12,7 +12,7 @@ class CenteredCrop(nn.Module):
             start = np.array(start)
             stop = np.where(start, -start, None)
 
-        self.slices = tuple([slice(None)] * 2 + build_slices(start, stop))
+        self.slices = (slice(None), slice(None), *build_slices(start, stop))
 
     def forward(self, x):
         return x[self.slices]

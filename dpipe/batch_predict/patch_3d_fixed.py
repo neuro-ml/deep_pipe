@@ -3,7 +3,7 @@ import numpy as np
 from dpipe.medim.divide import compute_n_parts_per_axis
 from dpipe.medim.shape_utils import compute_shape_from_spatial
 from dpipe.medim.patch import pad
-from .patch_3d import Patch3DPredictor, spatial_dims
+from .patch_3d import BatchPredictorShapeState, Patch3DPredictor, spatial_dims
 
 
 def pad_spatial_size(x, spatial_size: np.array, spatial_dims):
@@ -12,14 +12,56 @@ def pad_spatial_size(x, spatial_size: np.array, spatial_dims):
     return pad(x, padding, np.min(x, axis=spatial_dims, keepdims=True))
 
 
+def find_fixed_spatial_size(spatial_size, spatial_patch_size):
+    return compute_n_parts_per_axis(spatial_size, spatial_patch_size) * spatial_patch_size
+
+
 def slice_spatial_size(x, spatial_size, spatial_dims):
     slices = np.array([slice(None)] * len(x.shape))
     slices[list(spatial_dims)] = list(map(slice, [0] * len(spatial_size), spatial_size))
     return x[tuple(slices)]
 
 
-def find_fixed_spatial_size(spatial_size, spatial_patch_size):
-    return compute_n_parts_per_axis(spatial_size, spatial_patch_size) * spatial_patch_size
+class PatchDividable(BatchPredictorShapeState):
+    def __init__(self, divisor):
+        self.divisor = divisor
+
+    def prepare_data(self, x):
+        spatial_shape = np.array(x.shape)[list(spatial_dims)]
+        return pad_spatial_size(x, spatial_size=spatial_shape + (self.divisor - spatial_shape) % self.divisor,
+                                spatial_dims=spatial_dims)
+
+    def divide_x(self, x):
+        return [[self.prepare_data(x)]]
+
+    def divide_y(self, y):
+        return [self.prepare_data(y)]
+
+    def combine_y(self, y_parts, x_shape):
+        assert len(y_parts) == 1
+        y = y_parts[0]
+        return slice_spatial_size(y, spatial_size=np.array(x_shape)[list(spatial_dims)], spatial_dims=spatial_dims)
+
+
+class Patch3DDownsampledSegm(BatchPredictorShapeState):
+    def __init__(self, divisor, padding):
+        self.divisor = divisor
+
+    def prepare_data(self, x):
+        spatial_shape = np.array(x.shape)[list(spatial_dims)]
+        return pad_spatial_size(x, spatial_size=spatial_shape + (self.divisor - spatial_shape) % self.divisor,
+                                spatial_dims=spatial_dims)
+
+    def divide_x(self, x):
+        return [[self.prepare_data(x)]]
+
+    def divide_y(self, y):
+        return [self.prepare_data(y)]
+
+    def combine_y(self, y_parts, x_shape):
+        assert len(y_parts) == 1
+        y = y_parts[0]
+        return slice_spatial_size(y, spatial_size=np.array(x_shape)[list(spatial_dims)], spatial_dims=spatial_dims)
 
 
 class Patch3DFixedPredictor(Patch3DPredictor):

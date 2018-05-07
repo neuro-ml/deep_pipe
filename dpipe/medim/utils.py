@@ -1,3 +1,4 @@
+from collections import Sized
 from typing import Sequence
 
 import numpy as np
@@ -10,7 +11,7 @@ def decode_segmentation(x, segm_decoding_matrix) -> np.array:
 
 def build_slices(start, stop):
     assert len(start) == len(stop)
-    return list(map(slice, start, stop))
+    return tuple(map(slice, start, stop))
 
 
 def get_axes(axes, ndim):
@@ -20,8 +21,8 @@ def get_axes(axes, ndim):
 
 
 def scale(x):
-    x = x - x.min()
-    return x / x.max()
+    x_min, x_max = x.min(), x.max()
+    return (x - x_min) / (x_max - x_min)
 
 
 def bytescale(x):
@@ -49,7 +50,9 @@ def load_image(path: str):
         from PIL import Image
         with Image.open(path) as image:
             return np.asarray(image)
-
+    if path.endswith(('.png', '.jpg')):
+        from imageio import imread
+        return imread(path)
     raise ValueError(f"Couldn't read image from path: {path}.\n"
                      "Unknown file extension.")
 
@@ -74,3 +77,11 @@ def load_by_ids(*loaders, ids: Sequence, shuffle: bool = False):
         if len(result) == 1:
             result = result[0]
         yield result
+
+
+def zip_equal(*args: Sized):
+    # TODO: generalize to not sized
+    if not all(len(x) == len(args[0]) for x in args):
+        raise ValueError('All the iterables must have the same size')
+
+    return zip(*args)

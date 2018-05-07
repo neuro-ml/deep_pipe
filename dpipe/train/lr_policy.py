@@ -38,10 +38,10 @@ class Decreasing(LearningRatePolicy):
 
 
 class Exponential(LearningRatePolicy):
-    def __init__(self, initial, multiplier, step_length=1, floordiv=True):
-        super().__init__(initial)
+    def __init__(self, lr_init, multiplier, step_length=1, floordiv=True):
+        super().__init__(lr_init)
         self.multiplier = multiplier
-        self.initial = initial
+        self.initial = lr_init
         self.step_length = step_length
         self.floordiv = floordiv
 
@@ -62,3 +62,12 @@ class Schedule(LearningRatePolicy):
                           metrics: dict = None):
         if self.epoch in self.epoch2lr_dec_mul:
             self.lr *= self.epoch2lr_dec_mul[self.epoch]
+
+
+class LambdaEpoch(LearningRatePolicy):
+    def __init__(self, func):
+        super().__init__(func(0))
+        self.func = func
+
+    def on_epoch_finished(self, **kwargs):
+        self.lr = self.func(self.epoch + 1)

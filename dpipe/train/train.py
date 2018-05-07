@@ -4,9 +4,13 @@ import numpy as np
 from tensorboard_easy import Logger
 
 from dpipe.model import Model
-from dpipe.train.logging import log_vector
+from dpipe.train.logging import log_scalar_or_vector
 from dpipe.train.lr_base import LearningRatePolicy
 from .batch_iter import BatchIter
+
+
+# Deprecated
+# ----------
 
 
 def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: LearningRatePolicy, log_path: str,
@@ -29,11 +33,10 @@ def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: Le
     validate: callable, optional
         a function that calculates the loss and metrics on the validation set
     """
-    # TODO: stopping policy
     val_losses, metrics = None, None
     with Logger(log_path) as logger, batch_iter:
-        train_log_write = logger.make_log_scalar('train/loss')
-        lr_log_write = logger.make_log_scalar('train/lr')
+        train_log_write = logger.make_log_scalar('train/batch/loss')
+        lr_log_write = logger.make_log_scalar('train/batch/lr')
 
         for epoch in range(n_epochs):
             # train the model
@@ -47,18 +50,13 @@ def train_base(model: Model, batch_iter: BatchIter, n_epochs: int, lr_policy: Le
 
                 lr_policy.step_finished(train_losses[-1])
 
-            logger.log_scalar('epoch/train_loss', np.mean(train_losses), epoch)
+            log_scalar_or_vector(logger, 'train/loss', np.mean(train_losses, axis=0), epoch)
 
             if validate is not None:
                 val_losses, metrics = validate()
                 for name, value in metrics.items():
-                    # check if not scalar
-                    try:
-                        log_vector(logger, f'metrics/{name}', value, epoch)
-                    except TypeError:
-                        logger.log_scalar(f'metrics/{name}', value, epoch)
+                    log_scalar_or_vector(logger, f'val/metrics/{name}', value, epoch)
+                log_scalar_or_vector(logger, 'val/loss', np.mean(val_losses, axis=0), epoch)
 
-                logger.log_scalar('epoch/val_loss', np.mean(val_losses), epoch)
-
-            logger.log_scalar('epoch/lr', lr_policy.lr, epoch)
+            log_scalar_or_vector(logger, 'train/lr', lr_policy.lr, epoch)
             lr_policy.epoch_finished(train_losses=train_losses, val_losses=val_losses, metrics=metrics)

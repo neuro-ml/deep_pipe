@@ -2,7 +2,7 @@ import unittest
 from itertools import product
 
 import numpy as np
-from .patch_3d_fixed import Patch3DFixedPredictor
+from .patch_3d_fixed import Patch3DFixedPredictor, PatchDividable
 
 
 class Model:
@@ -71,3 +71,14 @@ class TestPatch3DFixedPredictor(unittest.TestCase):
                 y = x[0] if y_ndim == 3 else x
                 y_pred = predictor.predict(x, predict_fn=model.predict)
                 np.testing.assert_equal(y_pred, y)
+
+
+class TestPatchDividable(unittest.TestCase):
+    def setUp(self):
+        self.shape = [3, 11, 11, 11]
+        self.batch_predict = PatchDividable(3)
+
+    def test_predict(self):
+        x = np.random.rand(*self.shape)
+        y = self.batch_predict.predict(x, predict_fn=lambda x: x)
+        np.testing.assert_array_equal(x, y)

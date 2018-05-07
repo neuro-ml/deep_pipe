@@ -26,14 +26,24 @@ class ConvBlock(nn.Module):
         return self.activation(self.bn(self.conv(x)))
 
 
+def make_res_init(structure, kernel_size, activation, padding=0):
+    if len(structure) == 2:
+        return nn.Sequential(nn.Conv3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding))
+    else:
+        return nn.Sequential(ConvBlock3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding,
+                                              activation=activation),
+                             *make_res_init(structure[1:], kernel_size=kernel_size, padding=padding,
+                                            activation=activation))
+
+
 class PreActivation(nn.Module):
-    def __init__(self, n_chans_in, n_chans_out, *, kernel_size, activation=None, stride=1, padding=0, dilation=1,
-                 groups=1, get_activation=None, get_convolution, get_batch_norm):
+    def __init__(self, n_chans_in, n_chans_out, *, kernel_size, activation=None, stride=1, padding=0, bias=True,
+                 dilation=1, groups=1, get_activation=None, get_convolution, get_batch_norm):
         super().__init__()
         self.bn = get_batch_norm(num_features=n_chans_in)
         self.activation = infer_activation(activation, get_activation)
         self.conv = get_convolution(in_channels=n_chans_in, out_channels=n_chans_out, kernel_size=kernel_size,
-                                    stride=stride, padding=padding, dilation=dilation, bias=False, groups=groups)
+                                    stride=stride, padding=padding, dilation=dilation, bias=bias, groups=groups)
 
     def forward(self, x):
         return self.conv(self.activation(self.bn(x)))
@@ -49,7 +59,7 @@ class ResBlock(nn.Module):
                      padding=padding, dilation=dilation, get_activation=get_activation, get_convolution=get_convolution,
                      get_batch_norm=get_batch_norm)
 
-        self.fe = nn.Sequential(PA(n_chans_in, stride=stride), PA(n_chans_out))
+        self.fe = nn.Sequential(PA(n_chans_in, stride=stride, bias=False), PA(n_chans_out))
 
         # Shortcut
         spatial_difference = 2 * (kernel_size // 2 - padding)
@@ -60,10 +70,11 @@ class ResBlock(nn.Module):
         else:
             self.t = identity
 
-        self.shortcut = lambda x: self.t(self.crop(x))
+    def _shortcut(self, x):
+        return self.t(self.crop(x))
 
     def forward(self, x):
-        return self.fe(x) + self.shortcut(x)
+        return self.fe(x) + self._shortcut(x)
 
 
 ResBlock2d = partial(ResBlock, get_convolution=nn.Conv2d, get_batch_norm=nn.BatchNorm2d, dims=2)

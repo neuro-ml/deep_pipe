@@ -3,23 +3,20 @@ Contains a few more sophisticated commands
 that are usually accessed via the `do.py` script.
 """
 
-import os
 import json
+import os
 
 import numpy as np
 from tqdm import tqdm
 
-from dpipe.batch_predict import BatchPredict
-from dpipe.medim.metrics import dice_score as dice
-from dpipe.medim.metrics import multichannel_dice_score
+from dpipe.medim.metrics import dice_score as dice, multichannel_dice_score
 from dpipe.medim.utils import load_by_ids
-from dpipe.model import FrozenModel
 from dpipe.train.validator import evaluate as evaluate_fn
 
 
-def train_model(train, model, save_model_path, restore_model_path=None):
+def train_model(train, model, save_model_path, restore_model_path=None, modify_state_fn=None):
     if restore_model_path is not None:
-        model.load(restore_model_path)
+        model.load(restore_model_path, modify_state_fn=modify_state_fn)
 
     train()
     model.save(save_model_path)
@@ -32,18 +29,22 @@ def transform(input_path, output_path, transform_fn):
         np.save(os.path.join(output_path, f), transform_fn(np.load(os.path.join(input_path, f))))
 
 
-def predict(ids, output_path, load_x, frozen_model: FrozenModel, batch_predict: BatchPredict):
-    os.makedirs(output_path)
+def predict(ids, output_path, load_x, predict_fn, exist_ok=False):
+    os.makedirs(output_path, exist_ok=exist_ok)
 
     for identifier in tqdm(ids):
+        output = os.path.join(output_path, f'{identifier}.npy')
+        if exist_ok and os.path.exists(output):
+            continue
+
         x = load_x(identifier)
-        y = batch_predict.predict(x, predict_fn=frozen_model.do_inf_step)
+        y = predict_fn(x)
 
         # To save disk space
-        if np.issubdtype(y.dtype, np.floating):
+        if isinstance(y, np.ndarray) and np.issubdtype(y.dtype, np.floating):
             y = y.astype(np.float16)
 
-        np.save(os.path.join(output_path, str(identifier)), y)
+        np.save(output, y)
         # saving some memory
         del x, y
 
@@ -67,7 +68,7 @@ def evaluate(load_y, input_path, output_path, ids, metrics):
 
     for name, value in result.items():
         metric = os.path.join(output_path, name)
-        if type(value) is np.ndarray:
+        if isinstance(value, np.ndarray):
             value = value.tolist()
 
         with open(metric, 'w') as f:

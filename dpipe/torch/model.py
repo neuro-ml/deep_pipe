@@ -8,6 +8,21 @@ from torch.autograd import Variable
 from dpipe.model import Model, FrozenModel, get_model_path
 
 
+def load_model_state(model_core: torch.nn.Module, path: str, cuda: bool = True, modify_state_fn: callable = None):
+    if cuda:
+        map_location = None
+    else:
+        def map_location(storage, location):
+            return storage
+
+    state_to_load = torch.load(path, map_location=map_location)
+    if modify_state_fn is not None:
+        current_state = model_core.state_dict()
+        state_to_load = modify_state_fn(current_state, state_to_load)
+    model_core.load_state_dict(state_to_load)
+    return model_core
+
+
 class TorchModel(Model):
     """`Model` interface implementation for the PyTorch framework."""
 
@@ -79,13 +94,13 @@ class TorchModel(Model):
         state_dict = self.model_core.state_dict()
         torch.save(state_dict, path)
 
-    def load(self, path: str):
-        path = get_model_path(path)
-        self.model_core.load_state_dict(torch.load(path))
+    def load(self, path: str, modify_state_fn: callable = None):
+        load_model_state(self.model_core, get_model_path(path), modify_state_fn=modify_state_fn, cuda=self.cuda)
 
 
 class TorchFrozenModel(FrozenModel):
-    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str, cuda=True):
+    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str,
+                 cuda: bool = True, modify_state_fn: callable = None):
         """
         Parameters
         ----------
@@ -100,15 +115,10 @@ class TorchFrozenModel(FrozenModel):
         """
         if cuda:
             model_core.cuda()
-            map_location = None
-        else:
-            map_location = lambda storage, location: storage
+        self.model_core = load_model_state(model_core, get_model_path(restore_model_path),
+                                           modify_state_fn=modify_state_fn, cuda=cuda)
         self.cuda = cuda
-        self.model_core = model_core
         self.logits2pred = logits2pred
-
-        path = get_model_path(restore_model_path)
-        self.model_core.load_state_dict(torch.load(path, map_location=map_location))
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
@@ -128,15 +138,10 @@ def to_np(x: Variable):
     ----------
     x: Variable
     """
-    return x.cpu().data.numpy()
+    return x.data.cpu().numpy()
 
 
-validate_dtype = {
-    np.bool: np.float32,
-}
-
-
-def to_var(x: np.array, cuda: bool, volatile: bool = False):
+def to_var(x: np.ndarray, cuda: bool, volatile: bool = False):
     """
     Convert a numpy array to a torch Tensor
 
@@ -149,12 +154,7 @@ def to_var(x: np.array, cuda: bool, volatile: bool = False):
     volatile: bool, optional
         make tensor volatile
     """
-    # torch doesn't support conversion from all numpy types:
-    for dtype in validate_dtype:
-        if x.dtype == dtype:
-            x = x.astype(validate_dtype[dtype])
-            break
-    x = Variable(torch.from_numpy(x), volatile=volatile)
+    x = Variable(torch.from_numpy(np.asarray(x)), volatile=volatile)
     if (torch.cuda.is_available() and cuda is None) or cuda:
         x = x.cuda()
     return x

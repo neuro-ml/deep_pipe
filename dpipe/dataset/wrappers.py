@@ -2,7 +2,7 @@
 
 import functools
 from typing import List, Sequence
-from collections import ChainMap
+from collections import ChainMap, namedtuple
 
 import numpy as np
 import dpipe.medim as medim
@@ -39,31 +39,23 @@ def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
     return proxy(dataset)
 
 
-def cache_segmentation_dataset(dataset: Dataset) -> Dataset:
-    return cache_methods(dataset, ("load_image", "load_segm", "load_msegm"))
+def apply(instance, **methods):
+    def decorator(method, func):
+        def wrapper(*args, **kwargs):
+            return func(method(*args, **kwargs))
 
+        return staticmethod(wrapper)
 
-def apply(instance, methods, function):
-    def decorator(method):
-        def wrapper(self, *args, **kwargs):
-            return function(method(*args, **kwargs))
-
-        return wrapper
-
-    new_methods = {method: decorator(getattr(instance, method)) for method in methods}
+    new_methods = {method: decorator(getattr(instance, method), func) for method, func in methods.items()}
     proxy = type('Apply', (Proxy,), new_methods)
     return proxy(instance)
 
 
-def apply_dict(instance, **methods):
-    def decorator(method, func):
-        def wrapper(self, *args, **kwargs):
-            return func(method(*args, **kwargs))
+def rebind(instance, methods):
+    """Binds the `methods` to the last proxy."""
 
-        return wrapper
-
-    new_methods = {method: decorator(getattr(instance, method), func) for method, func in methods.items()}
-    proxy = type('Apply', (Proxy,), new_methods)
+    new_methods = {method: getattr(instance, method).__func__ for method in methods}
+    proxy = type('Rebound', (Proxy,), new_methods)
     return proxy(instance)
 
 
@@ -160,6 +152,41 @@ def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDat
             return patient_id2dataset[patient_id].load_segm(patient_id)
 
     return MergedDataset(datasets[0])
+
+
+def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
+    """
+    Merge several datasets into one by preserving the provided methods.
+
+    Parameters
+    ----------
+    datasets: Dataset
+    methods: Sequence[str], optional
+        the list of methods to be preserved. Each method must take a single
+        argument - the identifier.
+
+    Returns
+    -------
+    merged_dataset: Dataset
+    """
+
+    ids = tuple(id_ for dataset in datasets for id_ in dataset.ids)
+    assert len(set(ids)) == len(ids), 'The ids are not unique'
+    n_chans_images = {dataset.n_chans_image for dataset in datasets}
+    assert len(n_chans_images) == 1, 'Each dataset must have same number of channels'
+
+    id_to_dataset = ChainMap(*({id_: dataset for id_ in dataset.ids} for dataset in datasets))
+    n_chans_image = list(n_chans_images)[0]
+    methods = list(set(methods or []) | {'load_image'})
+
+    def decorator(method_name):
+        def wrapper(identifier):
+            return getattr(id_to_dataset[identifier], method_name)(identifier)
+
+        return wrapper
+
+    Merged = namedtuple('Merged', methods + ['ids', 'n_chans_image'])
+    return Merged(*([decorator(method) for method in methods] + [ids, n_chans_image]))
 
 
 def weighted(dataset: Dataset, thickness: str) -> Dataset:

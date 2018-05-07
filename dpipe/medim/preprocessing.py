@@ -1,8 +1,10 @@
-from typing import Sequence
+from typing import Sequence, Union
 
 import numpy as np
 from scipy import ndimage
 
+from dpipe.medim.patch import pad
+from dpipe.medim.shape_utils import compute_shape_from_spatial
 from dpipe.medim.utils import get_axes, build_slices
 
 
@@ -67,103 +69,84 @@ def rotate_image(image: np.ndarray, angles: Sequence, axes: Sequence = None, ord
     return result
 
 
-def scale(image: np.array, spatial_shape: list, order: int = 3, axes: list = None) -> np.ndarray:
+def scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None, order: int = 1) -> np.ndarray:
     """
-    Rescale image to `spacial_shape` along the `axes`.
+    Rescale a tensor to `shape` along the `axes`.
 
     Parameters
     ----------
-    image: np.array
-        image to rescale
-    spatial_shape: Sequence
-        final image shape
+    x: np.ndarray
+        tensor to rescale
+    shape: Sequence
+        final tensor shape
+    axes: Sequence, optional
+        axes along which the tensor will be scaled.
+        If None - the last `len(shape)` axes are used.
     order: int, optional
         order of interpolation
-    axes: Sequence, optional
-        axes along which the image will be scaled.
-        If None - the last `len(spacial_shape)` axes are used.
 
     Returns
     -------
-    reshaped image: np.ndarray
+    scaled_tensor: np.ndarray
     """
-    axes = get_axes(axes, len(spatial_shape))
-    old_shape = np.array(image.shape)[axes].astype('float64')
-    new_shape = np.array(spatial_shape).astype('float64')
+    old_shape = np.array(x.shape, 'float64')
+    new_shape = np.array(compute_shape_from_spatial(x.shape, shape, axes), 'float64')
 
-    scale_factor = np.ones_like(image.shape, 'float64')
-    scale_factor[axes] = new_shape / old_shape
-
-    return ndimage.zoom(image, scale_factor, order=order)
+    return ndimage.zoom(x, new_shape / old_shape, order=order)
 
 
-def pad_to_shape(x: np.array, spatial_shape: Sequence, axes: Sequence = None, strict: bool = True) -> np.ndarray:
+def pad_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None,
+                 padding_values: Union[float, Sequence] = 0) -> np.ndarray:
     """
-    Pad a tensor to `spacial_shape` along the `axes`.
+    Pad a tensor to `shape` along the `axes`.
 
     Parameters
     ----------
-    x: np.array
-        tensor to pad
-    spatial_shape: Sequence
-        final image shape
+    x: np.ndarray
+        tensor to pad.
+    shape: Sequence
+        final tensor shape.
+    padding_values: Sequence
+        values to pad the tensor with.
     axes: Sequence, optional
-        axes along which the image will be padded.
-        If None - the last `len(spacial_shape)` axes are used.
-    strict: bool, optional
-        If True, the output shape cannot be smaller than the input shape.
+        axes along which the tensor will be padded.
+        If None - the last `len(shape)` axes are used.
 
     Returns
     -------
     padded_tensor: np.ndarray
     """
-    axes = get_axes(axes, len(spatial_shape))
-    old_shape = np.array(x.shape)[axes]
-    new_shape = np.array(spatial_shape)
-
-    if strict:
-        assert (old_shape <= new_shape).all()
+    old_shape, new_shape = np.array(x.shape), np.array(compute_shape_from_spatial(x.shape, shape, axes))
+    if (old_shape > new_shape).any():
+        raise ValueError(f'The resulting shape cannot be smaller than the original: {old_shape} vs {new_shape}')
 
     delta = new_shape - old_shape
-    delta = np.maximum(0, delta)
-    padding_width = np.array((delta // 2, (delta + 1) // 2)).T
+    padding_width = np.array((delta // 2, (delta + 1) // 2)).T.astype(int)
 
-    padding = np.zeros((x.ndim, 2), int)
-    padding[axes] = padding_width.astype(int)
-
-    return np.pad(x, padding, mode='constant')
+    return pad(x, padding_width, padding_values)
 
 
-def slice_to_shape(x: np.array, spatial_shape: Sequence, axes: Sequence = None, strict: bool = True) -> np.ndarray:
+def slice_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None) -> np.ndarray:
     """
-    Slice a tensor to `spacial_shape` along the `axes`.
+    Slice a tensor to `shape` along the `axes`.
 
     Parameters
     ----------
-    x: np.array
+    x: np.ndarray
         tensor to pad
-    spatial_shape: Sequence
-        final image shape
+    shape: Sequence
+        final tensor shape
     axes: Sequence, optional
-        axes along which the image will be padded.
-        If None - the last `len(spacial_shape)` axes are used.
-    strict: bool, optional
-        If True, the output shape cannot be smaller than the input shape.
+        axes along which the tensor will be padded.
+        If None - the last `len(shape)` axes are used.
 
     Returns
     -------
-    tensor_slice: np.ndarray
+    sliced_tensor: np.ndarray
     """
-    axes = get_axes(axes, len(spatial_shape))
-    old_shape = np.array(x.shape)[axes]
-    new_shape = np.array(spatial_shape)
+    old_shape, new_shape = np.array(x.shape), np.array(compute_shape_from_spatial(x.shape, shape, axes))
+    if (old_shape < new_shape).any():
+        raise ValueError(f'The resulting shape cannot be greater than the original: {old_shape} vs {new_shape}')
 
-    if strict:
-        assert (old_shape >= new_shape).all()
-
-    delta = old_shape - new_shape
-    delta = np.maximum(0, delta)
-    start, stop = np.zeros(x.ndim, dtype=int), np.array(x.shape)
-    start[axes], stop[axes] = delta // 2, old_shape - (delta + 1) // 2
-
-    return x[build_slices(start, stop)]
+    start = ((old_shape - new_shape) // 2).astype(int)
+    return x[build_slices(start, start + new_shape)]

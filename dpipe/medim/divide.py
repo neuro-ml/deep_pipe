@@ -92,6 +92,7 @@ def get_grid_patch_start_stop(shape, kernel_size, spatial_dims=None, stride=None
     start,stop: tuple
         coordinates of a slice's start and stop
     """
+    # TODO: simplify logic
     spatial_dims = get_axes(spatial_dims, len(kernel_size))
     if stride is None:
         stride = kernel_size

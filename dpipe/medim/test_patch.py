@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 from .patch import find_patch_start_end_padding, extract_patch, find_masked_patch_center_indices, \
-    sample_uniform_center_index, get_random_patch, slices_conv
+    sample_uniform_center_index, get_random_patch
 
 
 class TestPatch(unittest.TestCase):

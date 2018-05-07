@@ -5,7 +5,7 @@ import pdp
 from dpipe.medim.utils import load_by_ids
 
 
-def simple(ids: Sequence, load_x: callable, load_y: callable, batch_size: int, *, shuffle: bool = False):
+def load_combine(ids: Sequence, load_x: callable, load_y: callable, batch_size: int, *, shuffle: bool = False):
     """
     A simple batch iterator that loads the data and packs it into batches.
 
@@ -28,3 +28,7 @@ def simple(ids: Sequence, load_x: callable, load_y: callable, batch_size: int, *
         pdp.Many2One(chunk_size=batch_size, buffer_size=2),
         pdp.One2One(pdp.combine_batches, buffer_size=3)
     )
+
+
+# TODO: backwards compatibility
+simple = load_combine

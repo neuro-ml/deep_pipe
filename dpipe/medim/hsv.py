@@ -35,3 +35,7 @@ def gray_image_bright_colored_mask(gray_image, mask, hue):
 
 def segmentation_probabilities(image, probabilities, hue):
     return hsv_to_rgb(hsv_image(hue, probabilities, image))
+
+
+def masked_segmentation_probabilities(image, probabilities, hue, mask):
+    return hsv_to_rgb(hsv_image(hue, np.where(mask, probabilities, 0), np.where(mask, 1, image)))

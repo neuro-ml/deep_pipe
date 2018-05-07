@@ -5,25 +5,27 @@ from matplotlib import pyplot as plt
 from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmentation_probabilities
 
 
-def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
-            colorbar: bool = False, cmap: str = None, vlim=(None, None)):
+def slice3d(*data: np.ndarray, axis: int = -1, figsize: int = 5, max_columns: int = None,
+            colorbar: bool = False, show_axes: bool = True, cmap: str = None, vlim=(None, None)):
     """
     Creates an interactive plot, simultaneously showing slices along a given
     axis for all the passed images.
 
     Parameters
     ----------
-    data : list of numpy arrays
+    data : np.ndarray
     axis : the axis along which the slices will be taken
-    fig_size : the size of the image of a single slice
+    figsize : the size of the image of a single slice
     max_columns : the maximal number of figures in a row.
                     None - all figures will be in the same row.
     colorbar : Whether to display a colorbar.
+    show_axes: Whether to do display grid on the image.
     cmap,vlim : parameters passed to matplotlib.pyplot.imshow
     """
     size = data[0].shape[axis]
-    for x in data:
-        assert x.shape[axis] == size
+    if any(x.shape[axis] != size for x in data):
+        raise ValueError('All the tensors must have the same size along the given axis')
+
     if max_columns is None:
         rows, columns = 1, len(data)
     else:
@@ -31,12 +33,14 @@ def slice3d(*data, axis: int = -1, fig_size: int = 5, max_columns: int = None,
         rows = (len(data) - 1) // columns + 1
 
     def update(idx):
-        fig, axes = plt.subplots(rows, columns, figsize=(fig_size * columns, fig_size * rows))
+        fig, axes = plt.subplots(rows, columns, figsize=(figsize * columns, figsize * rows))
         axes = np.array(axes).flatten()
         for ax, x in zip(axes, data):
             im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vlim[0], vmax=vlim[1])
             if colorbar:
                 fig.colorbar(im, ax=ax, orientation='horizontal')
+            if not show_axes:
+                ax.set_axis_off()
         plt.tight_layout()
         plt.show()
 

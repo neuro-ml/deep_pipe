@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import numpy as np
+
 
 class BatchPredict(ABC):
     """
@@ -47,3 +49,32 @@ class BatchPredict(ABC):
         prediction:
             prediction for the input
         """
+
+
+def validate_parts(inputs_iterator, *, validate_fn):
+    weights, losses, y_preds = [], [], []
+    for inputs in inputs_iterator:
+        y_pred, loss = validate_fn(*inputs)
+        y_preds.append(y_pred)
+        losses.append(loss)
+        weights.append(y_pred.size)
+
+    loss = np.average(losses, weights=weights, axis=0)
+    return y_preds, loss
+
+
+def predict_parts(inputs_iterator, *, predict_fn):
+    return [predict_fn(inputs) if type(inputs) is np.ndarray else predict_fn(*inputs) for inputs in inputs_iterator]
+
+
+class DivideCombine(BatchPredict):
+    def __init__(self, val_divide, val_combine, test_divide=None, test_combine=None):
+        self.val_divide, self.test_divide = val_divide, test_divide or val_divide
+        self.val_combine, self.test_combine = val_combine, test_combine or val_combine
+
+    def validate(self, *inputs, validate_fn):
+        y_preds, loss = validate_parts(self.val_divide(*inputs), validate_fn=validate_fn)
+        return self.val_combine(y_preds), loss
+
+    def predict(self, *inputs, predict_fn):
+        return self.test_combine(predict_parts(self.test_divide(*inputs), predict_fn=predict_fn))
