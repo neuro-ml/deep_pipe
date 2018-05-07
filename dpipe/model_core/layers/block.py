@@ -26,7 +26,7 @@ class ConvBlock(nn.Module):
         return self.activation(self.bn(self.conv(x)))
 
 
-def make_res_init(structure, kernel_size, padding, activation):
+def make_res_init(structure, kernel_size, activation, padding=0):
     if len(structure) == 2:
         return nn.Sequential(nn.Conv3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding))
     else:
