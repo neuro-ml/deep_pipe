@@ -23,6 +23,13 @@ def load_model_state(model_core: torch.nn.Module, path: str, cuda: bool = True, 
     return model_core
 
 
+def sequence_to_var(*data, cuda, requires_grad=True):
+    result = [to_var(x, cuda, requires_grad) for x in data]
+    if len(result) == 1:
+        result = result[0]
+    return result
+
+
 class TorchModel(Model):
     """`Model` interface implementation for the PyTorch framework."""
 
@@ -55,8 +62,7 @@ class TorchModel(Model):
 
     def do_train_step(self, *inputs, lr):
         self.model_core.train()
-        inputs = [to_var(x, self.cuda) for x in inputs]
-        *inputs, target = inputs
+        *inputs, target = sequence_to_var(*inputs, cuda=self.cuda)
 
         logits = self.model_core(*inputs)
         loss = self.logits2loss(logits, target)
@@ -70,8 +76,7 @@ class TorchModel(Model):
 
     def do_val_step(self, *inputs):
         self.model_core.eval()
-        inputs = [to_var(x, self.cuda, volatile=True) for x in inputs]
-        *inputs, target = inputs
+        *inputs, target = sequence_to_var(*inputs, cuda=self.cuda, requires_grad=False)
 
         logits = self.model_core(*inputs)
         y_pred = self.logits2pred(logits)
@@ -81,7 +86,7 @@ class TorchModel(Model):
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
-        inputs = [to_var(x, self.cuda, volatile=True) for x in inputs]
+        inputs = sequence_to_var(*inputs, cuda=self.cuda, requires_grad=False)
 
         logits = self.model_core(*inputs)
         y_pred = self.logits2pred(logits)
@@ -122,7 +127,7 @@ class TorchFrozenModel(FrozenModel):
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
-        inputs = [to_var(x, self.cuda, volatile=True) for x in inputs]
+        inputs = [to_var(x, self.cuda, requires_grad=False) for x in inputs]
 
         logits = self.model_core(*inputs)
         y_pred = self.logits2pred(logits)
@@ -141,7 +146,7 @@ def to_np(x: Variable):
     return x.data.cpu().numpy()
 
 
-def to_var(x: np.ndarray, cuda: bool, volatile: bool = False):
+def to_var(x: np.ndarray, cuda: bool = None, requires_grad: bool = True):
     """
     Convert a numpy array to a torch Tensor
 
@@ -151,11 +156,13 @@ def to_var(x: np.ndarray, cuda: bool, volatile: bool = False):
         the input tensor
     cuda: bool
         move tensor to cuda
-    volatile: bool, optional
+    requires_grad: bool, optional
         make tensor volatile
     """
-    x = Variable(torch.from_numpy(np.asarray(x)), volatile=volatile)
-    if (torch.cuda.is_available() and cuda is None) or cuda:
+    x = torch.from_numpy(np.asarray(x))
+    if requires_grad:
+        x.requires_grad_()
+    if cuda or (cuda is None and torch.cuda.is_available()):
         x = x.cuda()
     return x
 
