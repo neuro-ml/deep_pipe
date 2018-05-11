@@ -79,7 +79,7 @@ class TorchModel(Model):
         loss.backward()
         self.optimizer.step()
 
-        return to_np(loss)[0]
+        return to_np(loss)
 
     def do_val_step(self, *inputs):
         self.model_core.eval()
@@ -89,7 +89,7 @@ class TorchModel(Model):
         y_pred = self.logits2pred(logits)
         loss = self.logits2loss(logits, target)
 
-        return to_np(y_pred), to_np(loss)[0]
+        return to_np(y_pred), to_np(loss)
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
