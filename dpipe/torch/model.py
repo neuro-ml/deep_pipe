@@ -24,7 +24,14 @@ def load_model_state(model_core: torch.nn.Module, path: str, cuda: bool = True, 
 
 
 def sequence_to_var(*data, cuda, requires_grad=True):
-    result = [to_var(x, cuda, requires_grad) for x in data]
+    result = tuple(to_var(x, cuda, requires_grad) for x in data)
+    if len(result) == 1:
+        result = result[0]
+    return result
+
+
+def sequence_to_np(*data):
+    result = tuple(to_np(x) if isinstance(x, torch.Tensor) else x for x in data)
     if len(result) == 1:
         result = result[0]
     return result
