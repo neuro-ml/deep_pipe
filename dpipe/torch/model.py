@@ -3,7 +3,6 @@ import os
 import numpy as np
 import torch
 from torch.nn import Module
-from torch.autograd import Variable
 
 from dpipe.model import Model, FrozenModel, get_model_path
 
@@ -23,7 +22,7 @@ def load_model_state(model_core: torch.nn.Module, path: str, cuda: bool = True, 
     return model_core
 
 
-def sequence_to_var(*data, cuda, requires_grad=True):
+def sequence_to_var(*data, cuda: bool, requires_grad: bool = True):
     result = tuple(to_var(x, cuda, requires_grad) for x in data)
     if len(result) == 1:
         result = result[0]
@@ -142,29 +141,28 @@ class TorchFrozenModel(FrozenModel):
         return to_np(y_pred)
 
 
-def to_np(x: Variable):
+def to_np(x: torch.Tensor) -> np.ndarray:
     """
-    Convert a autograd Variable to a numpy array.
+    Convert a torch.Tensor to a numpy array.
 
     Parameters
     ----------
-    x: Variable
+    x: torch.Tensor
     """
     return x.data.cpu().numpy()
 
 
-def to_var(x: np.ndarray, cuda: bool = None, requires_grad: bool = True):
+def to_var(x: np.ndarray, cuda: bool = None, requires_grad: bool = True) -> torch.Tensor:
     """
     Convert a numpy array to a torch Tensor
 
     Parameters
     ----------
-    x: np.array
+    x: np.ndarray
         the input tensor
     cuda: bool
         move tensor to cuda
     requires_grad: bool, optional
-        make tensor volatile
     """
     x = torch.from_numpy(np.asarray(x))
     if requires_grad:
