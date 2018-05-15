@@ -19,6 +19,16 @@ def make_blocks_with_splitters(structure, make_block, make_splitter):
                              make_blocks_with_splitters(structure[1:], make_block, make_splitter))
 
 
+class Reshape(nn.Module):
+    def __init__(self, *shape):
+        super().__init__()
+        self.shape = shape
+
+    def forward(self, x: torch.Tensor):
+        batch_size = x.shape[0]
+        return x.reshape(batch_size, *self.shape)
+
+
 class SplitCat(nn.Module):
     def __init__(self, *paths):
         super().__init__()

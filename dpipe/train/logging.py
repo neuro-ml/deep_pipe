@@ -1,5 +1,9 @@
+from typing import List
+
 import tensorboard_easy
 import numpy as np
+
+from dpipe.medim.utils import zip_equal
 
 
 def log_vector(logger: tensorboard_easy.Logger, tag: str, vector, step: int):
@@ -56,3 +60,19 @@ class TBLogger(Logger):
 
     def __getattr__(self, item):
         return getattr(self.logger, item)
+
+
+class NamedTBLogger(TBLogger):
+    def __init__(self, log_path, loss_names: List[str]):
+        super().__init__(log_path)
+        self.task_names = loss_names
+
+    def train(self, train_losses, step):
+        values = np.mean(train_losses, axis=0)
+        for name, value in zip_equal(self.task_names, values):
+            self.logger.log_scalar(f'train/loss/{name}', value, step)
+
+    def validation(self, val_losses, step):
+        values = np.mean(val_losses, axis=0)
+        for name, value in zip_equal(self.task_names, values):
+            self.logger.log_scalar(f'val/loss/{name}', value, step)

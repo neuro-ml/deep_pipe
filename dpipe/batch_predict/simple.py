@@ -12,7 +12,7 @@ def extract_dimension(predictions):
     return predictions[0][0]
 
 
-class Simple(DivideCombine):
+class AddExtractDim(DivideCombine):
     def __init__(self):
         super().__init__(add_dimension, extract_dimension)
 
@@ -20,3 +20,9 @@ class Simple(DivideCombine):
 class MultiClass(DivideCombine):
     def __init__(self):
         super().__init__(add_dimension, lambda x: np.argmax(extract_dimension(x), axis=0))
+
+
+# Deprecated
+# ----------
+
+Simple = AddExtractDim
