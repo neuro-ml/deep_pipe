@@ -18,30 +18,35 @@ def check_len(*arrays):
         assert length == len(a), f'Different len: {arrays}'
 
 
-def find_patch_start_end_padding(shape: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_size: np.array,
-                                 spatial_dims):
+def find_patch_start_stop_padding_centered(shape: np.ndarray, *, spatial_center_idx: np.array,
+                                           spatial_patch_size: np.array, spatial_dims):
     check_len(spatial_center_idx, spatial_patch_size, spatial_dims)
 
     spatial_dims = list(spatial_dims)
     spatial_start = spatial_center_idx - spatial_patch_size // 2
-    spatial_end = spatial_start + spatial_patch_size
+    spatial_stop = spatial_start + spatial_patch_size
 
     padding = np.zeros((len(shape), 2), dtype=int)
     spatial_shape = shape[spatial_dims]
 
     padding[spatial_dims, 0] = -spatial_start
-    padding[spatial_dims, 1] = spatial_end - spatial_shape
+    padding[spatial_dims, 1] = spatial_stop - spatial_shape
     padding[spatial_dims] = np.maximum(0, padding[spatial_dims])
 
     spatial_start = np.maximum(spatial_start, 0)
-    spatial_end = np.minimum(spatial_end, spatial_shape)
+    spatial_stop = np.minimum(spatial_stop, spatial_shape)
 
     start = np.zeros(len(shape), dtype=int)
     start[spatial_dims] = spatial_start
-    end = np.array(shape)
-    end[spatial_dims] = spatial_end
+    stop = np.array(shape)
+    stop[spatial_dims] = spatial_stop
 
-    return start, end, padding
+    return start, stop, padding
+
+
+def find_patch_start_stop_padding(shape: np.ndarray, start: np.ndarray, stop: np.ndarray):
+    check_len(shape, start, stop)
+    return np.maximum(start, 0), np.minimum(stop, shape), np.maximum([-start, stop - shape], 0).T
 
 
 def extract_patch(x: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_size: np.array, spatial_dims: list,
@@ -75,7 +80,7 @@ def extract_patch(x: np.ndarray, *, spatial_center_idx: np.array, spatial_patch_
     """
     check_len(spatial_center_idx, spatial_patch_size, spatial_dims)
 
-    start, end, padding = find_patch_start_end_padding(
+    start, end, padding = find_patch_start_stop_padding_centered(
         np.array(x.shape), spatial_center_idx=spatial_center_idx, spatial_patch_size=spatial_patch_size,
         spatial_dims=spatial_dims
     )

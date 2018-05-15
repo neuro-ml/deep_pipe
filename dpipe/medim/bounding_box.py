@@ -27,6 +27,11 @@ def get_slice(mask: np.ndarray):
     return build_slices(*get_start_stop(mask))
 
 
+def add_margin(start_stop, start_margin, stop_margin):
+    return np.array([np.maximum(start_stop[0] - start_margin, 0),
+                     start_stop[1] + stop_margin])
+
+
 def extract(arrays, mask: np.ndarray):
     """Extract bounding boxes from the last dims of all arrays according to the
      mask."""

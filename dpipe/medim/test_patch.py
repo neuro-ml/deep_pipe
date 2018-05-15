@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from .patch import find_patch_start_end_padding, extract_patch, find_masked_patch_center_indices, \
+from .patch import find_patch_start_stop_padding_centered, extract_patch, find_masked_patch_center_indices, \
     sample_uniform_center_index, get_random_patch
 
 
@@ -18,7 +18,7 @@ class TestPatch(unittest.TestCase):
         shape = np.array([3, 12, 13, 14])
         spatial_patch_size = np.array([4, 5, 7])
         spatial_center = np.array([1, 1, 1])
-        start, end, padding = find_patch_start_end_padding(
+        start, end, padding = find_patch_start_stop_padding_centered(
             shape, spatial_center_idx=spatial_center,
             spatial_patch_size=spatial_patch_size, spatial_dims=[-3, -2, -1]
         )
