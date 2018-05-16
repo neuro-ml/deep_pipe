@@ -1,0 +1,10 @@
+import os
+from dpipe.config import get_paths
+
+rules_path = get_paths()['rules']
+
+include: os.path.join(rules_path, "individual.smk")
+
+rule all:
+    input:
+        SAVED_MODEL, 'test_metrics', 'test_gifs', 'test_prc.csv'
