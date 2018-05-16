@@ -14,12 +14,12 @@ def extract_dimension(predictions):
 
 class AddExtractDim(DivideCombine):
     def __init__(self):
-        super().__init__(add_dimension, extract_dimension)
+        super().__init__(lambda *xs: [add_dimension(*xs)], extract_dimension)
 
 
 class MultiClass(DivideCombine):
     def __init__(self):
-        super().__init__(add_dimension, lambda x: np.argmax(extract_dimension(x), axis=0))
+        super().__init__(lambda *xs: [add_dimension(*xs)], np.argmax(extract_dimension(x), axis=0))
 
 
 # Deprecated
