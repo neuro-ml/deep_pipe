@@ -16,7 +16,7 @@ from dpipe.train.validator import evaluate as evaluate_fn
 
 def np_filename2id(filename):
     identifier, extension = filename.split('.')
-    assert extension == '.npy', f'Expected npy file, got {extension} from {filename}'
+    assert extension == 'npy', f'Expected npy file, got {extension} from {filename}'
     return identifier
 
 
