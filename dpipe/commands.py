@@ -14,6 +14,12 @@ from dpipe.medim.utils import load_by_ids
 from dpipe.train.validator import evaluate as evaluate_fn
 
 
+def np_filename2id(filename):
+    identifier, extension = filename.split('.')
+    assert extension == '.npy', f'Expected npy file, got {extension} from {filename}'
+    return identifier
+
+
 def train_model(train, model, save_model_path, restore_model_path=None, modify_state_fn=None):
     if restore_model_path is not None:
         model.load(restore_model_path, modify_state_fn=modify_state_fn)
@@ -83,8 +89,7 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
     results = {metric_name: {} for metric_name in metrics}
 
     for filename in tqdm(sorted(os.listdir(predictions_path))):
-        identifier = filename.strip('.npy')
-
+        identifier = np_filename2id(filename)
         y_prob = np.load(os.path.join(predictions_path, filename))
         y_true = load_y_true(identifier)
 
@@ -97,20 +102,6 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
     for metric_name, result in results.items():
         with open(os.path.join(results_path, metric_name + '.json'), 'w') as f:
             json.dump(result, f, indent=0)
-
-
-# TODO move to more general function
-def compute_dices(load_msegm, predictions_path, dices_path):
-    dices = {}
-    for f in tqdm(os.listdir(predictions_path)):
-        patient_id = f.replace('.npy', '')
-        y_true = load_msegm(patient_id)
-        y = np.load(os.path.join(predictions_path, f))
-
-        dices[patient_id] = multichannel_dice_score(y, y_true)
-
-    with open(dices_path, 'w') as f:
-        json.dump(dices, f, indent=0)
 
 
 def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
