@@ -8,6 +8,7 @@ from dpipe.model import Model, FrozenModel, get_model_path
 
 
 def load_model_state(model_core: torch.nn.Module, path: str, cuda: bool = True, modify_state_fn: callable = None):
+    # To load models that were trained on GPU nodes, but now run on CPU
     if cuda:
         map_location = None
     else:
@@ -92,7 +93,7 @@ class TorchModel(Model):
 
     def do_inf_step(self, *inputs):
         self.model_core.eval()
-        inputs = sequence_to_var(*inputs, cuda=self.cuda, requires_grad=False)
+        inputs = [to_var(x, self.cuda, requires_grad=False) for x in inputs]
 
         logits = self.model_core(*inputs)
         y_pred = self.logits2pred(logits)
