@@ -85,3 +85,9 @@ def zip_equal(*args: Sized):
         raise ValueError('All the iterables must have the same size')
 
     return zip(*args)
+
+
+def squeeze_first(inputs):
+    if len(inputs) == 1:
+        inputs = inputs[0]
+    return inputs

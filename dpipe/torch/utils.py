@@ -23,6 +23,10 @@ def softmax_cross_entropy(logits, target, weight=None, reduce=True):
     return nn.functional.cross_entropy(logits, target, weight=weight, reduce=reduce)
 
 
+def flat_binary_cross_entropy_with_logits(logits, target, weight=None, size_average=True, reduce=True):
+    return functional.binary_cross_entropy_with_logits(logits.view(-1), target.view(-1), weight, size_average, reduce)
+
+
 class Eye(nn.Module, metaclass=ABCMeta):
     def __init__(self, n_classes):
         super().__init__()

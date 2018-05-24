@@ -9,7 +9,7 @@ class CenteredCrop(nn.Module):
         super().__init__()
 
         if stop is None:
-            start = np.array(start)
+            start = np.asarray(start)
             stop = np.where(start, -start, None)
 
         self.slices = (slice(None), slice(None), *build_slices(start, stop))

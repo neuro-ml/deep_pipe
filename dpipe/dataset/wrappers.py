@@ -51,6 +51,11 @@ def apply(instance, **methods):
     return proxy(instance)
 
 
+def set_attributes(instance, **attributes):
+    proxy = type('SetAttr', (Proxy,), attributes)
+    return proxy(instance)
+
+
 def rebind(instance, methods):
     """Binds the `methods` to the last proxy."""
 

@@ -63,6 +63,10 @@ class Schedule(LearningRatePolicy):
         if self.epoch in self.epoch2lr_dec_mul:
             self.lr *= self.epoch2lr_dec_mul[self.epoch]
 
+    @classmethod
+    def constant_multiplier(cls, lr_init: float, multiplier: float, epochs: Sequence):
+        return cls(lr_init, dict(zip(epochs, [multiplier] * len(epochs))))
+
 
 class LambdaEpoch(LearningRatePolicy):
     def __init__(self, func):

@@ -1,5 +1,6 @@
 from functools import partial
 
+import numpy as np
 import torch.nn as nn
 from .layer import CenteredCrop
 
@@ -31,7 +32,7 @@ def make_res_init(structure, kernel_size, activation, padding=0):
         return nn.Sequential(nn.Conv3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding))
     else:
         return nn.Sequential(ConvBlock3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding,
-                                              activation=activation),
+                                         activation=activation),
                              *make_res_init(structure[1:], kernel_size=kernel_size, padding=padding,
                                             activation=activation))
 
@@ -59,22 +60,20 @@ class ResBlock(nn.Module):
                      padding=padding, dilation=dilation, get_activation=get_activation, get_convolution=get_convolution,
                      get_batch_norm=get_batch_norm)
 
-        self.fe = nn.Sequential(PA(n_chans_in, stride=stride, bias=False), PA(n_chans_out))
+        self.conv_path = nn.Sequential(PA(n_chans_in, stride=stride, bias=False), PA(n_chans_out))
 
         # Shortcut
-        spatial_difference = 2 * (kernel_size // 2 - padding)
-        self.crop = CenteredCrop(start=[spatial_difference] * dims) if spatial_difference > 0 else identity
+        spatial_difference = np.broadcast_to(2 * (kernel_size // 2 - padding), dims)
+        assert (spatial_difference >= 0).all()
+        self.crop = CenteredCrop(start=spatial_difference) if (spatial_difference > 0).any() else identity
 
-        if n_chans_in != n_chans_out:
-            self.t = get_convolution(n_chans_in, n_chans_out, kernel_size=1, stride=stride)
+        if n_chans_in != n_chans_out or stride != 1:
+            self.adjust_to_stride = get_convolution(n_chans_in, n_chans_out, kernel_size=1, stride=stride)
         else:
-            self.t = identity
-
-    def _shortcut(self, x):
-        return self.t(self.crop(x))
+            self.adjust_to_stride = identity
 
     def forward(self, x):
-        return self.fe(x) + self._shortcut(x)
+        return self.conv_path(x) + self.adjust_to_stride(self.crop(x))
 
 
 ResBlock2d = partial(ResBlock, get_convolution=nn.Conv2d, get_batch_norm=nn.BatchNorm2d, dims=2)

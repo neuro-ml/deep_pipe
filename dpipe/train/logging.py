@@ -52,7 +52,8 @@ class TBLogger(Logger):
         log_scalar_or_vector(self.logger, 'train/lr', lr, step)
 
     def validation(self, val_losses, step):
-        log_scalar_or_vector(self.logger, 'val/loss', np.mean(val_losses, axis=0), step)
+        if val_losses:
+            log_scalar_or_vector(self.logger, 'val/loss', np.mean(val_losses, axis=0), step)
 
     def metrics(self, metrics, step):
         for name, value in metrics.items():
@@ -73,6 +74,7 @@ class NamedTBLogger(TBLogger):
             self.logger.log_scalar(f'train/loss/{name}', value, step)
 
     def validation(self, val_losses, step):
-        values = np.mean(val_losses, axis=0)
-        for name, value in zip_equal(self.task_names, values):
-            self.logger.log_scalar(f'val/loss/{name}', value, step)
+        if val_losses:
+            values = np.mean(val_losses, axis=0)
+            for name, value in zip_equal(self.task_names, values):
+                self.logger.log_scalar(f'val/loss/{name}', value, step)

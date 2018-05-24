@@ -23,18 +23,12 @@ def load_model_state(model_core: torch.nn.Module, path: str, cuda: bool = True, 
     return model_core
 
 
-def sequence_to_var(*data, cuda: bool, requires_grad: bool = True):
-    result = tuple(to_var(x, cuda, requires_grad) for x in data)
-    if len(result) == 1:
-        result = result[0]
-    return result
+def sequence_to_var(*data, cuda: bool = None, requires_grad: bool = True):
+    return tuple(to_var(x, cuda, requires_grad) for x in data)
 
 
 def sequence_to_np(*data):
-    result = tuple(to_np(x) if isinstance(x, torch.Tensor) else x for x in data)
-    if len(result) == 1:
-        result = result[0]
-    return result
+    return tuple(to_np(x) if isinstance(x, torch.Tensor) else x for x in data)
 
 
 class TorchModel(Model):
