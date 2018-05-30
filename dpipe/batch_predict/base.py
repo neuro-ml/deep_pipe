@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from functools import partial
 
 import numpy as np
 
@@ -49,6 +50,12 @@ class BatchPredict(ABC):
         prediction:
             prediction for the input
         """
+
+    def make_predictor(self, predict_fn):
+        return partial(self.predict, predict_fn=predict_fn)
+
+    def make_validator(self, validate_fn):
+        return partial(self.validate, validate_fn=validate_fn)
 
 
 def validate_parts(inputs_iterator, *, validate_fn):
