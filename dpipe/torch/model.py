@@ -79,9 +79,10 @@ class TorchModel(Model):
         self.model_core.eval()
         *inputs, target = sequence_to_var(*inputs, cuda=self.cuda, requires_grad=False)
 
-        logits = self.model_core(*inputs)
-        y_pred = self.logits2pred(logits)
-        loss = self.logits2loss(logits, target)
+        with torch.no_grad():
+            logits = self.model_core(*inputs)
+            y_pred = self.logits2pred(logits)
+            loss = self.logits2loss(logits, target)
 
         return to_np(y_pred), to_np(loss)
 
@@ -89,8 +90,9 @@ class TorchModel(Model):
         self.model_core.eval()
         inputs = [to_var(x, self.cuda, requires_grad=False) for x in inputs]
 
-        logits = self.model_core(*inputs)
-        y_pred = self.logits2pred(logits)
+        with torch.no_grad():
+            logits = self.model_core(*inputs)
+            y_pred = self.logits2pred(logits)
 
         return to_np(y_pred)
 
@@ -130,8 +132,9 @@ class TorchFrozenModel(FrozenModel):
         self.model_core.eval()
         inputs = [to_var(x, self.cuda, requires_grad=False) for x in inputs]
 
-        logits = self.model_core(*inputs)
-        y_pred = self.logits2pred(logits)
+        with torch.no_grad():
+            logits = self.model_core(*inputs)
+            y_pred = self.logits2pred(logits)
 
         return to_np(y_pred)
 
