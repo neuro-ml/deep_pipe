@@ -63,7 +63,7 @@ class TorchModel(Model):
 
     def do_train_step(self, *inputs, lr):
         self.model_core.train()
-        *inputs, target = sequence_to_var(*inputs, cuda=self.cuda)
+        *inputs, target = sequence_to_var(*inputs, cuda=self.cuda, requires_grad=False)
 
         logits = self.model_core(*inputs)
         loss = self.logits2loss(logits, target)
