@@ -10,4 +10,4 @@ def sample_random_id(ids):
 
 def load_by_random_id(*loaders, ids):
     for id_ in sample_random_id(ids):
-        yield squeeze_first([loader(id_) for loader in loaders])
+        yield tuple(loader(id_) for loader in loaders)

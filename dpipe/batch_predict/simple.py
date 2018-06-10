@@ -12,6 +12,7 @@ def extract_dimension(predictions):
     return predictions[0][0]
 
 
+# TODO: add parameter for number of dims. e.g. in case if the channel dim is missing too
 class AddExtractDim(DivideCombine):
     def __init__(self):
         super().__init__(lambda *xs: [add_dimension(*xs)], extract_dimension)

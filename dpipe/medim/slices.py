@@ -1,5 +1,7 @@
 import numpy as np
 
+from dpipe.medim.utils import squeeze_first
+
 
 def iterate_slices(*data: np.ndarray, axis: int = -1):
     """Iterate over slices of a series of tensors along a given axis."""
@@ -9,7 +11,4 @@ def iterate_slices(*data: np.ndarray, axis: int = -1):
         raise ValueError('All the tensors must have the same size along the given axis')
 
     for idx in range(size):
-        result = tuple(x.take(idx, axis=axis) for x in data)
-        if len(result) == 1:
-            result = result[0]
-        yield result
+        yield squeeze_first(tuple(x.take(idx, axis=axis) for x in data))
