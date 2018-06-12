@@ -5,6 +5,7 @@ Basic input-output operations. Useful inside config-files.
 import argparse
 import json
 import re
+import os
 
 import numpy as np
 
