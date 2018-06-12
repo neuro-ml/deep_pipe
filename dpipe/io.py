@@ -6,6 +6,26 @@ import argparse
 import json
 import re
 
+import numpy as np
+
+
+def load_pred(identifier, predictions_path):
+    """
+    Loads the prediction numpy tensor with specified id.
+    
+    Parameters
+    ----------
+    identifier: int
+        id to load
+    predictions_path: str
+        path where to load prediction from
+        
+    Returns
+    -------
+    prediction: numpy.float32
+    """
+    return np.float32(np.load(os.path.join(predictions_path, f'{identifier}.npy')))
+
 
 def load_json(path: str):
     """
