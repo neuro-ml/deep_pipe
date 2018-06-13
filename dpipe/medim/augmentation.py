@@ -35,6 +35,7 @@ def elastic_transform(x, alpha, sigma, axes=None, order=1):
     return result
 
 
+# TODO: rewrite
 def pad_slice(x, shape, pad_value=None):
     delta = np.array(shape) - x.shape
 
@@ -49,71 +50,3 @@ def pad_slice(x, shape, pad_value=None):
         pad_value = x.take(0)
     x = np.pad(x, d_pad, mode='constant', constant_values=pad_value)
     return x
-
-
-# TODO: deprecated
-def spacial_augmentation(x, y, axes=None, order=1):
-    if axes is None:
-        axes = range(x.ndim)
-    axes = list(sorted(axes))
-    y = y.astype(float)
-    # multithreading
-    np.random.seed()
-
-    # scale
-    sigmas = np.zeros(x.ndim)
-    sigmas[axes] = .15
-    scale_factor = np.random.normal(1, sigmas)
-    x = pad_slice(zoom(x, scale_factor, order=order), x.shape)
-    y = pad_slice(zoom(y, scale_factor, order=order), y.shape)
-
-    # rotate
-    cval = x.take(0)
-    angles = np.random.normal(0, 5, len(axes))
-    for angle, *axis in zip(angles, axes, axes[1:]):
-        x = ndimage.rotate(x, angle, axes=axis, reshape=False, order=order, cval=cval)
-        y = ndimage.rotate(y, angle, axes=axis, reshape=False, order=order)
-
-    stack = np.concatenate((x, y))
-    stack = elastic_transform(stack, alpha=1, sigma=1, axes=axes)
-    x, y = stack[:len(x)], stack[-len(y):]
-    return x, y > .5
-
-
-def spatial_augmentation_strict(x, y, axes=None, order=1):
-    if axes is None:
-        axes = range(x.ndim)
-    axes = list(sorted(axes))
-    y = y.astype(np.float32)
-    # multithreading
-    np.random.seed()
-
-    # scale
-    sigmas = np.zeros(x.ndim)
-    sigmas[axes] = .15
-    scale_factor = np.random.normal(1, sigmas)
-    x = zoom(x, scale_factor, order=order)
-    y = zoom(y, scale_factor, order=order)
-
-    # rotate
-    cval = x.take(0)
-    angles = np.random.normal(0, 5, len(axes))
-    for angle, *axis in zip(angles, axes, axes[1:]):
-        x = ndimage.rotate(x, angle, axes=axis, reshape=False, order=order, cval=cval)
-        y = ndimage.rotate(y, angle, axes=axis, reshape=False, order=order)
-
-    stack = np.concatenate((x, y))
-    stack = elastic_transform(stack, alpha=1, sigma=1, axes=axes, order=order)
-    x, y = stack[:len(x)], stack[-len(y):]
-    return x, y
-
-
-def random_flip(x, y, axes):
-    # multithreading
-    np.random.seed()
-
-    for axis, flip in zip(axes, np.random.binomial(1, .5, len(axes))):
-        if flip:
-            x = np.flip(x, axis)
-            y = np.flip(y, axis)
-    return x, y

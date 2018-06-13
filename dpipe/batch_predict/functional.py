@@ -1,5 +1,17 @@
 import numpy as np
+
 from dpipe.medim.utils import build_slices
+
+from .base import DivideCombine
+
+
+# TODO: probably should implement DivideCombine methods using these functions instead of other way around
+def make_predictor(divide, combine, predict_batch):
+    return DivideCombine(divide, combine).make_predictor(predict_batch)
+
+
+def make_validator(divide, combine, validate_batch):
+    return DivideCombine(divide, combine).make_validator(validate_batch)
 
 
 def validate_fn_with_shape(y_pred_loss, x_shape, f):

@@ -5,6 +5,7 @@ that are usually accessed via the `do.py` script.
 
 import json
 import os
+from collections import defaultdict
 
 import numpy as np
 from tqdm import tqdm
@@ -55,38 +56,12 @@ def predict(ids, output_path, load_x, predict_fn, exist_ok=False):
         del x, y
 
 
-# TODO change signature and possibly, structure
-def evaluate(load_y, input_path, output_path, ids, metrics):
-    if not metrics:
-        return
-
-    os.makedirs(output_path)
-
-    def load_prediction(identifier):
-        return np.load(os.path.join(input_path, f'{identifier}.npy'))
-
-    ys, predictions = [], []
-    for y, prediction in load_by_ids(load_y, load_prediction, ids=ids):
-        ys.append(y)
-        predictions.append(prediction)
-
-    result = evaluate_fn(ys, predictions, metrics)
-
-    for name, value in result.items():
-        metric = os.path.join(output_path, name)
-        if isinstance(value, np.ndarray):
-            value = value.tolist()
-
-        with open(metric, 'w') as f:
-            json.dump(value, f, indent=2)
-
-
 def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path):
     assert len(metrics) > 0, 'No metric provided'
 
     os.makedirs(results_path)
 
-    results = {metric_name: {} for metric_name in metrics}
+    results = defaultdict(dict)
 
     for filename in tqdm(sorted(os.listdir(predictions_path))):
         identifier = np_filename2id(filename)
@@ -103,6 +78,10 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
         with open(os.path.join(results_path, metric_name + '.json'), 'w') as f:
             json.dump(result, f, indent=0)
 
+
+# TODO: deprecated
+# Deprecated
+# ----------
 
 def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
     """
@@ -138,3 +117,28 @@ def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
     optimal_thresholds = thresholds[np.mean(dices, axis=0).argmax(axis=1)]
     with open(thresholds_path, 'w') as file:
         json.dump(optimal_thresholds.tolist(), file)
+
+
+def _evaluate(load_y, input_path, output_path, ids, metrics):
+    if not metrics:
+        return
+
+    os.makedirs(output_path)
+
+    def load_prediction(identifier):
+        return np.load(os.path.join(input_path, f'{identifier}.npy'))
+
+    ys, predictions = [], []
+    for y, prediction in load_by_ids(load_y, load_prediction, ids=ids):
+        ys.append(y)
+        predictions.append(prediction)
+
+    result = evaluate_fn(ys, predictions, metrics)
+
+    for name, value in result.items():
+        metric = os.path.join(output_path, name)
+        if isinstance(value, np.ndarray):
+            value = value.tolist()
+
+        with open(metric, 'w') as f:
+            json.dump(value, f, indent=2)

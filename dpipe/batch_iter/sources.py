@@ -1,7 +1,5 @@
 import numpy as np
 
-from dpipe.medim.utils import squeeze_first
-
 
 def sample_random_id(ids):
     while True:
