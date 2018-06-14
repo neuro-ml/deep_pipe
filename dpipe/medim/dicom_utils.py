@@ -26,11 +26,11 @@ def folder_to_df(path, verbose=True):
         entry = {}
         result.append(entry)
 
-        file_path = jp(path, file)
-        entry['PathToFile'] = file_path
+        entry['PathToFolder'] = path
+        entry['FileName'] = file
 
         try:
-            dc = pydicom.read_file(file_path)
+            dc = pydicom.read_file(jp(path, file))
         except (pydicom.errors.InvalidDicomError, OSError):
             entry['NoError'] = False
             continue
@@ -65,7 +65,7 @@ def walk_dicom_tree(top, verbose=True):
         iterator = tqdm(iterator)
 
     for root, folders, files in iterator:
-        if any(x.endswith('.dcm') for x in files):
+        if not any(x.lower().endswith('.dcm') for x in files):
             continue
 
         relative = os.path.relpath(root, top)
@@ -73,3 +73,24 @@ def walk_dicom_tree(top, verbose=True):
             iterator.set_description(relative)
 
         yield relative, folder_to_df(root, verbose=False)
+
+
+def aggregate_images(dataframe):
+    def get_unique_cols(df):
+        return [col for col in df.columns if len(df[col].dropna().unique()) == 1]
+
+    def process_group(entry):
+        # assert len(entry.PathToFolder.dropna().unique()) == 1, entry.PathToFolder.dropna().unique()
+        res = entry.iloc[[0]][get_unique_cols(entry)]
+        res['FileNames'] = '/'.join(entry.FileName)
+        res['SlicesCount'] = len(entry)
+        return res
+
+    return dataframe.groupby(
+        ('PatientID', 'SeriesInstanceUID', 'StudyID', 'PathToFolder')
+    ).apply(process_group).reset_index(drop=True)
+
+
+def select(dataframe, query: str):
+    query = ' '.join(query.splitlines())
+    return dataframe.query(query).dropna(axis=1, how='all').dropna(axis=0, how='all')

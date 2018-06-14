@@ -17,7 +17,7 @@ def extract_dims(data, ndims=1):
     return data
 
 
-class AddExtractDim(DivideCombine):
+class AddExtractDims(DivideCombine):
     def __init__(self, ndims=1):
         super().__init__(partial(add_dims, ndims=ndims + 1), partial(extract_dims, ndims=ndims + 1))
 
@@ -30,6 +30,6 @@ class AddExtractDim(DivideCombine):
 # Deprecated
 # ----------
 
-Simple = AddExtractDim
+Simple = AddExtractDim = AddExtractDims
 add_dimension = add_dims
 extract_dimension = partial(extract_dims, ndims=2)
