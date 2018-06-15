@@ -68,7 +68,7 @@ def validate_parts(inputs_iterator, *, validate_fn):
 
 
 def predict_parts(inputs_iterator, *, predict_fn):
-    return [predict_fn(inputs) if type(inputs) is np.ndarray else predict_fn(*inputs) for inputs in inputs_iterator]
+    return [predict_fn(*inputs) for inputs in inputs_iterator]
 
 
 class DivideCombine(BatchPredict):
@@ -88,8 +88,8 @@ class DivideCombine(BatchPredict):
         same as `val_combine`. Used during test. If None - `val_combine` is used.
     """
 
-    def __init__(self, val_divide: Callable[..., Iterable], val_combine: Callable[Iterable],
-                 test_divide: Callable[..., Iterable] = None, test_combine: Callable[Iterable] = None):
+    def __init__(self, val_divide: Callable, val_combine: Callable,
+                 test_divide: Callable = None, test_combine: Callable = None):
         self.val_divide, self.test_divide = val_divide, test_divide or val_divide
         self.val_combine, self.test_combine = val_combine, test_combine or val_combine
 

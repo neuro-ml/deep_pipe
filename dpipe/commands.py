@@ -37,7 +37,7 @@ def transform(input_path, output_path, transform_fn):
         np.save(os.path.join(output_path, f), transform_fn(np.load(os.path.join(input_path, f))))
 
 
-def map_ids_to_disk(func: Callable[str], ids: Iterable[str], output_path: str, exist_ok: bool = False):
+def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_path: str, exist_ok: bool = False):
     """
     Apply `func` to each id from `ids` and save each output to `output_path`.
     If `exists_ok` is True the existing files will be ignored, otherwise an exception is raised.

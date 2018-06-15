@@ -8,7 +8,7 @@ from .base import DivideCombine
 
 
 # TODO: probably should implement DivideCombine methods using these functions instead of other way around
-def make_predictor(divide: Callable[..., Iterable], combine: Callable[Iterable], predict_batch: Callable) -> Callable:
+def make_predictor(divide: Callable, combine: Callable, predict_batch: Callable) -> Callable:
     """
     Builds a function that generates predictions for whole objects.
 
