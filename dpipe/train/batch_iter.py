@@ -78,6 +78,7 @@ class BatchIterSlicer(BatchIter):
 
     def __enter__(self):
         self.infinite_batch_iter.__enter__()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         return self.infinite_batch_iter.__exit__(exc_type, exc_val, exc_tb)

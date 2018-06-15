@@ -6,11 +6,13 @@ from .base import DivideCombine
 
 
 def add_dims(*data, ndims=1):
+    """Increase the dimensionality of each entry in `data` by adding `ndim` leading singleton dimensions."""
     idx = (None,) * ndims
     return tuple(np.asarray(x)[idx] for x in data)
 
 
 def extract_dims(data, ndims=1):
+    """Decrease the dimensionality of `data` by extracting `ndim` leading singleton dimensions."""
     for _ in range(ndims):
         assert len(data) == 1
         data = data[0]

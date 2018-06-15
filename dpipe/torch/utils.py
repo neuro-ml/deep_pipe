@@ -88,23 +88,26 @@ class LinearFocalLoss(_Loss):
 
 
 def focal_loss_with_logits(logits, target, gamma=2, weight=None, size_average=True, reduce=True):
-    """Function that measures Focal Loss between target and output
-    logits.
+    """
+    Function that measures Focal Loss between target and output logits.
 
-    Args:
-        logits: Variable of arbitrary shape
-        target: Variable of the same shape as input
-        gamma (float): The power of focal loss factor
-        weight (Variable, optional): a manual rescaling weight
-                if provided it's repeated to match input tensor shape
-        size_average (bool, optional): By default, the losses are averaged
-                over observations for each minibatch. However, if the field
-                :attr:`size_average` is set to ``False``, the losses are instead summed
-                for each minibatch. Default: ``True``
-        reduce (bool, optional): By default, the losses are averaged or summed over
-                observations for each minibatch depending on :attr:`size_average`. When :attr:`reduce`
-                is ``False``, returns a loss per logits/target element instead and ignores
-                :attr:`size_average`. Default: ``True``
+    Parameters
+    ----------
+    logits: Variable of arbitrary shape
+    target: Variable of the same shape as input
+    gamma: float
+        The power of focal loss factor
+    weight: Variable, optional
+        a manual rescaling weight. If provided it's repeated to match input tensor shape
+    size_average: bool, optional
+        By default, the losses are averaged over observations for each minibatch. However, if the field
+        :attr:`size_average` is set to ``False``, the losses are instead summed
+        for each minibatch. Default: ``True``
+    reduce: bool, optional
+        By default, the losses are averaged or summed over
+        observations for each minibatch depending on :attr:`size_average`. When :attr:`reduce`
+        is ``False``, returns a loss per logits/target element instead and ignores
+        :attr:`size_average`. Default: ``True``
     """
     if not (target.size() == logits.size()):
         raise ValueError("Target size ({}) must be the same as logits size ({})".format(target.size(), logits.size()))

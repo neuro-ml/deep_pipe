@@ -1,3 +1,5 @@
+from typing import Callable, Iterable
+
 import numpy as np
 
 from dpipe.medim.utils import build_slices
@@ -6,7 +8,19 @@ from .base import DivideCombine
 
 
 # TODO: probably should implement DivideCombine methods using these functions instead of other way around
-def make_predictor(divide, combine, predict_batch):
+def make_predictor(divide: Callable[..., Iterable], combine: Callable[Iterable], predict_batch: Callable) -> Callable:
+    """
+    Builds a function that generates predictions for whole objects.
+
+    Parameters
+    ----------
+    divide: Callable(*inputs) -> Iterable
+        deconstructs the incoming object into batches.
+    combine: Callable(Iterable)
+        builds the final prediction from the predicted batches.
+    predict_batch: Callable
+        predicts a single batch.
+    """
     return DivideCombine(divide, combine).make_predictor(predict_batch)
 
 

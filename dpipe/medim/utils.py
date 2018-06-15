@@ -73,13 +73,11 @@ def load_by_ids(*loaders, ids: Sequence, shuffle: bool = False):
     if shuffle:
         ids = np.random.permutation(ids)
     for identifier in ids:
-        result = tuple(loader(identifier) for loader in loaders)
-        if len(result) == 1:
-            result = result[0]
-        yield result
+        yield squeeze_first(tuple(loader(identifier) for loader in loaders))
 
 
 def zip_equal(*args: Sized):
+    """Check that all arguments have the same length then apply `zip` to them."""
     # TODO: generalize to not sized
     if not all(len(x) == len(args[0]) for x in args):
         raise ValueError('All the iterables must have the same size')
@@ -88,6 +86,7 @@ def zip_equal(*args: Sized):
 
 
 def squeeze_first(inputs):
+    """Remove the first dimension in case it is singleton."""
     if len(inputs) == 1:
         inputs = inputs[0]
     return inputs

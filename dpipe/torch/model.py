@@ -32,24 +32,25 @@ def sequence_to_np(*data):
 
 
 class TorchModel(Model):
-    """`Model` interface implementation for the PyTorch framework."""
+    """
+    `Model` interface implementation for the PyTorch framework.
+
+    Parameters
+    ----------
+    model_core: torch.nn.Module
+        torch model structure
+    logits2pred: callable(logits) -> prediction
+        last layer nonlinearity that maps logits to predictions
+    logits2loss: callable(logits) -> loss
+        the loss function
+    optimize: torch.optim.Optimizer
+        the optimizer
+    cuda: bool, optional
+        whether to move the model's parameters to CUDA
+    """
 
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, logits2loss: callable,
                  optimize: torch.optim.Optimizer, cuda: bool = True):
-        """
-        Parameters
-        ----------
-        model_core: torch.nn.Module
-            torch model structure
-        logits2pred: callable(logits) -> prediction
-            last layer nonlinearity that maps logits to predictions
-        logits2loss: callable(logits) -> loss
-            the loss function
-        optimize: torch.optim.Optimizer
-            the optimizer
-        cuda: bool, optional
-            whether to move the model's parameters to CUDA
-        """
         if cuda:
             model_core.cuda()
             if isinstance(logits2loss, Module):
@@ -107,20 +108,21 @@ class TorchModel(Model):
 
 
 class TorchFrozenModel(FrozenModel):
+    """
+    Parameters
+    ----------
+    model_core: torch.nn.Module
+        torch model structure
+    logits2pred: callable(logits) -> prediction
+        last layer nonlinearity that maps logits to predictions
+    restore_model_path: str
+        the path to the trained model
+    cuda: bool, optional
+        whether to move the model's parameters to CUDA
+    """
+
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str,
                  cuda: bool = True, modify_state_fn: callable = None):
-        """
-        Parameters
-        ----------
-        model_core: torch.nn.Module
-            torch model structure
-        logits2pred: callable(logits) -> prediction
-            last layer nonlinearity that maps logits to predictions
-        restore_model_path: str
-            the path to the trained model
-        cuda: bool, optional
-            whether to move the model's parameters to CUDA
-        """
         if cuda:
             model_core.cuda()
         self.model_core = load_model_state(model_core, get_model_path(restore_model_path),

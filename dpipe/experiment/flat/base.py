@@ -8,8 +8,8 @@ from dpipe.config import get_resource_manager
 
 def flat(split: Iterable, config_path: str, experiment_path: str, *, makefile: str):
     """
-    Generates and experiment with a 'flat' structure: each created subdirectory
-    will contain triplets of ids (train, validation, test) defined in the `split`.
+    Generates an experiment with a 'flat' structure: each created subdirectory
+    will contain triples of ids (train, validation, test) defined in the `split`.
 
     Parameters
     ----------

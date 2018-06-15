@@ -6,6 +6,7 @@ that are usually accessed via the `do.py` script.
 import json
 import os
 from collections import defaultdict
+from typing import Sequence, Callable, Iterable
 
 import numpy as np
 from tqdm import tqdm
@@ -36,24 +37,31 @@ def transform(input_path, output_path, transform_fn):
         np.save(os.path.join(output_path, f), transform_fn(np.load(os.path.join(input_path, f))))
 
 
-def predict(ids, output_path, load_x, predict_fn, exist_ok=False):
+def map_ids_to_disk(func: Callable[str], ids: Iterable[str], output_path: str, exist_ok: bool = False):
+    """
+    Apply `func` to each id from `ids` and save each output to `output_path`.
+    If `exists_ok` is True the existing files will be ignored, otherwise an exception is raised.
+    """
     os.makedirs(output_path, exist_ok=exist_ok)
 
-    for identifier in tqdm(ids):
+    for identifier in ids:
         output = os.path.join(output_path, f'{identifier}.npy')
         if exist_ok and os.path.exists(output):
             continue
 
-        x = load_x(identifier)
-        y = predict_fn(x)
+        value = func(identifier)
 
         # To save disk space
-        if isinstance(y, np.ndarray) and np.issubdtype(y.dtype, np.floating):
-            y = y.astype(np.float16)
+        if isinstance(value, np.ndarray) and np.issubdtype(value.dtype, np.floating):
+            value = value.astype(np.float16)
 
-        np.save(output, y)
+        np.save(output, value)
         # saving some memory
-        del x, y
+        del value
+
+
+def predict(ids, output_path, load_x, predict_fn, exist_ok=False):
+    map_ids_to_disk(lambda identifier: predict_fn(load_x(identifier)), tqdm(ids), output_path, exist_ok)
 
 
 def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path):
