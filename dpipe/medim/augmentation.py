@@ -3,6 +3,8 @@ from scipy import ndimage
 from scipy.ndimage.interpolation import map_coordinates, zoom
 from scipy.ndimage.filters import gaussian_filter
 
+from dpipe.medim.preprocessing import slice_to_shape, pad_to_shape
+
 
 # TODO: simplify
 def elastic_transform(x, alpha, sigma, axes=None, order=1):
@@ -35,18 +37,7 @@ def elastic_transform(x, alpha, sigma, axes=None, order=1):
     return result
 
 
-# TODO: rewrite
-def pad_slice(x, shape, pad_value=None):
-    delta = np.array(shape) - x.shape
-
-    d_pad = np.maximum(0, delta)
-    d_pad = list(zip(d_pad // 2, (d_pad + 1) // 2))
-    d_slice = np.maximum(0, -delta)
-    d_slice = zip(d_slice // 2, x.shape - (d_slice + 1) // 2)
-    d_slice = [slice(x, y) for x, y in d_slice]
-
-    x = x[d_slice]
-    if pad_value is None:
-        pad_value = x.take(0)
-    x = np.pad(x, d_pad, mode='constant', constant_values=pad_value)
-    return x
+def pad_slice(x: np.ndarray, shape, axes=None, padding_values=0):
+    return pad_to_shape(
+        slice_to_shape(x, np.minimum(shape, x.shape), axes), np.maximum(shape, x.shape), axes, padding_values
+    )

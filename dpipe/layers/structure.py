@@ -1,6 +1,9 @@
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn import functional
+
+from dpipe.medim.utils import build_slices
 
 
 def make_pipeline(structure, make_transformer):
@@ -17,6 +20,20 @@ def make_blocks_with_splitters(structure, make_block, make_splitter):
         return nn.Sequential(make_block(structure[0]),
                              make_splitter(),
                              make_blocks_with_splitters(structure[1:], make_block, make_splitter))
+
+
+class CenteredCrop(nn.Module):
+    def __init__(self, start, stop=None):
+        super().__init__()
+
+        if stop is None:
+            start = np.asarray(start)
+            stop = np.where(start, -start, None)
+
+        self.slices = (slice(None), slice(None), *build_slices(start, stop))
+
+    def forward(self, x):
+        return x[self.slices]
 
 
 class Reshape(nn.Module):
@@ -53,13 +70,13 @@ class SplitAdd(nn.Module):
 
 
 class SplitReduce(nn.Module):
-    def __init__(self, *paths, reduce):
+    def __init__(self, reduce, *paths):
         super().__init__()
         self.reduce = reduce
         self.paths = nn.ModuleList(list(paths))
 
     def forward(self, x):
-        return self.reduce([path(x) for path in self.paths])
+        return self.reduce(path(x) for path in self.paths)
 
 
 class UpsampleToInput(nn.Module):

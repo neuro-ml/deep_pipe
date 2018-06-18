@@ -1,6 +1,7 @@
 from typing import Sequence, Union
 
 import numpy as np
+import scipy
 from scipy import ndimage
 
 from dpipe.medim.patch import pad
@@ -150,3 +151,30 @@ def slice_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None) -> np.
 
     start = ((old_shape - new_shape) // 2).astype(int)
     return x[build_slices(start, start + new_shape)]
+
+
+def proportional_scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None,
+                                padding_values: Union[float, Sequence] = 0, order: int = 1) -> np.ndarray:
+    """
+    Proportionally scale a tensor to fit `shape` along the given `axes` then pad it to that shape.
+
+    Parameters
+    ----------
+    x: np.ndarray
+        tensor to pad
+    shape: Sequence
+        final tensor shape
+    axes: Sequence, optional
+        axes along which the tensor will be padded.
+        If None - the last `len(shape)` axes are used.
+    padding_values: Sequence
+        values to pad the tensor with.
+    order: int, optional
+        order of interpolation
+    """
+    axes = get_axes(axes, x.ndim)
+    scale = np.ones(x.ndim, dtype='float64')
+    scale[axes] = min(shape / np.array(x.shape, dtype='float64')[axes])
+    return pad_to_shape(
+        scipy.ndimage.zoom(x, tuple(scale), order=order, cval=padding_values), shape, axes, padding_values
+    )
