@@ -1,13 +1,11 @@
 from abc import abstractmethod, ABC
+from typing import Tuple
 
 import numpy as np
 
 
 class Dataset(ABC):
-    @property
-    @abstractmethod
-    def ids(self):
-        """Returns a tuple of ids of all objects in the dataset."""
+    ids: Tuple[str] = ()
 
     @abstractmethod
     def load_image(self, identifier: str) -> np.ndarray:
