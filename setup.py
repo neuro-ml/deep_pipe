@@ -26,7 +26,7 @@ setup(
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'dpipe = dpipe.config.base:do',
+            'dpipe = dpipe.config.base:render_config_resource',
         ],
     },
 )

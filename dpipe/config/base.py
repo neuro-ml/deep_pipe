@@ -12,7 +12,7 @@ SHORTCUTS = {
 get_resource_manager = functools.partial(read_config, shortcuts=SHORTCUTS)
 
 
-def do():
+def render_config_resource():
     parser = argparse.ArgumentParser()
     parser.add_argument('command')
     parser.add_argument('--config_path', required=True)

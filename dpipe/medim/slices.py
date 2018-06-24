@@ -11,4 +11,4 @@ def iterate_slices(*data: np.ndarray, axis: int = -1):
         raise ValueError('All the tensors must have the same size along the given axis')
 
     for idx in range(size):
-        yield squeeze_first(tuple(x.take(idx, axis=axis) for x in data))
+        yield tuple(x.take(idx, axis=axis) for x in data)

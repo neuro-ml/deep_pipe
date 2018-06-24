@@ -9,7 +9,4 @@ def get_paths():
     with open(os.path.join(repository_path, 'paths.json')) as f:
         paths = json.load(f)
 
-    for k in paths:
-        paths[k] = os.path.join(repository_path, paths[k])
-
-    return paths
+    return {key: os.path.realpath(os.path.join(repository_path, path)) for key, path in paths.items()}

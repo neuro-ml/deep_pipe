@@ -1,6 +1,8 @@
 import os
+from operator import itemgetter
 from os.path import join as jp
 
+import numpy as np
 import pydicom
 import pandas as pd
 from tqdm import tqdm
@@ -17,20 +19,20 @@ def folder_to_df(path, verbose=True):
 
     result = []
     for file in iterator:
+        file_path = jp(path, file)
+        if file == 'DICOMDIR' or not os.path.isfile(file_path):
+            continue
+
         if verbose:
             iterator.set_description(file)
-        if file == 'DICOMDIR':
-            continue
-        # TODO: process only dicoms
 
         entry = {}
         result.append(entry)
 
         entry['PathToFolder'] = path
         entry['FileName'] = file
-
         try:
-            dc = pydicom.read_file(jp(path, file))
+            dc = pydicom.read_file(file_path)
         except (pydicom.errors.InvalidDicomError, OSError):
             entry['NoError'] = False
             continue
@@ -65,32 +67,43 @@ def walk_dicom_tree(top, verbose=True):
         iterator = tqdm(iterator)
 
     for root, folders, files in iterator:
-        if not any(x.lower().endswith('.dcm') for x in files):
-            continue
-
         relative = os.path.relpath(root, top)
         if verbose:
             iterator.set_description(relative)
 
-        yield relative, folder_to_df(root, verbose=False)
+        if files:
+            yield relative, folder_to_df(root, verbose=False)
+
+
+def load_by_meta(row):
+    folder, files = row.PathToFolder, row.FileNames.split('/')
+    x = np.stack((pydicom.read_file(jp(folder, file)).pixel_array for file in files), axis=-1)
+
+    orientation = row[[f'ImageOrientationPatient{i}' for i in range(6)]].astype(float)
+    cross = np.cross(orientation[:3], orientation[3:])
+    m = np.reshape(list(orientation) + list(cross), (3, 3))
+    return x, m
+
+
+def join_dicom_tree(top, verbose=True):
+    return pd.concat(map(itemgetter(1), walk_dicom_tree(top, verbose)))
 
 
 def aggregate_images(dataframe):
     def get_unique_cols(df):
-        return [col for col in df.columns if len(df[col].dropna().unique()) == 1]
+        return [col for col in df.columns if len(df[col].dropna().unique()) <= 1]
 
     def process_group(entry):
-        # assert len(entry.PathToFolder.dropna().unique()) == 1, entry.PathToFolder.dropna().unique()
         res = entry.iloc[[0]][get_unique_cols(entry)]
         res['FileNames'] = '/'.join(entry.FileName)
         res['SlicesCount'] = len(entry)
         return res
 
     return dataframe.groupby(
-        ('PatientID', 'SeriesInstanceUID', 'StudyID', 'PathToFolder')
+        ('PatientID', 'SeriesInstanceUID', 'StudyID', 'PathToFolder', 'SequenceName')
     ).apply(process_group).reset_index(drop=True)
 
 
-def select(dataframe, query: str):
-    query = ' '.join(query.splitlines())
+def select(dataframe, query: str, **where):
+    query = ' '.join(query.format(**where).splitlines())
     return dataframe.query(query).dropna(axis=1, how='all').dropna(axis=0, how='all')
