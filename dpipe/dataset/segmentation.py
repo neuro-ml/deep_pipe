@@ -23,7 +23,7 @@ class MultichannelSegmentationFromCSV(CSV, SegmentationDataset):
 
 class SegmentationFromCSV(MultichannelSegmentationFromCSV):
     def __init__(self, data_path, modalities, target, metadata_rpath):
-        assert type(target) is str
+        assert isinstance(target, str)
         super().__init__(data_path, modalities=modalities, targets=[target], metadata_rpath=metadata_rpath)
 
     def load_segm(self, identifier) -> np.array:

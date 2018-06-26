@@ -15,11 +15,12 @@ class Brats2017(SegmentationFromCSV):
         return np.uint8(segm)
 
 
-segm_decoding_matrix = np.array([[0, 0, 0],
-                                 [1, 1, 0],
-                                 [1, 0, 0],
-                                 [1, 1, 1]
-                                 ], dtype=bool)
+SEGM_DECODING_MATRIX = np.array(
+    [[0, 0, 0],
+     [1, 1, 0],
+     [1, 0, 0],
+     [1, 1, 1]], dtype=bool
+)
 
 # For Brats 2015
 # segm2msegm = np.array([
