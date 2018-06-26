@@ -39,6 +39,9 @@ def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
     return proxy(dataset)
 
 
+cache_segmentation_dataset = functools.partial(cache_methods, methods=['load_image', 'load_segm'])
+
+
 def apply(instance, **methods):
     """
     Applies a given function to the output of a given method.
