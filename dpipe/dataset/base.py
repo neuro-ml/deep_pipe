@@ -55,66 +55,6 @@ class SegmentationDataset(Dataset):
         """
 
 
-class IntSegmentationDataset(Dataset):
-    """Abstract class that describes a dataset for medical image segmentation with int values in segmentation."""
-
-    @abstractmethod
-    def load_segm(self, identifier: str) -> np.ndarray:
-        """
-        Load the ground truth segmentation
-
-        Parameters
-        ----------
-        identifier: str
-            the object's identifier
-
-        Returns
-        -------
-        segmentation: integer tensor
-            the ground truth segmentation as an integer tensor.
-            Each value must correspond to a class.
-        """
-
-    @abstractmethod
-    def load_msegm(self, identifier: str) -> np.ndarray:
-        """
-        Load the multimodal ground truth segmentation
-
-        Parameters
-        ----------
-        identifier: str
-            the object's identifier
-
-        Returns
-        -------
-        segmentation: bool tensor
-            the ground truth segmentation as a bool tensor.
-            Each channel must correspond to a class.
-        """
-
-    @property
-    @abstractmethod
-    def n_chans_segm(self) -> int:
-        """
-        The number of channels in the segmentation tensor
-
-        Returns
-        -------
-        channels: int
-        """
-
-    @property
-    @abstractmethod
-    def n_chans_msegm(self) -> int:
-        """
-        The number of channels in the multimodal segmentation tensor
-
-        Returns
-        -------
-        channels: int
-        """
-
-
 class ClassificationDataset(Dataset):
     """Abstract class that describes a dataset for classification."""
 

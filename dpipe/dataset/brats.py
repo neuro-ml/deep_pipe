@@ -1,10 +1,10 @@
 import numpy as np
 
-from .segmentation import SegmentationFromCSVInt
+from .segmentation import SegmentationFromCSV
 
 
 # We need this class because in the original data segm values are [0, 1, 2, 4]
-class Brats2017(SegmentationFromCSVInt):
+class Brats2017(SegmentationFromCSV):
     def __init__(self, data_path, metadata_rpath='metadata.csv'):
         super().__init__(data_path=data_path, modalities=['t1', 't1ce', 't2', 'flair'], target='segm',
                          metadata_rpath=metadata_rpath)
