@@ -66,6 +66,8 @@ class BatchIterRepeater(BatchIter):
             result = self.batch_iter.__exit__(exc_type, exc_val, exc_tb)
             self.batch_iter = None
             return result
+        else:
+            return False
 
 
 class BatchIterSlicer(BatchIter):

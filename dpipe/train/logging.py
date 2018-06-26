@@ -41,6 +41,15 @@ class Logger:
         pass
 
 
+class ConsoleLogger(Logger):
+    def train(self, train_losses, step):
+        print(f'{step:>05}: train loss: {train_losses.mean()}', flush=True)
+
+    def metrics(self, metrics, step):
+        for metric in metrics:
+            print(f'{step:>05}: {metric} = {metrics[metric]}')
+
+
 class TBLogger(Logger):
     def __init__(self, log_path):
         self.logger = tensorboard_easy.Logger(log_path)
