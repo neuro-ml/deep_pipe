@@ -6,7 +6,7 @@ import numpy as np
 from dpipe.medim import patch
 from .blocks import cache_function, make_source_random, make_block_load_x_y, make_batch_blocks
 
-spatial_dims = (-3, -2, -1)
+SPATIAL_DIMS = (-3, -2, -1)
 
 
 def find_cancer(y, y_patch_size):
@@ -31,7 +31,7 @@ def make_block_find_cancer(y_patch_size, *, buffer_size):
 def make_block_find_padding(buffer_size):
     @cache_function
     def add_padding(o):
-        o['padding'] = np.min(o['x'], axis=spatial_dims, keepdims=True)
+        o['padding'] = np.min(o['x'], axis=SPATIAL_DIMS, keepdims=True)
         return o
 
     return pdp.One2One(add_padding, buffer_size=buffer_size)
@@ -54,7 +54,7 @@ def extract_patches(x, patch_sizes, center_idx, padding_values, spatial_dims):
 
 
 def check_y_patch_size(y_patch_size):
-    assert len(y_patch_size) == len(spatial_dims), f'y_patch_size is {y_patch_size}'
+    assert len(y_patch_size) == len(SPATIAL_DIMS), f'y_patch_size is {y_patch_size}'
 
 
 def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patch_size, buffer_size):
@@ -65,12 +65,12 @@ def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, y_patc
 
 
     def _extract_patches(o):
-        center_idx = get_random_center_idx(o['y'], y_patch_size, spatial_dims=spatial_dims)
+        center_idx = get_random_center_idx(o['y'], y_patch_size, spatial_dims=SPATIAL_DIMS)
 
         xs = extract_patches(o['x'], patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=o['padding'],
-                             spatial_dims=spatial_dims)
+                             spatial_dims=SPATIAL_DIMS)
         y, = extract_patches(o['y'], patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
-                             spatial_dims=spatial_dims)
+                             spatial_dims=SPATIAL_DIMS)
 
         return (*xs, y)
 
@@ -89,16 +89,16 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
     y_patch_size = np.array(y_patch_size)
 
     def _extract_patches(o):
-        if len(o['cancer']) > 0 and np.random.uniform() < nonzero_fraction:
+        if o['cancer'] and np.random.uniform() < nonzero_fraction:
             center_idx = random.choice(o['cancer'])
         else:
-            center_idx = get_random_center_idx(o['y'], y_patch_size, spatial_dims=spatial_dims)
+            center_idx = get_random_center_idx(o['y'], y_patch_size, spatial_dims=SPATIAL_DIMS)
 
         xs = extract_patches(o['x'], patch_sizes=x_patch_sizes, center_idx=center_idx, padding_values=o['padding'],
-                             spatial_dims=spatial_dims)
+                             spatial_dims=SPATIAL_DIMS)
 
         y, = extract_patches(o['y'], patch_sizes=[y_patch_size], center_idx=center_idx, padding_values=0,
-                             spatial_dims=spatial_dims)
+                             spatial_dims=SPATIAL_DIMS)
         return (*xs, y)
 
     return pdp.Pipeline(make_source_random(ids),

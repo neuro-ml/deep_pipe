@@ -13,14 +13,14 @@ import numpy as np
 def load_pred(identifier, predictions_path):
     """
     Loads the prediction numpy tensor with specified id.
-    
+
     Parameters
     ----------
     identifier: int
         id to load
     predictions_path: str
         path where to load prediction from
-        
+
     Returns
     -------
     prediction: numpy.float32
@@ -45,7 +45,7 @@ def load_json(path: str):
         return json.load(f)
 
 
-console_argument = re.compile(r'^--[^\d\W]\w*$')
+CONSOLE_ARGUMENT = re.compile(r'^--[^\d\W]\w*$')
 
 
 class ConsoleArguments:
@@ -57,12 +57,12 @@ class ConsoleArguments:
         parser = argparse.ArgumentParser()
         args = parser.parse_known_args()[1]
         # allow for positional arguments:
-        while args and not console_argument.match(args[0]):
+        while args and not CONSOLE_ARGUMENT.match(args[0]):
             args = args[1:]
 
         self.args = {}
         for arg, value in zip(args[::2], args[1::2]):
-            if not console_argument.match(arg):
+            if not CONSOLE_ARGUMENT.match(arg):
                 raise ValueError(f'Invalid console argument: {arg}')
             arg = arg[2:]
             try:
