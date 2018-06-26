@@ -6,7 +6,7 @@ from collections import ChainMap, namedtuple
 
 import numpy as np
 import dpipe.medim as medim
-from .base import Dataset, SegmentationDataset, IntSegmentationDataset
+from .base import Dataset, SegmentationDataset
 
 
 class Proxy:
@@ -84,7 +84,7 @@ def rebind(instance, methods):
     return proxy(instance)
 
 
-def bbox_extraction(dataset: IntSegmentationDataset) -> IntSegmentationDataset:
+def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time
     load_image = functools.lru_cache(3)(dataset.load_image)
@@ -97,11 +97,6 @@ def bbox_extraction(dataset: IntSegmentationDataset) -> IntSegmentationDataset:
 
         def load_segm(self, patient_id):
             img = self._shadowed.load_segm(patient_id)
-            mask = np.any(load_image(patient_id) > 0, axis=0)
-            return medim.bb.extract([img], mask=mask)[0]
-
-        def load_msegm(self, patient_id):
-            img = self._shadowed.load_msegm(patient_id)
             mask = np.any(load_image(patient_id) > 0, axis=0)
             return medim.bb.extract([img], mask=mask)[0]
 
@@ -191,7 +186,7 @@ def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
     return GroupsFromIDs(dataset)
 
 
-def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDataset:
+def merge_datasets(datasets: List[SegmentationDataset]) -> SegmentationDataset:
     assert all(dataset.n_chans_image == datasets[0].n_chans_image for dataset in datasets)
 
     patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.ids} for dataset in datasets))
@@ -212,8 +207,8 @@ def merge_datasets(datasets: List[IntSegmentationDataset]) -> IntSegmentationDat
     return MergedDataset(datasets[0])
 
 
-def apply_mask(dataset: IntSegmentationDataset, mask_modality_id: int = None,
-               mask_value: int = None) -> IntSegmentationDataset:
+def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,
+               mask_value: int = None) -> SegmentationDataset:
     class MaskedDataset(Proxy):
         def load_image(self, patient_id):
             images = self._shadowed.load_image(patient_id)
