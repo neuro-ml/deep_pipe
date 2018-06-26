@@ -89,7 +89,7 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_sizes, 
     y_patch_size = np.array(y_patch_size)
 
     def _extract_patches(o):
-        if o['cancer'] and np.random.uniform() < nonzero_fraction:
+        if len(o['cancer']) > 0 and np.random.uniform() < nonzero_fraction:
             center_idx = random.choice(o['cancer'])
         else:
             center_idx = get_random_center_idx(o['y'], y_patch_size, spatial_dims=SPATIAL_DIMS)
