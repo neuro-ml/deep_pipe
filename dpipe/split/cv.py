@@ -12,7 +12,7 @@ class ShuffleGroupKFold(KFold):
 
 
 def train_test_split_groups(X, *, val_size, groups=None, **kwargs):
-    splitClass = (ShuffleSplit if groups is None else GroupShuffleSplit)
-    split = splitClass(test_size=val_size, **kwargs)
+    split_class = (ShuffleSplit if groups is None else GroupShuffleSplit)
+    split = split_class(test_size=val_size, **kwargs)
     train, val = next(split.split(X=X, groups=groups))
     return X[train], X[val]
