@@ -92,11 +92,5 @@ def squeeze_first(inputs):
     return inputs
 
 
-def iterate_axis(x: np.ndarray, axis: int):
-    assert axis < x.ndim
-    for i in range(x.shape[axis]):
-        yield x.take(i, axis=axis)
-
-
 def add_batch_dim(x):
     return x[None]

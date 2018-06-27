@@ -1,6 +1,7 @@
 """Wrappers aim to change the dataset's behaviour"""
 
 import functools
+from itertools import chain
 from typing import List, Sequence
 from collections import ChainMap, namedtuple
 
@@ -50,7 +51,7 @@ def apply(instance, **methods):
     ----------
     instance
     methods: dict[str, Callable]
-        each keyword argument looks like so: `method_name=func_to_apply`.
+        each keyword argument has the form `method_name=func_to_apply`.
         `func_to_apply` is applied to the `method_name` method.
     """
 
@@ -148,24 +149,12 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
         return wrapper
 
     Merged = namedtuple('Merged', methods + ['ids', 'n_chans_image'])
-    return Merged(*([decorator(method) for method in methods] + [ids, n_chans_image]))
+    return Merged(*chain(map(decorator, methods), [ids, n_chans_image]))
 
 
 # TODO: deprecated
 # Deprecated
 # ----------
-
-
-def weighted(dataset: Dataset, thickness: str) -> Dataset:
-    class WeightedBoundariesDataset(Proxy):
-        def load_weighted_mask(self, patient_id) -> np.array:
-            paths = [self.df[thickness].loc[patient_id]]
-            image = self._load_by_paths(paths)
-
-            return image
-
-    return WeightedBoundariesDataset(dataset)
-
 
 def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
     class GroupedFromMetadata(Proxy):

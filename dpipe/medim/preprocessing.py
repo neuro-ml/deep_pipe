@@ -147,7 +147,7 @@ def slice_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None) -> np.
     """
     old_shape, new_shape = np.array(x.shape), np.array(compute_shape_from_spatial(x.shape, shape, axes))
     if (old_shape < new_shape).any():
-        raise ValueError(f'The resulting shape cannot be greater than the original: {old_shape} vs {new_shape}')
+        raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}')
 
     start = ((old_shape - new_shape) // 2).astype(int)
     return x[build_slices(start, start + new_shape)]

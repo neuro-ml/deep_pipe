@@ -1,7 +1,5 @@
 import numpy as np
 
-from dpipe.medim.utils import squeeze_first
-
 
 def iterate_slices(*data: np.ndarray, axis: int = -1):
     """Iterate over slices of a series of tensors along a given axis."""
@@ -12,3 +10,9 @@ def iterate_slices(*data: np.ndarray, axis: int = -1):
 
     for idx in range(size):
         yield tuple(x.take(idx, axis=axis) for x in data)
+
+
+def iterate_axis(x: np.ndarray, axis: int):
+    assert axis < x.ndim
+    for i in range(x.shape[axis]):
+        yield x.take(i, axis=axis)

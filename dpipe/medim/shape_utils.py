@@ -53,11 +53,8 @@ def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1)
     -------
     output_shape: tuple
     """
-    padding = np.asarray(padding)
-    shape = np.asarray(shape)
-    dilation = np.asarray(dilation)
-    kernel_size = np.asarray(kernel_size)
+    padding, shape, dilation, kernel_size = map(np.asarray, [padding, shape, dilation, kernel_size])
 
     # TODO: raise if division is not even
-    result = np.floor((shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
-    return tuple(result.astype(int))
+    result = (shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1
+    return tuple(np.floor(result).astype(int))

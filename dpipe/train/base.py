@@ -17,7 +17,7 @@ def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, lr_poli
         batch iterator
     n_epochs: int
         number of epochs to train
-    lr_policy: LearningRate
+    lr_policy: LearningRatePolicy
         the learning rate policy
     logger: Logger
     validate: callable, optional
