@@ -5,11 +5,11 @@ from sklearn.model_selection import KFold
 
 
 def kfold_split(subj_ids, n_splits, groups=None, **kwargs):
-    """Perform kfold (or group kfold) split
+    """Perform kfold (or group kfold) shuffled split
     Returns indices: [[train_0, val_0], ..., [train_k, val_k]]
     """
     kfoldClass = KFold if groups is None else ShuffleGroupKFold
-    kfold = kfoldClass(n_splits, **kwargs)
+    kfold = kfoldClass(n_splits, shuffle=True, **kwargs)
     return [split for split in kfold.split(X=subj_ids, groups=groups)]
 
 
@@ -37,7 +37,6 @@ def get_loo_cv(ids, groups, *, val_size=None, random_state=42):
     splits = kfold_split(ids, n_splits, groups=groups)
     if val_size is not None:
         splits = split_train(splits, val_size, random_state=random_state)
-    print(indices_to_subj_ids(splits, ids))
     return indices_to_subj_ids(splits, ids)
 
 
