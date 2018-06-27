@@ -33,10 +33,6 @@ def validate_fn_with_shape(y_pred_loss, x_shape, f):
     return f(y_pred, x_shape), loss
 
 
-def add_batch_dim(x):
-    return x[None]
-
-
 def remove_batch_dim(x):
     assert x.shape[0] == 1
     return x[0]
