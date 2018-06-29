@@ -17,15 +17,13 @@ def parse_commands(commands):
         if len(parts) == 1:
             output = ()
         else:
-            output = tuple(filter_sequence(parts[1].split()))
-        yield parts[0], output
+            output = tuple(map(os.path.expanduser, filter_sequence(parts[1].split())))
+        yield parts[0].strip(), output
 
 
 def filter_commands(parsed_commands):
-    parsed_commands = list(parsed_commands)
     commands = []
     for command, output in reversed(parsed_commands):
-        output = tuple(map(os.path.expanduser, output))
         if output and all(map(os.path.exists, output)):
             break
         commands.append((command, output))
@@ -33,10 +31,10 @@ def filter_commands(parsed_commands):
 
 
 def run_commands(commands: str, config_path: str, **where):
-    skip, commands = filter_commands(parse_commands(commands.format(**where).splitlines()))
+    skip, commands = filter_commands(list(parse_commands(commands.format(**where).splitlines())))
     do = f'python {get_paths()["do"]} '
     if skip:
-        print(f'>>> Skipping {skip} previous command(s), because the corresponding output(s) exist(s).\n', flush=True)
+        print(f'>>> Skipping {skip} previous command(s), because the corresponding outputs exist.\n', flush=True)
     for command, output in commands:
         command = do + command + ' --config_path ' + config_path
         print(f'>>> Running: {command}\n', flush=True)
@@ -46,7 +44,7 @@ def run_commands(commands: str, config_path: str, **where):
             # TODO: find a way to use resource_manager instead of subprocess
             subprocess.check_call(shlex.split(command))
         except subprocess.CalledProcessError as e:
-            list(map(shutil.rmtree, output))
+            list(map(shutil.rmtree, filter(os.path.exists, output)))
             raise RuntimeError('An exception occurred. Cleaning up...\n') from e
 
         if output and not all(map(os.path.exists, output)):

@@ -64,7 +64,7 @@ class SplitAdd(nn.Module):
     def forward(self, x):
         result = self.init_path(x)
         for path in self.other_paths:
-            result += path(x)
+            result = result + path(x)
 
         return result
 
