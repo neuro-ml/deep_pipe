@@ -25,7 +25,9 @@ def load_model_state(model_core: torch.nn.Module, path: str, cuda: bool = True, 
 
 
 def save_model_state(model_core: torch.nn.Module, path: str):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    folder = os.path.dirname(path)
+    if folder:
+        os.makedirs(folder, exist_ok=True)
     torch.save(model_core.state_dict(), path)
 
 
