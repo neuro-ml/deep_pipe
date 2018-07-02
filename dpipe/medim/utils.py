@@ -98,5 +98,8 @@ def iterate_axis(x: np.ndarray, axis: int):
         yield x.take(i, axis=axis)
 
 
-def add_batch_dim(x):
+def add_first_dim(x):
     return x[None]
+
+# Legacy
+add_batch_dim = add_first_dim
