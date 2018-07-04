@@ -27,14 +27,14 @@ class ConvBlock(nn.Module):
         return self.activation(self.bn(self.conv(x)))
 
 
-def make_res_init(structure, kernel_size, activation, padding=0):
-    if len(structure) == 2:
-        return nn.Sequential(nn.Conv3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding))
-    else:
-        return nn.Sequential(ConvBlock3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding,
-                                         activation=activation),
-                             *make_res_init(structure[1:], kernel_size=kernel_size, padding=padding,
-                                            activation=activation))
+def make_init_path(structure, kernel_size, activation, padding=0, *, conv, conv_block):
+    assert len(structure) >= 2
+    path = []
+    while len(structure) > 2:
+        path.append(conv_block(*structure[:2], kernel_size=kernel_size, padding=padding, activation=activation))
+        structure = structure[1:]
+
+    return nn.Sequential(*path, conv(structure[0], structure[1], kernel_size=kernel_size, padding=padding))
 
 
 class PreActivation(nn.Module):
@@ -87,3 +87,16 @@ ConvBlock3d: ConvBlock = partial(ConvBlock, get_convolution=nn.Conv3d, get_batch
 
 ConvTransposeBlock2d: ConvBlock = partial(ConvBlock, get_convolution=nn.ConvTranspose2d, get_batch_norm=nn.BatchNorm2d)
 ConvTransposeBlock3d: ConvBlock = partial(ConvBlock, get_convolution=nn.ConvTranspose3d, get_batch_norm=nn.BatchNorm3d)
+
+
+# Deprecated
+# ----------
+
+def make_res_init(structure, kernel_size, activation, padding=0):
+    if len(structure) == 2:
+        return nn.Sequential(nn.Conv3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding))
+    else:
+        return nn.Sequential(ConvBlock3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding,
+                                         activation=activation),
+                             *make_res_init(structure[1:], kernel_size=kernel_size, padding=padding,
+                                            activation=activation))

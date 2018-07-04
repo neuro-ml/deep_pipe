@@ -8,7 +8,7 @@ def get_model_path(path):
     new_path = os.path.join(path, 'model')
     if not os.path.exists(new_path):
         return path
-    warn(DeprecationWarning('"get_model_path" is deprecated. Pass the complete path to load the model.'))
+    warn('"get_model_path" is deprecated. Pass the complete path to load the model.', DeprecationWarning)
     return new_path
 
 

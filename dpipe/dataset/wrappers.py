@@ -2,7 +2,7 @@
 
 import functools
 from itertools import chain
-from typing import List, Sequence
+from typing import List, Sequence, Callable
 from collections import ChainMap, namedtuple
 
 import numpy as np
@@ -43,14 +43,14 @@ def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
 cache_segmentation_dataset = functools.partial(cache_methods, methods=['load_image', 'load_segm'])
 
 
-def apply(instance, **methods):
+def apply(instance, **methods: Callable):
     """
     Applies a given function to the output of a given method.
 
     Parameters
     ----------
     instance
-    methods: dict[str, Callable]
+    methods: Callable
         each keyword argument has the form `method_name=func_to_apply`.
         `func_to_apply` is applied to the `method_name` method.
     """
@@ -136,7 +136,7 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
     ids = tuple(id_ for dataset in datasets for id_ in dataset.ids)
     assert len(set(ids)) == len(ids), 'The ids are not unique'
     n_chans_images = {dataset.n_chans_image for dataset in datasets}
-    assert len(n_chans_images) == 1, 'Each dataset must have same number of channels'
+    assert len(n_chans_images) == 1, 'Each dataset must have the same number of channels'
 
     id_to_dataset = ChainMap(*({id_: dataset for id_ in dataset.ids} for dataset in datasets))
     n_chans_image = list(n_chans_images)[0]

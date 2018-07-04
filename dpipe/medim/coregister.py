@@ -1,3 +1,6 @@
+# TODO: this is a script not a submodule. I guess it should be deprecated
+
+
 import os
 import shlex
 import subprocess

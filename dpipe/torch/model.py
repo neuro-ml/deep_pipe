@@ -8,9 +8,10 @@ from torch.nn import Module
 from dpipe.model import Model, FrozenModel, get_model_path
 
 
-def load_model_state(model_core: torch.nn.Module, path: str, cuda: bool = True, modify_state_fn: Callable = None):
+def load_model_state(model_core: torch.nn.Module, path: str, modify_state_fn: Callable = None, cuda: bool = True):
+    # TODO: remove `cuda` parameter
     # To load models that were trained on GPU nodes, but now run on CPU
-    if cuda:
+    if is_on_cuda(model_core):
         map_location = None
     else:
         def map_location(storage, location):
@@ -123,7 +124,7 @@ class TorchModel(Model):
         save_model_state(self.model_core, path)
 
     def load(self, path: str, modify_state_fn: callable = None):
-        load_model_state(self.model_core, get_model_path(path), modify_state_fn=modify_state_fn, cuda=self.cuda)
+        load_model_state(self.model_core, get_model_path(path), modify_state_fn=modify_state_fn)
 
 
 class TorchFrozenModel(FrozenModel):
@@ -142,10 +143,8 @@ class TorchFrozenModel(FrozenModel):
 
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str,
                  cuda: bool = True, modify_state_fn: callable = None):
-        if cuda:
-            model_core.cuda()
-        self.model_core = load_model_state(model_core, get_model_path(restore_model_path),
-                                           modify_state_fn=modify_state_fn, cuda=cuda)
+        self.model_core = load_model_state(to_cuda(model_core, cuda), get_model_path(restore_model_path),
+                                           modify_state_fn=modify_state_fn)
         self.cuda = cuda
         self.logits2pred = logits2pred
 

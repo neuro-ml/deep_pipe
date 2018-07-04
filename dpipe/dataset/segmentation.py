@@ -5,19 +5,16 @@ from .base import SegmentationDataset
 
 
 class MultichannelSegmentationFromCSV(CSV, SegmentationDataset):
-    def __init__(self, data_path, modalities, targets, metadata_rpath):
-        super().__init__(data_path, metadata_rpath)
+    def __init__(self, data_path, modalities, targets, metadata_rpath, index_col='id'):
+        super().__init__(data_path, metadata_rpath, index_col)
         self.modality_cols = modalities
         self.target_cols = targets
-
-    @property
-    def n_chans_image(self):
-        return len(self.modality_cols)
+        self.n_chans_image = len(self.modality_cols)
 
     def load_image(self, identifier):
         return multiple_columns(self.load, identifier, self.modality_cols)
 
-    def load_segm(self, identifier) -> np.array:
+    def load_segm(self, identifier):
         return multiple_columns(self.load, identifier, self.target_cols)
 
 

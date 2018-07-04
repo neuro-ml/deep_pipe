@@ -59,7 +59,7 @@ def load_image(path: str):
 
 def load_by_ids(*loaders, ids: Sequence, shuffle: bool = False):
     """
-    Yields pairs of objects given their loaders and ids
+    Yields tuples of objects given their loaders and ids.
 
     Parameters
     ----------

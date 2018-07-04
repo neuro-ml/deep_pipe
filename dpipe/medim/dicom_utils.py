@@ -76,7 +76,7 @@ def join_dicom_tree(top, verbose=True):
 
 def aggregate_images(dataframe: pd.DataFrame):
     def get_unique_cols(df):
-        return [col for col in df.columns if len(df[col].dropna().unique()) <= 1]
+        return [col for col in df.columns if len(df[col].dropna().unique()) == 1]
 
     def process_group(entry):
         res = entry.iloc[[0]][get_unique_cols(entry)]
@@ -88,10 +88,22 @@ def aggregate_images(dataframe: pd.DataFrame):
     group_by = ['PatientID', 'SeriesInstanceUID', 'StudyInstanceUID', 'PathToFolder', 'SequenceName']
     is_string = [dataframe[col].apply(lambda x: isinstance(x, str)).all() for col in group_by]
     if not all(is_string):
-        not_strings = ', '.join(np.array(np.logical_not(is_string)))
+        not_strings = ', '.join(np.array(group_by)[np.logical_not(is_string)])
         raise ValueError(f'The following columns do not contain only strings: {not_strings}')
 
     return dataframe.groupby(group_by).apply(process_group).reset_index(drop=True)
+
+
+def normalize_identifiers(dataframe):
+    def remove_dots(x):
+        try:
+            return str(int(float(x)))
+        except ValueError:
+            return x
+
+    dataframe['PatientID'] = dataframe.PatientID.apply(remove_dots)
+    dataframe['SequenceName'] = dataframe.SequenceName.fillna('')
+    return dataframe
 
 
 def select(dataframe, query: str, **where):
@@ -99,14 +111,19 @@ def select(dataframe, query: str, **where):
     return dataframe.query(query).dropna(axis=1, how='all').dropna(axis=0, how='all')
 
 
+def get_orientation_matrix(metadata):
+    orientation = metadata[[f'ImageOrientationPatient{i}' for i in range(6)]].astype(float)
+    cross = np.cross(orientation[:3], orientation[3:])
+    return np.reshape(list(orientation) + list(cross), (3, 3))
+
+
 def load_by_meta(metadata):
+    # TODO: RescaleSlope, RescaleIntercept
     folder, files = metadata.PathToFolder, metadata.FileNames.split('/')
     x = np.stack((pydicom.read_file(jp(folder, file)).pixel_array
                   for _, file in sorted(zip(map(int, metadata.InstanceNumbers.split(',')), files))), axis=-1)
 
-    orientation = metadata[[f'ImageOrientationPatient{i}' for i in range(6)]].astype(float)
-    cross = np.cross(orientation[:3], orientation[3:])
-    m = np.reshape(list(orientation) + list(cross), (3, 3))
+    m = get_orientation_matrix(metadata)
     if np.isnan(m).any():
         # TODO: warn
         return x
