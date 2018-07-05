@@ -92,5 +92,9 @@ def squeeze_first(inputs):
     return inputs
 
 
-def add_batch_dim(x):
+def add_first_dim(x):
     return x[None]
+
+
+# Legacy
+add_batch_dim = add_first_dim
