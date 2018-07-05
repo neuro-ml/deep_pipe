@@ -8,12 +8,11 @@ from torch.nn import Module
 from dpipe.model import Model, FrozenModel, get_model_path
 
 
-def load_model_state(model_core: torch.nn.Module, path: str, modify_state_fn: Callable = None, cuda: bool = True):
-    # TODO: remove `cuda` parameter
-    # To load models that were trained on GPU nodes, but now run on CPU
+def load_model_state(model_core: torch.nn.Module, path: str, modify_state_fn: Callable = None):
     if is_on_cuda(model_core):
         map_location = None
     else:
+        # load models that were trained on GPU nodes, but now run on CPU
         def map_location(storage, location):
             return storage
 
@@ -96,7 +95,7 @@ class TorchModel(Model):
     """
 
     def __init__(self, model_core: torch.nn.Module, logits2pred: Callable, logits2loss: Callable,
-                 optimize: torch.optim.Optimizer, cuda: bool = True):
+                 optimize: torch.optim.Optimizer, cuda: bool = None):
         if isinstance(logits2loss, Module):
             to_cuda(logits2loss, cuda)
 

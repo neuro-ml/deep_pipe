@@ -2,7 +2,7 @@ from functools import partial
 
 import numpy as np
 import torch.nn as nn
-from .layer import CenteredCrop
+from .structure import CenteredCrop
 
 
 def identity(x):
@@ -56,11 +56,13 @@ class ResBlock(nn.Module):
         super().__init__()
 
         # Features
-        PA = partial(PreActivation, n_chans_out=n_chans_out, kernel_size=kernel_size, activation=activation,
-                     padding=padding, dilation=dilation, get_activation=get_activation, get_convolution=get_convolution,
-                     get_batch_norm=get_batch_norm)
+        pre_activation = partial(
+            PreActivation, n_chans_out=n_chans_out, kernel_size=kernel_size, activation=activation, padding=padding,
+            dilation=dilation, get_activation=get_activation, get_convolution=get_convolution,
+            get_batch_norm=get_batch_norm)
 
-        self.conv_path = nn.Sequential(PA(n_chans_in, stride=stride, bias=False), PA(n_chans_out))
+        self.conv_path = nn.Sequential(pre_activation(n_chans_in, stride=stride, bias=False),
+                                       pre_activation(n_chans_out))
 
         # Shortcut
         spatial_difference = np.broadcast_to(2 * (kernel_size // 2 - padding), dims)
