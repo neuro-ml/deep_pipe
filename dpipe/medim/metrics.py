@@ -1,4 +1,5 @@
-from typing import Sequence
+from functools import partial
+from typing import Sequence, Dict, Callable
 
 import numpy as np
 
@@ -79,3 +80,9 @@ def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:
 def aggregate_metric(xs, ys, metric, aggregate_fn=np.mean):
     """Compute metric for array of objects from metric on couple of objects."""
     return aggregate_fn([metric(x, y) for x, y in zip(xs, ys)])
+
+
+def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn=np.mean):
+    return dict(zip(metrics, [
+        partial(aggregate_metric, metric=metric, aggregate_fn=aggregate_fn) for metric in metrics.values()
+    ]))
