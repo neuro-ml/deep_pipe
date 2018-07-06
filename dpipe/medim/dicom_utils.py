@@ -153,9 +153,9 @@ def load_by_meta(metadata: pd.Series) -> np.ndarray:
     x = np.stack((pydicom.read_file(jp(folder, file)).pixel_array
                   for _, file in sorted(zip(map(int, metadata.InstanceNumbers.split(',')), files))), axis=-1)
     # TODO: probably should do the transformation if only they are both defined
-    if not np.isnan(metadata.RescaleSlope):
+    if 'RescaleSlope' in metadata and not np.isnan(metadata.RescaleSlope):
         x = x * metadata.RescaleSlope
-    if not np.isnan(metadata.RescaleIntercept):
+    if 'RescaleIntercept' in metadata and not np.isnan(metadata.RescaleIntercept):
         x = x + metadata.RescaleIntercept
 
     m = get_orientation_matrix(metadata)
