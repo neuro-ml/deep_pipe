@@ -70,11 +70,22 @@ def walk_dicom_tree(top, verbose=True):
         yield relative, files_to_df(root, files)
 
 
-def join_dicom_tree(top, verbose=True):
+def join_dicom_tree(top: str, verbose: bool = True) -> pd.DataFrame:
+    """
+    Returns a dataframe containing metadata for each file in all the subfolders of `top`.
+
+    Parameters
+    ----------
+    top: str
+    verbose: bool, optional
+        whether to display a `tqdm` progressbar.
+    """
     return pd.concat(map(itemgetter(1), walk_dicom_tree(top, verbose)))
 
 
 def aggregate_images(dataframe: pd.DataFrame):
+    """Groups DICOM metadata into images."""
+
     def get_unique_cols(df):
         return [col for col in df.columns if len(df[col].dropna().unique()) == 1]
 
@@ -95,6 +106,14 @@ def aggregate_images(dataframe: pd.DataFrame):
 
 
 def normalize_identifiers(dataframe):
+    """
+    Converts PatientID to str and fills nan values in SequenceName.
+
+    Notes
+    -----
+    The input `dataframe` will be mutated.
+    """
+
     def remove_dots(x):
         try:
             return str(int(float(x)))
@@ -106,7 +125,7 @@ def normalize_identifiers(dataframe):
     return dataframe
 
 
-def select(dataframe, query: str, **where):
+def select(dataframe: pd.DataFrame, query: str, **where: str):
     query = ' '.join(query.format(**where).splitlines())
     return dataframe.query(query).dropna(axis=1, how='all').dropna(axis=0, how='all')
 
@@ -117,15 +136,30 @@ def get_orientation_matrix(metadata):
     return np.reshape(list(orientation) + list(cross), (3, 3))
 
 
-def load_by_meta(metadata):
-    # TODO: RescaleSlope, RescaleIntercept
+def load_by_meta(metadata: pd.Series) -> np.ndarray:
+    """
+    Loads an image based on its row in the metadata dataframe.
+
+    Parameters
+    ----------
+    metadata: pd.Series
+        a row from the dataframe
+
+    Returns
+    -------
+    image: np.ndarray
+    """
     folder, files = metadata.PathToFolder, metadata.FileNames.split('/')
     x = np.stack((pydicom.read_file(jp(folder, file)).pixel_array
                   for _, file in sorted(zip(map(int, metadata.InstanceNumbers.split(',')), files))), axis=-1)
+    # TODO: probably should do the transformation if only they are both defined
+    if metadata.RescaleSlope:
+        x = x * metadata.RescaleSlope
+    if metadata.RescaleIntercept:
+        x = x + metadata.RescaleIntercept
 
     m = get_orientation_matrix(metadata)
     if np.isnan(m).any():
-        # TODO: warn
         return x
 
     xs, ys = np.where(np.abs(m.round()) == 1)

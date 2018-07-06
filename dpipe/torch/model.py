@@ -141,7 +141,7 @@ class TorchFrozenModel(FrozenModel):
     """
 
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str,
-                 cuda: bool = True, modify_state_fn: callable = None):
+                 cuda: bool = None, modify_state_fn: callable = None):
         self.model_core = load_model_state(to_cuda(model_core, cuda), get_model_path(restore_model_path),
                                            modify_state_fn=modify_state_fn)
         self.cuda = cuda
