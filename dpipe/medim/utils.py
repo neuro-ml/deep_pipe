@@ -1,5 +1,5 @@
 from collections import Sized
-from typing import Sequence
+from typing import Sequence, Iterable
 
 import numpy as np
 
@@ -90,6 +90,16 @@ def squeeze_first(inputs):
     if len(inputs) == 1:
         inputs = inputs[0]
     return inputs
+
+
+def flatten(iterable: Iterable) -> list:
+    try:
+        result = []
+        for value in iterable:
+            result.extend(flatten(value))
+        return result
+    except TypeError:
+        return [iterable]
 
 
 def add_first_dim(x):
