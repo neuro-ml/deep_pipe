@@ -1,4 +1,5 @@
 import os
+import struct
 from operator import itemgetter
 from os.path import join as jp
 
@@ -10,6 +11,10 @@ from tqdm import tqdm
 serial = {'ImagePositionPatient', 'ImageOrientationPatient', 'PixelSpacing'}
 person_class = (pydicom.valuerep.PersonName, pydicom.valuerep.PersonName3,
                 pydicom.valuerep.PersonNameBase, pydicom.valuerep.PersonNameUnicode)
+
+
+def throw(e):
+    raise e
 
 
 def files_to_df(folder, files):
@@ -25,13 +30,15 @@ def files_to_df(folder, files):
         entry['FileName'] = file
         try:
             dc = pydicom.read_file(jp(folder, file))
-        except (pydicom.errors.InvalidDicomError, OSError):
+        except (pydicom.errors.InvalidDicomError, OSError, struct.error, NotImplementedError):
             entry['NoError'] = False
             continue
 
         try:
             has_px = hasattr(dc, 'pixel_array')
         except (TypeError, NotImplementedError):
+            # for some formats the following packages might be required
+            # conda install -c clinicalgraphics gdcm
             has_px = False
 
         entry['HasPixelArray'] = has_px
@@ -59,7 +66,7 @@ def folder_to_df(path):
 
 
 def walk_dicom_tree(top, verbose=True):
-    iterator = filter(lambda batch: batch[2], os.walk(top))
+    iterator = filter(lambda batch: batch[2], os.walk(top, onerror=throw))
     if verbose:
         iterator = tqdm(iterator)
 
@@ -89,14 +96,29 @@ def aggregate_images(dataframe: pd.DataFrame):
     def get_unique_cols(df):
         return [col for col in df.columns if len(df[col].dropna().unique()) == 1]
 
+    def careful_drop(df, cols):
+        for col in cols:
+            if col in df:
+                df.drop(col, 1, inplace=True)
+        return df
+
     def process_group(entry):
         res = entry.iloc[[0]][get_unique_cols(entry)]
         res['FileNames'] = '/'.join(entry.FileName)
         res['SlicesCount'] = len(entry)
-        res['InstanceNumbers'] = ','.join(map(lambda x: str(int(x)), entry.InstanceNumber))
-        return res
+        # entries sometimes have no `InstanceNumber`
+        # TODO: probably partially sorted slices will also do
+        try:
+            res['InstanceNumbers'] = ','.join(map(lambda x: str(int(x)), entry.InstanceNumber))
+        except ValueError:
+            res['InstanceNumbers'] = None
 
-    group_by = ['PatientID', 'SeriesInstanceUID', 'StudyInstanceUID', 'PathToFolder', 'SequenceName']
+        return careful_drop(res, ['InstanceNumber', 'FileName'])
+
+    group_by = ['PatientID', 'SeriesInstanceUID', 'StudyInstanceUID', 'PathToFolder']
+    if 'SequenceName' in dataframe:
+        group_by.append('SequenceName')
+
     is_string = [dataframe[col].apply(lambda x: isinstance(x, str)).all() for col in group_by]
     if not all(is_string):
         not_strings = ', '.join(np.array(group_by)[np.logical_not(is_string)])
@@ -121,7 +143,8 @@ def normalize_identifiers(dataframe):
             return x
 
     dataframe['PatientID'] = dataframe.PatientID.apply(remove_dots)
-    dataframe['SequenceName'] = dataframe.SequenceName.fillna('')
+    if 'SequenceName' in dataframe:
+        dataframe['SequenceName'] = dataframe.SequenceName.fillna('')
     return dataframe
 
 
@@ -150,8 +173,10 @@ def load_by_meta(metadata: pd.Series) -> np.ndarray:
     image: np.ndarray
     """
     folder, files = metadata.PathToFolder, metadata.FileNames.split('/')
-    x = np.stack((pydicom.read_file(jp(folder, file)).pixel_array
-                  for _, file in sorted(zip(map(int, metadata.InstanceNumbers.split(',')), files))), axis=-1)
+    if isinstance(metadata.InstanceNumbers, str):
+        files = map(itemgetter(1), zip(map(int, metadata.InstanceNumbers.split(',')), files))
+
+    x = np.stack((pydicom.read_file(jp(folder, file)).pixel_array for file in files), axis=-1)
     # TODO: probably should do the transformation if only they are both defined
     if 'RescaleSlope' in metadata and not np.isnan(metadata.RescaleSlope):
         x = x * metadata.RescaleSlope
