@@ -48,10 +48,6 @@ def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1)
         stride of the convolution
     dilation
         dilation of the convolution kernel
-
-    Returns
-    -------
-    output_shape: tuple
     """
     padding, shape, dilation, kernel_size = map(np.asarray, [padding, shape, dilation, kernel_size])
 

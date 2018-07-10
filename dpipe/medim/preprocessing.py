@@ -10,8 +10,10 @@ from dpipe.medim.utils import get_axes, build_slices
 
 
 def normalize_scan(scan, mean=True, std=True, drop_percentile: int = None):
-    """Normalize scan to make mean and std equal to (0, 1) if stated.
-    Supports robust estimation with drop_percentile."""
+    """
+    Normalize scan to make mean and std equal to (0, 1) if stated.
+    Supports robust estimation with drop_percentile.
+    """
     if drop_percentile is not None:
         bottom = np.percentile(scan, drop_percentile)
         top = np.percentile(scan, 100 - drop_percentile)
@@ -33,8 +35,10 @@ def normalize_scan(scan, mean=True, std=True, drop_percentile: int = None):
 
 
 def normalize_mscan(mscan, mean=True, std=True, drop_percentile: int = None):
-    """Normalize multimodal scan (each modality independently) to make mean and std equal to (0, 1) if stated.
-    Supports robust estimation with drop_percentile."""
+    """
+    Normalize multimodal scan (each modality independently) to make mean and std equal to (0, 1) if stated.
+    Supports robust estimation with drop_percentile.
+    """
     new_mscan = np.zeros_like(mscan, dtype=np.float32)
     for i in range(len(mscan)):
         new_mscan[i] = normalize_scan(mscan[i], mean=mean, std=std,
@@ -57,10 +61,6 @@ def rotate_image(image: np.ndarray, angles: Sequence, axes: Sequence = None, ord
         interpolation order
     reshape: bool, optional
         whether to reshape the resulting image
-
-    Returns
-    -------
-    rotated_image: np.ndarray
     """
     axes = get_axes(axes, len(angles) + 1)
     assert len(axes) == len(angles) + 1
@@ -68,6 +68,28 @@ def rotate_image(image: np.ndarray, angles: Sequence, axes: Sequence = None, ord
     for angle, *axis in zip(angles, axes, axes[1:]):
         result = ndimage.rotate(result, angle, axes=axis, reshape=reshape, order=order)
     return result
+
+
+def scale(x: np.ndarray, scale_factor: Union[float, Sequence], axes: Sequence = None, order: int = 1) -> np.ndarray:
+    """
+    Rescale a tensor according to `scale_factor`.
+
+    Parameters
+    ----------
+    x: np.ndarray
+        tensor to rescale
+    scale_factor: Union[float, Sequence]
+        scale factor for each axis
+    axes: Sequence, optional
+        axes along which the tensor will be scaled.
+        If None - the last `len(shape)` axes are used.
+    order: int, optional
+        order of interpolation
+    """
+    axes = get_axes(axes, x.ndim)
+    scale_factor_ = np.ones(x.ndim, dtype='float64')
+    scale_factor_[axes] = scale_factor
+    return ndimage.zoom(x, scale_factor_, order=order)
 
 
 def scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None, order: int = 1) -> np.ndarray:
@@ -85,10 +107,6 @@ def scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None, order:
         If None - the last `len(shape)` axes are used.
     order: int, optional
         order of interpolation
-
-    Returns
-    -------
-    scaled_tensor: np.ndarray
     """
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(compute_shape_from_spatial(x.shape, shape, axes), 'float64')
@@ -112,10 +130,6 @@ def pad_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None,
     axes: Sequence, optional
         axes along which the tensor will be padded.
         If None - the last `len(shape)` axes are used.
-
-    Returns
-    -------
-    padded_tensor: np.ndarray
     """
     old_shape, new_shape = np.array(x.shape), np.array(compute_shape_from_spatial(x.shape, shape, axes))
     if (old_shape > new_shape).any():
@@ -140,10 +154,6 @@ def slice_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None) -> np.
     axes: Sequence, optional
         axes along which the tensor will be padded.
         If None - the last `len(shape)` axes are used.
-
-    Returns
-    -------
-    sliced_tensor: np.ndarray
     """
     old_shape, new_shape = np.array(x.shape), np.array(compute_shape_from_spatial(x.shape, shape, axes))
     if (old_shape < new_shape).any():
@@ -172,9 +182,7 @@ def proportional_scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence =
     order: int, optional
         order of interpolation
     """
-    axes = get_axes(axes, x.ndim)
-    scale = np.ones(x.ndim, dtype='float64')
-    scale[axes] = min(shape / np.array(x.shape, dtype='float64')[axes])
+    scale_factor = min(shape / np.array(x.shape, dtype='float64')[get_axes(axes, x.ndim)])
     return pad_to_shape(
-        scipy.ndimage.zoom(x, tuple(scale), order=order, cval=padding_values), shape, axes, padding_values
+        scale(x, scale_factor, axes, order), shape, axes, padding_values
     )
