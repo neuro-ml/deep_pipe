@@ -96,13 +96,14 @@ def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
     class BBoxedDataset(Proxy):
         def load_image(self, patient_id):
             img = load_image(patient_id)
-            mask = np.any(img > 0, axis=0)
+            mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
             return medim.bb.extract([img], mask)[0]
 
         def load_segm(self, patient_id):
-            img = self._shadowed.load_segm(patient_id)
-            mask = np.any(load_image(patient_id) > 0, axis=0)
-            return medim.bb.extract([img], mask=mask)[0]
+            seg = self._shadowed.load_segm(patient_id)
+            img = load_image(patient_id)
+            mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
+            return medim.bb.extract([seg], mask=mask)[0]
 
     return BBoxedDataset(dataset)
 
