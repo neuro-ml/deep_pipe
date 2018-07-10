@@ -92,14 +92,16 @@ def squeeze_first(inputs):
     return inputs
 
 
-def flatten(iterable: Iterable) -> list:
-    try:
-        result = []
-        for value in iterable:
-            result.extend(flatten(value))
-        return result
-    except TypeError:
-        return [iterable]
+def flatten(iterable: Iterable, iterable_types: tuple = None) -> list:
+    if iterable_types is None:
+        iterable_types = type(iterable)
+    result = []
+    for value in iterable:
+        if isinstance(value, iterable_types):
+            result.extend(flatten(value, iterable_types))
+        else:
+            result.append(value)
+    return result
 
 
 def add_first_dim(x):

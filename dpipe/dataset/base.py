@@ -1,14 +1,42 @@
-from abc import abstractmethod, ABC
+from abc import abstractmethod, ABCMeta
+from functools import wraps
 from typing import Tuple
 
 import numpy as np
 
 
-class Dataset(ABC):
+class AbstractAttribute:
+    pass
+
+
+class ABCAttributesMeta(ABCMeta):
+    def __new__(mcs, *args, **kwargs):
+        cls = super().__new__(mcs, *args, **kwargs)
+        initialize = cls.__init__
+
+        @wraps(initialize)
+        def __init__(self, *args, **kwargs):
+            return_value = initialize(self, *args, **kwargs)
+
+            missing = []
+            for name in dir(self):
+                value = getattr(self, name)
+                if isinstance(value, AbstractAttribute) or value is AbstractAttribute:
+                    missing.append(name)
+            if missing:
+                raise AttributeError(f'Class "{cls.__name__}" requires the following attributes '
+                                     f'which are not defined during init: {", ".join(missing)}.')
+            return return_value
+
+        cls.__init__ = __init__
+        return cls
+
+
+class Dataset(metaclass=ABCAttributesMeta):
     """Interface for datasets containing images."""
 
-    ids: Tuple[str] = ()
-    n_chans_image: int = None
+    ids: Tuple[str] = AbstractAttribute
+    n_chans_image: int = AbstractAttribute
 
     @abstractmethod
     def load_image(self, identifier: str) -> np.ndarray:
@@ -50,7 +78,7 @@ class SegmentationDataset(Dataset):
 class ClassificationDataset(Dataset):
     """Abstract class that describes a dataset for classification."""
 
-    n_classes: int = None
+    n_classes: int = AbstractAttribute
 
     @abstractmethod
     def load_label(self, identifier: str) -> int:

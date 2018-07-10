@@ -4,6 +4,7 @@ from typing import Callable
 
 
 def if_missing(func: Callable, *paths: str, **keyword_paths: str):
+    # TODO: need verbosity
     if not paths and not keyword_paths:
         raise ValueError('At least one path must be provided either via positional or keyword arguments.')
 
