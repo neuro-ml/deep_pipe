@@ -1,7 +1,23 @@
-from functools import partial
+from functools import partial, wraps
 from typing import Sequence, Dict, Callable
 
 import numpy as np
+
+
+def check_bool(*arrays):
+    for i, a in enumerate(arrays):
+        assert a.dtype == bool, f'{i}: {a.dtype}'
+
+
+def add_check_bool(func):
+    """Check that all function arguments are boolean arrays."""
+
+    @wraps(func)
+    def new_func(*arrays):
+        check_bool(*arrays)
+        return func(*arrays)
+
+    return new_func
 
 
 def dice_score(x, y, empty_val: float = 1) -> float:
@@ -26,6 +42,33 @@ def dice_score(x, y, empty_val: float = 1) -> float:
     den = np.sum(x) + np.sum(y)
 
     return empty_val if den == 0 else num / den
+
+
+def fraction(numerator, denominator, empty_val=1):
+    assert numerator <= denominator, f'{numerator}, {denominator}'
+    return numerator / denominator if denominator != 0 else empty_val
+
+
+@add_check_bool
+def sensitivity(y_true, y_pred):
+    return fraction(np.sum(y_pred & y_true), np.sum(y_true))
+
+
+@add_check_bool
+def specificity(y_true, y_pred):
+    return fraction(np.sum(y_pred & y_true), np.sum(y_pred), empty_val=0)
+
+
+def get_area(start, stop):
+    return np.product(np.maximum(stop - start, 0))
+
+
+def box_iou(a_start_stop, b_start_stop):
+    i = get_area(np.maximum(a_start_stop[0], b_start_stop[0]), np.minimum(a_start_stop[1], b_start_stop[1]))
+    u = get_area(*a_start_stop) + get_area(*b_start_stop) - i
+    if u <= 0:
+        print(f'{a_start_stop} {b_start_stop}')
+    return fraction(i, u)
 
 
 def multichannel_dice_score(a, b, empty_val: float = 1) -> [float]:
