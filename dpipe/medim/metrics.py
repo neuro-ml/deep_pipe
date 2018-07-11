@@ -146,20 +146,22 @@ def precision(y_true, y_pred):
     return fraction(tp, tp + fp, 0)
 
 
-def surface_distances(y_true, y_pred, voxelspacing=None):
+def surface_distances(y_true, y_pred, voxel_shape=None):
     check_bool(y_pred, y_true)
     assert y_pred.shape == y_true.shape
 
     result_border = np.logical_xor(y_pred, binary_erosion(y_pred))
     reference_border = np.logical_xor(y_true, binary_erosion(y_true))
 
-    dt = distance_transform_edt(~reference_border, sampling=voxelspacing)
+    dt = distance_transform_edt(~reference_border, sampling=voxel_shape)
     return dt[result_border]
 
 
-def assd(x, y):
-    return np.mean(surface_distances(y, x).mean(), surface_distances(x, y).mean())
+def assd(x, y, voxel_shape=None):
+    return np.mean(surface_distances(y, x, voxel_shape=voxel_shape).mean(),
+                   surface_distances(x, y, voxel_shape=voxel_shape).mean())
 
 
-def hausdorff_distance(x, y):
-    return max(surface_distances(y, x).max(), surface_distances(x, y).max())
+def hausdorff_distance(x, y, voxel_shape=None):
+    return max(surface_distances(y, x, voxel_shape=voxel_shape).max(),
+               surface_distances(x, y, voxel_shape=voxel_shape).max())
