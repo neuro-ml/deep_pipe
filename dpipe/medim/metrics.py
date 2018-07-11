@@ -2,6 +2,7 @@ from functools import partial, wraps
 from typing import Sequence, Dict, Callable
 
 import numpy as np
+from scipy.ndimage.morphology import distance_transform_edt, binary_erosion
 
 
 def check_bool(*arrays):
@@ -123,3 +124,42 @@ def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn=np.mean, ke
         [key_prefix + key for key in metrics],
         [partial(aggregate_metric, metric=metric, aggregate_fn=aggregate_fn) for metric in metrics.values()]
     ))
+
+
+def recall(y_true, y_pred):
+    assert y_pred.dtype == y_true.dtype == np.bool
+    assert y_pred.shape == y_true.shape
+
+    tp = np.count_nonzero(np.logical_and(y_pred, y_true))
+    fn = np.count_nonzero(np.logical_and(~y_pred, y_true))
+
+    return fraction(tp, tp + fn, 0)
+
+
+def precision(y_true, y_pred):
+    assert y_pred.dtype == y_true.dtype == np.bool
+    assert y_pred.shape == y_true.shape
+
+    tp = np.count_nonzero(y_pred & y_true)
+    fp = np.count_nonzero(y_pred & ~y_true)
+
+    return fraction(tp, tp + fp, 0)
+
+
+def surface_distances(y_true, y_pred, voxelspacing=None):
+    check_bool(y_pred, y_true)
+    assert y_pred.shape == y_true.shape
+
+    result_border = np.logical_xor(y_pred, binary_erosion(y_pred))
+    reference_border = np.logical_xor(y_true, binary_erosion(y_true))
+
+    dt = distance_transform_edt(~reference_border, sampling=voxelspacing)
+    return dt[result_border]
+
+
+def assd(x, y):
+    return np.mean(surface_distances(y, x).mean(), surface_distances(x, y).mean())
+
+
+def hausdorff_distance(x, y):
+    return max(surface_distances(y, x).max(), surface_distances(x, y).max())
