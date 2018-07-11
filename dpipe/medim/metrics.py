@@ -150,18 +150,30 @@ def surface_distances(y_true, y_pred, voxel_shape=None):
     check_bool(y_pred, y_true)
     assert y_pred.shape == y_true.shape
 
-    result_border = np.logical_xor(y_pred, binary_erosion(y_pred))
-    reference_border = np.logical_xor(y_true, binary_erosion(y_true))
+    pred_border = np.logical_xor(y_pred, binary_erosion(y_pred))
+    true_border = np.logical_xor(y_true, binary_erosion(y_true))
 
-    dt = distance_transform_edt(~reference_border, sampling=voxel_shape)
-    return dt[result_border]
+    dt = distance_transform_edt(~true_border, sampling=voxel_shape)
+    return dt[pred_border]
 
 
 def assd(x, y, voxel_shape=None):
-    return np.mean(surface_distances(y, x, voxel_shape=voxel_shape).mean(),
-                   surface_distances(x, y, voxel_shape=voxel_shape).mean())
+    sd1 = surface_distances(y, x, voxel_shape=voxel_shape)
+    sd2 = surface_distances(x, y, voxel_shape=voxel_shape)
+    if sd1.size == 0 and sd2.size == 0:
+        return 0.0
+    elif sd1.size == 0 or sd2.size == 0:
+        return np.nan
+    else:
+        return np.mean([sd1.mean(), sd2.mean()])
 
 
 def hausdorff_distance(x, y, voxel_shape=None):
-    return max(surface_distances(y, x, voxel_shape=voxel_shape).max(),
-               surface_distances(x, y, voxel_shape=voxel_shape).max())
+    sd1 = surface_distances(y, x, voxel_shape=voxel_shape)
+    sd2 = surface_distances(x, y, voxel_shape=voxel_shape)
+    if sd1.size == 0 and sd2.size == 0:
+        return 0.0
+    elif sd1.size == 0 or sd2.size == 0:
+        return np.nan
+    else:
+        return max(sd1.max(), sd2.max())
