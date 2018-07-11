@@ -20,7 +20,12 @@ def add_check_bool(func):
     return new_func
 
 
-def dice_score(x, y, empty_val: float = 1) -> float:
+def fraction(numerator, denominator, empty_val: float = 1):
+    assert numerator <= denominator, f'{numerator}, {denominator}'
+    return numerator / denominator if denominator != 0 else empty_val
+
+
+def dice_score(x: np.ndarray, y: np.ndarray, empty_val: float = 1) -> float:
     """
     Dice score between two binary masks.
 
@@ -28,25 +33,12 @@ def dice_score(x, y, empty_val: float = 1) -> float:
     ----------
     x,y : binary tensor
     empty_val: float, optional
-        Default value, which is returned if the dice score
-        is undefined (i.e. division by zero).
-
-    Returns
-    -------
-    dice_score: float
+        Default value, which is returned if the dice score is undefined (i.e. division by zero).
     """
-    assert x.dtype == y.dtype == np.bool
     assert x.shape == y.shape
+    check_bool(x, y)
 
-    num = 2 * np.sum(x & y)
-    den = np.sum(x) + np.sum(y)
-
-    return empty_val if den == 0 else num / den
-
-
-def fraction(numerator, denominator, empty_val=1):
-    assert numerator <= denominator, f'{numerator}, {denominator}'
-    return numerator / denominator if denominator != 0 else empty_val
+    return fraction(2 * np.sum(x & y), np.sum(x) + np.sum(y), empty_val)
 
 
 @add_check_bool
@@ -71,6 +63,7 @@ def box_iou(a_start_stop, b_start_stop):
     return fraction(i, u)
 
 
+# TODO: replace by a more general function
 def multichannel_dice_score(a, b, empty_val: float = 1) -> [float]:
     """
     Channelwise dice score between two binary masks.
