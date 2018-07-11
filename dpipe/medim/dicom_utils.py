@@ -30,7 +30,7 @@ def files_to_df(folder, files):
         entry['FileName'] = file
         try:
             dc = pydicom.read_file(jp(folder, file))
-        except (pydicom.errors.InvalidDicomError, OSError, struct.error, NotImplementedError):
+        except (pydicom.errors.InvalidDicomError, OSError, NotImplementedError):
             entry['NoError'] = False
             continue
 
@@ -154,7 +154,10 @@ def select(dataframe: pd.DataFrame, query: str, **where: str):
 
 
 def get_orientation_matrix(metadata):
-    orientation = metadata[[f'ImageOrientationPatient{i}' for i in range(6)]].astype(float)
+    try:
+        orientation = metadata[[f'ImageOrientationPatient{i}' for i in range(6)]].astype(float)
+    except KeyError:
+        return np.full((3, 3), np.nan)
     cross = np.cross(orientation[:3], orientation[3:])
     return np.reshape(list(orientation) + list(cross), (3, 3))
 
