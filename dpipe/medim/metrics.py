@@ -4,19 +4,38 @@ from typing import Sequence, Dict, Callable
 import numpy as np
 from scipy.ndimage.morphology import distance_transform_edt, binary_erosion
 
+from dpipe.medim.utils import zip_equal
+
 
 def check_bool(*arrays):
     for i, a in enumerate(arrays):
         assert a.dtype == bool, f'{i}: {a.dtype}'
 
 
+def check_shapes(*arrays):
+    shapes = [array.shape for array in arrays]
+    if not all(shape == shapes[0] for shape in shapes):
+        raise ValueError(f'Arrays of equal shape are required: {", ".join(map(str, shapes))}')
+
+
 def add_check_bool(func):
     """Check that all function arguments are boolean arrays."""
 
     @wraps(func)
-    def new_func(*arrays):
-        check_bool(*arrays)
-        return func(*arrays)
+    def new_func(*args, **kwargs):
+        check_bool(*args, *kwargs.values())
+        return func(*args, **kwargs)
+
+    return new_func
+
+
+def add_check_shapes(func):
+    """Check that all function arguments are arrays with equal shape."""
+
+    @wraps(func)
+    def new_func(*args, **kwargs):
+        check_shapes(*args, *kwargs.values())
+        return func(*args, **kwargs)
 
     return new_func
 
@@ -26,28 +45,20 @@ def fraction(numerator, denominator, empty_val: float = 1):
     return numerator / denominator if denominator != 0 else empty_val
 
 
-def dice_score(x: np.ndarray, y: np.ndarray, empty_val: float = 1) -> float:
-    """
-    Dice score between two binary masks.
-
-    Parameters
-    ----------
-    x,y : binary tensor
-    empty_val: float, optional
-        Default value, which is returned if the dice score is undefined (i.e. division by zero).
-    """
-    assert x.shape == y.shape
-    check_bool(x, y)
-
-    return fraction(2 * np.sum(x & y), np.sum(x) + np.sum(y), empty_val)
+@add_check_bool
+@add_check_shapes
+def dice_score(x: np.ndarray, y: np.ndarray) -> float:
+    return fraction(2 * np.sum(x & y), np.sum(x) + np.sum(y))
 
 
 @add_check_bool
+@add_check_shapes
 def sensitivity(y_true, y_pred):
     return fraction(np.sum(y_pred & y_true), np.sum(y_true))
 
 
 @add_check_bool
+@add_check_shapes
 def specificity(y_true, y_pred):
     return fraction(np.sum(y_pred & y_true), np.sum(y_pred), empty_val=0)
 
@@ -65,25 +76,13 @@ def box_iou(a_start_stop, b_start_stop):
 
 
 # TODO: replace by a more general function
-def multichannel_dice_score(a, b, empty_val: float = 1) -> [float]:
+def multichannel_dice_score(a, b) -> [float]:
     """
     Channelwise dice score between two binary masks.
     The first dimension of the tensors is assumed to be the channels.
-
-    Parameters
-    ----------
-    a,b : binary tensor
-    empty_val: float, optional
-        Default value, which is returned if the dice score
-        is undefined (i.e. division by zero).
-
-    Returns
-    -------
-    dice_score: [float]
     """
     assert len(a) == len(b), f'number of channels is different: {len(a)} != {len(b)}'
-    dices = [dice_score(x, y, empty_val=empty_val) for x, y in zip(a, b)]
-    return dices
+    return list(map(dice_score, a, b))
 
 
 def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:
@@ -95,10 +94,6 @@ def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:
     ----------
     true_masks: bool tensor
     predicted_masks: float tensor
-
-    Returns
-    -------
-    dice_score: float
     """
     assert len(true_masks) == len(predicted_masks)
 
@@ -115,8 +110,8 @@ def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:
 
 
 def aggregate_metric(xs, ys, metric, aggregate_fn=np.mean):
-    """Compute metric for array of objects from metric on couple of objects."""
-    return aggregate_fn([metric(x, y) for x, y in zip(xs, ys)])
+    """Aggregate a `metric` computed on pairs from `xs` and `ys`"""
+    return aggregate_fn([metric(x, y) for x, y in zip_equal(xs, ys)])
 
 
 def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn=np.mean, key_prefix=''):
@@ -126,20 +121,18 @@ def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn=np.mean, ke
     ))
 
 
+@add_check_bool
+@add_check_shapes
 def recall(y_true, y_pred):
-    assert y_pred.dtype == y_true.dtype == np.bool
-    assert y_pred.shape == y_true.shape
-
     tp = np.count_nonzero(np.logical_and(y_pred, y_true))
     fn = np.count_nonzero(np.logical_and(~y_pred, y_true))
 
     return fraction(tp, tp + fn, 0)
 
 
+@add_check_bool
+@add_check_shapes
 def precision(y_true, y_pred):
-    assert y_pred.dtype == y_true.dtype == np.bool
-    assert y_pred.shape == y_true.shape
-
     tp = np.count_nonzero(y_pred & y_true)
     fp = np.count_nonzero(y_pred & ~y_true)
 
@@ -148,7 +141,7 @@ def precision(y_true, y_pred):
 
 def surface_distances(y_true, y_pred, voxel_shape=None):
     check_bool(y_pred, y_true)
-    assert y_pred.shape == y_true.shape
+    check_shapes(y_pred, y_true)
 
     pred_border = np.logical_xor(y_pred, binary_erosion(y_pred))
     true_border = np.logical_xor(y_true, binary_erosion(y_true))
@@ -161,19 +154,19 @@ def assd(x, y, voxel_shape=None):
     sd1 = surface_distances(y, x, voxel_shape=voxel_shape)
     sd2 = surface_distances(x, y, voxel_shape=voxel_shape)
     if sd1.size == 0 and sd2.size == 0:
-        return 0.0
-    elif sd1.size == 0 or sd2.size == 0:
+        return 0
+    if sd1.size == 0 or sd2.size == 0:
         return np.nan
-    else:
-        return np.mean([sd1.mean(), sd2.mean()])
+
+    return np.mean([sd1.mean(), sd2.mean()])
 
 
 def hausdorff_distance(x, y, voxel_shape=None):
     sd1 = surface_distances(y, x, voxel_shape=voxel_shape)
     sd2 = surface_distances(x, y, voxel_shape=voxel_shape)
     if sd1.size == 0 and sd2.size == 0:
-        return 0.0
-    elif sd1.size == 0 or sd2.size == 0:
+        return 0
+    if sd1.size == 0 or sd2.size == 0:
         return np.nan
-    else:
-        return max(sd1.max(), sd2.max())
+
+    return max(sd1.max(), sd2.max())

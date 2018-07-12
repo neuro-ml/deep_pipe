@@ -11,9 +11,8 @@ from typing import Sequence, Callable, Iterable
 import numpy as np
 from tqdm import tqdm
 
-from dpipe.medim.metrics import dice_score as dice, multichannel_dice_score
-from dpipe.medim.utils import load_by_ids
-from dpipe.train.validator import evaluate as evaluate_fn
+from dpipe.io import dump_json
+from dpipe.medim.metrics import dice_score
 
 
 def np_filename2id(filename):
@@ -64,10 +63,26 @@ def predict(ids, output_path, load_x, predict_fn, exist_ok=False):
     map_ids_to_disk(lambda identifier: predict_fn(load_x(identifier)), tqdm(ids), output_path, exist_ok)
 
 
-def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path):
+def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False):
     assert len(metrics) > 0, 'No metric provided'
+    os.makedirs(results_path, exist_ok=exist_ok)
 
-    os.makedirs(results_path)
+    targets, predictions = [], []
+    for filename in tqdm(sorted(os.listdir(predictions_path))):
+        predictions.append(np.load(os.path.join(predictions_path, filename)))
+        targets.append(load_y_true(np_filename2id(filename)))
+
+    for name, metric in metrics.items():
+        score = metric(targets, predictions)
+        if isinstance(score, np.ndarray):
+            score = score.tolist()
+
+        dump_json(score, os.path.join(results_path, name + '.json'), indent=0)
+
+
+def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False):
+    assert len(metrics) > 0, 'No metric provided'
+    os.makedirs(results_path, exist_ok=exist_ok)
 
     results = defaultdict(dict)
 
@@ -78,13 +93,12 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
 
         for metric_name, metric in metrics.items():
             score = metric(y_true, y_prob)
-            if hasattr(score, 'tolist'):
+            if isinstance(score, np.ndarray):
                 score = score.tolist()
             results[metric_name][identifier] = score
 
     for metric_name, result in results.items():
-        with open(os.path.join(results_path, metric_name + '.json'), 'w') as f:
-            json.dump(result, f, indent=0)
+        dump_json(result, os.path.join(results_path, metric_name + '.json'), indent=0)
 
 
 # TODO: deprecated
@@ -117,7 +131,7 @@ def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
         # get dice with individual threshold for each channel
         channels = []
         for y_pred_chan, y_true_chan in zip(y_pred, y_true):
-            channels.append([dice(y_pred_chan > thr, y_true_chan) for thr in thresholds])
+            channels.append([dice_score(y_pred_chan > thr, y_true_chan) for thr in thresholds])
         dices.append(channels)
         # saving some memory
         del y_pred, y_true
@@ -125,28 +139,3 @@ def find_dice_threshold(load_msegm, ids, predictions_path, thresholds_path):
     optimal_thresholds = thresholds[np.mean(dices, axis=0).argmax(axis=1)]
     with open(thresholds_path, 'w') as file:
         json.dump(optimal_thresholds.tolist(), file)
-
-
-def _evaluate(load_y, input_path, output_path, ids, metrics):
-    if not metrics:
-        return
-
-    os.makedirs(output_path)
-
-    def load_prediction(identifier):
-        return np.load(os.path.join(input_path, f'{identifier}.npy'))
-
-    ys, predictions = [], []
-    for y, prediction in load_by_ids(load_y, load_prediction, ids=ids):
-        ys.append(y)
-        predictions.append(prediction)
-
-    result = evaluate_fn(ys, predictions, metrics)
-
-    for name, value in result.items():
-        metric = os.path.join(output_path, name)
-        if isinstance(value, np.ndarray):
-            value = value.tolist()
-
-        with open(metric, 'w') as f:
-            json.dump(value, f, indent=2)
