@@ -1,7 +1,7 @@
+from functools import partial
 from typing import Sequence, Union
 
 import numpy as np
-import scipy
 from scipy import ndimage
 
 from dpipe.medim.patch import pad
@@ -9,41 +9,37 @@ from dpipe.medim.shape_utils import compute_shape_from_spatial
 from dpipe.medim.utils import get_axes, build_slices
 
 
-def normalize_scan(scan, mean=True, std=True, drop_percentile: int = None):
+def normalize_image(image: np.ndarray, mean=True, std=True, drop_percentile: int = None):
     """
     Normalize scan to make mean and std equal to (0, 1) if stated.
     Supports robust estimation with drop_percentile.
     """
     if drop_percentile is not None:
-        bottom = np.percentile(scan, drop_percentile)
-        top = np.percentile(scan, 100 - drop_percentile)
+        bottom = np.percentile(image, drop_percentile)
+        top = np.percentile(image, 100 - drop_percentile)
 
-        mask = (scan > bottom) & (scan < top)
-        vals = scan[mask]
+        mask = (image > bottom) & (image < top)
+        vals = image[mask]
     else:
-        vals = scan.flatten()
+        vals = image.flatten()
 
     assert vals.ndim == 1
 
     if mean:
-        scan = scan - vals.mean()
-
+        image = image - vals.mean()
     if std:
-        scan = scan / vals.std()
+        image = image / vals.std()
 
-    return np.array(scan, dtype=np.float32)
+    return image
 
 
-def normalize_mscan(mscan, mean=True, std=True, drop_percentile: int = None):
+def normalize_multichannel_image(image: np.ndarray, mean=True, std=True, drop_percentile: int = None):
     """
     Normalize multimodal scan (each modality independently) to make mean and std equal to (0, 1) if stated.
     Supports robust estimation with drop_percentile.
     """
-    new_mscan = np.zeros_like(mscan, dtype=np.float32)
-    for i in range(len(mscan)):
-        new_mscan[i] = normalize_scan(mscan[i], mean=mean, std=std,
-                                      drop_percentile=drop_percentile)
-    return new_mscan
+    return np.array(list(map(partial(normalize_image, mean=mean, std=std, drop_percentile=drop_percentile), image)),
+                    dtype=image.dtype)
 
 
 def rotate_image(image: np.ndarray, angles: Sequence, axes: Sequence = None, order: int = 1, reshape=False):
@@ -186,3 +182,10 @@ def proportional_scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence =
     return pad_to_shape(
         scale(x, scale_factor, axes, order), shape, axes, padding_values
     )
+
+
+# Deprecated
+# ----------
+
+normalize_mscan = normalize_multichannel_image
+normalize_scan = normalize_image

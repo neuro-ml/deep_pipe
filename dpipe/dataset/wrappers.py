@@ -2,7 +2,7 @@
 
 import functools
 from itertools import chain
-from typing import List, Sequence, Callable
+from typing import List, Sequence, Callable, Iterable
 from collections import ChainMap, namedtuple
 
 import numpy as np
@@ -27,11 +27,6 @@ def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
     dataset: Dataset
     methods: Sequence
         a sequence of methods names to be cached
-
-    Returns
-    -------
-    cached_dataset: Dataset
-        a wrapped dataset
     """
     cache = functools.lru_cache(len(dataset.ids))
 
@@ -56,6 +51,7 @@ def apply(instance, **methods: Callable):
     """
 
     def decorator(method, func):
+        @functools.wraps(method)
         def wrapper(*args, **kwargs):
             return func(method(*args, **kwargs))
 
@@ -73,11 +69,42 @@ def set_attributes(instance, **attributes):
     Parameters
     ----------
     instance
-    attributes: dict[str, Any]
+    attributes
         each keyword argument has the form `attr_name=attr_value`.
     """
     proxy = type('SetAttr', (Proxy,), attributes)
     return proxy(instance)
+
+
+def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = None) -> Dataset:
+    """
+    Change the `dataset`'s ids according to the `change_id` function and adapt the provided `methods`
+    to work with the new ids.
+
+    Parameters
+    ----------
+    dataset: Dataset
+    change_id: Callable(str) -> str
+    methods: str, optional
+        the list of methods to be adapted. Each method takes a single argument - the identifier.
+    """
+    assert 'ids' not in methods
+    ids = tuple(map(change_id, dataset.ids))
+    assert len(set(ids)) == len(ids), 'The resulting ids are not unique'
+    new_to_old = dict(zip(ids, dataset.ids))
+    methods = set(methods or []) | {'load_image'}
+
+    def decorator(method):
+        @functools.wraps(method)
+        def wrapper(identifier):
+            return method(new_to_old[identifier])
+
+        return staticmethod(wrapper)
+
+    attributes = {method: decorator(getattr(dataset, method)) for method in methods}
+    attributes['ids'] = ids
+    proxy = type('ChangedID', (Proxy,), attributes)
+    return proxy(dataset)
 
 
 def rebind(instance, methods):
@@ -91,31 +118,28 @@ def rebind(instance, methods):
 def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
     # Use this small cache to speed up data loading. Usually users load
     # all scans for the same person at the same time
-    load_image = functools.lru_cache(3)(dataset.load_image)
+    load_image = functools.lru_cache(2)(dataset.load_image)
 
     class BBoxedDataset(Proxy):
-        def load_image(self, patient_id):
-            img = load_image(patient_id)
+        @staticmethod
+        def load_image(identifier):
+            img = load_image(identifier)
             mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
             return medim.bb.extract([img], mask)[0]
 
-        def load_segm(self, patient_id):
-            seg = self._shadowed.load_segm(patient_id)
-            img = load_image(patient_id)
+        @staticmethod
+        def load_segm(identifier):
+            seg = dataset.load_segm(identifier)
+            img = load_image(identifier)
             mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
             return medim.bb.extract([seg], mask=mask)[0]
 
     return BBoxedDataset(dataset)
 
 
-def normalized(dataset: SegmentationDataset, mean, std, drop_percentile: int = None) -> SegmentationDataset:
-    class NormalizedDataset(Proxy):
-        def load_image(self, idx):
-            img = self._shadowed.load_image(idx)
-            return medim.prep.normalize_mscan(img, mean=mean, std=std,
-                                              drop_percentile=drop_percentile)
-
-    return NormalizedDataset(dataset)
+def normalized(dataset: Dataset, mean: bool = True, std: bool = True, drop_percentile: int = None) -> Dataset:
+    return apply(dataset, load_image=functools.partial(medim.prep.normalize_multichannel_image, mean=mean, std=std,
+                                                       drop_percentile=drop_percentile))
 
 
 def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
@@ -126,12 +150,7 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
     ----------
     datasets: Dataset
     methods: Sequence[str], optional
-        the list of methods to be preserved. Each method must take a single
-        argument - the identifier.
-
-    Returns
-    -------
-    merged_dataset: Dataset
+        the list of methods to be preserved. Each method must take a single argument - the identifier.
     """
 
     ids = tuple(id_ for dataset in datasets for id_ in dataset.ids)
