@@ -33,13 +33,13 @@ def normalize_image(image: np.ndarray, mean=True, std=True, drop_percentile: int
     return image
 
 
-def normalize_multichannel_image(image: np.ndarray, mean=True, std=True, drop_percentile: int = None):
+def normalize_multichannel_image(multimodal_image: np.ndarray, mean=True, std=True, drop_percentile: int = None):
     """
     Normalize multimodal scan (each modality independently) to make mean and std equal to (0, 1) if stated.
     Supports robust estimation with drop_percentile.
     """
-    return np.array(list(map(partial(normalize_image, mean=mean, std=std, drop_percentile=drop_percentile), image)),
-                    dtype=image.dtype)
+    return np.array([normalize_image(image, mean=mean, std=std, drop_percentile=drop_percentile)
+                     for image in multimodal_image])
 
 
 def rotate_image(image: np.ndarray, angles: Sequence, axes: Sequence = None, order: int = 1, reshape=False):
