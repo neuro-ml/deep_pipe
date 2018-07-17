@@ -1,5 +1,6 @@
 import os
 from typing import Callable
+from functools import partial
 
 import numpy as np
 import torch
@@ -8,8 +9,8 @@ from torch.nn import Module
 from dpipe.model import Model, FrozenModel, get_model_path
 
 
-def load_model_state(model_core: torch.nn.Module, path: str, modify_state_fn: Callable = None):
-    if is_on_cuda(model_core):
+def load_model_state(module: torch.nn.Module, path: str, modify_state_fn: Callable = None):
+    if is_on_cuda(module):
         map_location = None
     else:
         # load models that were trained on GPU nodes, but now run on CPU
@@ -18,17 +19,18 @@ def load_model_state(model_core: torch.nn.Module, path: str, modify_state_fn: Ca
 
     state_to_load = torch.load(path, map_location=map_location)
     if modify_state_fn is not None:
-        current_state = model_core.state_dict()
+        current_state = module.state_dict()
         state_to_load = modify_state_fn(current_state, state_to_load)
-    model_core.load_state_dict(state_to_load)
-    return model_core
+    module.load_state_dict(state_to_load)
+    return module
 
 
-def save_model_state(model_core: torch.nn.Module, path: str):
+def save_model_state(module: torch.nn.Module, path: str):
+    # Legacy to load models from old experiments
     folder = os.path.dirname(path)
     if folder:
         os.makedirs(folder, exist_ok=True)
-    torch.save(model_core.state_dict(), path)
+    torch.save(module.state_dict(), path)
 
 
 def is_on_cuda(module: torch.nn.Module):
@@ -43,11 +45,11 @@ def sequence_to_np(*data):
     return tuple(to_np(x) if isinstance(x, torch.Tensor) else x for x in data)
 
 
-def do_train_step(*inputs, lr, model_core, optimizer, logits2loss):
-    model_core.train()
-    *inputs, target = sequence_to_var(*inputs, cuda=is_on_cuda(model_core))
+def do_train_step(*inputs, lr, inputs2logits, optimizer, logits2loss):
+    inputs2logits.train()
+    *inputs, target = sequence_to_var(*inputs, cuda=is_on_cuda(inputs2logits))
 
-    logits = model_core(*inputs)
+    logits = inputs2logits(*inputs)
     loss = logits2loss(logits, target)
 
     set_lr(optimizer, lr)
@@ -57,19 +59,18 @@ def do_train_step(*inputs, lr, model_core, optimizer, logits2loss):
     return to_np(loss)
 
 
-def do_inf_step(*inputs, model_core, logits2pred):
-    model_core.eval()
+def do_inf_step(*inputs, inputs2logits, logits2pred):
+    inputs2logits.eval()
     with torch.no_grad():
-        return to_np(
-            logits2pred(model_core(*sequence_to_var(*inputs, cuda=is_on_cuda(model_core)))))
+        return to_np(logits2pred(inputs2logits(*sequence_to_var(*inputs, cuda=is_on_cuda(inputs2logits)))))
 
 
-def do_val_step(*inputs, model_core, logits2loss, logits2pred):
-    model_core.eval()
-    *inputs, target = sequence_to_var(*inputs, cuda=is_on_cuda(model_core))
+def do_val_step(*inputs, inputs2logits, logits2loss, logits2pred):
+    inputs2logits.eval()
+    *inputs, target = sequence_to_var(*inputs, cuda=is_on_cuda(inputs2logits))
 
     with torch.no_grad():
-        logits = model_core(*inputs)
+        logits = inputs2logits(*inputs)
         y_pred = logits2pred(logits)
         loss = logits2loss(logits, target)
 
@@ -107,23 +108,27 @@ class TorchModel(Model):
 
     def do_train_step(self, *inputs, lr):
         # TODO: need a way to pass other counters: write a wrapper
-        return do_train_step(
-            *inputs, lr=lr, model_core=self.model_core, logits2loss=self.logits2loss, optimizer=self.optimizer
-        )
+        return do_train_step(*inputs, lr=lr, inputs2logits=self.model_core,
+                             logits2loss=self.logits2loss, optimizer=self.optimizer)
 
     def do_val_step(self, *inputs):
-        return do_val_step(
-            *inputs, model_core=self.model_core, logits2loss=self.logits2loss, logits2pred=self.logits2pred,
-        )
+        return do_val_step(*inputs, inputs2logits=self.model_core, logits2loss=self.logits2loss,
+                           logits2pred=self.logits2pred, )
 
     def do_inf_step(self, *inputs):
-        return do_inf_step(*inputs, model_core=self.model_core, logits2pred=self.logits2pred)
+        return do_inf_step(*inputs, inputs2logits=self.model_core, logits2pred=self.logits2pred)
 
     def save(self, path: str):
         save_model_state(self.model_core, path)
 
     def load(self, path: str, modify_state_fn: callable = None):
         load_model_state(self.model_core, get_model_path(path), modify_state_fn=modify_state_fn)
+
+
+def make_do_inf_step(inputs2logits, logits2pred, saved_model_path, cuda, modify_state_fn=None):
+    inputs2logits = load_model_state(to_cuda(inputs2logits, cuda), path=saved_model_path,
+                                     modify_state_fn=modify_state_fn)
+    return partial(do_inf_step, inputs2logits=inputs2logits, logits2pred=logits2pred)
 
 
 class TorchFrozenModel(FrozenModel):
@@ -142,13 +147,11 @@ class TorchFrozenModel(FrozenModel):
 
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str,
                  cuda: bool = None, modify_state_fn: callable = None):
-        self.model_core = load_model_state(to_cuda(model_core, cuda), get_model_path(restore_model_path),
-                                           modify_state_fn=modify_state_fn)
-        self.cuda = cuda
-        self.logits2pred = logits2pred
+        self.f = make_do_inf_step(model_core, logits2pred=logits2pred, cuda=cuda, modify_state_fn=modify_state_fn,
+                                  saved_model_path=get_model_path(restore_model_path))
 
     def do_inf_step(self, *inputs):
-        return do_inf_step(*inputs, model_core=self.model_core, logits2pred=self.logits2pred)
+        return self.f(*inputs)
 
 
 def to_np(x: torch.Tensor) -> np.ndarray:
