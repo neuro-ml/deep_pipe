@@ -116,23 +116,30 @@ def rebind(instance, methods):
 
 
 def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
-    # Use this small cache to speed up data loading. Usually users load
-    # all scans for the same person at the same time
-    load_image = functools.lru_cache(2)(dataset.load_image)
+    # Use this small cache to speed up data loading when calculating the mask
+    load_image = functools.lru_cache(1)(dataset.load_image)
 
     class BBoxedDataset(Proxy):
-        @staticmethod
-        def load_image(identifier):
-            img = load_image(identifier)
-            mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
-            return medim.bb.extract([img], mask)[0]
+        def __init__(self, shadowed):
+            super().__init__(shadowed)
+            self._start_stop = {}
 
-        @staticmethod
-        def load_segm(identifier):
-            seg = dataset.load_segm(identifier)
-            img = load_image(identifier)
-            mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
-            return medim.bb.extract([seg], mask=mask)[0]
+        def load_image(self, identifier):
+            return self._extract(identifier, load_image(identifier))
+
+        def load_segm(self, identifier):
+            return self._extract(identifier, dataset.load_segm(identifier))
+
+        def get_start_stop(self, identifier):
+            if identifier not in self._start_stop:
+                img = load_image(identifier)
+                mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
+                self._start_stop[identifier] = tuple(medim.bb.get_start_stop(mask))
+            return self._start_stop[identifier]
+
+        def _extract(self, identifier, tensor):
+            start, stop = self.get_start_stop(identifier)
+            return tensor[(..., *medim.bb.build_slices(start, stop))]
 
     return BBoxedDataset(dataset)
 
