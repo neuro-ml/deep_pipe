@@ -148,7 +148,7 @@ def get_random_patch_start_stop(shape, patch_size, spatial_dims=None):
     start = np.zeros_like(shape)
     stop = np.array(shape)
     spatial = shape_after_convolution(stop[spatial_dims], patch_size)
-    start[spatial_dims] = [np.random.uniform(i) for i in spatial]
+    start[spatial_dims] = list(map(np.random.randint, spatial))
     stop[spatial_dims] = start[spatial_dims] + patch_size
 
     return start, stop

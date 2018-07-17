@@ -1,5 +1,5 @@
 from collections import Sized
-from typing import Sequence, Iterable
+from typing import Sequence, Iterable, Callable
 
 import numpy as np
 
@@ -57,13 +57,13 @@ def load_image(path: str):
                      "Unknown file extension.")
 
 
-def load_by_ids(*loaders, ids: Sequence, shuffle: bool = False):
+def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
     """
     Yields tuples of objects given their loaders and ids.
 
     Parameters
     ----------
-    loaders: List[callable(id)]
+    loaders: Callable(id)
         Loaders for x and y
     ids: Sequence
         a sequence of ids to load
@@ -74,6 +74,12 @@ def load_by_ids(*loaders, ids: Sequence, shuffle: bool = False):
         ids = np.random.permutation(ids)
     for identifier in ids:
         yield squeeze_first(tuple(loader(identifier) for loader in loaders))
+
+
+def pam(functions: Iterable[Callable], *args, **kwargs):
+    """Inverse of `map`. Apply a sequence of callables to fixed arguments."""
+    for f in functions:
+        yield f(*args, **kwargs)
 
 
 def zip_equal(*args: Sized):

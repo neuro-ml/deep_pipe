@@ -29,29 +29,22 @@ def load_pred(identifier, predictions_path):
 
 
 def load_json(path: str):
-    """
-    Loads the contents of a json file.
-
-    Parameters
-    ----------
-    path: str
-        path to the file
-
-    Returns
-    -------
-    json_type
-    """
+    """Load the contents of a json file."""
     with open(path, 'r') as f:
         return json.load(f)
+
+
+def dump_json(value, path: str, *, indent: int = None):
+    """Dump a json-serializable object to a json file."""
+    with open(path, 'w') as f:
+        return json.dump(value, f, indent=indent)
 
 
 CONSOLE_ARGUMENT = re.compile(r'^--[^\d\W]\w*$')
 
 
 class ConsoleArguments:
-    """
-    A class that simplifies the access to console arguments.
-    """
+    """A class that simplifies the access to console arguments."""
 
     def __init__(self):
         parser = argparse.ArgumentParser()

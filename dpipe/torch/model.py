@@ -13,7 +13,7 @@ def load_model_state(module: torch.nn.Module, path: str, modify_state_fn: Callab
     if is_on_cuda(module):
         map_location = None
     else:
-        # load models that were trained on GPU nodes, but now run on CPU
+        # load models that were trained on GPU, but now run on CPU
         def map_location(storage, location):
             return storage
 
@@ -166,7 +166,6 @@ def to_var(x: np.ndarray, cuda: bool = None, requires_grad: bool = False) -> tor
     Parameters
     ----------
     x: np.ndarray
-        the input tensor
     cuda: bool, optional
         move tensor to cuda. If None, torch.cuda.is_available() is used to determine that.
     requires_grad: bool, optional
