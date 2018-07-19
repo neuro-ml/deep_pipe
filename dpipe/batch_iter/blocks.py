@@ -39,35 +39,3 @@ def make_block_load_x_y(load_x, load_y, *, buffer_size):
 def make_batch_blocks(batch_size, buffer_size):
     return (pdp.Many2One(chunk_size=batch_size, buffer_size=3),
             pdp.One2One(pdp.combine_batches, buffer_size=buffer_size))
-
-
-class ExpirationPool:
-    """Class to store data for pdp pipelines"""
-
-    def __init__(self, expiration_time, pool_size):
-        self.pool_size = pool_size
-        self.expiration_time = expiration_time
-
-        self.data = []
-        self.expiration_timer = []
-
-    def is_full(self):
-        return len(self.data) == self.pool_size
-
-    def put(self, value):
-        assert not self.is_full()
-        self.data.append(value)
-        self.expiration_timer.append(self.expiration_time)
-
-    def draw(self):
-        assert self.is_full()
-        i = random.randint(0, self.pool_size - 1)
-        value = self.data[i]
-        self.expiration_timer[i] -= 1
-
-        assert self.expiration_timer[i] >= 0
-        if self.expiration_timer[i] == 0:
-            del self.data[i]
-            del self.expiration_timer[i]
-
-        return value
