@@ -1,4 +1,3 @@
-from functools import partial
 from typing import Sequence, Union
 
 import numpy as np
@@ -8,7 +7,7 @@ from dpipe.medim.shape_utils import compute_shape_from_spatial
 from dpipe.medim.utils import get_axes, build_slices, pad
 
 
-def normalize_image(image: np.ndarray, mean=True, std=True, drop_percentile: int = None):
+def normalize_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None):
     """
     Normalize scan to make mean and std equal to (0, 1) if stated.
     Supports robust estimation with drop_percentile.
@@ -32,13 +31,12 @@ def normalize_image(image: np.ndarray, mean=True, std=True, drop_percentile: int
     return image
 
 
-def normalize_multichannel_image(multimodal_image: np.ndarray, mean=True, std=True, drop_percentile: int = None):
+def normalize_multichannel_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None):
     """
     Normalize multimodal scan (each modality independently) to make mean and std equal to (0, 1) if stated.
     Supports robust estimation with drop_percentile.
     """
-    return np.array([normalize_image(image, mean=mean, std=std, drop_percentile=drop_percentile)
-                     for image in multimodal_image])
+    return np.array([normalize_image(channel, mean, std, drop_percentile) for channel in image], np.float32)
 
 
 def rotate_image(image: np.ndarray, angles: Sequence, axes: Sequence = None, order: int = 1, reshape=False):

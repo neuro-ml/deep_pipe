@@ -6,8 +6,9 @@ from typing import List, Sequence, Callable, Iterable
 from collections import ChainMap, namedtuple
 
 import numpy as np
+from numpy import deprecate
+
 import dpipe.medim as medim
-import dpipe.medim.box
 from .base import Dataset, SegmentationDataset
 
 
@@ -124,6 +125,7 @@ def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
         def __init__(self, shadowed):
             super().__init__(shadowed)
             self._start_stop = {}
+            self._shapes = {}
 
         def load_image(self, identifier):
             return self._extract(identifier, load_image(identifier))
@@ -135,8 +137,13 @@ def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
             if identifier not in self._start_stop:
                 img = load_image(identifier)
                 mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
-                self._start_stop[identifier] = tuple(dpipe.medim.box.mask2bounding_box(mask))
+                self._start_stop[identifier] = tuple(medim.box.mask2bounding_box(mask))
+                self._shapes[identifier] = img.shape
             return self._start_stop[identifier]
+
+        def get_original_padding(self, identifier):
+            start, stop = self.get_start_stop(identifier)
+            return tuple(zip(start, self._shapes[identifier] - stop))
 
         def _extract(self, identifier, tensor):
             start, stop = self.get_start_stop(identifier)
@@ -184,6 +191,7 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
 # Deprecated
 # ----------
 
+@deprecate
 def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
     class GroupedFromMetadata(Proxy):
         @property
@@ -193,6 +201,7 @@ def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
     return GroupedFromMetadata(dataset)
 
 
+@deprecate
 def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
     roots = [pi.split(separator)[0] for pi in dataset.ids]
     root2group = dict(map(lambda x: (x[1], x[0]), enumerate(set(roots))))
@@ -206,6 +215,7 @@ def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
     return GroupsFromIDs(dataset)
 
 
+@deprecate
 def merge_datasets(datasets: List[SegmentationDataset]) -> SegmentationDataset:
     assert all(dataset.n_chans_image == datasets[0].n_chans_image for dataset in datasets)
 
@@ -227,6 +237,7 @@ def merge_datasets(datasets: List[SegmentationDataset]) -> SegmentationDataset:
     return MergedDataset(datasets[0])
 
 
+@deprecate
 def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,
                mask_value: int = None) -> SegmentationDataset:
     class MaskedDataset(Proxy):

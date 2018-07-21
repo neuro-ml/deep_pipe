@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional
 
-from dpipe.medim.utils import build_slices
+from dpipe.medim.utils import build_slices, pam
 
 
 def make_pipeline(structure, make_transformer):
@@ -61,13 +61,19 @@ class Reshape(nn.Module):
         return x.reshape(batch_size, *self.shape)
 
 
-class SplitCat(nn.Module):
-    def __init__(self, *paths):
+class SplitReduce(nn.Module):
+    def __init__(self, reduce, *paths):
         super().__init__()
+        self.reduce = reduce
         self.paths = nn.ModuleList(list(paths))
 
     def forward(self, x):
-        return torch.cat([path(x) for path in self.paths], dim=1)
+        return self.reduce(pam(self.paths, x))
+
+
+class SplitCat(SplitReduce):
+    def __init__(self, *paths):
+        super().__init__(lambda x: torch.cat(tuple(x), dim=1), *paths)
 
 
 class SplitAdd(nn.Module):
