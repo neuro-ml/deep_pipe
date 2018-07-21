@@ -4,6 +4,8 @@ from contextlib import contextmanager
 
 import pdp
 
+from dpipe.batch_iter.blocks import make_batch_blocks
+
 __all__ = ['BatchIter', 'make_batch_iter_from_finite', 'make_batch_iter_from_infinite', 'make_infinite_batch_iter']
 
 
@@ -94,12 +96,11 @@ def make_batch_iter_from_infinite(get_batch_iter, n_iters_per_epoch):
     return BatchIterSlicer(get_batch_iter, n_iters_per_epoch)
 
 
-def make_infinite_batch_iter(source, *transformers, batch_size, n_iters_per_epoch):
+def make_infinite_batch_iter(source, *transformers, batch_size, n_iters_per_epoch, buffer_size=10):
     def pipeline():
         return pdp.Pipeline(
             source, *transformers,
-            pdp.Many2One(batch_size, buffer_size=3),
-            pdp.One2One(pdp.combine_batches, buffer_size=3)
+            *make_batch_blocks(batch_size=batch_size, buffer_size=buffer_size)
         )
 
     return make_batch_iter_from_infinite(pipeline, n_iters_per_epoch)

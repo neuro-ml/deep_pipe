@@ -1,4 +1,5 @@
 import random
+import functools
 
 import pdp
 
@@ -11,15 +12,17 @@ def make_source_random(ids):
     return pdp.Source(iter(lambda: {'id': random.choice(ids)}, None), buffer_size=3)
 
 
-def cache_function(func):
+def cache_block_function(func):
     cache = {}
 
-    def cached_function(x):
-        if x['id'] in cache:
-            y = cache[x['id']].copy()
+    @functools.wraps(func)
+    def cached_function(o):
+        i = o['id']
+        if i in cache:
+            y = cache[i].copy()
         else:
-            y = func(x.copy())
-            cache[x['id']] = y
+            y = func(o.copy())
+            cache[i] = y
 
         return y
 
@@ -27,11 +30,9 @@ def cache_function(func):
 
 
 def make_block_load_x_y(load_x, load_y, *, buffer_size):
-    @cache_function
+    @cache_block_function
     def add_x_y(o):
-        o['x'] = load_x(o['id'])
-        o['y'] = load_y(o['id'])
-        return o
+        return {**o, 'x': load_x(o['id']), 'y': load_y(o['id'])}
 
     return pdp.One2One(add_x_y, buffer_size=buffer_size)
 

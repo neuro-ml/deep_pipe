@@ -7,6 +7,7 @@ from collections import ChainMap, namedtuple
 
 import numpy as np
 import dpipe.medim as medim
+import dpipe.medim.box
 from .base import Dataset, SegmentationDataset
 
 
@@ -134,7 +135,7 @@ def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
             if identifier not in self._start_stop:
                 img = load_image(identifier)
                 mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
-                self._start_stop[identifier] = tuple(medim.bb.get_start_stop(mask))
+                self._start_stop[identifier] = tuple(dpipe.medim.box.mask2bounding_box(mask))
             return self._start_stop[identifier]
 
         def _extract(self, identifier, tensor):

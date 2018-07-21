@@ -1,10 +1,10 @@
 import unittest
 
 import numpy as np
-from .patch import pad
+from dpipe.medim.utils import pad
 
 
-class TestDivide(unittest.TestCase):
+class TestPad(unittest.TestCase):
     def test_pad(self):
         x = np.arange(12).reshape((3, 2, 2))
         padding = np.array(((0, 0), (1, 2), (2, 1)))

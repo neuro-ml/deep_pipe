@@ -4,9 +4,8 @@ from typing import Sequence, Union
 import numpy as np
 from scipy import ndimage
 
-from dpipe.medim.patch import pad
 from dpipe.medim.shape_utils import compute_shape_from_spatial
-from dpipe.medim.utils import get_axes, build_slices
+from dpipe.medim.utils import get_axes, build_slices, pad
 
 
 def normalize_image(image: np.ndarray, mean=True, std=True, drop_percentile: int = None):

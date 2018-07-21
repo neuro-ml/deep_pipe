@@ -109,9 +109,22 @@ def flatten(iterable: Iterable, iterable_types: tuple = None) -> list:
     return result
 
 
+def pad(x, padding, padding_values):
+    padding = np.broadcast_to(padding, [x.ndim, 2])
+
+    new_shape = np.array(x.shape) + np.sum(padding, axis=1)
+    new_x = np.zeros(new_shape, dtype=x.dtype)
+    new_x[:] = padding_values
+
+    start = padding[:, 0]
+    end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
+    new_x[build_slices(start, end)] = x
+    return new_x
+
+
 def add_first_dim(x):
     return x[None]
 
 
 # Legacy
-add_batch_dim = add_first_dim
+add_batch_dim = np.deprecate(add_first_dim, old_name='add_batch_dim', new_name='add_first_dim')

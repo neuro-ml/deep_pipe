@@ -3,8 +3,7 @@ from itertools import product
 import numpy as np
 
 from .shape_utils import shape_after_convolution
-from .utils import get_axes, build_slices
-from .patch import pad
+from .utils import get_axes, build_slices, pad
 
 
 def compute_n_parts_per_axis(x_shape, patch_size):
