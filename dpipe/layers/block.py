@@ -2,6 +2,7 @@ from functools import partial
 
 import numpy as np
 import torch.nn as nn
+
 from .structure import CenteredCrop
 
 
@@ -65,8 +66,8 @@ class ResBlock(nn.Module):
                                        pre_activation(n_chans_out))
 
         # Shortcut
-        spatial_difference = np.broadcast_to(2 * (kernel_size // 2 - padding), dims)
-        assert (spatial_difference >= 0).all()
+        spatial_difference = np.broadcast_to(np.int(np.floor(dilation * (kernel_size - 1) - 2 * padding)), dims)
+        assert (spatial_difference >= 0).all(), spatial_difference
         self.crop = CenteredCrop(start=spatial_difference) if (spatial_difference > 0).any() else identity
 
         if n_chans_in != n_chans_out or stride != 1:
