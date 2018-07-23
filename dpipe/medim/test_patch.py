@@ -1,8 +1,10 @@
 import unittest
 
 import numpy as np
-from .patch import extract_patch, sample_box_center_uniformly, get_random_patch
+
+from .patch import sample_box_center_uniformly, extract_patch, get_random_patch, get_random_patch_start_stop
 from .box import make_box_, get_centered_box
+from .test_utils import get_random_tuple
 
 
 class TestPatch(unittest.TestCase):
@@ -47,13 +49,26 @@ class TestPatch(unittest.TestCase):
 
 class TestRandomPatch(unittest.TestCase):
     def test_no_spatial_dims(self):
-        shape = (3, 4, 10)
-        x = np.empty(shape)
+        x = np.empty((3, 4, 10))
         patch = get_random_patch(x, [2, 2])
         self.assertEqual(patch.shape, (3, 2, 2))
 
     def test_spatial_dims(self):
-        shape = (3, 4, 10)
-        x = np.empty(shape)
+        x = np.empty((3, 4, 10))
         patch = get_random_patch(x, [2, 2], spatial_dims=[0, 2])
         self.assertEqual(patch.shape, (2, 4, 2))
+
+    def test_random_path_start_stop(self):
+        for _ in range(1000):
+            size = np.random.randint(1, 6)
+            shape = get_random_tuple(5, 20, size)
+            kernel_size = get_random_tuple(1, min(shape) + 1, size)
+
+            with self.subTest(shape=shape, kernel_size=kernel_size):
+                start, stop = get_random_patch_start_stop(shape, kernel_size)
+                np.testing.assert_array_compare(np.less_equal, 0, start)
+                np.testing.assert_array_compare(np.less_equal, start, stop)
+                np.testing.assert_array_compare(np.less_equal, stop, shape)
+
+        with self.assertRaises(ValueError):
+            get_random_patch_start_stop([3], [4])

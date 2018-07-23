@@ -1,7 +1,7 @@
 import os
-import struct
 from operator import itemgetter
 from os.path import join as jp
+from typing import Sequence
 
 import numpy as np
 import pydicom
@@ -65,32 +65,43 @@ def folder_to_df(path):
         return files_to_df(root, files)
 
 
-def walk_dicom_tree(top, verbose=True):
-    iterator = filter(lambda batch: batch[2], os.walk(top, onerror=throw))
+def walk_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bool = True):
+    for extension in ignore_extensions:
+        if extension and not extension.startswith('.'):
+            raise ValueError(f'Each extension must start with a dot: "{extension}".')
+
+    def walker():
+        for root_, _, files_ in os.walk(top, onerror=throw):
+            files_ = [file for file in files_ if not any(file.endswith(ext) for ext in ignore_extensions)]
+            if files_:
+                yield root_, files_
+
+    iterator = walker()
     if verbose:
         iterator = tqdm(iterator)
 
-    for root, _, files in iterator:
+    for root, files in iterator:
         relative = os.path.relpath(root, top)
         if verbose:
             iterator.set_description(relative)
         yield relative, files_to_df(root, files)
 
 
-def join_dicom_tree(top: str, verbose: bool = True) -> pd.DataFrame:
+def join_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bool = True) -> pd.DataFrame:
     """
     Returns a dataframe containing metadata for each file in all the subfolders of `top`.
 
     Parameters
     ----------
     top: str
+    ignore_extensions: Sequence[str], optional
     verbose: bool, optional
         whether to display a `tqdm` progressbar.
     """
-    return pd.concat(map(itemgetter(1), walk_dicom_tree(top, verbose)))
+    return pd.concat(map(itemgetter(1), walk_dicom_tree(top, ignore_extensions, verbose)))
 
 
-def aggregate_images(dataframe: pd.DataFrame):
+def aggregate_images(dataframe: pd.DataFrame) -> pd.DataFrame:
     """Groups DICOM metadata into images."""
 
     def get_unique_cols(df):
@@ -127,7 +138,7 @@ def aggregate_images(dataframe: pd.DataFrame):
     return dataframe.groupby(group_by).apply(process_group).reset_index(drop=True)
 
 
-def normalize_identifiers(dataframe):
+def normalize_identifiers(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
     Converts PatientID to str and fills nan values in SequenceName.
 
@@ -144,11 +155,11 @@ def normalize_identifiers(dataframe):
 
     dataframe['PatientID'] = dataframe.PatientID.apply(remove_dots)
     if 'SequenceName' in dataframe:
-        dataframe['SequenceName'] = dataframe.SequenceName.fillna('')
+        dataframe.SequenceName.fillna('', inplace=True)
     return dataframe
 
 
-def select(dataframe: pd.DataFrame, query: str, **where: str):
+def select(dataframe: pd.DataFrame, query: str, **where: str) -> pd.DataFrame:
     query = ' '.join(query.format(**where).splitlines())
     return dataframe.query(query).dropna(axis=1, how='all').dropna(axis=0, how='all')
 

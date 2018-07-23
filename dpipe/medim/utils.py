@@ -34,12 +34,6 @@ def load_image(path: str):
     Load an image located at `path`.
     The following extensions are supported:
         npy, tif, hdr, img, nii, nii.gz
-
-    Parameters
-    ----------
-    path: str
-        Path to the image.
-
     """
     if path.endswith('.npy'):
         return np.load(path)

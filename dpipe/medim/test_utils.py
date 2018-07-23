@@ -1,7 +1,11 @@
 import unittest
 
 import numpy as np
-from dpipe.medim.utils import pad
+from .utils import pad
+
+
+def get_random_tuple(low, high, size):
+    return tuple(np.random.randint(low, high, size=size, dtype=int))
 
 
 class TestPad(unittest.TestCase):
@@ -9,7 +13,7 @@ class TestPad(unittest.TestCase):
         x = np.arange(12).reshape((3, 2, 2))
         padding = np.array(((0, 0), (1, 2), (2, 1)))
         padding_values = np.min(x, axis=(1, 2), keepdims=True)
-        
+
         y = pad(x, padding, padding_values)
         np.testing.assert_array_equal(y, np.array([
             [

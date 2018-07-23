@@ -3,8 +3,8 @@ from typing import Sequence, Union
 import numpy as np
 from scipy import ndimage
 
-from dpipe.medim.shape_utils import compute_shape_from_spatial
-from dpipe.medim.utils import get_axes, build_slices, pad
+from .shape_utils import compute_full_shape
+from .utils import get_axes, build_slices, pad
 
 
 def normalize_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None):
@@ -102,7 +102,7 @@ def scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None, order:
         order of interpolation
     """
     old_shape = np.array(x.shape, 'float64')
-    new_shape = np.array(compute_shape_from_spatial(x.shape, shape, axes), 'float64')
+    new_shape = np.array(compute_full_shape(x.shape, shape, axes), 'float64')
 
     return ndimage.zoom(x, new_shape / old_shape, order=order)
 
@@ -124,7 +124,7 @@ def pad_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None,
         axes along which the tensor will be padded.
         If None - the last `len(shape)` axes are used.
     """
-    old_shape, new_shape = np.array(x.shape), np.array(compute_shape_from_spatial(x.shape, shape, axes))
+    old_shape, new_shape = np.array(x.shape), np.array(compute_full_shape(x.shape, shape, axes))
     if (old_shape > new_shape).any():
         raise ValueError(f'The resulting shape cannot be smaller than the original: {old_shape} vs {new_shape}')
 
@@ -148,7 +148,7 @@ def slice_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None) -> np.
         axes along which the tensor will be padded.
         If None - the last `len(shape)` axes are used.
     """
-    old_shape, new_shape = np.array(x.shape), np.array(compute_shape_from_spatial(x.shape, shape, axes))
+    old_shape, new_shape = np.array(x.shape), np.array(compute_full_shape(x.shape, shape, axes))
     if (old_shape < new_shape).any():
         raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}')
 
@@ -175,7 +175,7 @@ def proportional_scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence =
     order: int, optional
         order of interpolation
     """
-    scale_factor = min(shape / np.array(x.shape, dtype='float64')[get_axes(axes, x.ndim)])
+    scale_factor = min(compute_full_shape(x.shape, shape, axes) / np.array(x.shape, dtype='float64'))
     return pad_to_shape(
         scale(x, scale_factor, axes, order), shape, axes, padding_values
     )
@@ -184,5 +184,7 @@ def proportional_scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence =
 # Deprecated
 # ----------
 
-normalize_mscan = normalize_multichannel_image
-normalize_scan = normalize_image
+
+normalize_mscan = np.deprecate(normalize_multichannel_image, old_name='normalize_mscan',
+                               new_name='normalize_multichannel_image')
+normalize_scan = np.deprecate(normalize_image, old_name='normalize_scan', new_name='normalize_image')
