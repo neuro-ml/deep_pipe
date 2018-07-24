@@ -54,7 +54,7 @@ class TestShapeAfterConvolution(unittest.TestCase):
                 'kernel_size': random_tuple(1, 6),
                 'padding': random_tuple(1, 4),
                 'stride': random_tuple(1, 4),
-                'dilation': random_tuple(1, 5)
+                'dilation': random_tuple(1, 4)
             }
             shape = random_tuple(10, 45)
             tensor = torch.empty(1, 1, *shape)

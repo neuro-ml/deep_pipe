@@ -24,6 +24,11 @@ class TestPrep(unittest.TestCase):
     def test_slice_to_shape(self):
         self._test_to_shape(prep.slice_to_shape, (3, 4, 8), (3, 15, 10))
 
+    def test_scale(self):
+        self.assertTupleEqual(prep.scale(self.x, (3, 4, 15)).shape, (9, 40, 150))
+
+        self.assertTupleEqual(prep.scale(self.x, (4, 3)).shape, (3, 40, 30))
+
     def test_normalize_image(self):
         x = prep.normalize_image(self.x)
         np.testing.assert_almost_equal(0, x.mean())

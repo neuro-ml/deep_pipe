@@ -4,9 +4,9 @@ Tools for patch extraction and generation.
 import numpy as np
 
 from .checks import check_len
-from .box import limit_box, get_box_padding, broadcast_spatial_box
-from .utils import build_slices, get_axes, pad
-from .shape_utils import shape_after_convolution, compute_shape_from_spatial
+from .box import limit_box, get_box_padding, broadcast_spatial_box, get_random_box
+from .utils import build_slices, get_axes, pad, squeeze_first
+from .shape_utils import shape_after_convolution
 
 
 def extract_patch(x: np.ndarray, *, box: np.array, padding_values=None) -> np.array:
@@ -39,6 +39,16 @@ def sample_box_center_uniformly(shape, box_size: np.array):
     return center + box_size // 2
 
 
+def get_random_patch(*arrays: np.ndarray, patch_size, axes=None):
+    slc = (..., *build_slices(*get_random_box(arrays[0].shape, patch_size, axes)))
+    return squeeze_first(tuple(arr[slc] for arr in arrays))
+
+
+# Deprecated
+# ----------
+
+
+@np.deprecate
 def get_random_patch_start_stop(shape, patch_size, spatial_dims=None):
     spatial_dims = get_axes(spatial_dims, len(patch_size))
 
@@ -49,8 +59,3 @@ def get_random_patch_start_stop(shape, patch_size, spatial_dims=None):
     stop[spatial_dims] = start[spatial_dims] + patch_size
 
     return start, stop
-
-
-def get_random_patch(x: np.ndarray, patch_size, spatial_dims=None) -> np.ndarray:
-    start, stop = get_random_patch_start_stop(x.shape, patch_size, spatial_dims)
-    return x[build_slices(start, stop)]

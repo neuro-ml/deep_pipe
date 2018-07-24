@@ -1,4 +1,4 @@
-from functools import wraps
+from functools import wraps, partial
 
 
 def check_len(*arrays):
@@ -18,23 +18,16 @@ def check_shapes(*arrays):
         raise ValueError(f'Arrays of equal shape are required: {", ".join(map(str, shapes))}')
 
 
-def add_check_bool(func):
-    """Check that all function arguments are boolean arrays."""
+def add_check_function(func, check_function):
+    """Performs a check of the function's arguments before calling it."""
 
     @wraps(func)
-    def new_func(*args, **kwargs):
-        check_bool(*args, *kwargs.values())
+    def wrapper(*args, **kwargs):
+        check_function(*args, *kwargs.values())
         return func(*args, **kwargs)
 
-    return new_func
+    return wrapper
 
 
-def add_check_shapes(func):
-    """Check that all function arguments are arrays with equal shape."""
-
-    @wraps(func)
-    def new_func(*args, **kwargs):
-        check_shapes(*args, *kwargs.values())
-        return func(*args, **kwargs)
-
-    return new_func
+add_check_bool = partial(add_check_function, check_function=check_bool)
+add_check_shapes = partial(add_check_function, check_function=check_shapes)

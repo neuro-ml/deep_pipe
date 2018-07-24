@@ -79,7 +79,7 @@ def scale(x: np.ndarray, scale_factor: Union[float, Sequence], axes: Sequence = 
     order: int, optional
         order of interpolation
     """
-    axes = get_axes(axes, x.ndim)
+    axes = get_axes(axes, len(scale_factor))
     scale_factor_ = np.ones(x.ndim, dtype='float64')
     scale_factor_[axes] = scale_factor
     return ndimage.zoom(x, scale_factor_, order=order)

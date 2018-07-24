@@ -1,12 +1,14 @@
 from abc import abstractmethod, ABC
 from itertools import islice
 from contextlib import contextmanager
+from typing import Iterable, Callable, Union
 
 import pdp
 
 from dpipe.batch_iter.blocks import make_batch_blocks
 
-__all__ = ['BatchIter', 'make_batch_iter_from_finite', 'make_batch_iter_from_infinite', 'make_infinite_batch_iter']
+__all__ = ['BatchIter', 'make_batch_iter_from_finite', 'make_batch_iter_from_infinite', 'make_infinite_batch_iter',
+           'wrap_infinite_pipeline']
 
 
 @contextmanager
@@ -104,3 +106,15 @@ def make_infinite_batch_iter(source, *transformers, batch_size, n_iters_per_epoc
         )
 
     return make_batch_iter_from_infinite(pipeline, n_iters_per_epoch)
+
+
+def wrap_infinite_pipeline(source: Union[Iterable, pdp.Source], *transformers: Union[Callable, pdp.One2One],
+                           batch_size: int, n_iters_per_epoch: int, buffer_size: int = 3):
+    def wrap(o, t):
+        if not isinstance(o, t):
+            o = t(o, buffer_size=buffer_size)
+        return o
+
+    return make_infinite_batch_iter(
+        wrap(source, pdp.Source), *(wrap(transformer, pdp.One2One) for transformer in transformers),
+        batch_size=batch_size, n_iters_per_epoch=n_iters_per_epoch)

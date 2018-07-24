@@ -7,9 +7,6 @@ from dpipe.medim.utils import get_axes
 
 
 def compute_shape_from_spatial(complete_shape, spatial_shape, spatial_dims):
-    if spatial_dims is None:
-        warnings.warn("Deprecated call, `spatial_dims` cannot be `None`.")
-        spatial_dims = range(-len(spatial_shape), 0)
     check_len(spatial_shape, spatial_dims)
     shape = np.array(complete_shape)
     shape[list(spatial_dims)] = spatial_shape

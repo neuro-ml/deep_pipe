@@ -26,7 +26,6 @@ def load_model_state(module: torch.nn.Module, path: str, modify_state_fn: Callab
 
 
 def save_model_state(module: torch.nn.Module, path: str):
-    # Legacy to load models from old experiments
     folder = os.path.dirname(path)
     if folder:
         os.makedirs(folder, exist_ok=True)
