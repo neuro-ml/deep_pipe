@@ -1,6 +1,5 @@
 import numpy as np
-from scipy import ndimage
-from scipy.ndimage.interpolation import map_coordinates, zoom
+from scipy.ndimage.interpolation import map_coordinates
 from scipy.ndimage.filters import gaussian_filter
 
 from dpipe.medim.preprocessing import slice_to_shape, pad_to_shape

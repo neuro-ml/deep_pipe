@@ -1,10 +1,7 @@
 import unittest
 
-import numpy as np
-
 from .test_utils import get_random_tuple
-from .box import make_box_, returns_box, broadcast_spatial_box, limit_box, get_box_padding, add_margin, \
-    get_centered_box, mask2bounding_box, get_random_box, get_boxes_grid
+from .box import *
 
 
 class TestBox(unittest.TestCase):

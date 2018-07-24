@@ -14,12 +14,6 @@ def build_slices(start, stop):
     return tuple(map(slice, start, stop))
 
 
-def get_axes(axes, ndim):
-    if axes is None:
-        axes = range(-ndim, 0)
-    return list(axes)
-
-
 def scale(x):
     x_min, x_max = x.min(), x.max()
     return (x - x_min) / (x_max - x_min)
@@ -47,8 +41,7 @@ def load_image(path: str):
     if path.endswith(('.png', '.jpg')):
         from imageio import imread
         return imread(path)
-    raise ValueError(f"Couldn't read image from path: {path}.\n"
-                     "Unknown file extension.")
+    raise ValueError(f"Couldn't read image from path: {path}.\nUnknown file extension.")
 
 
 def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):

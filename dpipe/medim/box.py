@@ -6,9 +6,8 @@ from functools import wraps
 
 import numpy as np
 
-from .utils import get_axes
 from .checks import check_len
-from .shape_utils import compute_shape_from_spatial, shape_after_convolution
+from .shape_utils import compute_shape_from_spatial, fill_remaining_axes, shape_after_full_convolution
 
 
 def make_box_(iterable):
@@ -94,15 +93,9 @@ def mask2bounding_box(mask: np.ndarray):
 @returns_box
 def get_random_box(shape, box_shape, axes=None):
     """Get a random box of corresponding shape that fits in the `shape` along the given axes."""
-    axes = get_axes(axes, len(box_shape))
 
-    start = np.zeros_like(shape)
-    stop = np.array(shape)
-    spatial = shape_after_convolution(stop[axes], box_shape)
-    start[axes] = list(map(np.random.randint, spatial))
-    stop[axes] = start[axes] + box_shape
-
-    return start, stop
+    start = np.array(list(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes))))
+    return start, start + fill_remaining_axes(shape, box_shape, axes)
 
 
 def get_boxes_grid(shape, box_size, stride=None, axes=None):
@@ -119,14 +112,12 @@ def get_boxes_grid(shape, box_size, stride=None, axes=None):
     stride
         the stride (step-size) of the slice. If None, the stride is assumed to be equal to `box_size`.
     """
-    axes = get_axes(axes, len(box_size))
     if stride is None:
         stride = box_size
 
-    box_size = np.asarray(box_size)
-    final_shape = shape_after_convolution(np.array(shape)[axes], box_size, stride=stride)
+    final_shape = shape_after_full_convolution(shape, box_size, stride=stride)
+    full_box = fill_remaining_axes(shape, box_size, axes)
 
     for start in np.ndindex(*final_shape):
         start = np.asarray(start) * stride
-        yield make_box_([compute_shape_from_spatial(shape, start, axes),
-                         compute_shape_from_spatial(shape, start + box_size, axes)])
+        yield make_box_([start, start + full_box])

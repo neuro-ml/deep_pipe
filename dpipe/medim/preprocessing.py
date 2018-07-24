@@ -3,8 +3,8 @@ from typing import Sequence, Union
 import numpy as np
 from scipy import ndimage
 
-from .shape_utils import compute_full_shape
-from .utils import get_axes, build_slices, pad
+from .shape_utils import fill_remaining_axes
+from .utils import build_slices, pad
 
 
 def normalize_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None):
@@ -39,30 +39,6 @@ def normalize_multichannel_image(image: np.ndarray, mean: bool = True, std: bool
     return np.array([normalize_image(channel, mean, std, drop_percentile) for channel in image], np.float32)
 
 
-def rotate_image(image: np.ndarray, angles: Sequence, axes: Sequence = None, order: int = 1, reshape=False):
-    """
-    Rotate an image along the given axes.
-
-    Parameters
-    ----------
-    image: np.ndarray
-        image to rotate
-    angles: Sequence
-    axes: Sequence
-        axes along which the image will be rotated. The length must be equal to len(angles) + 1
-    order: int, optional
-        interpolation order
-    reshape: bool, optional
-        whether to reshape the resulting image
-    """
-    axes = get_axes(axes, len(angles) + 1)
-    assert len(axes) == len(angles) + 1
-    result = image.copy()
-    for angle, *axis in zip(angles, axes, axes[1:]):
-        result = ndimage.rotate(result, angle, axes=axis, reshape=reshape, order=order)
-    return result
-
-
 def scale(x: np.ndarray, scale_factor: Union[float, Sequence], axes: Sequence = None, order: int = 1) -> np.ndarray:
     """
     Rescale a tensor according to `scale_factor`.
@@ -79,10 +55,7 @@ def scale(x: np.ndarray, scale_factor: Union[float, Sequence], axes: Sequence = 
     order: int, optional
         order of interpolation
     """
-    axes = get_axes(axes, len(scale_factor))
-    scale_factor_ = np.ones(x.ndim, dtype='float64')
-    scale_factor_[axes] = scale_factor
-    return ndimage.zoom(x, scale_factor_, order=order)
+    return ndimage.zoom(x, fill_remaining_axes(np.ones(x.ndim), scale_factor, axes), order=order)
 
 
 def scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None, order: int = 1) -> np.ndarray:
@@ -102,7 +75,7 @@ def scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None, order:
         order of interpolation
     """
     old_shape = np.array(x.shape, 'float64')
-    new_shape = np.array(compute_full_shape(x.shape, shape, axes), 'float64')
+    new_shape = np.array(fill_remaining_axes(x.shape, shape, axes), 'float64')
 
     return ndimage.zoom(x, new_shape / old_shape, order=order)
 
@@ -124,7 +97,7 @@ def pad_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None,
         axes along which the tensor will be padded.
         If None - the last `len(shape)` axes are used.
     """
-    old_shape, new_shape = np.array(x.shape), np.array(compute_full_shape(x.shape, shape, axes))
+    old_shape, new_shape = np.array(x.shape), np.array(fill_remaining_axes(x.shape, shape, axes))
     if (old_shape > new_shape).any():
         raise ValueError(f'The resulting shape cannot be smaller than the original: {old_shape} vs {new_shape}')
 
@@ -148,7 +121,7 @@ def slice_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence = None) -> np.
         axes along which the tensor will be padded.
         If None - the last `len(shape)` axes are used.
     """
-    old_shape, new_shape = np.array(x.shape), np.array(compute_full_shape(x.shape, shape, axes))
+    old_shape, new_shape = np.array(x.shape), np.array(fill_remaining_axes(x.shape, shape, axes))
     if (old_shape < new_shape).any():
         raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}')
 
@@ -175,10 +148,8 @@ def proportional_scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence =
     order: int, optional
         order of interpolation
     """
-    scale_factor = min(compute_full_shape(x.shape, shape, axes) / np.array(x.shape, dtype='float64'))
-    return pad_to_shape(
-        scale(x, scale_factor, axes, order), shape, axes, padding_values
-    )
+    scale_factor = min(fill_remaining_axes(x.shape, shape, axes) / np.array(x.shape, dtype='float64'))
+    return pad_to_shape(scale(x, scale_factor, axes, order), shape, axes, padding_values)
 
 
 # Deprecated

@@ -1,4 +1,5 @@
 from itertools import product
+from typing import Union, Sequence
 
 import numpy as np
 
@@ -71,7 +72,8 @@ def combine(x_parts, x_shape):
     return x
 
 
-def grid_patch(*arrays: np.ndarray, patch_size, stride=None, axes=None) -> np.ndarray:
+def grid_patch(*arrays: np.ndarray, patch_size: Union[int, Sequence[int]], stride: Union[int, Sequence[int]] = None,
+               axes: Union[int, Sequence[int]] = None) -> np.ndarray:
     """
     A convolution-like approach to generating patches from a tensor.
 

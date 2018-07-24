@@ -5,8 +5,8 @@ import numpy as np
 
 from .checks import check_len
 from .box import limit_box, get_box_padding, broadcast_spatial_box, get_random_box
-from .utils import build_slices, get_axes, pad, squeeze_first
-from .shape_utils import shape_after_convolution
+from .utils import build_slices, pad, squeeze_first
+from .shape_utils import shape_after_convolution, get_axes
 
 
 def extract_patch(x: np.ndarray, *, box: np.array, padding_values=None) -> np.array:
