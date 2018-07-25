@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Callable
 
 from dpipe.medim.utils import load_by_ids
 
@@ -22,7 +22,7 @@ def evaluate(y_true, y_pred, metrics: dict):
     return {name: metric(y_true, y_pred) for name, metric in metrics.items()}
 
 
-def validate(validate_fn, load_x, load_y, ids: Sequence[str], metrics: dict = None):
+def validate(validate_fn: Callable, load_x: Callable, load_y: Callable, ids: Sequence[str], metrics: dict = None):
     """
     Performs a validation step.
 

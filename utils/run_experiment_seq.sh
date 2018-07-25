@@ -5,6 +5,6 @@ cd experiment_0
 
 for d in ../experiment_*/; do
     cd ${d}
-    dpipe run_experiment --config_path ../resources.config || exit 1
+    python -m dpipe run_experiment --config_path ../resources.config || exit 1
 done
 
