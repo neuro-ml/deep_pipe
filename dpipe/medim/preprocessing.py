@@ -3,7 +3,7 @@ from typing import Sequence, Union
 import numpy as np
 from scipy import ndimage
 
-from .shape_utils import fill_remaining_axes
+from .shape_utils import fill_remaining_axes, get_axes
 from .utils import build_slices, pad
 
 
@@ -148,7 +148,7 @@ def proportional_scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence =
     order: int, optional
         order of interpolation
     """
-    scale_factor = min(fill_remaining_axes(x.shape, shape, axes) / np.array(x.shape, dtype='float64'))
+    scale_factor = min(shape / np.array(x.shape, dtype='float64')[get_axes(axes, shape)])
     return pad_to_shape(scale(x, scale_factor, axes, order), shape, axes, padding_values)
 
 
