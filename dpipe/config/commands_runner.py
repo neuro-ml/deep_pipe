@@ -9,10 +9,10 @@ def if_missing(func: Callable, *paths: str, **keyword_paths: str):
         raise ValueError('At least one path must be provided either via positional or keyword arguments.')
 
     if all(map(os.path.exists, outputs)):
-        print(f'>>> Nothing to be done, all outputs already exist: {", ".join(outputs)}\n', flush=True)
+        print(f'\n>>> Nothing to be done, all outputs already exist: {", ".join(outputs)}\n', flush=True)
         return
 
-    print(f'>>> Running command to generate outputs: {", ".join(outputs)}\n', flush=True)
+    print(f'\n>>> Running command to generate outputs: {", ".join(outputs)}\n', flush=True)
 
     try:
         # TODO: add lock?

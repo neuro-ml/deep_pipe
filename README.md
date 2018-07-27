@@ -15,7 +15,7 @@ pip install -e .
 1. Create a config file. There are some examples in `dpipe_configs`
 2. To build the experiment, run 
 ```bash
-dpipe build_experiment --config_path CONFIG_PATH --experiment_path EXPERIMENT_PATH
+python -m dpipe build_experiment --config_path CONFIG_PATH --experiment_path EXPERIMENT_PATH
 ```
 
 3. To start the experiment, run 
