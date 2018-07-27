@@ -147,7 +147,7 @@ def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
 
         def _extract(self, identifier, tensor):
             start, stop = self.get_start_stop(identifier)
-            return tensor[(..., *medim.bb.build_slices(start, stop))]
+            return tensor[(..., *medim.utils.build_slices(start, stop))]
 
     return BBoxedDataset(dataset)
 

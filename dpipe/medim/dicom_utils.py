@@ -67,7 +67,7 @@ def folder_to_df(path):
 
 def walk_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bool = True):
     for extension in ignore_extensions:
-        if extension and not extension.startswith('.'):
+        if not extension.startswith('.'):
             raise ValueError(f'Each extension must start with a dot: "{extension}".')
 
     def walker():
@@ -114,11 +114,13 @@ def aggregate_images(dataframe: pd.DataFrame) -> pd.DataFrame:
         return df
 
     def process_group(entry):
+        # TODO: should check that some typical cols are unique, e.g. ImageOrientationPatient*
         res = entry.iloc[[0]][get_unique_cols(entry)]
         res['FileNames'] = '/'.join(entry.FileName)
         res['SlicesCount'] = len(entry)
         # entries sometimes have no `InstanceNumber`
         # TODO: probably partially sorted slices will also do
+        # TODO: detect duplicates
         try:
             res['InstanceNumbers'] = ','.join(map(lambda x: str(int(x)), entry.InstanceNumber))
         except ValueError:
@@ -188,10 +190,9 @@ def load_by_meta(metadata: pd.Series) -> np.ndarray:
     """
     folder, files = metadata.PathToFolder, metadata.FileNames.split('/')
     if isinstance(metadata.InstanceNumbers, str):
-        files = map(itemgetter(1), zip(map(int, metadata.InstanceNumbers.split(',')), files))
+        files = map(itemgetter(1), sorted(zip(map(int, metadata.InstanceNumbers.split(',')), files)))
 
     x = np.stack((pydicom.read_file(jp(folder, file)).pixel_array for file in files), axis=-1)
-    # TODO: probably should do the transformation if only they are both defined
     if 'RescaleSlope' in metadata and not np.isnan(metadata.RescaleSlope):
         x = x * metadata.RescaleSlope
     if 'RescaleIntercept' in metadata and not np.isnan(metadata.RescaleIntercept):

@@ -80,7 +80,7 @@ class TestBox(unittest.TestCase):
     def test_get_boxes_grid(self):
         shape = np.array((10, 15, 27, 3))
         box_size = (3, 3, 3, 3)
-        grid = np.array(list(get_boxes_grid(shape, box_size, stride=1)))
+        grid = np.stack(get_boxes_grid(shape, box_size, stride=1))
         start, stop = grid[:, 0], grid[:, 1]
 
         self.assertEqual(np.prod(shape - box_size + 1), len(grid))

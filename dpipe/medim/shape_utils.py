@@ -65,7 +65,7 @@ def shape_after_full_convolution(shape, kernel_size, axes=None, stride=1, paddin
     Get the shape of a tensor after applying a convolution with corresponding parameters along the given axes.
     The dimensions along the remaining axes will become singleton.
     """
-    axes = get_axes(axes, max(len(np.atleast_1d(x)) for x in [kernel_size, stride, padding, dilation]))
+    axes = get_axes(axes, max(map(len, np.atleast_1d(kernel_size, stride, padding, dilation))))
 
     return fill_remaining_axes(
         np.ones_like(shape),

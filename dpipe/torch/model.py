@@ -69,8 +69,6 @@ def do_val_step(*inputs, inputs2logits, logits2loss, logits2pred):
     *inputs, target = sequence_to_var(*inputs, cuda=is_on_cuda(inputs2logits))
 
     with torch.no_grad():
-        print('len(inputs) =', len(inputs))
-        print('shape =', inputs[0].shape)
         logits = inputs2logits(*inputs)
         y_pred = logits2pred(logits)
         loss = logits2loss(logits, target)

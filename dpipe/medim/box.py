@@ -94,7 +94,7 @@ def mask2bounding_box(mask: np.ndarray):
 def get_random_box(shape, box_shape, axes=None):
     """Get a random box of corresponding shape that fits in the `shape` along the given axes."""
 
-    start = np.array(list(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes))))
+    start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
     return start, start + fill_remaining_axes(shape, box_shape, axes)
 
 
@@ -115,7 +115,7 @@ def get_boxes_grid(shape, box_size, stride=None, axes=None):
     if stride is None:
         stride = box_size
 
-    final_shape = shape_after_full_convolution(shape, box_size, stride=stride)
+    final_shape = shape_after_full_convolution(shape, box_size, axes, stride)
     full_box = fill_remaining_axes(shape, box_size, axes)
 
     for start in np.ndindex(*final_shape):

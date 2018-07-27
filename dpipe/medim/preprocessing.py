@@ -148,7 +148,7 @@ def proportional_scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence =
     order: int, optional
         order of interpolation
     """
-    scale_factor = min(shape / np.array(x.shape, dtype='float64')[get_axes(axes, shape)])
+    scale_factor = min(shape / np.array(x.shape, dtype='float64')[get_axes(axes, len(np.atleast_1d(shape)))])
     return pad_to_shape(scale(x, scale_factor, axes, order), shape, axes, padding_values)
 
 
