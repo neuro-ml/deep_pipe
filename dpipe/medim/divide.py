@@ -72,10 +72,10 @@ def combine(x_parts, x_shape):
     return x
 
 
-def grid_patch(*arrays: np.ndarray, patch_size: Union[int, Sequence[int]], stride: Union[int, Sequence[int]] = None,
-               axes: Union[int, Sequence[int]] = None) -> np.ndarray:
+def grid_patches(*arrays: np.ndarray, patch_size: Union[int, Sequence[int]], stride: Union[int, Sequence[int]] = None,
+                 axes: Union[int, Sequence[int]] = None) -> np.ndarray:
     """
-    A convolution-like approach to generating patches from a tensor.
+    A convolution-like approach to generating patches from a sequence of tensors.
 
     Parameters
     ----------
@@ -87,8 +87,25 @@ def grid_patch(*arrays: np.ndarray, patch_size: Union[int, Sequence[int]], strid
         the stride (step-size) of the slice
     """
     for box in get_boxes_grid(arrays[0].shape, patch_size, stride=stride, axes=axes):
-        slc = (..., build_slices(*box))
-        yield squeeze_first([array[slc] for array in arrays])
+        slc = (..., *build_slices(*box))
+        yield tuple(array[slc] for array in arrays)
+
+
+def grid_patch(x: np.ndarray, patch_size: Union[int, Sequence[int]], stride: Union[int, Sequence[int]] = None,
+               axes: Union[int, Sequence[int]] = None) -> np.ndarray:
+    """
+    A convolution-like approach to generating patches from a tensor.
+
+    Parameters
+    ----------
+    x: np.ndarray
+    patch_size
+    axes
+        dimensions along which the slices will be taken
+    stride
+        the stride (step-size) of the slice
+    """
+    return x[build_slices(*get_boxes_grid(x.shape, patch_size, stride=stride, axes=axes))]
 
 
 # Deprecated

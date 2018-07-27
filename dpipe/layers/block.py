@@ -19,6 +19,7 @@ class ConvBlock(nn.Module):
     def __init__(self, n_chans_in, n_chans_out, *, kernel_size, activation=None, stride=1, padding=0, dilation=1,
                  groups=1, get_activation=None, get_convolution, get_batch_norm):
         super().__init__()
+        print('stride =', stride)
         self.conv = get_convolution(in_channels=n_chans_in, out_channels=n_chans_out, kernel_size=kernel_size,
                                     stride=stride, padding=padding, dilation=dilation, bias=False, groups=groups)
         self.bn = get_batch_norm(num_features=n_chans_out)
@@ -55,7 +56,7 @@ class ResBlock(nn.Module):
     def __init__(self, n_chans_in, n_chans_out, *, kernel_size=3, activation=None, stride=1, padding=0, dilation=1,
                  get_activation=None, get_convolution, get_batch_norm, dims):
         super().__init__()
-
+        print("stride =", stride)
         # Features
         pre_activation = partial(
             PreActivation, n_chans_out=n_chans_out, kernel_size=kernel_size, activation=activation, padding=padding,
