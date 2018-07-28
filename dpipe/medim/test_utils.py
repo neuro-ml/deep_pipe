@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from .utils import pad
+from .utils import pad, zip_equal
 
 
 def get_random_tuple(low, high, size):
@@ -38,3 +38,23 @@ class TestPad(unittest.TestCase):
                 [8, 8, 8, 8, 8],
             ],
         ]))
+
+
+class TestUtils(unittest.TestCase):
+    @staticmethod
+    def get_map(size):
+        return map(lambda x: x, range(size))
+
+    def test_zip_equal_raises(self):
+        for args in [[range(5), range(6)], [self.get_map(5), self.get_map(6)], [range(7), self.get_map(6)],
+                     [self.get_map(6), range(5)], [self.get_map(6), range(5), range(7)]]:
+            with self.subTest(args=args), self.assertRaises(ValueError):
+                list(zip_equal(*args))
+
+    def test_zip_equal(self):
+        for args in [[range(5), range(5)], [self.get_map(5), self.get_map(5)],
+                     [range(5), self.get_map(5)], [self.get_map(5), range(5)]]:
+            with self.subTest(args=args):
+                self.assertEqual(len(list(zip_equal(*args))), 5)
+
+        self.assertEqual(len(list(zip_equal())), 0)

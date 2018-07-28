@@ -112,7 +112,7 @@ class TorchModel(Model):
 
     def do_val_step(self, *inputs):
         return do_val_step(*inputs, inputs2logits=self.model_core, logits2loss=self.logits2loss,
-                           logits2pred=self.logits2pred, )
+                           logits2pred=self.logits2pred)
 
     def do_inf_step(self, *inputs):
         return do_inf_step(*inputs, inputs2logits=self.model_core, logits2pred=self.logits2pred)

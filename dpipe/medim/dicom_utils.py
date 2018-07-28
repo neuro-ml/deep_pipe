@@ -8,6 +8,8 @@ import pydicom
 import pandas as pd
 from tqdm import tqdm
 
+from .utils import zip_equal
+
 serial = {'ImagePositionPatient', 'ImageOrientationPatient', 'PixelSpacing'}
 person_class = (pydicom.valuerep.PersonName, pydicom.valuerep.PersonName3,
                 pydicom.valuerep.PersonNameBase, pydicom.valuerep.PersonNameUnicode)
@@ -15,6 +17,13 @@ person_class = (pydicom.valuerep.PersonName, pydicom.valuerep.PersonName3,
 
 def throw(e):
     raise e
+
+
+def _remove_dots(x):
+    try:
+        return str(int(float(x)))
+    except ValueError:
+        return x
 
 
 def files_to_df(folder, files):
@@ -122,7 +131,7 @@ def aggregate_images(dataframe: pd.DataFrame) -> pd.DataFrame:
         # TODO: probably partially sorted slices will also do
         # TODO: detect duplicates
         try:
-            res['InstanceNumbers'] = ','.join(map(lambda x: str(int(x)), entry.InstanceNumber))
+            res['InstanceNumbers'] = ','.join(map(_remove_dots, entry.InstanceNumber))
         except ValueError:
             res['InstanceNumbers'] = None
 
@@ -149,13 +158,7 @@ def normalize_identifiers(dataframe: pd.DataFrame) -> pd.DataFrame:
     The input `dataframe` will be mutated.
     """
 
-    def remove_dots(x):
-        try:
-            return str(int(float(x)))
-        except ValueError:
-            return x
-
-    dataframe['PatientID'] = dataframe.PatientID.apply(remove_dots)
+    dataframe['PatientID'] = dataframe.PatientID.apply(_remove_dots)
     if 'SequenceName' in dataframe:
         dataframe.SequenceName.fillna('', inplace=True)
     return dataframe
@@ -190,7 +193,7 @@ def load_by_meta(metadata: pd.Series) -> np.ndarray:
     """
     folder, files = metadata.PathToFolder, metadata.FileNames.split('/')
     if isinstance(metadata.InstanceNumbers, str):
-        files = map(itemgetter(1), sorted(zip(map(int, metadata.InstanceNumbers.split(',')), files)))
+        files = map(itemgetter(1), sorted(zip_equal(map(int, metadata.InstanceNumbers.split(',')), files)))
 
     x = np.stack((pydicom.read_file(jp(folder, file)).pixel_array for file in files), axis=-1)
     if 'RescaleSlope' in metadata and not np.isnan(metadata.RescaleSlope):

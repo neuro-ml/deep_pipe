@@ -1,5 +1,5 @@
-from collections import Sized
-from typing import Sequence, Iterable, Callable
+from contextlib import suppress
+from typing import Sized, Sequence, Iterable, Callable, Union
 
 import numpy as np
 
@@ -69,12 +69,31 @@ def pam(functions: Iterable[Callable], *args, **kwargs):
         yield f(*args, **kwargs)
 
 
-def zip_equal(*args: Sized):
-    """Check that all arguments have the same length then apply `zip` to them."""
-    if not all(len(x) == len(args[0]) for x in args):
-        raise ValueError('All the iterables must have the same size')
+def zip_equal(*args: Union[Sized, Iterable]):
+    if not args:
+        return
 
-    return zip(*args)
+    lengths = []
+    for arg in args:
+        with suppress(TypeError):
+            lengths.append(len(arg))
+
+    if lengths and not all(x == lengths[0] for x in lengths):
+        raise ValueError('The arguments have different lengths.')
+
+    iterables = [iter(arg) for arg in args]
+    while True:
+        result = []
+        for it in iterables:
+            with suppress(StopIteration):
+                result.append(next(it))
+
+        if len(result) != len(args):
+            break
+        yield tuple(result)
+
+    if len(result) != 0:
+        raise ValueError(f'The iterables did not exhaust simultaneously.')
 
 
 def squeeze_first(inputs):
