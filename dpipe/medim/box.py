@@ -16,6 +16,7 @@ def make_box_(iterable):
     box = np.asarray(iterable)
     box.setflags(write=False)
 
+    # TODO: probably should enforce integer dtype
     assert box.ndim == 2 and len(box) == 2, box.shape
     assert np.all(box[0] <= box[1]), box
 
@@ -117,7 +118,8 @@ def get_boxes_grid(shape, box_size, stride=None, axes=None):
 
     final_shape = shape_after_full_convolution(shape, box_size, axes, stride)
     full_box = fill_remaining_axes(shape, box_size, axes)
+    full_stride = fill_remaining_axes(np.ones_like(shape), stride, axes)
 
     for start in np.ndindex(*final_shape):
-        start = np.asarray(start) * stride
+        start = np.asarray(start) * full_stride
         yield make_box_([start, start + full_box])

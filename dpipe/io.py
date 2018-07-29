@@ -103,7 +103,6 @@ class ConsoleArguments:
         >>> x = console(data_path='/some/default/path')
         """
         if len(kwargs) != 1:
-            raise ValueError(f'This method takes exactly one argument, '
-                             f'but {len(kwargs)} were passed.')
+            raise ValueError(f'This method takes exactly one argument, but {len(kwargs)} were passed.')
         name = list(kwargs.keys())[0]
         return self.args.get(name, kwargs[name])

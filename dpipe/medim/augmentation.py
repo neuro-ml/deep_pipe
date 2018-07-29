@@ -2,37 +2,26 @@ import numpy as np
 from scipy.ndimage.interpolation import map_coordinates
 from scipy.ndimage.filters import gaussian_filter
 
+from dpipe.medim.box import get_boxes_grid
 from dpipe.medim.preprocessing import slice_to_shape, pad_to_shape
+from dpipe.medim.shape_utils import fill_remaining_axes, get_axes
 
 
-# TODO: simplify
-def elastic_transform(x, alpha, sigma, axes=None, order=1):
-    """
-    Apply a gaussian elastic transform to a np.array along given axes.
-    """
-
-    if axes is None:
-        axes = range(x.ndim)
-    axes = list(sorted(axes))
-    x = np.array(x)
-    shape = np.array(x.shape)
-    grid_shape = shape[axes]
-    shape[axes] = 1
-
-    dr = [gaussian_filter(np.random.rand(*grid_shape) * 2 - 1, sigma, mode="constant") * alpha
-          for _ in range(len(grid_shape))]
-    r = np.meshgrid(*[np.arange(i) for i in grid_shape], indexing='ij')
-
-    indices = [np.reshape(k + dk, (-1, 1)) for k, dk in zip(r, dr)]
+def elastic_transform(x: np.ndarray, amplitude: float, axes=None, order: int = 1):
+    """Apply a gaussian elastic distortion with a given amplitude to a tensor along the given axes."""
+    axes = get_axes(axes, x.ndim)
+    grid_shape = np.array(x.shape)[axes]
+    deltas = [gaussian_filter(np.random.uniform(-amplitude, amplitude, grid_shape), 1) for _ in grid_shape]
+    grid = np.mgrid[tuple(map(slice, grid_shape))] + deltas
 
     result = np.empty_like(x)
-    for idx in np.ndindex(*shape):
-        idx = list(idx)
+    kernel_size = fill_remaining_axes([1] * x.ndim, grid_shape, axes)
+    for start, _ in get_boxes_grid(x.shape, kernel_size, 1):
+        slc = list(start)
         for ax in axes:
-            idx[ax] = slice(None)
+            slc[ax] = slice(None)
+        result[slc] = map_coordinates(x[slc], grid, order=order)
 
-        z = x[idx]
-        result[idx] = map_coordinates(z, indices, order=order).reshape(z.shape)
     return result
 
 

@@ -4,15 +4,14 @@ from os.path import join as jp
 from typing import Sequence
 
 import numpy as np
-import pydicom
 import pandas as pd
 from tqdm import tqdm
+from pydicom import valuerep, errors, read_file
 
 from .utils import zip_equal
 
 serial = {'ImagePositionPatient', 'ImageOrientationPatient', 'PixelSpacing'}
-person_class = (pydicom.valuerep.PersonName, pydicom.valuerep.PersonName3,
-                pydicom.valuerep.PersonNameBase, pydicom.valuerep.PersonNameUnicode)
+person_class = (valuerep.PersonName3, valuerep.PersonNameBase)
 
 
 def throw(e):
@@ -38,8 +37,8 @@ def files_to_df(folder, files):
         entry['PathToFolder'] = folder
         entry['FileName'] = file
         try:
-            dc = pydicom.read_file(jp(folder, file))
-        except (pydicom.errors.InvalidDicomError, OSError, NotImplementedError):
+            dc = read_file(jp(folder, file))
+        except (errors.InvalidDicomError, OSError, NotImplementedError):
             entry['NoError'] = False
             continue
 
@@ -66,7 +65,7 @@ def files_to_df(folder, files):
             elif isinstance(value, (int, float, str)):
                 entry[attr] = value
 
-    return pd.DataFrame.from_dict(result)
+    return pd.DataFrame(result)
 
 
 def folder_to_df(path):
@@ -195,7 +194,7 @@ def load_by_meta(metadata: pd.Series) -> np.ndarray:
     if isinstance(metadata.InstanceNumbers, str):
         files = map(itemgetter(1), sorted(zip_equal(map(int, metadata.InstanceNumbers.split(',')), files)))
 
-    x = np.stack((pydicom.read_file(jp(folder, file)).pixel_array for file in files), axis=-1)
+    x = np.stack((read_file(jp(folder, file)).pixel_array for file in files), axis=-1)
     if 'RescaleSlope' in metadata and not np.isnan(metadata.RescaleSlope):
         x = x * metadata.RescaleSlope
     if 'RescaleIntercept' in metadata and not np.isnan(metadata.RescaleIntercept):

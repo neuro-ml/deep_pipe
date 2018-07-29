@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional
 
-from .layers.block import ConvBlock3d, ConvTransposeBlock3d
+from dpipe.layers.block import ConvBlock3d, ConvTransposeBlock3d
 
 context_slice = tuple(2 * [slice(None)] + 3 * [slice(1, -1, 3)])
 
