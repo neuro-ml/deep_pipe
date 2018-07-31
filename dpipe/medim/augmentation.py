@@ -2,9 +2,9 @@ import numpy as np
 from scipy.ndimage.interpolation import map_coordinates
 from scipy.ndimage.filters import gaussian_filter
 
-from dpipe.medim.box import get_boxes_grid
-from dpipe.medim.preprocessing import slice_to_shape, pad_to_shape
-from dpipe.medim.shape_utils import fill_remaining_axes, get_axes
+from .box import get_boxes_grid
+from .preprocessing import slice_to_shape, pad_to_shape
+from .shape_utils import fill_remaining_axes, get_axes
 
 
 def elastic_transform(x: np.ndarray, amplitude: float, axes=None, order: int = 1):

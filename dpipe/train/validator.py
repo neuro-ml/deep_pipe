@@ -56,3 +56,7 @@ def validate(validate_fn: Callable, load_x: Callable, load_y: Callable, ids: Seq
     else:
         result = {}
     return losses, result
+
+
+def compute_metrics(predict: Callable, load_x: Callable, load_y: Callable, ids: Sequence[str], metrics: dict):
+    return evaluate(list(map(load_y, ids)), [predict(load_x(i)) for i in ids], metrics)
