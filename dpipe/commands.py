@@ -3,16 +3,14 @@ Contains a few more sophisticated commands
 that are usually accessed via the `do.py` script.
 """
 
-import json
 import os
 from collections import defaultdict
-from typing import Sequence, Callable, Iterable
+from typing import Callable, Iterable
 
 import numpy as np
 from tqdm import tqdm
 
 from dpipe.io import dump_json
-from dpipe.medim.metrics import dice_score
 
 
 def np_filename2id(filename):
@@ -21,6 +19,7 @@ def np_filename2id(filename):
     return '.'.join(rest)
 
 
+@np.deprecate
 def train_model(train, model, save_model_path, restore_model_path=None, modify_state_fn=None):
     if restore_model_path is not None:
         model.load(restore_model_path, modify_state_fn=modify_state_fn)
