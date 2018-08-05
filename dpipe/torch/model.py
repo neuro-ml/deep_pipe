@@ -119,9 +119,11 @@ class TorchModel(Model):
 
     def save(self, path: str):
         save_model_state(self.model_core, path)
+        return self
 
     def load(self, path: str, modify_state_fn: callable = None):
         load_model_state(self.model_core, get_model_path(path), modify_state_fn=modify_state_fn)
+        return self
 
 
 def make_do_inf_step(inputs2logits, logits2pred, saved_model_path, cuda, modify_state_fn=None):

@@ -1,4 +1,5 @@
 from contextlib import suppress
+from functools import wraps
 from typing import Sized, Sequence, Iterable, Callable, Union
 
 import numpy as np
@@ -74,12 +75,16 @@ def zip_equal(*args: Union[Sized, Iterable]):
         return
 
     lengths = []
+    all_lengths = []
     for arg in args:
-        with suppress(TypeError):
+        try:
             lengths.append(len(arg))
+            all_lengths.append(len(arg))
+        except TypeError:
+            all_lengths.append('?')
 
-    if lengths and not all(x == lengths[0] for x in lengths):
-        raise ValueError('The arguments have different lengths.')
+    if lengths and not all(x == lengths[0] or x is None for x in lengths):
+        raise ValueError(f'The arguments have different lengths: {", ".join(map(str, all_lengths))}.')
 
     iterables = [iter(arg) for arg in args]
     while True:
@@ -94,6 +99,11 @@ def zip_equal(*args: Union[Sized, Iterable]):
 
     if len(result) != 0:
         raise ValueError(f'The iterables did not exhaust simultaneously.')
+
+
+@wraps(map)
+def lmap(func, *iterables, **kwarg_iterables):
+    return list(map(func, *iterables, **kwarg_iterables))
 
 
 def squeeze_first(inputs):

@@ -1,4 +1,4 @@
-"""Functions to work with boxes: immutable numpy arrays os shape (start, stop) that represent borders of the rectangle.
+"""Functions to work with boxes: immutable numpy arrays of shape (start, stop) that represent borders of the rectangle.
 Left is inclusive, right is non-inclusive, so this box can be used as `build_slices(box[0], box[1])`.
  All boxes are immutable."""
 import itertools
@@ -16,11 +16,14 @@ def make_box_(iterable):
     box = np.asarray(iterable)
     box.setflags(write=False)
 
-    # TODO: probably should enforce integer dtype
     assert box.ndim == 2 and len(box) == 2, box.shape
     assert np.all(box[0] <= box[1]), box
 
     return box
+
+
+def box_volume(box):
+    return np.prod(box[1] - box[0], axis=0)
 
 
 def returns_box(func):
