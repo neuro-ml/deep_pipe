@@ -14,8 +14,5 @@ def sample_ids(ids, weights=None):
 
 
 def load_by_random_id(*loaders, ids, weights=None):
-    for id_ in sample_random_id(ids, weights):
+    for id_ in sample_ids(ids, weights):
         yield tuple(pam(loaders, id_))
-
-
-sample_random_id = np.deprecate(sample_ids, old_name='sample_random_id', new_name='sample_ids')

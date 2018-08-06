@@ -4,14 +4,16 @@ from typing import Sized, Sequence, Iterable, Callable, Union
 
 import numpy as np
 
+from .checks import add_check_len
+
 
 def decode_segmentation(x, segm_decoding_matrix) -> np.array:
     assert np.issubdtype(x.dtype, np.integer), f'Segmentation dtype must be int, but {x.dtype} provided'
     return np.rollaxis(segm_decoding_matrix[x], -1)
 
 
+@add_check_len
 def build_slices(start, stop):
-    assert len(start) == len(stop)
     return tuple(map(slice, start, stop))
 
 
@@ -71,6 +73,7 @@ def pam(functions: Iterable[Callable], *args, **kwargs):
 
 
 def zip_equal(*args: Union[Sized, Iterable]):
+    """zip over the given iterables, but enforce that all of them exhaust simultaneously."""
     if not args:
         return
 
@@ -83,7 +86,7 @@ def zip_equal(*args: Union[Sized, Iterable]):
         except TypeError:
             all_lengths.append('?')
 
-    if lengths and not all(x == lengths[0] or x is None for x in lengths):
+    if lengths and not all(x == lengths[0] for x in lengths):
         raise ValueError(f'The arguments have different lengths: {", ".join(map(str, all_lengths))}.')
 
     iterables = [iter(arg) for arg in args]

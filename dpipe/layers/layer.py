@@ -31,9 +31,3 @@ class PyramidPooling(nn.Module):
     @staticmethod
     def get_out_features(in_features, levels, ndim):
         return in_features * PyramidPooling.get_multiplier(levels, ndim)
-
-
-# Deprecated
-# ----------
-
-from .structure import CenteredCrop

@@ -4,6 +4,15 @@ from typing import Callable
 
 
 def if_missing(func: Callable, *paths: str, **keyword_paths: str):
+    """
+    Call `func` if at least some of the `paths` do not exist.
+
+    Examples
+    --------
+    >>> if_missing(save_results, 'values', 'metrics', misc='temp_data')
+    # if `values` or `metrics` or `temp_data` do not exist, the following call will be performed:
+    >>> save_results('values', 'metrics', misc='temp_data')
+    """
     outputs = paths + tuple(keyword_paths.values())
     if not outputs:
         raise ValueError('At least one path must be provided either via positional or keyword arguments.')
@@ -15,7 +24,6 @@ def if_missing(func: Callable, *paths: str, **keyword_paths: str):
     print(f'\n>>> Running command to generate outputs: {", ".join(outputs)}\n', flush=True)
 
     try:
-        # TODO: add lock?
         func(*paths, **keyword_paths)
     except BaseException as e:
         list(map(shutil.rmtree, filter(os.path.exists, outputs)))

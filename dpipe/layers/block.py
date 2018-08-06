@@ -10,6 +10,7 @@ def identity(x):
     return x
 
 
+# TODO: This is like top notch bad
 def infer_activation(activation, get_activation):
     assert (activation is None) ^ (get_activation is None), 'Have to provide either activation or get_activation.'
     return activation if get_activation is None else get_activation()

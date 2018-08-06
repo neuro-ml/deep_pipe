@@ -2,11 +2,10 @@
 
 import functools
 from itertools import chain
-from typing import List, Sequence, Callable, Iterable
+from typing import Sequence, Callable, Iterable
 from collections import ChainMap, namedtuple
 
 import numpy as np
-from numpy import deprecate
 
 import dpipe.medim as medim
 from .base import Dataset, SegmentationDataset
@@ -187,57 +186,6 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
     return Merged(*chain(map(decorator, methods), [ids, n_chans_image]))
 
 
-# TODO: deprecated
-# Deprecated
-# ----------
-
-@deprecate
-def add_groups_from_df(dataset: Dataset, group_col: str) -> Dataset:
-    class GroupedFromMetadata(Proxy):
-        @property
-        def groups(self):
-            return self._shadowed.df[group_col].as_matrix()
-
-    return GroupedFromMetadata(dataset)
-
-
-@deprecate
-def add_groups_from_ids(dataset: Dataset, separator: str) -> Dataset:
-    roots = [pi.split(separator)[0] for pi in dataset.ids]
-    root2group = dict(map(lambda x: (x[1], x[0]), enumerate(set(roots))))
-    groups = tuple(root2group[pi.split(separator)[0]] for pi in dataset.ids)
-
-    class GroupsFromIDs(Proxy):
-        @property
-        def groups(self):
-            return groups
-
-    return GroupsFromIDs(dataset)
-
-
-@deprecate
-def merge_datasets(datasets: List[SegmentationDataset]) -> SegmentationDataset:
-    assert all(dataset.n_chans_image == datasets[0].n_chans_image for dataset in datasets)
-
-    patient_id2dataset = ChainMap(*({pi: dataset for pi in dataset.ids} for dataset in datasets))
-
-    ids = sorted(list(patient_id2dataset.keys()))
-
-    class MergedDataset(Proxy):
-        @property
-        def ids(self):
-            return ids
-
-        def load_image(self, patient_id):
-            return patient_id2dataset[patient_id].load_image(patient_id)
-
-        def load_segm(self, patient_id):
-            return patient_id2dataset[patient_id].load_segm(patient_id)
-
-    return MergedDataset(datasets[0])
-
-
-@deprecate
 def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,
                mask_value: int = None) -> SegmentationDataset:
     class MaskedDataset(Proxy):

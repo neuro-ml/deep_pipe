@@ -4,7 +4,7 @@ from typing import Union, Sequence
 import numpy as np
 
 from .box import get_boxes_grid
-from .utils import build_slices, pad, squeeze_first
+from .utils import build_slices, pad
 
 
 def compute_n_parts_per_axis(x_shape, patch_size):
@@ -106,12 +106,3 @@ def grid_patch(x: np.ndarray, patch_size: Union[int, Sequence[int]], stride: Uni
         the stride (step-size) of the slice
     """
     return x[build_slices(*get_boxes_grid(x.shape, patch_size, stride=stride, axes=axes))]
-
-
-# Deprecated
-# ----------
-
-
-@np.deprecate
-def get_grid_patch_start_stop(shape, kernel_size, spatial_dims=None, stride=None):
-    return get_boxes_grid(shape, kernel_size, stride=stride, axes=spatial_dims)

@@ -6,7 +6,6 @@ import numpy as np
 from .checks import check_len
 from .box import limit_box, get_box_padding, broadcast_spatial_box, get_random_box
 from .utils import build_slices, pad, squeeze_first
-from .shape_utils import shape_after_convolution, get_axes
 
 
 def extract_patch(x: np.ndarray, *, box: np.array, padding_values=None) -> np.array:
@@ -42,20 +41,3 @@ def sample_box_center_uniformly(shape, box_size: np.array):
 def get_random_patch(*arrays: np.ndarray, patch_size, axes=None):
     slc = (..., *build_slices(*get_random_box(arrays[0].shape, patch_size, axes)))
     return squeeze_first(tuple(arr[slc] for arr in arrays))
-
-
-# Deprecated
-# ----------
-
-
-@np.deprecate
-def get_random_patch_start_stop(shape, patch_size, spatial_dims=None):
-    spatial_dims = get_axes(spatial_dims, len(patch_size))
-
-    start = np.zeros_like(shape)
-    stop = np.array(shape)
-    spatial = shape_after_convolution(stop[spatial_dims], patch_size)
-    start[spatial_dims] = list(map(np.random.randint, spatial))
-    stop[spatial_dims] = start[spatial_dims] + patch_size
-
-    return start, stop

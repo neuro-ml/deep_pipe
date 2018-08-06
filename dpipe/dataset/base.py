@@ -15,8 +15,8 @@ class ABCAttributesMeta(ABCMeta):
         initialize = cls.__init__
 
         @wraps(initialize)
-        def __init__(self, *args, **kwargs):
-            return_value = initialize(self, *args, **kwargs)
+        def __init__(self, *args_, **kwargs_):
+            return_value = initialize(self, *args_, **kwargs_)
 
             missing = []
             for name in dir(self):

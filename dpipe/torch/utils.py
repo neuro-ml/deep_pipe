@@ -2,7 +2,6 @@ from abc import ABCMeta
 
 from torch.nn import functional
 from torch.autograd import Variable
-from torch.nn.modules.loss import _Loss
 
 from dpipe.layers import *
 
@@ -38,19 +37,3 @@ class NormalizedSoftmaxCrossEntropy(Eye):
         weight = flat_target.size()[0] / count
 
         return softmax_cross_entropy(logits, target, weight=weight)
-
-
-# Deprecated
-# ----------
-
-
-class LinearFocalLoss(_Loss):
-    def __init__(self, gamma, beta, size_average=True):
-        super().__init__(size_average)
-        self.beta = beta
-        self.gamma = gamma
-
-    def forward(self, logits, target):
-        return functional.binary_cross_entropy_with_logits(
-            self.gamma * logits + self.beta, target, size_average=self.size_average
-        ) / self.gamma

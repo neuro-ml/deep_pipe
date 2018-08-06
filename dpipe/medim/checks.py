@@ -1,10 +1,10 @@
 from functools import wraps, partial
 
 
-def check_len(*arrays):
-    length = len(arrays[0])
-    for i, a in enumerate(arrays):
-        assert length == len(a), f'Different len: {arrays}'
+def check_len(*args):
+    lengths = list(map(len, args))
+    if not all(length == lengths[0] for length in lengths):
+        raise ValueError(f'Arguments of equal length are required: {", ".join(map(str, lengths))}')
 
 
 def check_bool(*arrays):
@@ -31,3 +31,4 @@ def add_check_function(func, check_function):
 
 add_check_bool = partial(add_check_function, check_function=check_bool)
 add_check_shapes = partial(add_check_function, check_function=check_shapes)
+add_check_len = partial(add_check_function, check_function=check_len)

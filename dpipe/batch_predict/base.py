@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Callable, Iterable
+from typing import Callable
 
 import numpy as np
 
