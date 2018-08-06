@@ -1,8 +1,12 @@
-dpipe\.experiment package
-=========================
+Experiment builders
+===================
 
-Subpackages
------------
+
+.. automodule:: dpipe.experiment
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 .. toctree::
 

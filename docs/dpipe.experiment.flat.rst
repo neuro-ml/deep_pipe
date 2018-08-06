@@ -1,22 +1,16 @@
-dpipe\.experiment\.flat package
-===============================
+Flat Experiment
+===============
 
-Submodules
-----------
-
-dpipe\.experiment\.flat\.base module
-------------------------------------
-
-.. automodule:: dpipe.experiment.flat.base
+.. automodule:: dpipe.experiment.flat
     :members:
     :undoc-members:
     :show-inheritance:
 
 
-Module contents
----------------
+dpipe.experiment.flat.base module
+---------------------------------
 
-.. automodule:: dpipe.experiment.flat
+.. automodule:: dpipe.experiment.flat.base
     :members:
     :undoc-members:
     :show-inheritance:

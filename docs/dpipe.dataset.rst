@@ -1,56 +1,46 @@
-Datasets
-========
+Dataset
+=======
 
-Interfaces
-----------
+.. automodule:: dpipe.dataset
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+dpipe.dataset.base module
+-------------------------
 
 .. automodule:: dpipe.dataset.base
     :members:
     :undoc-members:
     :show-inheritance:
 
-CSV-wrappers
-------------
+dpipe.dataset.csv module
+------------------------
 
 .. automodule:: dpipe.dataset.csv
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-Datasets for segmentation
+dpipe.dataset.path module
 -------------------------
+
+.. automodule:: dpipe.dataset.path
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe.dataset.segmentation module
+---------------------------------
+
 .. automodule:: dpipe.dataset.segmentation
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-Interface realizations
-----------------------
-
-.. automodule:: dpipe.dataset.brats
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: dpipe.dataset.isles
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: dpipe.dataset.oasis
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: dpipe.dataset.whitematter
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Wrappers
---------
+dpipe.dataset.wrappers module
+-----------------------------
 
 .. automodule:: dpipe.dataset.wrappers
     :members:
