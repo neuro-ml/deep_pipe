@@ -46,8 +46,7 @@ class TestPatch3DPredictor(unittest.TestCase):
 
                 x = np.random.randn(*self.x_shape)
                 y = x[0] if y_ndim == 3 else x
-                y_pred, loss = predictor.validate(x, y,
-                                                  validate_fn=model.validate)
+                y_pred, loss = predictor.validate(x, y, validate_fn=model.validate)
                 np.testing.assert_equal(y_pred, y)
                 self.assertEqual(1, loss)
 

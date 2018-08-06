@@ -1,12 +1,24 @@
 import numpy as np
 
+from .checks import check_len
+
 
 def compute_shape_from_spatial(complete_shape, spatial_shape, spatial_dims):
-    if spatial_dims is None:
-        spatial_dims = range(-len(spatial_shape), 0)
+    check_len(spatial_shape, spatial_dims)
     shape = np.array(complete_shape)
     shape[list(spatial_dims)] = spatial_shape
     return tuple(shape)
+
+
+def fill_remaining_axes(reference, values_along_axes, axes):
+    """Replace the values in `reference` located at `axes` by the ones from `values_along_axes`."""
+    reference = np.array(reference)
+    values_along_axes = np.atleast_1d(values_along_axes)
+    axes = get_axes(axes, len(values_along_axes))
+
+    assert len(values_along_axes) == len(axes) or len(values_along_axes) == 1, f'{values_along_axes}, {axes}'
+    reference[axes] = values_along_axes
+    return tuple(reference)
 
 
 def broadcast_shape_nd(shape, n):
@@ -26,38 +38,36 @@ def broadcast_shape(x_shape, y_shape):
         if i == j or i == 1 or j == 1:
             shape.append(max(i, j))
         else:
-            raise ValueError('shapes are not broadcastable:\n'
-                             f'{x_shape};{y_shape}')
+            raise ValueError(f'shapes are not broadcastable: {x_shape} {y_shape}')
     return tuple(reversed(shape))
 
 
-def shape_after_convolution(shape, kernel_size, padding=0, stride=1, dilation=1) -> tuple:
+def get_axes(axes, ndim):
+    if axes is None:
+        axes = list(range(-ndim, 0))
+    return list(np.atleast_1d(axes))
+
+
+def shape_after_convolution(shape, kernel_size, stride=1, padding=0, dilation=1) -> tuple:
+    """Get the shape of a tensor after applying a convolution with corresponding parameters."""
+    padding, shape, dilation, kernel_size = map(np.asarray, [padding, shape, dilation, kernel_size])
+    # TODO: add ceil_mode?
+
+    result = (shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1
+    new_shape = tuple(np.floor(result).astype(int))
+    if (result < 1).any():
+        raise ValueError(f'Such a convolution is not possible. Output shape: {new_shape}.')
+    return new_shape
+
+
+def shape_after_full_convolution(shape, kernel_size, axes=None, stride=1, padding=0, dilation=1) -> tuple:
     """
-    Get the shape of a tensor after applying a the convolution with
-    corresponding parameters.
-
-    Parameters
-    ----------
-    shape
-        input shape
-    kernel_size
-        convolution kernel size
-    padding
-        padding sizes
-    stride
-        stride of the convolution
-    dilation
-        dilation of the convolution kernel
-
-    Returns
-    -------
-    output_shape: tuple
+    Get the shape of a tensor after applying a convolution with corresponding parameters along the given axes.
+    The dimensions along the remaining axes will become singleton.
     """
-    padding = np.asarray(padding)
-    shape = np.asarray(shape)
-    dilation = np.asarray(dilation)
-    kernel_size = np.asarray(kernel_size)
+    axes = get_axes(axes, max(map(len, np.atleast_1d(kernel_size, stride, padding, dilation))))
 
-    # TODO: raise if division is not even
-    result = np.floor((shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1)
-    return tuple(result.astype(int))
+    return fill_remaining_axes(
+        np.ones_like(shape),
+        shape_after_convolution(np.array(shape)[axes], kernel_size, stride, padding, dilation), axes
+    )

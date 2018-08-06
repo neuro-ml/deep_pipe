@@ -1,10 +1,10 @@
 from itertools import product
+from typing import Union, Sequence
 
 import numpy as np
 
-from .shape_utils import shape_after_convolution
-from .utils import get_axes, build_slices
-from .patch import pad
+from .box import get_boxes_grid
+from .utils import build_slices, pad
 
 
 def compute_n_parts_per_axis(x_shape, patch_size):
@@ -72,68 +72,37 @@ def combine(x_parts, x_shape):
     return x
 
 
-def get_grid_patch_start_stop(shape, kernel_size, spatial_dims=None, stride=None):
+def grid_patches(*arrays: np.ndarray, patch_size: Union[int, Sequence[int]], stride: Union[int, Sequence[int]] = None,
+                 axes: Union[int, Sequence[int]] = None) -> np.ndarray:
     """
-    A convolution-like approach to generating slices from a tensor.
+    A convolution-like approach to generating patches from a sequence of tensors.
 
     Parameters
     ----------
-    shape
-        the input tensor's shape
-    kernel_size
-    spatial_dims
+    arrays: np.ndarray
+    patch_size
+    axes
         dimensions along which the slices will be taken
     stride
-        the stride (step-size) of the slice. If None, the stride is assumed
-        to be equal to kernel_size.
-
-    Yields
-    ------
-    start,stop: tuple
-        coordinates of a slice's start and stop
+        the stride (step-size) of the slice
     """
-    # TODO: simplify logic
-    spatial_dims = get_axes(spatial_dims, len(kernel_size))
-    if stride is None:
-        stride = kernel_size
-
-    final_shape = np.array(shape).copy()
-    spatial_shape = final_shape[spatial_dims]
-    final_shape[:] = 1
-    final_shape[spatial_dims] = shape_after_convolution(spatial_shape, kernel_size, stride=stride)
-
-    whole_patch = np.array(shape).copy()
-    whole_patch[spatial_dims] = kernel_size
-
-    for i in np.ndindex(*final_shape):
-        i = np.asarray(i)
-        i[spatial_dims] *= stride
-        yield tuple(i), tuple(i + whole_patch)
+    for box in get_boxes_grid(arrays[0].shape, patch_size, stride=stride, axes=axes):
+        slc = (..., *build_slices(*box))
+        yield tuple(array[slc] for array in arrays)
 
 
-def divide_grid_patch(x, patch_size, spatial_dims=None, stride=None, padding=0) -> np.ndarray:
+def grid_patch(x: np.ndarray, patch_size: Union[int, Sequence[int]], stride: Union[int, Sequence[int]] = None,
+               axes: Union[int, Sequence[int]] = None) -> np.ndarray:
     """
     A convolution-like approach to generating patches from a tensor.
 
     Parameters
     ----------
-    x: np.array
-        the input tensor
+    x: np.ndarray
     patch_size
-    spatial_dims
+    axes
         dimensions along which the slices will be taken
     stride
         the stride (step-size) of the slice
-    padding
-        padding sizes of the input tensor
-
-    Yields
-    ------
-    x_patch: np.ndarray
-        patches from the input tensor
     """
-    if padding:
-        x = np.pad(x, pad_width=padding, mode='constant')
-
-    for start, stop in get_grid_patch_start_stop(x.shape, patch_size, spatial_dims, stride):
-        yield x[build_slices(start, stop)]
+    return x[build_slices(*get_boxes_grid(x.shape, patch_size, stride=stride, axes=axes))]

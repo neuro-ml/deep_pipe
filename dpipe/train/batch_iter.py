@@ -1,8 +1,14 @@
 from abc import abstractmethod, ABC
 from itertools import islice
 from contextlib import contextmanager
+from typing import Iterable, Callable, Union
 
-__all__ = ['BatchIter', 'make_batch_iter_from_finite', 'make_batch_iter_from_infinite']
+import pdp
+
+from dpipe.batch_iter.blocks import make_batch_blocks
+
+__all__ = ['BatchIter', 'make_batch_iter_from_finite', 'make_batch_iter_from_infinite', 'make_infinite_batch_iter',
+           'wrap_infinite_pipeline']
 
 
 @contextmanager
@@ -64,6 +70,8 @@ class BatchIterRepeater(BatchIter):
             result = self.batch_iter.__exit__(exc_type, exc_val, exc_tb)
             self.batch_iter = None
             return result
+        else:
+            return False
 
 
 class BatchIterSlicer(BatchIter):
@@ -76,6 +84,7 @@ class BatchIterSlicer(BatchIter):
 
     def __enter__(self):
         self.infinite_batch_iter.__enter__()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         return self.infinite_batch_iter.__exit__(exc_type, exc_val, exc_tb)
@@ -87,3 +96,22 @@ def make_batch_iter_from_finite(get_batch_iter):
 
 def make_batch_iter_from_infinite(get_batch_iter, n_iters_per_epoch):
     return BatchIterSlicer(get_batch_iter, n_iters_per_epoch)
+
+
+def make_infinite_batch_iter(source, *transformers, batch_size, n_iters_per_epoch, buffer_size=10):
+    def pipeline():
+        return pdp.Pipeline(source, *transformers, *make_batch_blocks(batch_size=batch_size, buffer_size=buffer_size))
+
+    return make_batch_iter_from_infinite(pipeline, n_iters_per_epoch)
+
+
+def wrap_infinite_pipeline(source: Union[Iterable, pdp.Source], *transformers: Union[Callable, pdp.One2One],
+                           batch_size: int, n_iters_per_epoch: int, buffer_size: int = 3):
+    def wrap(o, t):
+        if not isinstance(o, t):
+            o = t(o, buffer_size=buffer_size)
+        return o
+
+    return make_infinite_batch_iter(
+        wrap(source, pdp.Source), *(wrap(transformer, pdp.One2One) for transformer in transformers),
+        batch_size=batch_size, n_iters_per_epoch=n_iters_per_epoch)

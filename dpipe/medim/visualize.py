@@ -6,7 +6,7 @@ from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmen
 
 
 def slice3d(*data: np.ndarray, axis: int = -1, figsize: int = 5, max_columns: int = None,
-            colorbar: bool = False, show_axes: bool = True, cmap: str = None, vlim=(None, None)):
+            colorbar: bool = False, show_axes: bool = False, cmap: str = None, vlim=(None, None)):
     """
     Creates an interactive plot, simultaneously showing slices along a given
     axis for all the passed images.

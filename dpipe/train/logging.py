@@ -1,5 +1,9 @@
+from typing import List
+
 import tensorboard_easy
 import numpy as np
+
+from dpipe.medim.utils import zip_equal
 
 
 def log_vector(logger: tensorboard_easy.Logger, tag: str, vector, step: int):
@@ -37,6 +41,15 @@ class Logger:
         pass
 
 
+class ConsoleLogger(Logger):
+    def train(self, train_losses, step):
+        print(f'{step:>05}: train loss: {train_losses.mean()}', flush=True)
+
+    def metrics(self, metrics, step):
+        for metric in metrics:
+            print(f'{step:>05}: {metric} = {metrics[metric]}')
+
+
 class TBLogger(Logger):
     def __init__(self, log_path):
         self.logger = tensorboard_easy.Logger(log_path)
@@ -48,7 +61,8 @@ class TBLogger(Logger):
         log_scalar_or_vector(self.logger, 'train/lr', lr, step)
 
     def validation(self, val_losses, step):
-        log_scalar_or_vector(self.logger, 'val/loss', np.mean(val_losses, axis=0), step)
+        if val_losses:
+            log_scalar_or_vector(self.logger, 'val/loss', np.mean(val_losses, axis=0), step)
 
     def metrics(self, metrics, step):
         for name, value in metrics.items():
@@ -56,3 +70,20 @@ class TBLogger(Logger):
 
     def __getattr__(self, item):
         return getattr(self.logger, item)
+
+
+class NamedTBLogger(TBLogger):
+    def __init__(self, log_path, loss_names: List[str]):
+        super().__init__(log_path)
+        self.task_names = loss_names
+
+    def train(self, train_losses, step):
+        values = np.mean(train_losses, axis=0)
+        for name, value in zip_equal(self.task_names, values):
+            self.logger.log_scalar(f'train/loss/{name}', value, step)
+
+    def validation(self, val_losses, step):
+        if val_losses:
+            values = np.mean(val_losses, axis=0)
+            for name, value in zip_equal(self.task_names, values):
+                self.logger.log_scalar(f'val/loss/{name}', value, step)

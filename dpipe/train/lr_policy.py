@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Callable
 
 import numpy as np
 
@@ -38,7 +38,7 @@ class Decreasing(LearningRatePolicy):
 
 
 class Exponential(LearningRatePolicy):
-    def __init__(self, lr_init, multiplier, step_length=1, floordiv=True):
+    def __init__(self, lr_init: float, multiplier: float, step_length: int = 1, floordiv: bool = True):
         super().__init__(lr_init)
         self.multiplier = multiplier
         self.initial = lr_init
@@ -54,7 +54,7 @@ class Exponential(LearningRatePolicy):
 
 
 class Schedule(LearningRatePolicy):
-    def __init__(self, lr_init, epoch2lr_dec_mul):
+    def __init__(self, lr_init: float, epoch2lr_dec_mul: dict):
         super().__init__(lr_init)
         self.epoch2lr_dec_mul = epoch2lr_dec_mul
 
@@ -63,9 +63,22 @@ class Schedule(LearningRatePolicy):
         if self.epoch in self.epoch2lr_dec_mul:
             self.lr *= self.epoch2lr_dec_mul[self.epoch]
 
+    @classmethod
+    def constant_multiplier(cls, lr_init: float, multiplier: float, epochs: Sequence):
+        return cls(lr_init, dict(zip(epochs, [multiplier] * len(epochs))))
+
 
 class LambdaEpoch(LearningRatePolicy):
-    def __init__(self, func):
+    """
+    Use the passed function to calculate the learning rate for the next epoch.
+
+    Parameters
+    ----------
+    func: Callable(int) -> float
+        get the learning rate for the next epoch
+    """
+
+    def __init__(self, func: Callable[[int], float]):
         super().__init__(func(0))
         self.func = func
 

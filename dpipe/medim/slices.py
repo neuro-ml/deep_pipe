@@ -9,7 +9,10 @@ def iterate_slices(*data: np.ndarray, axis: int = -1):
         raise ValueError('All the tensors must have the same size along the given axis')
 
     for idx in range(size):
-        result = tuple(x.take(idx, axis=axis) for x in data)
-        if len(result) == 1:
-            result = result[0]
-        yield result
+        yield tuple(x.take(idx, axis=axis) for x in data)
+
+
+def iterate_axis(x: np.ndarray, axis: int):
+    assert axis < x.ndim
+    for i in range(x.shape[axis]):
+        yield x.take(i, axis=axis)

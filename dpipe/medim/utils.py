@@ -1,7 +1,10 @@
-from collections import Sized
-from typing import Sequence
+from contextlib import suppress
+from functools import wraps
+from typing import Sized, Sequence, Iterable, Callable, Union
 
 import numpy as np
+
+from .checks import add_check_len
 
 
 def decode_segmentation(x, segm_decoding_matrix) -> np.array:
@@ -9,15 +12,9 @@ def decode_segmentation(x, segm_decoding_matrix) -> np.array:
     return np.rollaxis(segm_decoding_matrix[x], -1)
 
 
+@add_check_len
 def build_slices(start, stop):
-    assert len(start) == len(stop)
     return tuple(map(slice, start, stop))
-
-
-def get_axes(axes, ndim):
-    if axes is None:
-        axes = range(-ndim, 0)
-    return list(sorted(axes))
 
 
 def scale(x):
@@ -34,12 +31,6 @@ def load_image(path: str):
     Load an image located at `path`.
     The following extensions are supported:
         npy, tif, hdr, img, nii, nii.gz
-
-    Parameters
-    ----------
-    path: str
-        Path to the image.
-
     """
     if path.endswith('.npy'):
         return np.load(path)
@@ -53,17 +44,16 @@ def load_image(path: str):
     if path.endswith(('.png', '.jpg')):
         from imageio import imread
         return imread(path)
-    raise ValueError(f"Couldn't read image from path: {path}.\n"
-                     "Unknown file extension.")
+    raise ValueError(f"Couldn't read image from path: {path}.\nUnknown file extension.")
 
 
-def load_by_ids(*loaders, ids: Sequence, shuffle: bool = False):
+def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
     """
-    Yields pairs of objects given their loaders and ids
+    Yields tuples of objects given their loaders and ids.
 
     Parameters
     ----------
-    loaders: List[callable(id)]
+    loaders: Callable(id)
         Loaders for x and y
     ids: Sequence
         a sequence of ids to load
@@ -73,15 +63,87 @@ def load_by_ids(*loaders, ids: Sequence, shuffle: bool = False):
     if shuffle:
         ids = np.random.permutation(ids)
     for identifier in ids:
-        result = tuple(loader(identifier) for loader in loaders)
-        if len(result) == 1:
-            result = result[0]
-        yield result
+        yield squeeze_first(tuple(loader(identifier) for loader in loaders))
 
 
-def zip_equal(*args: Sized):
-    # TODO: generalize to not sized
-    if not all(len(x) == len(args[0]) for x in args):
-        raise ValueError('All the iterables must have the same size')
+def pam(functions: Iterable[Callable], *args, **kwargs):
+    """Inverse of `map`. Apply a sequence of callables to fixed arguments."""
+    for f in functions:
+        yield f(*args, **kwargs)
 
-    return zip(*args)
+
+def zip_equal(*args: Union[Sized, Iterable]):
+    """zip over the given iterables, but enforce that all of them exhaust simultaneously."""
+    if not args:
+        return
+
+    lengths = []
+    all_lengths = []
+    for arg in args:
+        try:
+            lengths.append(len(arg))
+            all_lengths.append(len(arg))
+        except TypeError:
+            all_lengths.append('?')
+
+    if lengths and not all(x == lengths[0] for x in lengths):
+        raise ValueError(f'The arguments have different lengths: {", ".join(map(str, all_lengths))}.')
+
+    iterables = [iter(arg) for arg in args]
+    while True:
+        result = []
+        for it in iterables:
+            with suppress(StopIteration):
+                result.append(next(it))
+
+        if len(result) != len(args):
+            break
+        yield tuple(result)
+
+    if len(result) != 0:
+        raise ValueError(f'The iterables did not exhaust simultaneously.')
+
+
+@wraps(map)
+def lmap(func, *iterables, **kwarg_iterables):
+    return list(map(func, *iterables, **kwarg_iterables))
+
+
+def squeeze_first(inputs):
+    """Remove the first dimension in case it is singleton."""
+    if len(inputs) == 1:
+        inputs = inputs[0]
+    return inputs
+
+
+def flatten(iterable: Iterable, iterable_types: tuple = None) -> list:
+    if iterable_types is None:
+        iterable_types = type(iterable)
+    result = []
+    for value in iterable:
+        if isinstance(value, iterable_types):
+            result.extend(flatten(value, iterable_types))
+        else:
+            result.append(value)
+    return result
+
+
+def pad(x, padding, padding_values):
+    padding = np.broadcast_to(padding, [x.ndim, 2])
+
+    new_shape = np.array(x.shape) + np.sum(padding, axis=1)
+    new_x = np.zeros(new_shape, dtype=x.dtype)
+    new_x[:] = padding_values
+
+    start = padding[:, 0]
+    end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
+    new_x[build_slices(start, end)] = x
+    return new_x
+
+
+def add_first_dim(x):
+    return x[None]
+
+
+# Legacy
+add_batch_dim = np.deprecate(add_first_dim, old_name='add_batch_dim', new_name='add_first_dim')

@@ -1,13 +1,42 @@
-from abc import abstractmethod, ABC
+from abc import abstractmethod, ABCMeta
+from functools import wraps
+from typing import Tuple
 
 import numpy as np
 
 
-class Dataset(ABC):
-    @property
-    @abstractmethod
-    def ids(self):
-        """Returns a tuple of ids of all objects in the dataset."""
+class AbstractAttribute:
+    pass
+
+
+class ABCAttributesMeta(ABCMeta):
+    def __new__(mcs, *args, **kwargs):
+        cls = super().__new__(mcs, *args, **kwargs)
+        initialize = cls.__init__
+
+        @wraps(initialize)
+        def __init__(self, *args_, **kwargs_):
+            return_value = initialize(self, *args_, **kwargs_)
+
+            missing = []
+            for name in dir(self):
+                value = getattr(self, name)
+                if isinstance(value, AbstractAttribute) or value is AbstractAttribute:
+                    missing.append(name)
+            if missing:
+                raise AttributeError(f'Class "{cls.__name__}" requires the following attributes '
+                                     f'which are not defined during init: {", ".join(missing)}.')
+            return return_value
+
+        cls.__init__ = __init__
+        return cls
+
+
+class Dataset(metaclass=ABCAttributesMeta):
+    """Interface for datasets containing images."""
+
+    ids: Tuple[str] = AbstractAttribute
+    n_chans_image: int = AbstractAttribute
 
     @abstractmethod
     def load_image(self, identifier: str) -> np.ndarray:
@@ -23,17 +52,6 @@ class Dataset(ABC):
         -------
         object:
             The entry corresponding to the identifier
-        """
-
-    @property
-    @abstractmethod
-    def n_chans_image(self) -> int:
-        """
-        The number of channels in the input image's tensor
-
-        Returns
-        -------
-        channels: int
         """
 
 
@@ -57,68 +75,10 @@ class SegmentationDataset(Dataset):
         """
 
 
-class IntSegmentationDataset(Dataset):
-    """Abstract class that describes a dataset for medical image segmentation with int values in segmentation."""
-
-    @abstractmethod
-    def load_segm(self, identifier: str) -> np.ndarray:
-        """
-        Load the ground truth segmentation
-
-        Parameters
-        ----------
-        identifier: str
-            the object's identifier
-
-        Returns
-        -------
-        segmentation: integer tensor
-            the ground truth segmentation as an integer tensor.
-            Each value must correspond to a class.
-        """
-
-    @abstractmethod
-    def load_msegm(self, identifier: str) -> np.ndarray:
-        """
-        Load the multimodal ground truth segmentation
-
-        Parameters
-        ----------
-        identifier: str
-            the object's identifier
-
-        Returns
-        -------
-        segmentation: bool tensor
-            the ground truth segmentation as a bool tensor.
-            Each channel must correspond to a class.
-        """
-
-    @property
-    @abstractmethod
-    def n_chans_segm(self) -> int:
-        """
-        The number of channels in the segmentation tensor
-
-        Returns
-        -------
-        channels: int
-        """
-
-    @property
-    @abstractmethod
-    def n_chans_msegm(self) -> int:
-        """
-        The number of channels in the multimodal segmentation tensor
-
-        Returns
-        -------
-        channels: int
-        """
-
-
 class ClassificationDataset(Dataset):
     """Abstract class that describes a dataset for classification."""
+
+    n_classes: int = AbstractAttribute
 
     @abstractmethod
     def load_label(self, identifier: str) -> int:
@@ -134,14 +94,4 @@ class ClassificationDataset(Dataset):
         -------
         label: int
             The entry's label corresponding to the identifier
-        """
-
-    @property
-    @abstractmethod
-    def n_classes(self) -> int:
-        """
-        Returns
-        -------
-        num_classes: int
-            the number of unique classes present in the dataset
         """

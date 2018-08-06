@@ -5,43 +5,57 @@ Basic input-output operations. Useful inside config-files.
 import argparse
 import json
 import re
+import os
+
+import numpy as np
 
 
-def load_json(path: str):
+def load_pred(identifier, predictions_path):
     """
-    Loads the contents of a json file.
+    Loads the prediction numpy tensor with specified id.
 
     Parameters
     ----------
-    path: str
-        path to the file
+    identifier: int
+        id to load
+    predictions_path: str
+        path where to load prediction from
 
     Returns
     -------
-    json_type
+    prediction: numpy.float32
     """
+    return np.float32(np.load(os.path.join(predictions_path, f'{identifier}.npy')))
+
+
+def load_json(path: str):
+    """Load the contents of a json file."""
     with open(path, 'r') as f:
         return json.load(f)
 
 
-console_argument = re.compile(r'^--[^\d\W]\w*$')
+def dump_json(value, path: str, *, indent: int = None):
+    """Dump a json-serializable object to a json file."""
+    with open(path, 'w') as f:
+        return json.dump(value, f, indent=indent)
+
+
+CONSOLE_ARGUMENT = re.compile(r'^--[^\d\W]\w*$')
 
 
 class ConsoleArguments:
-    """
-    A class that simplifies the access to console arguments.
-    """
+    """A class that simplifies the access to console arguments."""
 
     def __init__(self):
         parser = argparse.ArgumentParser()
         args = parser.parse_known_args()[1]
         # allow for positional arguments:
-        while args and not console_argument.match(args[0]):
+        while args and not CONSOLE_ARGUMENT.match(args[0]):
             args = args[1:]
 
         self.args = {}
         for arg, value in zip(args[::2], args[1::2]):
-            if not console_argument.match(arg):
+            if not CONSOLE_ARGUMENT.match(arg):
                 raise ValueError(f'Invalid console argument: {arg}')
             arg = arg[2:]
             try:
@@ -89,7 +103,6 @@ class ConsoleArguments:
         >>> x = console(data_path='/some/default/path')
         """
         if len(kwargs) != 1:
-            raise ValueError(f'This method takes exactly one argument, '
-                             f'but {len(kwargs)} were passed.')
+            raise ValueError(f'This method takes exactly one argument, but {len(kwargs)} were passed.')
         name = list(kwargs.keys())[0]
         return self.args.get(name, kwargs[name])

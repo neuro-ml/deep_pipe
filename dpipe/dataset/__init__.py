@@ -1,1 +1,2 @@
-from .base import Dataset, IntSegmentationDataset
+from .base import Dataset
+from .csv import CSV
