@@ -1,6 +1,8 @@
+import os
 from contextlib import suppress
 from functools import wraps
 from typing import Sized, Sequence, Iterable, Callable, Union
+import inspect
 
 import numpy as np
 
@@ -24,6 +26,45 @@ def scale(x):
 
 def bytescale(x):
     return np.uint8(np.round(255 * scale(x)))
+
+
+def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable):
+    """
+    Cache a function to disk.
+
+    Parameters
+    ----------
+    func: Callable
+    path: str
+        the root folder where the function will be cached.
+    load: Callable(path, *args, **kwargs)
+        load the value for `func(*args, **kwargs)`.
+    save: Callable(value, path, *args, **kwargs)
+        save the value for `func(*args, **kwargs)`.
+    """
+
+    signature = inspect.signature(func)
+    os.makedirs(path, exist_ok=True)
+
+    def get_all_args(args, kwargs):
+        bindings = signature.bind(*args, **kwargs)
+        bindings.apply_defaults()
+        return bindings.args, bindings.kwargs
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        args, kwargs = get_all_args(args, kwargs)
+
+        try:
+            return load(path, *args, **kwargs)
+        except FileNotFoundError:
+            pass
+
+        value = func(*args, **kwargs)
+        save(value, path, *args, **kwargs)
+        return value
+
+    return wrapper
 
 
 def load_image(path: str):

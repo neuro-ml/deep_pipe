@@ -1,6 +1,7 @@
 """Wrappers aim to change the dataset's behaviour"""
 
 import functools
+import os
 from itertools import chain
 from typing import Sequence, Callable, Iterable
 from collections import ChainMap, namedtuple
@@ -8,6 +9,7 @@ from collections import ChainMap, namedtuple
 import numpy as np
 
 import dpipe.medim as medim
+from dpipe.medim.utils import cache_to_disk
 from .base import Dataset, SegmentationDataset
 
 
@@ -26,7 +28,7 @@ def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
     Parameters
     ----------
     dataset: Dataset
-    methods: Sequence
+    methods: Sequence[str]
         a sequence of methods names to be cached
     """
     cache = functools.lru_cache(len(dataset.ids))
@@ -34,6 +36,37 @@ def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
     new_methods = {method: staticmethod(cache(getattr(dataset, method))) for method in methods}
     proxy = type('Cached', (Proxy,), new_methods)
     return proxy(dataset)
+
+
+def cache_methods_to_disk(instance, **methods: str) -> Dataset:
+    """
+    Wrapper that caches the ``methods`` to disk.
+
+    Parameters
+    ----------
+    instance
+    methods: str
+         each keyword argument has the form `method_name=path_to_cache`.
+         The methods are assumed to take a single argument of type `str`.
+
+    Notes
+    -----
+    The values are cached and loaded using `np.save` and `np.load` respectively.
+    """
+
+    def path_by_id(path, identifier):
+        return os.path.join(path, f'{identifier}.npy')
+
+    def load(path, identifier):
+        return np.load(path_by_id(path, identifier))
+
+    def save(value, path, identifier):
+        np.save(path_by_id(path, identifier), value)
+
+    new_methods = {method: staticmethod(cache_to_disk(getattr(instance, method), path, load, save))
+                   for method, path in methods.items()}
+    proxy = type('CachedToDisk', (Proxy,), new_methods)
+    return proxy(instance)
 
 
 cache_segmentation_dataset = functools.partial(cache_methods, methods=['load_image', 'load_segm'])
