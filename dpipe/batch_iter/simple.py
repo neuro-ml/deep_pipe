@@ -3,7 +3,7 @@ from typing import Sequence
 import pdp
 
 from dpipe.medim.utils import load_by_ids
-from dpipe.train.batch_iter import make_batch_iter_from_finite
+from dpipe.batch_iter import make_batch_iter_from_finite
 from .blocks import make_batch_blocks
 
 

@@ -3,7 +3,7 @@ from typing import Sequence, Callable
 from dpipe.medim.utils import load_by_ids
 
 
-def evaluate(y_true, y_pred, metrics: dict):
+def evaluate(y_true: Sequence, y_pred: Sequence, metrics: dict):
     """
     Calculates the metrics listed in the `metrics` dict.
 
