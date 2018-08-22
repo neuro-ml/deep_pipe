@@ -72,11 +72,7 @@ def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, re
         targets.append(load_y_true(np_filename2id(filename)))
 
     for name, metric in metrics.items():
-        score = metric(targets, predictions)
-        if isinstance(score, np.ndarray):
-            score = score.tolist()
-
-        dump_json(score, os.path.join(results_path, name + '.json'), indent=0)
+        dump_json(metric(targets, predictions), os.path.join(results_path, name + '.json'), indent=0)
 
 
 def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False):
@@ -91,10 +87,7 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
         y_true = load_y_true(identifier)
 
         for metric_name, metric in metrics.items():
-            score = metric(y_true, y_prob)
-            if isinstance(score, np.ndarray):
-                score = score.tolist()
-            results[metric_name][identifier] = score
+            results[metric_name][identifier] = metric(y_true, y_prob)
 
     for metric_name, result in results.items():
         dump_json(result, os.path.join(results_path, metric_name + '.json'), indent=0)

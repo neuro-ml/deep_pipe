@@ -34,10 +34,19 @@ def load_json(path: str):
         return json.load(f)
 
 
+class NumpyEncoder(json.JSONEncoder):
+    """A json encoder for numpy arrays and scalars."""
+
+    def default(self, o):
+        if isinstance(o, (np.generic, np.ndarray)):
+            return o.tolist()
+        return super().default(o)
+
+
 def dump_json(value, path: str, *, indent: int = None):
     """Dump a json-serializable object to a json file."""
     with open(path, 'w') as f:
-        return json.dump(value, f, indent=indent)
+        return json.dump(value, f, indent=indent, cls=NumpyEncoder)
 
 
 CONSOLE_ARGUMENT = re.compile(r'^--[^\d\W]\w*$')
