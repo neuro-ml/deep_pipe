@@ -1,0 +1,72 @@
+Batch predictors
+================
+
+.. automodule:: dpipe.batch_predict
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+dpipe.batch\_predict.base module
+--------------------------------
+
+.. automodule:: dpipe.batch_predict.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe.batch\_predict.functional module
+--------------------------------------
+
+.. automodule:: dpipe.batch_predict.functional
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe.batch\_predict.patch\_3d module
+-------------------------------------
+
+.. automodule:: dpipe.batch_predict.patch_3d
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe.batch\_predict.patch\_3d\_fixed module
+--------------------------------------------
+
+.. automodule:: dpipe.batch_predict.patch_3d_fixed
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe.batch\_predict.simple module
+----------------------------------
+
+.. automodule:: dpipe.batch_predict.simple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe.batch\_predict.slice module
+---------------------------------
+
+.. automodule:: dpipe.batch_predict.slice
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe.batch\_predict.utils module
+---------------------------------
+
+.. automodule:: dpipe.batch_predict.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe.batch\_predict.x\_shape module
+------------------------------------
+
+.. automodule:: dpipe.batch_predict.x_shape
+    :members:
+    :undoc-members:
+    :show-inheritance:
