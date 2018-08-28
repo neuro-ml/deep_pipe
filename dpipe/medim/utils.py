@@ -1,12 +1,11 @@
 import os
-from contextlib import suppress
-from functools import wraps
-from typing import Sized, Sequence, Iterable, Callable, Union
+from typing import Sequence
 import inspect
 
 import numpy as np
 
 from .checks import add_check_len
+from .itertools import *
 
 
 def decode_segmentation(x, segm_decoding_matrix) -> np.array:
@@ -28,7 +27,7 @@ def bytescale(x):
     return np.uint8(np.round(255 * scale(x)))
 
 
-def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable):
+def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> Callable:
     """
     Cache a function to disk.
 
@@ -42,7 +41,6 @@ def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable):
     save: Callable(value, path, *args, **kwargs)
         save the value for `func(*args, **kwargs)`.
     """
-
     signature = inspect.signature(func)
     os.makedirs(path, exist_ok=True)
 
@@ -95,7 +93,6 @@ def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
     Parameters
     ----------
     loaders: Callable(id)
-        Loaders for x and y
     ids: Sequence
         a sequence of ids to load
     shuffle: bool, optional
@@ -107,66 +104,9 @@ def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
         yield squeeze_first(tuple(loader(identifier) for loader in loaders))
 
 
-def pam(functions: Iterable[Callable], *args, **kwargs):
-    """Inverse of `map`. Apply a sequence of callables to fixed arguments."""
-    for f in functions:
-        yield f(*args, **kwargs)
-
-
-def zip_equal(*args: Union[Sized, Iterable]):
-    """zip over the given iterables, but enforce that all of them exhaust simultaneously."""
-    if not args:
-        return
-
-    lengths = []
-    all_lengths = []
-    for arg in args:
-        try:
-            lengths.append(len(arg))
-            all_lengths.append(len(arg))
-        except TypeError:
-            all_lengths.append('?')
-
-    if lengths and not all(x == lengths[0] for x in lengths):
-        raise ValueError(f'The arguments have different lengths: {", ".join(map(str, all_lengths))}.')
-
-    iterables = [iter(arg) for arg in args]
-    while True:
-        result = []
-        for it in iterables:
-            with suppress(StopIteration):
-                result.append(next(it))
-
-        if len(result) != len(args):
-            break
-        yield tuple(result)
-
-    if len(result) != 0:
-        raise ValueError(f'The iterables did not exhaust simultaneously.')
-
-
-@wraps(map)
-def lmap(func, *iterables, **kwarg_iterables):
-    return list(map(func, *iterables, **kwarg_iterables))
-
-
-def squeeze_first(inputs):
-    """Remove the first dimension in case it is singleton."""
-    if len(inputs) == 1:
-        inputs = inputs[0]
-    return inputs
-
-
-def flatten(iterable: Iterable, iterable_types: tuple = None) -> list:
-    if iterable_types is None:
-        iterable_types = type(iterable)
-    result = []
-    for value in iterable:
-        if isinstance(value, iterable_types):
-            result.extend(flatten(value, iterable_types))
-        else:
-            result.append(value)
-    return result
+def zdict(keys: Iterable, values: Iterable) -> dict:
+    """Create a `dict` from ``keys`` and ``values``."""
+    return dict(zip_equal(keys, values))
 
 
 def pad(x, padding, padding_values):

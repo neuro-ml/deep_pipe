@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from .utils import pad, zip_equal
+from .utils import pad, zip_equal, flatten
 
 
 def get_random_tuple(low, high, size):
@@ -58,3 +58,9 @@ class TestUtils(unittest.TestCase):
                 self.assertEqual(len(list(zip_equal(*args))), 5)
 
         self.assertEqual(len(list(zip_equal())), 0)
+
+    def test_flatten(self):
+        self.assertListEqual(flatten([1, [2, 3], [[4]]]), [1, 2, 3, 4])
+        self.assertListEqual(flatten([1, (2, 3), [[4]]]), [1, (2, 3), 4])
+        self.assertListEqual(flatten([1, (2, 3), [[4]]], iterable_types=(list, tuple)), [1, 2, 3, 4])
+        self.assertListEqual(flatten(1, iterable_types=list), [1])

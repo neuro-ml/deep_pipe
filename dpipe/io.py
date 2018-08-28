@@ -45,8 +45,10 @@ class NumpyEncoder(json.JSONEncoder):
 
 def dump_json(value, path: str, *, indent: int = None):
     """Dump a json-serializable object to a json file."""
+    # TODO: probably should add makedirs here
     with open(path, 'w') as f:
-        return json.dump(value, f, indent=indent, cls=NumpyEncoder)
+        json.dump(value, f, indent=indent, cls=NumpyEncoder)
+        return value
 
 
 CONSOLE_ARGUMENT = re.compile(r'^--[^\d\W]\w*$')
@@ -62,16 +64,11 @@ class ConsoleArguments:
         while args and not CONSOLE_ARGUMENT.match(args[0]):
             args = args[1:]
 
-        self.args = {}
+        self._args = {}
         for arg, value in zip(args[::2], args[1::2]):
             if not CONSOLE_ARGUMENT.match(arg):
                 raise ValueError(f'Invalid console argument: {arg}')
-            arg = arg[2:]
-            try:
-                value = int(value)
-            except ValueError:
-                pass
-            self.args[arg] = value
+            self._args[arg] = arg[2:]
 
     def __getattr__(self, name: str):
         """
@@ -91,9 +88,9 @@ class ConsoleArguments:
         AttributeError
         """
         try:
-            return self.args[name]
+            return self._args[name]
         except KeyError:
-            raise AttributeError(f'Console argument {name} not provided') from None
+            raise AttributeError(f'Console argument {name} not provided.') from None
 
     def __call__(self, **kwargs):
         """
@@ -102,8 +99,7 @@ class ConsoleArguments:
         Parameters
         ----------
         kwargs:
-            contains a single (key: value) pair, where `key` is the argument's name
-            and `value` is its default value
+            contains a single (key: value) pair, where `key` is the argument's name and `value` is its default value.
 
         Examples
         --------
@@ -113,5 +109,5 @@ class ConsoleArguments:
         """
         if len(kwargs) != 1:
             raise ValueError(f'This method takes exactly one argument, but {len(kwargs)} were passed.')
-        name = list(kwargs.keys())[0]
-        return self.args.get(name, kwargs[name])
+        name, value = list(kwargs.items())[0]
+        return self._args.get(name, value)
