@@ -1,8 +1,9 @@
+from typing import Callable
 from functools import partial
 
 import numpy as np
 
-from .base import DivideCombine
+from .base import BatchPredict
 
 
 def add_dims(*data, ndims=1):
@@ -19,14 +20,16 @@ def extract_dims(data, ndims=1):
     return data
 
 
-class AddExtractDims(DivideCombine):
+class AddExtractDims(BatchPredict):
     def __init__(self, ndims=1):
-        super().__init__(partial(add_dims, ndims=ndims + 1), partial(extract_dims, ndims=ndims + 1))
+        self.ndims = ndims
 
+    def validate(self, *inputs, validate_fn: Callable):
+        y_pred, loss = validate_fn(*add_dims(*inputs, ndims=self.ndims))
+        return extract_dims(y_pred, ndims=self.ndims), loss
 
-# class MultiClass(DivideCombine):
-#     def __init__(self):
-#         super().__init__(lambda *xs: [add_dimension(*xs)], np.argmax(extract_dimension(x), axis=0))
+    def predict(self, *inputs, predict_fn):
+        return extract_dims(predict_fn(*add_dims(*inputs, ndims=self.ndims)), ndims=self.ndims)
 
 
 # Deprecated
