@@ -43,27 +43,6 @@ class PatchDividable(BatchPredictorShapeState):
         return slice_spatial_size(y, spatial_size=np.array(x_shape)[list(spatial_dims)], spatial_dims=spatial_dims)
 
 
-class Patch3DDownsampledSegm(BatchPredictorShapeState):
-    def __init__(self, divisor, padding):
-        self.divisor = divisor
-
-    def prepare_data(self, x):
-        spatial_shape = np.array(x.shape)[list(spatial_dims)]
-        return pad_spatial_size(x, spatial_size=spatial_shape + (self.divisor - spatial_shape) % self.divisor,
-                                spatial_dims=spatial_dims)
-
-    def divide_x(self, x):
-        return [[self.prepare_data(x)]]
-
-    def divide_y(self, y):
-        return [self.prepare_data(y)]
-
-    def combine_y(self, y_parts, x_shape):
-        assert len(y_parts) == 1
-        y = y_parts[0]
-        return slice_spatial_size(y, spatial_size=np.array(x_shape)[list(spatial_dims)], spatial_dims=spatial_dims)
-
-
 class Patch3DFixedPredictor(Patch3DPredictor):
     def divide_x(self, x):
         spatial_size = np.array(x.shape)[list(spatial_dims)]

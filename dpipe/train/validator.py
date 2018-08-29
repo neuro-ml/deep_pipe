@@ -51,11 +51,7 @@ def validate(validate_fn: Callable, load_x: Callable, load_y: Callable, ids: Seq
             ys.append(y)
             predictions.append(prediction)
 
-    if metrics:
-        result = evaluate(ys, predictions, metrics)
-    else:
-        result = {}
-    return losses, result
+    return losses, evaluate(ys, predictions, metrics or {})
 
 
 def compute_metrics(predict: Callable, load_x: Callable, load_y: Callable, ids: Sequence[str], metrics: dict):

@@ -1,7 +1,4 @@
-"""
-Contains a few more sophisticated commands
-that are usually accessed via the `do.py` script.
-"""
+"""Contains a few more sophisticated commands that are usually accessed directly inside configs."""
 
 import os
 from collections import defaultdict
