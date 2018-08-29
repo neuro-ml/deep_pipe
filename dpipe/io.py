@@ -68,7 +68,7 @@ class ConsoleArguments:
         for arg, value in zip(args[::2], args[1::2]):
             if not CONSOLE_ARGUMENT.match(arg):
                 raise ValueError(f'Invalid console argument: {arg}')
-            self._args[arg] = arg[2:]
+            self._args[arg[2:]] = value
 
     def __getattr__(self, name: str):
         """
