@@ -80,3 +80,18 @@ class TestShapeAfterConvolution(unittest.TestCase):
         subtest((10, 15, 27, 3), (8, 1, 26, 1), (3, 2), (0, 2))
         subtest((10, 15, 27, 3), (8, 13, 25, 1), 3, (0, 1, 2, 3))
         subtest((10, 15, 27, 3), (1, 13, 1, 1), 3, 1)
+
+
+class TestExpandAxes(unittest.TestCase):
+    def test_exceptions(self):
+        with self.assertRaises(ValueError):
+            expand_axes([1.2, 1, 2, 3], 1)
+
+        with self.assertRaises(ValueError):
+            expand_axes([1, 1, 2, 3], 1)
+
+    def test_none(self):
+        self.assertTupleEqual((-3, -2, -1), expand_axes(None, [1, 2, 3]))
+        self.assertTupleEqual((-2, -1), expand_axes(None, [1, 1]))
+        self.assertTupleEqual((-1,), expand_axes(None, [1]))
+        self.assertTupleEqual((-1,), expand_axes(None, 1))

@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from torch.nn import Module
 
+from dpipe.medim.utils import makedirs_top
 from dpipe.model import Model, FrozenModel, get_model_path
 
 
@@ -26,9 +27,7 @@ def load_model_state(module: torch.nn.Module, path: str, modify_state_fn: Callab
 
 
 def save_model_state(module: torch.nn.Module, path: str):
-    folder = os.path.dirname(path)
-    if folder:
-        os.makedirs(folder, exist_ok=True)
+    makedirs_top(path, exist_ok=True)
     torch.save(module.state_dict(), path)
 
 

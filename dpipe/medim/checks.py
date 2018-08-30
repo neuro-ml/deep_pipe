@@ -8,12 +8,12 @@ def _join(values):
 def check_shape_along_axis(*arrays, axis):
     sizes = [x.shape[axis] for x in arrays]
     if any(x != sizes[0] for x in sizes):
-        raise ValueError(f'All the tensors must have the same size along the given axis: {_join(sizes)}')
+        raise ValueError(f'Arrays of equal size along axis {axis} are required: {_join(sizes)}')
 
 
 def check_len(*args):
     lengths = list(map(len, args))
-    if not all(length == lengths[0] for length in lengths):
+    if any(length != lengths[0] for length in lengths):
         raise ValueError(f'Arguments of equal length are required: {_join(lengths)}')
 
 
@@ -24,7 +24,7 @@ def check_bool(*arrays):
 
 def check_shapes(*arrays):
     shapes = [array.shape for array in arrays]
-    if not all(shape == shapes[0] for shape in shapes):
+    if any(shape != shapes[0] for shape in shapes):
         raise ValueError(f'Arrays of equal shape are required: {_join(shapes)}')
 
 

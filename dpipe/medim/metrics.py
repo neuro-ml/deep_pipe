@@ -44,6 +44,7 @@ def box_iou(a_start_stop, b_start_stop):
 
 
 # TODO: replace by a more general function
+@np.deprecate
 def multichannel_dice_score(a, b) -> [float]:
     """
     Channelwise dice score between two binary masks.
@@ -53,6 +54,7 @@ def multichannel_dice_score(a, b) -> [float]:
     return list(map(dice_score, a, b))
 
 
+@np.deprecate
 def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:
     """
     Calculates the dice score between the true and predicted masks.

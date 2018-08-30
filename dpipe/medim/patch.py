@@ -3,6 +3,7 @@ Tools for patch extraction and generation.
 """
 import numpy as np
 
+from .types import AxesLike
 from .checks import check_len
 from .box import limit_box, get_box_padding, broadcast_spatial_box, get_random_box
 from .utils import build_slices, pad, squeeze_first
@@ -38,6 +39,10 @@ def sample_box_center_uniformly(shape, box_size: np.array):
     return center + box_size // 2
 
 
-def get_random_patch(*arrays: np.ndarray, patch_size, axes=None):
+def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike = None):
+    """
+    Get a random patch of size ``path_size`` along the ``axes`` for each of the ``arrays``.
+    The patch position is equal for all the arrays.
+    """
     slc = (..., *build_slices(*get_random_box(arrays[0].shape, patch_size, axes)))
     return squeeze_first(tuple(arr[slc] for arr in arrays))

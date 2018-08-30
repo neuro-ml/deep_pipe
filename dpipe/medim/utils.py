@@ -1,9 +1,10 @@
 import os
+from functools import wraps
 from typing import Sequence
 import inspect
 
-import numpy as np
-
+from .types import AxesLike
+from .shape_utils import expand_axes
 from .checks import add_check_len
 from .itertools import *
 
@@ -11,6 +12,30 @@ from .itertools import *
 def decode_segmentation(x, segm_decoding_matrix) -> np.array:
     assert np.issubdtype(x.dtype, np.integer), f'Segmentation dtype must be int, but {x.dtype} provided'
     return np.rollaxis(segm_decoding_matrix[x], -1)
+
+
+def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike = None):
+    """
+    Apply ``func`` to slices from ``x`` taken along ``axes``.
+
+    Parameters
+    ----------
+    func
+         function to apply. Note that both the input and output must have the same shape.
+    x
+    axes
+        if None - the function will be applied directly to ``x``.
+    """
+    axes = expand_axes(axes, x.shape)
+    if len(axes) == x.ndim:
+        return func(x)
+
+    other_axes = negate_indices(axes, x.ndim)
+    begin = np.arange(len(other_axes))
+
+    y = np.moveaxis(x, other_axes, begin).reshape(-1, *extract(x.shape, axes))
+    result = np.stack(map(func, y)).reshape(*x.shape)
+    return np.moveaxis(result, begin, other_axes)
 
 
 @add_check_len
@@ -25,6 +50,13 @@ def scale(x):
 
 def bytescale(x):
     return np.uint8(np.round(255 * scale(x)))
+
+
+def makedirs_top(path, mode=0o777, exist_ok=False):
+    """Creates a parent folder if any. See `os.makedirs` for details."""
+    folder = os.path.dirname(path)
+    if folder:
+        os.makedirs(folder, mode, exist_ok)
 
 
 def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> Callable:

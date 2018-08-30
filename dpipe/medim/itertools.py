@@ -1,7 +1,8 @@
 from contextlib import suppress
-from functools import wraps
 from operator import itemgetter
-from typing import Iterable, Sized, Union, Callable
+from typing import Iterable, Sized, Union, Callable, Sequence
+
+import numpy as np
 
 
 def pam(functions: Iterable[Callable], *args, **kwargs):
@@ -79,3 +80,15 @@ def flatten(iterable: Iterable, iterable_types: Union[tuple, type] = None) -> li
 def filter_mask(iterable: Iterable, mask: Iterable[bool]) -> Iterable:
     """Filter values from ``iterable`` according to ``mask``."""
     return map(itemgetter(1), filter(itemgetter(0), zip_equal(mask, iterable)))
+
+
+def extract(sequence: Sequence, indices: Iterable):
+    """Extract ``indices`` from ``sequence``."""
+    return [sequence[i] for i in indices]
+
+
+def negate_indices(indices: Iterable, length: int):
+    """Return valid indices for a sequence of len ``length`` that are not present in ``indices``."""
+    other_indices = np.ones(length, bool)
+    other_indices[list(indices)] = False
+    return np.where(other_indices)[0]
