@@ -1,4 +1,4 @@
-from typing import List
+from typing import Sequence
 
 import tensorboard_easy
 import numpy as np
@@ -73,7 +73,7 @@ class TBLogger(Logger):
 
 
 class NamedTBLogger(TBLogger):
-    def __init__(self, log_path, loss_names: List[str]):
+    def __init__(self, log_path, loss_names: Sequence[str]):
         super().__init__(log_path)
         self.task_names = loss_names
 
