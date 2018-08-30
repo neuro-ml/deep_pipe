@@ -55,9 +55,9 @@ class BatchPredict(ABC):
         return partial(self.validate, validate_fn=validate_fn)
 
 
-def validate_parts(inputs_iterator, *, validate_fn):
+def validate_parts(batch_iterator, *, validate_fn):
     weights, losses, y_preds = [], [], []
-    for inputs in inputs_iterator:
+    for inputs in batch_iterator:
         y_pred, loss = validate_fn(*inputs)
         y_preds.append(y_pred)
         losses.append(loss)
@@ -67,8 +67,8 @@ def validate_parts(inputs_iterator, *, validate_fn):
     return y_preds, loss
 
 
-def predict_parts(inputs_iterator, *, predict_fn):
-    return [predict_fn(*inputs) for inputs in inputs_iterator]
+def predict_parts(batch_iterator, *, predict_fn):
+    return [predict_fn(*inputs) for inputs in batch_iterator]
 
 
 class DivideCombine(BatchPredict):

@@ -9,6 +9,7 @@ import numpy as np
 from .types import AxesLike
 from .checks import check_len
 from .shape_utils import compute_shape_from_spatial, fill_remaining_axes, shape_after_full_convolution
+from .utils import build_slices
 
 
 def make_box_(iterable):
@@ -100,6 +101,10 @@ def get_random_box(shape: AxesLike, box_shape: AxesLike, axes: AxesLike = None):
     """Get a random box of corresponding shape that fits in the `shape` along the given axes."""
     start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
     return start, start + fill_remaining_axes(shape, box_shape, axes)
+
+
+def box2slices(box):
+    return build_slices(*box)
 
 
 def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None):

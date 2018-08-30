@@ -41,16 +41,6 @@ def validate_fn_with_shape(y_pred_loss, x_shape, f):
     return f(y_pred, x_shape), loss
 
 
-def remove_batch_dim(x):
-    assert x.shape[0] == 1
-    return x[0]
-
-
-@np.deprecate
-def apply_first(x, f):
-    return (f(x[0]), *x[1:])
-
-
 def restore_shape(y, x_shape, spatial_dims: tuple):
     spatial_dims = list(spatial_dims)
     stop = np.array(y.shape)

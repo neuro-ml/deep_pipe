@@ -38,6 +38,14 @@ def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike = None):
     return np.moveaxis(result, begin, other_axes)
 
 
+def extract_dims(array, ndims=1):
+    """Decrease the dimensionality of `array` by extracting `ndim` leading singleton dimensions."""
+    for _ in range(ndims):
+        assert len(array) == 1
+        array = array[0]
+    return array
+
+
 @add_check_len
 def build_slices(start, stop):
     return tuple(map(slice, start, stop))
@@ -152,11 +160,3 @@ def pad(x, padding, padding_values):
     end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
     new_x[build_slices(start, end)] = x
     return new_x
-
-
-def add_first_dim(x):
-    return x[None]
-
-
-# Legacy
-add_batch_dim = np.deprecate(add_first_dim, old_name='add_batch_dim', new_name='add_first_dim')
