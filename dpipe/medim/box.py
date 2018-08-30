@@ -8,6 +8,7 @@ import numpy as np
 
 from .checks import check_len
 from .shape_utils import compute_shape_from_spatial, fill_remaining_axes, shape_after_full_convolution
+from .utils import build_slices
 
 
 def make_box_(iterable):
@@ -100,6 +101,10 @@ def get_random_box(shape, box_shape, axes=None):
 
     start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
     return start, start + fill_remaining_axes(shape, box_shape, axes)
+
+
+def box2slices(box):
+    return build_slices(*box)
 
 
 def get_boxes_grid(shape, box_size, stride=None, axes=None):
