@@ -6,6 +6,7 @@ import argparse
 import json
 import re
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -26,6 +27,19 @@ def load_pred(identifier, predictions_path):
     prediction: numpy.float32
     """
     return np.float32(np.load(os.path.join(predictions_path, f'{identifier}.npy')))
+
+
+def load_experiment_test_pred(identifier, experiment_path):
+    ep = Path(experiment_path)
+    for f in os.listdir(ep):
+        if os.path.isdir(ep / f):
+            try:
+                return load_pred(identifier,  ep / f / 'test_predictions')
+            except FileNotFoundError as e:
+                print(e)
+                pass
+    else:
+        raise FileNotFoundError('No prediction found')
 
 
 def load_json(path: str):
