@@ -35,6 +35,13 @@ def transform(input_path, output_path, transform_fn):
         np.save(os.path.join(output_path, f), transform_fn(np.load(os.path.join(input_path, f))))
 
 
+def load_from_folder(path: str):
+    """Yields (id, object) pairs loaded from `path`."""
+    # TODO: generalize with a loader
+    for filename in sorted(os.listdir(path)):
+        yield np_filename2id(filename), np.load(os.path.join(path, filename))
+
+
 def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_path: str, exist_ok: bool = False):
     """
     Apply `func` to each id from `ids` and save each output to `output_path`.
@@ -67,9 +74,9 @@ def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, re
     os.makedirs(results_path, exist_ok=exist_ok)
 
     targets, predictions = [], []
-    for filename in tqdm(sorted(os.listdir(predictions_path))):
-        predictions.append(np.load(os.path.join(predictions_path, filename)))
-        targets.append(load_y_true(np_filename2id(filename)))
+    for identifier, prediction in tqdm(load_from_folder(predictions_path)):
+        predictions.append(prediction)
+        targets.append(load_y_true(identifier))
 
     for name, metric in metrics.items():
         dump_json(metric(targets, predictions), os.path.join(results_path, name + '.json'), indent=0)
@@ -80,14 +87,11 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
     os.makedirs(results_path, exist_ok=exist_ok)
 
     results = defaultdict(dict)
-
-    for filename in tqdm(sorted(os.listdir(predictions_path))):
-        identifier = np_filename2id(filename)
-        y_prob = np.load(os.path.join(predictions_path, filename))
-        y_true = load_y_true(identifier)
+    for identifier, prediction in tqdm(load_from_folder(predictions_path)):
+        target = load_y_true(identifier)
 
         for metric_name, metric in metrics.items():
-            results[metric_name][identifier] = metric(y_true, y_prob)
+            results[metric_name][identifier] = metric(target, prediction)
 
     for metric_name, result in results.items():
         dump_json(result, os.path.join(results_path, metric_name + '.json'), indent=0)

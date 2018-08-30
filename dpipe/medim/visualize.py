@@ -1,7 +1,6 @@
 import os
 
 import numpy as np
-from ipywidgets import interact, IntSlider
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 
@@ -35,6 +34,7 @@ def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int 
     cmap,vlim:
         parameters passed to matplotlib.pyplot.imshow
     """
+    from ipywidgets import interact, IntSlider
     check_shape_along_axis(*data, axis=axis)
     rows, columns = _get_rows_cols(max_columns, data)
 
@@ -54,7 +54,7 @@ def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int 
 
 def animate3d(*data: np.ndarray, output_path: str, axis: int = -1, scale: int = 5, max_columns: int = None,
               colorbar: bool = False, show_axes: bool = False, cmap: str = None, vlim=(None, None), fps: int = 30,
-              writer: str = 'imagemagick'):
+              writer: str = 'imagemagick', repeat: bool = True):
     """
     Saves an animation to ``output_path``, simultaneously showing slices
     along a given ``axis`` for all the passed images.
@@ -76,6 +76,8 @@ def animate3d(*data: np.ndarray, output_path: str, axis: int = -1, scale: int = 
         parameters passed to matplotlib.pyplot.imshow
     fps: int
     writer: str
+    repeat: bool
+        whether the animation should repeat when the sequence of frames is completed.
     """
     check_shape_along_axis(*data, axis=axis)
     rows, columns = _get_rows_cols(max_columns, data)
@@ -103,4 +105,5 @@ def animate3d(*data: np.ndarray, output_path: str, axis: int = -1, scale: int = 
     output_folder = os.path.dirname(output_path)
     if output_folder:
         os.makedirs(output_folder, exist_ok=True)
-    FuncAnimation(fig, func=update, frames=data[0].shape[axis], blit=True).save(output_path, writer=writer, fps=fps)
+    FuncAnimation(fig, func=update, frames=data[0].shape[axis], blit=True, repeat=repeat).save(
+        output_path, writer=writer, fps=fps)

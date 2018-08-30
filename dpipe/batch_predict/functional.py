@@ -3,14 +3,12 @@ from typing import Callable
 import numpy as np
 
 from dpipe.medim.utils import build_slices
+from .base import predict_parts, validate_parts
 
-from .base import DivideCombine
 
-
-# TODO: probably should implement DivideCombine methods using these functions instead of other way around
 def make_predictor(divide: Callable, combine: Callable, predict_batch: Callable) -> Callable:
     """
-    Builds a function that generates predictions for whole objects.
+    Builds a function that generates a prediction for a whole object.
 
     Parameters
     ----------
@@ -21,11 +19,21 @@ def make_predictor(divide: Callable, combine: Callable, predict_batch: Callable)
     predict_batch: Callable
         predicts a single batch.
     """
-    return DivideCombine(divide, combine).make_predictor(predict_batch)
+    return lambda *inputs: combine(predict_parts(divide(*inputs), predict_fn=predict_batch))
 
 
 def make_validator(divide, combine, validate_batch):
-    return DivideCombine(divide, combine).make_validator(validate_batch)
+    """
+    Builds a function that generates both prediction and aggregated loss for a whole object.
+
+    See `make_predictor` for details.
+    """
+
+    def validate(*inputs):
+        predictions, loss = validate_parts(divide(*inputs), validate_fn=validate_batch)
+        return combine(predictions), loss
+
+    return validate
 
 
 def validate_fn_with_shape(y_pred_loss, x_shape, f):
@@ -38,6 +46,7 @@ def remove_batch_dim(x):
     return x[0]
 
 
+@np.deprecate
 def apply_first(x, f):
     return (f(x[0]), *x[1:])
 
