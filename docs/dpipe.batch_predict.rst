@@ -62,11 +62,3 @@ dpipe.batch\_predict.utils module
     :members:
     :undoc-members:
     :show-inheritance:
-
-dpipe.batch\_predict.x\_shape module
-------------------------------------
-
-.. automodule:: dpipe.batch_predict.x_shape
-    :members:
-    :undoc-members:
-    :show-inheritance:

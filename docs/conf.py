@@ -39,7 +39,9 @@ extensions = ['sphinx.ext.autodoc',
 
 # autodoc:
 # autodoc_mock_imports = ['torch', 'torch.nn', 'torch.autograd', 'torch.optim']
-autodoc_inherit_docstrings = True
+autodoc_inherit_docstrings = False
+# default_role = 'any'
+autodoc_member_order = 'bysource'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -82,7 +84,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-# If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
 # -- Options for HTML output ----------------------------------------------
