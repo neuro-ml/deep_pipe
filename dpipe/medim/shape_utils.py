@@ -74,8 +74,7 @@ def shape_after_convolution(shape: AxesLike, kernel_size: AxesLike, stride: Axes
 
 
 def shape_after_full_convolution(shape: AxesLike, kernel_size: AxesLike, axes: AxesLike = None, stride: AxesLike = 1,
-                                 padding: AxesLike = 0,
-                                 dilation: AxesLike = 1) -> tuple:
+                                 padding: AxesLike = 0, dilation: AxesLike = 1) -> tuple:
     """
     Get the shape of a tensor after applying a convolution with corresponding parameters along the given axes.
     The dimensions along the remaining axes will become singleton.
