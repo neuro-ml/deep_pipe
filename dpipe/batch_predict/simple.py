@@ -24,10 +24,3 @@ class AddExtractDims(BatchPredict):
 
     def predict(self, *inputs, predict_fn):
         return extract_dims(predict_fn(*add_dims(*inputs, ndims=self.ndims)), ndims=self.ndims)
-
-
-# Deprecated since at least 30.08.2018
-# ----------
-Simple = AddExtractDim = AddExtractDims
-add_dimension = add_dims
-extract_dimension = partial(extract_dims, ndims=2)

@@ -61,20 +61,22 @@ def expand_axes(axes, values) -> tuple:
 
 
 def shape_after_convolution(shape: AxesLike, kernel_size: AxesLike, stride: AxesLike = 1, padding: AxesLike = 0,
-                            dilation: AxesLike = 1) -> tuple:
+                            dilation: AxesLike = 1, ceil_mode: bool = False) -> tuple:
     """Get the shape of a tensor after applying a convolution with corresponding parameters."""
     padding, shape, dilation, kernel_size = map(np.asarray, [padding, shape, dilation, kernel_size])
-    # TODO: add ceil_mode?
 
     result = (shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1
-    new_shape = tuple(np.floor(result).astype(int))
-    if (result < 1).any():
+    to_int = np.ceil if ceil_mode else np.floor
+
+    result = to_int(result).astype(int)
+    new_shape = tuple(result)
+    if (result <= 0).any():
         raise ValueError(f'Such a convolution is not possible. Output shape: {new_shape}.')
     return new_shape
 
 
 def shape_after_full_convolution(shape: AxesLike, kernel_size: AxesLike, axes: AxesLike = None, stride: AxesLike = 1,
-                                 padding: AxesLike = 0, dilation: AxesLike = 1) -> tuple:
+                                 padding: AxesLike = 0, dilation: AxesLike = 1, ceil_mode: bool = False) -> tuple:
     """
     Get the shape of a tensor after applying a convolution with corresponding parameters along the given axes.
     The dimensions along the remaining axes will become singleton.
@@ -83,5 +85,5 @@ def shape_after_full_convolution(shape: AxesLike, kernel_size: AxesLike, axes: A
 
     return fill_remaining_axes(
         np.ones_like(shape),
-        shape_after_convolution(extract(shape, axes), kernel_size, stride, padding, dilation), axes
+        shape_after_convolution(extract(shape, axes), kernel_size, stride, padding, dilation, ceil_mode), axes
     )

@@ -16,15 +16,6 @@ def np_filename2id(filename):
     return '.'.join(rest)
 
 
-@np.deprecate
-def train_model(train, model, save_model_path, restore_model_path=None, modify_state_fn=None):
-    if restore_model_path is not None:
-        model.load(restore_model_path, modify_state_fn=modify_state_fn)
-
-    train()
-    model.save(save_model_path)
-
-
 def transform(input_path, output_path, transform_fn):
     os.makedirs(output_path)
 

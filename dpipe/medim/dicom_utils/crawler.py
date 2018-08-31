@@ -43,7 +43,11 @@ def files_to_df(folder, files):
         entry['NoError'] = True
 
         for attr in dc.dir():
-            value = dc.get(attr)
+            try:
+                value = dc.get(attr)
+            except NotImplementedError:
+                # TODO: check cause 2015: 190
+                continue
 
             if isinstance(value, person_class):
                 entry[attr] = str(value)
