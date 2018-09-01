@@ -97,7 +97,3 @@ class TestApplyAlongAxes(unittest.TestCase):
         y = apply_along_axes(scale, x, axes)
         np.testing.assert_array_almost_equal(y.max(axes), 1)
         np.testing.assert_array_almost_equal(y.min(axes), 0)
-
-        y = apply_along_axes(scale, x)
-        np.testing.assert_array_almost_equal(y.max(), 1)
-        np.testing.assert_array_almost_equal(y.min(), 0)

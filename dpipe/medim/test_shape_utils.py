@@ -90,8 +90,15 @@ class TestExpandAxes(unittest.TestCase):
         with self.assertRaises(ValueError):
             expand_axes([1, 1, 2, 3], 1)
 
+        with self.assertRaises(ValueError):
+            expand_axes([[1], [2]], 1)
+
     def test_none(self):
         self.assertTupleEqual((-3, -2, -1), expand_axes(None, [1, 2, 3]))
         self.assertTupleEqual((-2, -1), expand_axes(None, [1, 1]))
         self.assertTupleEqual((-1,), expand_axes(None, [1]))
+        self.assertTupleEqual((-1,), expand_axes(None, 1))
+
+    def test_scalar(self):
+        self.assertTupleEqual((1,), expand_axes(1, 1))
         self.assertTupleEqual((-1,), expand_axes(None, 1))

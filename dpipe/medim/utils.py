@@ -4,7 +4,7 @@ from typing import Sequence
 import inspect
 
 from .types import AxesLike
-from .shape_utils import expand_axes
+from .shape_utils import check_axes
 from .checks import add_check_len
 from .itertools import *
 
@@ -14,7 +14,7 @@ def decode_segmentation(x, segm_decoding_matrix) -> np.array:
     return np.rollaxis(segm_decoding_matrix[x], -1)
 
 
-def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike = None):
+def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
     """
     Apply ``func`` to slices from ``x`` taken along ``axes``.
 
@@ -24,9 +24,8 @@ def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike = None):
          function to apply. Note that both the input and output must have the same shape.
     x
     axes
-        if None - the function will be applied directly to ``x``.
     """
-    axes = expand_axes(axes, x.shape)
+    axes = check_axes(axes)
     if len(axes) == x.ndim:
         return func(x)
 
