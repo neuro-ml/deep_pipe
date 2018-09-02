@@ -1,7 +1,7 @@
 import os
 from operator import itemgetter
 from os.path import join as jp
-from typing import Sequence
+from typing import Sequence, Iterable
 
 import pandas as pd
 from tqdm import tqdm
@@ -15,45 +15,63 @@ def throw(e):
     raise e
 
 
-def files_to_df(folder, files):
+def get_file_meta(path: str) -> dict:
+    """
+    Get a dict containing the metadata from the DICOM file located at ``path``.
+
+    Notes
+    -----
+    The following keys are added:
+        | NoError: whether an exception was raised during reading the file.
+        | HasPixelArray: (if NoError is True) whether the file contains a pixel array.
+        | PixelArrayShape: (if HasPixelArray is True) the shape of the pixel array.
+
+    For some formats the following packages might be required:
+        >>> conda install -c clinicalgraphics gdcm
+    """
+    result = {}
+
+    try:
+        dc = read_file(path)
+        result['NoError'] = True
+    except (errors.InvalidDicomError, OSError, NotImplementedError):
+        result['NoError'] = False
+        return result
+
+    try:
+        has_px = hasattr(dc, 'pixel_array')
+    except (TypeError, NotImplementedError):
+        has_px = False
+    else:
+        result['PixelArrayShape'] = ','.join(map(str, dc.pixel_array.shape))
+    result['HasPixelArray'] = has_px
+
+    for attr in dc.dir():
+        try:
+            value = dc.get(attr)
+        except NotImplementedError:
+            continue
+
+        if isinstance(value, person_class):
+            result[attr] = str(value)
+
+        elif attr in serial:
+            for pos, num in enumerate(value):
+                result[f'{attr}{pos}'] = num
+
+        elif isinstance(value, (int, float, str)):
+            result[attr] = value
+
+    return result
+
+
+def files_to_df(folder: str, files: Iterable[str]) -> pd.DataFrame:
     result = []
     for file in files:
-        if file == 'DICOMDIR':
-            continue
-
-        entry = {}
-        result.append(entry)
-
+        entry = get_file_meta(jp(folder, file))
         entry['PathToFolder'] = folder
         entry['FileName'] = file
-        try:
-            dc = read_file(jp(folder, file))
-        except (errors.InvalidDicomError, OSError, NotImplementedError):
-            entry['NoError'] = False
-            continue
-
-        try:
-            has_px = hasattr(dc, 'pixel_array')
-        except (TypeError, NotImplementedError):
-            # for some formats the following packages might be required
-            # conda install -c clinicalgraphics gdcm
-            has_px = False
-
-        entry['HasPixelArray'] = has_px
-        entry['NoError'] = True
-
-        for attr in dc.dir():
-            value = dc.get(attr)
-
-            if isinstance(value, person_class):
-                entry[attr] = str(value)
-
-            elif attr in serial:
-                for pos, num in enumerate(value):
-                    entry[f'{attr}{pos}'] = num
-
-            elif isinstance(value, (int, float, str)):
-                entry[attr] = value
+        result.append(entry)
 
     return pd.DataFrame(result)
 
@@ -87,7 +105,7 @@ def walk_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bo
 
 def join_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bool = True) -> pd.DataFrame:
     """
-    Returns a dataframe containing metadata for each file in all the subfolders of `top`.
+    Returns a dataframe containing metadata for each file in all the subfolders of ``top``.
 
     Parameters
     ----------
@@ -95,5 +113,17 @@ def join_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bo
     ignore_extensions
     verbose
         whether to display a `tqdm` progressbar.
+
+    Notes
+    -----
+    The following columns are added:
+        | NoError: whether an exception was raised during reading the file.
+        | HasPixelArray: (if NoError is True) whether the file contains a pixel array.
+        | PixelArrayShape: (if HasPixelArray is True) the shape of the pixel array.
+        | PathToFolder
+        | FileName
+
+    For some formats the following packages might be required:
+        >>> conda install -c clinicalgraphics gdcm
     """
     return pd.concat(map(itemgetter(1), walk_dicom_tree(top, ignore_extensions, verbose)))

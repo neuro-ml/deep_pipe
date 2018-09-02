@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -9,17 +8,26 @@ def _remove_dots(x):
         return x
 
 
-def aggregate_images(dataframe: pd.DataFrame) -> pd.DataFrame:
-    """Groups DICOM metadata into images."""
+def aggregate_images(metadata: pd.DataFrame) -> pd.DataFrame:
+    """
+    Groups DICOM ``metadata`` into images metadata (series).
+
+    Required columns: PatientID, SeriesInstanceUID, StudyInstanceUID, PathToFolder, FileName
+
+    Notes
+    -----
+    The following columns are added:
+        | SlicesCount: the number of files/slices in the image.
+        | FileNames: a list of slash ("/") separated file names.
+        | InstanceNumbers: (if InstanceNumber is in columns) a list of comma separated InstanceNumber values.
+
+    The following columns are removed:
+        FileName (replaced by FileNames), InstanceNumber (replaced by InstanceNumbers),
+        any other columns that differ from file to file.
+    """
 
     def get_unique_cols(df):
         return [col for col in df.columns if len(df[col].dropna().unique()) == 1]
-
-    def careful_drop(df, cols):
-        for col in cols:
-            if col in df:
-                df.drop(col, 1, inplace=True)
-        return df
 
     def process_group(entry):
         # TODO: should check that some typical cols are unique, e.g. ImageOrientationPatient*
@@ -34,21 +42,23 @@ def aggregate_images(dataframe: pd.DataFrame) -> pd.DataFrame:
         except ValueError:
             res['InstanceNumbers'] = None
 
-        return careful_drop(res, ['InstanceNumber', 'FileName'])
+        return res.drop(['InstanceNumber', 'FileName'], 1, errors='ignore')
 
+    # TODO: move constants out. Make PixelArrayShape required
     group_by = ['PatientID', 'SeriesInstanceUID', 'StudyInstanceUID', 'PathToFolder']
-    if 'SequenceName' in dataframe:
-        group_by.append('SequenceName')
+    optional = {'SequenceName', 'PixelArrayShape'}
+    group_by.extend(optional & set(metadata))
 
-    is_string = [dataframe[col].apply(lambda x: isinstance(x, str)).all() for col in group_by]
-    if not all(is_string):
-        not_strings = ', '.join(np.array(group_by)[np.logical_not(is_string)])
-        raise ValueError(f'The following columns do not contain only strings: {not_strings}')
+    not_string = metadata[group_by].applymap(lambda x: not isinstance(x, str)).any()
+    if not_string.any():
+        not_strings = ', '.join(not_string.index[not_string])
+        raise ValueError(f'The following columns do not contain only strings: {not_strings}. '
+                         'You should probably check for NaN values.')
 
-    return dataframe.groupby(group_by).apply(process_group).reset_index(drop=True)
+    return metadata.groupby(group_by).apply(process_group).reset_index(drop=True)
 
 
-def normalize_identifiers(dataframe: pd.DataFrame) -> pd.DataFrame:
+def normalize_identifiers(metadata: pd.DataFrame) -> pd.DataFrame:
     """
     Converts PatientID to str and fills nan values in SequenceName.
 
@@ -56,11 +66,10 @@ def normalize_identifiers(dataframe: pd.DataFrame) -> pd.DataFrame:
     -----
     The input `dataframe` will be mutated.
     """
-
-    dataframe['PatientID'] = dataframe.PatientID.apply(_remove_dots)
-    if 'SequenceName' in dataframe:
-        dataframe.SequenceName.fillna('', inplace=True)
-    return dataframe
+    metadata['PatientID'] = metadata.PatientID.apply(_remove_dots)
+    if 'SequenceName' in metadata:
+        metadata.SequenceName.fillna('', inplace=True)
+    return metadata
 
 
 def select(dataframe: pd.DataFrame, query: str, **where: str) -> pd.DataFrame:
