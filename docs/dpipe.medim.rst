@@ -35,16 +35,27 @@ Checks
 DICOM utils
 -----------
 
+.. automodule:: dpipe.medim.dicom_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Crawling
+^^^^^^^^
 .. automodule:: dpipe.medim.dicom_utils.crawler
     :members:
     :undoc-members:
     :show-inheritance:
 
+Aggregation
+^^^^^^^^^^^
 .. automodule:: dpipe.medim.dicom_utils.aggregation
     :members:
     :undoc-members:
     :show-inheritance:
 
+Miscellaneous
+^^^^^^^^^^^^^
 .. automodule:: dpipe.medim.dicom_utils.misc
     :members:
     :undoc-members:
