@@ -20,7 +20,6 @@ def softmax_cross_entropy(logits, target, weight=None, reduce=True):
     return nn.functional.cross_entropy(logits, target, weight=weight, reduce=reduce)
 
 
-@deprecate
 class Eye(nn.Module):
     def __init__(self, n_classes):
         super().__init__()
@@ -38,3 +37,6 @@ class NormalizedSoftmaxCrossEntropy(Eye):
         weight = flat_target.size()[0] / count
 
         return softmax_cross_entropy(logits, target, weight=weight)
+
+
+Eye = deprecate(Eye)
