@@ -10,9 +10,9 @@ def _remove_dots(x):
 
 def aggregate_images(metadata: pd.DataFrame) -> pd.DataFrame:
     """
-    Groups DICOM ``metadata`` into images metadata (series).
+    Groups DICOM ``metadata`` into images (series).
 
-    Required columns: PatientID, SeriesInstanceUID, StudyInstanceUID, PathToFolder, FileName
+    Required columns: PatientID, SeriesInstanceUID, StudyInstanceUID, PathToFolder, FileName.
 
     Notes
     -----
@@ -64,7 +64,7 @@ def normalize_identifiers(metadata: pd.DataFrame) -> pd.DataFrame:
 
     Notes
     -----
-    The input `dataframe` will be mutated.
+    The input dataframe will be mutated.
     """
     metadata['PatientID'] = metadata.PatientID.apply(_remove_dots)
     if 'SequenceName' in metadata:

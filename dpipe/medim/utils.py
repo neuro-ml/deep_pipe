@@ -38,7 +38,7 @@ def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
 
 
 def extract_dims(array, ndims=1):
-    """Decrease the dimensionality of `array` by extracting `ndim` leading singleton dimensions."""
+    """Decrease the dimensionality of ``array`` by extracting ``ndims`` leading singleton dimensions."""
     for _ in range(ndims):
         assert len(array) == 1
         array = array[0]
@@ -106,7 +106,7 @@ def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> 
 
 def load_image(path: str):
     """
-    Load an image located at `path`.
+    Load an image located at ``path``.
     The following extensions are supported:
         npy, tif, hdr, img, nii, nii.gz
     """
@@ -127,15 +127,14 @@ def load_image(path: str):
 
 def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
     """
-    Yields tuples of objects given their loaders and ids.
+    Yields tuples of objects given their ``loaders`` and ``ids``.
 
     Parameters
     ----------
     loaders: Callable(id)
-    ids: Sequence
-        a sequence of ids to load
-    shuffle: bool, optional
-        whether to shuffle the ids before yielding
+    ids
+    shuffle
+        whether to shuffle the ids before yielding.
     """
     if shuffle:
         ids = np.random.permutation(ids)
