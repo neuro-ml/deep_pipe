@@ -1,4 +1,5 @@
-from functools import wraps, partial
+from functools import wraps
+from typing import Callable
 
 
 def _join(values):
@@ -28,17 +29,22 @@ def check_shapes(*arrays):
         raise ValueError(f'Arrays of equal shape are required: {_join(shapes)}')
 
 
-def add_check_function(func, check_function):
-    """Performs a check of the function's arguments before calling it."""
+def add_check_function(check_function: Callable):
+    """Decorator that checks the function's arguments via ``check_function`` before calling it."""
 
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        check_function(*args, *kwargs.values())
-        return func(*args, **kwargs)
+    def decorator(func: Callable):
+        """Performs a check of the function's arguments before calling it."""
 
-    return wrapper
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            check_function(*args, *kwargs.values())
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
-add_check_bool = partial(add_check_function, check_function=check_bool)
-add_check_shapes = partial(add_check_function, check_function=check_shapes)
-add_check_len = partial(add_check_function, check_function=check_len)
+add_check_bool, add_check_shapes, add_check_len = map(add_check_function, [
+    check_bool, check_shapes, check_len
+])

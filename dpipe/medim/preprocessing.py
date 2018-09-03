@@ -3,7 +3,7 @@ from scipy import ndimage
 
 from .itertools import extract
 from .types import AxesParams, AxesLike
-from .shape_utils import fill_remaining_axes, expand_axes
+from .shape_utils import fill_by_indices, expand_axes
 from .utils import build_slices, pad, apply_along_axes, scale as _scale
 
 
@@ -41,7 +41,7 @@ def normalize_multichannel_image(image: np.ndarray, mean: bool = True, std: bool
 
 def min_max_scale(x: np.ndarray, axes: AxesLike = None):
     """Scale ``x``'s values so that its minimum and maximum along ``axes`` become 0 and 1 respectively."""
-    return apply_along_axes(_scale, x, axes)
+    return apply_along_axes(_scale, x, expand_axes(axes, x.shape))
 
 
 def scale(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: int = 1) -> np.ndarray:
@@ -59,7 +59,7 @@ def scale(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order:
     order
         order of interpolation.
     """
-    return ndimage.zoom(x, fill_remaining_axes(np.ones(x.ndim), scale_factor, axes), order=order)
+    return ndimage.zoom(x, fill_by_indices(np.ones(x.ndim), scale_factor, axes), order=order)
 
 
 def scale_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: int = 1) -> np.ndarray:
@@ -78,7 +78,7 @@ def scale_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order:
         order of interpolation.
     """
     old_shape = np.array(x.shape, 'float64')
-    new_shape = np.array(fill_remaining_axes(x.shape, shape, axes), 'float64')
+    new_shape = np.array(fill_by_indices(x.shape, shape, axes), 'float64')
 
     return ndimage.zoom(x, new_shape / old_shape, order=order)
 
@@ -98,7 +98,7 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
     axes
         axes along which the tensor will be padded. If None - the last `len(shape)` axes are used.
     """
-    old_shape, new_shape = np.array(x.shape), np.array(fill_remaining_axes(x.shape, shape, axes))
+    old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axes))
     if (old_shape > new_shape).any():
         raise ValueError(f'The resulting shape cannot be smaller than the original: {old_shape} vs {new_shape}')
 
@@ -140,7 +140,7 @@ def slice_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None) -> np.
     axes
         axes along which the tensor will be padded. If None - the last `len(shape)` axes are used.
     """
-    old_shape, new_shape = np.array(x.shape), np.array(fill_remaining_axes(x.shape, shape, axes))
+    old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axes))
     if (old_shape < new_shape).any():
         raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}')
 

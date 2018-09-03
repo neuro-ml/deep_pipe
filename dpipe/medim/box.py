@@ -8,7 +8,7 @@ import numpy as np
 
 from .types import AxesLike
 from .checks import check_len
-from .shape_utils import compute_shape_from_spatial, fill_remaining_axes, shape_after_full_convolution
+from .shape_utils import compute_shape_from_spatial, fill_by_indices, shape_after_full_convolution
 from .utils import build_slices
 
 
@@ -100,7 +100,7 @@ def mask2bounding_box(mask: np.ndarray):
 def get_random_box(shape: AxesLike, box_shape: AxesLike, axes: AxesLike = None):
     """Get a random box of corresponding shape that fits in the `shape` along the given axes."""
     start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
-    return start, start + fill_remaining_axes(shape, box_shape, axes)
+    return start, start + fill_by_indices(shape, box_shape, axes)
 
 
 def box2slices(box):
@@ -122,8 +122,8 @@ def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: 
         the stride (step-size) of the slice.
     """
     final_shape = shape_after_full_convolution(shape, box_size, axes, stride)
-    full_box = fill_remaining_axes(shape, box_size, axes)
-    full_stride = fill_remaining_axes(np.ones_like(shape), stride, axes)
+    full_box = fill_by_indices(shape, box_size, axes)
+    full_stride = fill_by_indices(np.ones_like(shape), stride, axes)
 
     for start in np.ndindex(*final_shape):
         start = np.asarray(start) * full_stride

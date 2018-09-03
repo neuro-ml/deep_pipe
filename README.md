@@ -12,7 +12,7 @@ pip install -e .
 
 ## Documentation
 
-https://neuro-ml.github.io/dpipe_docs/
+https://deep-pipe.readthedocs.io/en/latest/
 
 ## Basic usage
 

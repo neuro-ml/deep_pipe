@@ -1,3 +1,4 @@
+"""Tools for grouping DICOM metadata into images."""
 import pandas as pd
 
 

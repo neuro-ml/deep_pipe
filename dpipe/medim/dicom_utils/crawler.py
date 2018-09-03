@@ -1,3 +1,4 @@
+"""Contains functions for gathering metadata from individual DICOM files or entire directories."""
 import os
 from operator import itemgetter
 from os.path import join as jp

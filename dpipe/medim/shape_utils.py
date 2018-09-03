@@ -12,12 +12,12 @@ def compute_shape_from_spatial(complete_shape, spatial_shape, spatial_dims):
     return tuple(shape)
 
 
-def fill_remaining_axes(reference, values_along_axes, axes):
-    """Replace the values in `reference` located at `axes` by the ones from `values_along_axes`."""
-    axes = expand_axes(axes, values_along_axes)
-    reference = np.array(reference)
-    reference[list(axes)] = values_along_axes
-    return tuple(reference)
+def fill_by_indices(target, values, indices):
+    """Replace the values in ``target`` located at ``indices`` by the ones from ``values``."""
+    indices = expand_axes(indices, values)
+    target = np.array(target)
+    target[list(indices)] = values
+    return tuple(target)
 
 
 def broadcast_shape_nd(shape, n):
@@ -57,9 +57,7 @@ def expand_axes(axes, values) -> tuple:
     values = np.atleast_1d(values)
     if axes is None:
         axes = list(range(-len(values), 0))
-    axes = check_axes(axes)
-    assert len(values) == len(axes) or len(values) == 1, f'{axes}, {values}'
-    return axes
+    return check_axes(axes)
 
 
 def shape_after_convolution(shape: AxesLike, kernel_size: AxesLike, stride: AxesLike = 1, padding: AxesLike = 0,
@@ -85,7 +83,7 @@ def shape_after_full_convolution(shape: AxesLike, kernel_size: AxesLike, axes: A
     """
     axes = expand_axes(axes, np.broadcast_arrays(kernel_size, stride, padding, dilation)[0])
 
-    return fill_remaining_axes(
+    return fill_by_indices(
         np.ones_like(shape),
         shape_after_convolution(extract(shape, axes), kernel_size, stride, padding, dilation, valid), axes
     )
