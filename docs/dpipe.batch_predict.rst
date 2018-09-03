@@ -31,10 +31,10 @@ dpipe.batch\_predict.patch\_3d module
     :undoc-members:
     :show-inheritance:
 
-dpipe.batch\_predict.patch\_3d\_fixed module
+dpipe.batch\_predict.shape\_state module
 --------------------------------------------
 
-.. automodule:: dpipe.batch_predict.patch_3d_fixed
+.. automodule:: dpipe.batch_predict.shape_state
     :members:
     :undoc-members:
     :show-inheritance:
