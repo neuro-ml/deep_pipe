@@ -151,12 +151,3 @@ def proportional_scale_to_shape(x: np.ndarray, shape: Sequence, axes: Sequence =
     axes = get_axes(axes, len(np.atleast_1d(shape)))
     scale_factor = min(shape / np.array(x.shape, dtype='float64')[axes])
     return pad_to_shape(scale(x, scale_factor, axes, order), shape, axes, padding_values)
-
-
-# Deprecated
-# ----------
-
-
-normalize_mscan = np.deprecate(normalize_multichannel_image, old_name='normalize_mscan',
-                               new_name='normalize_multichannel_image')
-normalize_scan = np.deprecate(normalize_image, old_name='normalize_scan', new_name='normalize_image')
