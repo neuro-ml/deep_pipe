@@ -1,7 +1,11 @@
 from contextlib import suppress
-from functools import wraps
 from operator import itemgetter
 from typing import Iterable, Sized, Union, Callable
+
+
+def recursive_conditional_map(xr, f, condition):
+    """Walks recursively through iterable data structure `xr`. Applies `f` on objects that satisfy `condition`."""
+    return tuple(f(x) if condition(x) else recursive_conditional_map(x, f, condition) for x in xr)
 
 
 def pam(functions: Iterable[Callable], *args, **kwargs):
