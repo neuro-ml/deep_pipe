@@ -85,6 +85,14 @@ Color space conversion
     :undoc-members:
     :show-inheritance:
 
+Input/Output
+------------
+
+.. automodule:: dpipe.medim.io
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Itertools
 ---------
 

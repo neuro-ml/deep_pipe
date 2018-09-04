@@ -21,4 +21,3 @@ Subpackages
     dpipe.train
     dpipe.commands
     dpipe.model
-    dpipe.io
