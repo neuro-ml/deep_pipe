@@ -32,9 +32,9 @@ def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
     other_axes = negate_indices(axes, x.ndim)
     begin = np.arange(len(other_axes))
 
-    y = np.moveaxis(x, other_axes, begin).reshape(-1, *extract(x.shape, axes))
-    result = np.stack(map(func, y)).reshape(*x.shape)
-    return np.moveaxis(result, begin, other_axes)
+    y = np.moveaxis(x, other_axes, begin)
+    result = np.stack(map(func, y.reshape(-1, *extract(x.shape, axes))))
+    return np.moveaxis(result.reshape(*y.shape), begin, other_axes)
 
 
 def extract_dims(array, ndims=1):
@@ -118,7 +118,7 @@ def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
     if shuffle:
         ids = np.random.permutation(ids)
     for identifier in ids:
-        yield squeeze_first(tuple(loader(identifier) for loader in loaders))
+        yield squeeze_first(tuple(pam(loaders, identifier)))
 
 
 def pad(x, padding, padding_values):

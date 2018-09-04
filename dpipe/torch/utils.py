@@ -77,7 +77,7 @@ def to_cuda(x, cuda: bool = None):
 
 
 def set_lr(optimizer: torch.optim.Optimizer, lr: float) -> torch.optim.Optimizer:
-    """Change an ``optimizer``'s learning rate to `lr`."""
+    """Change an ``optimizer``'s learning rate to ``lr``."""
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
     return optimizer

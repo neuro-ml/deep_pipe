@@ -3,7 +3,8 @@ from functools import partial
 
 import numpy as np
 
-from dpipe.medim.preprocessing import normalize_multichannel_image, normalize_image
+from dpipe.layers import identity
+from .preprocessing import normalize_multichannel_image, normalize_image
 from .utils import pad, filter_mask, apply_along_axes, scale
 from .itertools import zip_equal, flatten, extract, negate_indices
 
@@ -99,3 +100,8 @@ class TestApplyAlongAxes(unittest.TestCase):
         y = apply_along_axes(scale, x, axes)
         np.testing.assert_array_almost_equal(y.max(axes), 1)
         np.testing.assert_array_almost_equal(y.min(axes), 0)
+
+        np.testing.assert_array_almost_equal(apply_along_axes(identity, x, 1), x)
+        np.testing.assert_array_almost_equal(apply_along_axes(identity, x, -1), x)
+        np.testing.assert_array_almost_equal(apply_along_axes(identity, x, (0, 1)), x)
+        np.testing.assert_array_almost_equal(apply_along_axes(identity, x, (0, 2)), x)

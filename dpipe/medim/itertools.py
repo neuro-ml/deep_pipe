@@ -102,3 +102,25 @@ def negate_indices(indices: Iterable, length: int):
     other_indices = np.ones(length, bool)
     other_indices[list(indices)] = False
     return np.where(other_indices)[0]
+
+
+def make_chunks(iterable: Iterable, chunk_size: int, incomplete: bool = True):
+    """
+    Group ``iterable`` into chunks of size ``chunk_size``.
+
+    Parameters
+    ----------
+    iterable
+    chunk_size
+    incomplete
+        whether to yield the last chunk in case it has a smaller size.
+    """
+    chunk = []
+    for value in iterable:
+        chunk.append(value)
+        if len(chunk) == chunk_size:
+            yield tuple(chunk)
+            chunk = []
+
+    if incomplete and chunk:
+        yield chunk
