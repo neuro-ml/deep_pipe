@@ -1,5 +1,7 @@
 import numpy as np
 
+from .itertools import extract
+from .types import AxesLike
 from .checks import check_len
 
 
@@ -10,15 +12,12 @@ def compute_shape_from_spatial(complete_shape, spatial_shape, spatial_dims):
     return tuple(shape)
 
 
-def fill_remaining_axes(reference, values_along_axes, axes):
-    """Replace the values in `reference` located at `axes` by the ones from `values_along_axes`."""
-    reference = np.array(reference)
-    values_along_axes = np.atleast_1d(values_along_axes)
-    axes = get_axes(axes, len(values_along_axes))
-
-    assert len(values_along_axes) == len(axes) or len(values_along_axes) == 1, f'{values_along_axes}, {axes}'
-    reference[axes] = values_along_axes
-    return tuple(reference)
+def fill_by_indices(target, values, indices):
+    """Replace the values in ``target`` located at ``indices`` by the ones from ``values``."""
+    indices = expand_axes(indices, values)
+    target = np.array(target)
+    target[list(indices)] = values
+    return tuple(target)
 
 
 def broadcast_shape_nd(shape, n):
@@ -42,32 +41,49 @@ def broadcast_shape(x_shape, y_shape):
     return tuple(reversed(shape))
 
 
-def get_axes(axes, ndim):
+def check_axes(axes):
+    axes = np.atleast_1d(axes)
+    if axes.ndim != 1:
+        raise ValueError(f'Axes must be 1D, but {axes.ndim}D provided.')
+    if not np.issubdtype(axes.dtype, np.integer):
+        raise ValueError(f'Axes must be integer, but {axes.dtype} provided.')
+    axes = tuple(axes)
+    if len(axes) != len(set(axes)):
+        raise ValueError(f'Axes contain duplicates: {axes}.')
+    return axes
+
+
+def expand_axes(axes, values) -> tuple:
+    values = np.atleast_1d(values)
     if axes is None:
-        axes = list(range(-ndim, 0))
-    return list(np.atleast_1d(axes))
+        axes = list(range(-len(values), 0))
+    return check_axes(axes)
 
 
-def shape_after_convolution(shape, kernel_size, stride=1, padding=0, dilation=1) -> tuple:
+def shape_after_convolution(shape: AxesLike, kernel_size: AxesLike, stride: AxesLike = 1, padding: AxesLike = 0,
+                            dilation: AxesLike = 1, valid: bool = True) -> tuple:
     """Get the shape of a tensor after applying a convolution with corresponding parameters."""
     padding, shape, dilation, kernel_size = map(np.asarray, [padding, shape, dilation, kernel_size])
-    # TODO: add ceil_mode?
 
     result = (shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1
-    new_shape = tuple(np.floor(result).astype(int))
-    if (result < 1).any():
+    to_int = np.floor if valid else np.ceil
+
+    result = to_int(result).astype(int)
+    new_shape = tuple(result)
+    if (result <= 0).any():
         raise ValueError(f'Such a convolution is not possible. Output shape: {new_shape}.')
     return new_shape
 
 
-def shape_after_full_convolution(shape, kernel_size, axes=None, stride=1, padding=0, dilation=1) -> tuple:
+def shape_after_full_convolution(shape: AxesLike, kernel_size: AxesLike, axes: AxesLike = None, stride: AxesLike = 1,
+                                 padding: AxesLike = 0, dilation: AxesLike = 1, valid: bool = True) -> tuple:
     """
     Get the shape of a tensor after applying a convolution with corresponding parameters along the given axes.
     The dimensions along the remaining axes will become singleton.
     """
-    axes = get_axes(axes, max(map(len, np.atleast_1d(kernel_size, stride, padding, dilation))))
+    axes = expand_axes(axes, np.broadcast_arrays(kernel_size, stride, padding, dilation)[0])
 
-    return fill_remaining_axes(
+    return fill_by_indices(
         np.ones_like(shape),
-        shape_after_convolution(np.array(shape)[axes], kernel_size, stride, padding, dilation), axes
+        shape_after_convolution(extract(shape, axes), kernel_size, stride, padding, dilation, valid), axes
     )

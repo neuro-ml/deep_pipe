@@ -8,56 +8,61 @@ Medical Imaging utils
     :show-inheritance:
 
 
-dpipe.medim.augmentation module
--------------------------------
+Data augmentation
+-----------------
 
 .. automodule:: dpipe.medim.augmentation
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.bounding\_box module
---------------------------------
-
-.. automodule:: dpipe.medim.bounding_box
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe.medim.box module
-----------------------
+Box
+---
 
 .. automodule:: dpipe.medim.box
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.checks module
--------------------------
+Checks
+------
 
 .. automodule:: dpipe.medim.checks
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.coregister module
------------------------------
-
-.. automodule:: dpipe.medim.coregister
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe.medim.dicom\_utils module
--------------------------------
+DICOM utils
+-----------
 
 .. automodule:: dpipe.medim.dicom_utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.divide module
--------------------------
+Crawling
+^^^^^^^^
+.. automodule:: dpipe.medim.dicom_utils.crawler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Aggregation
+^^^^^^^^^^^
+.. automodule:: dpipe.medim.dicom_utils.aggregation
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Miscellaneous
+^^^^^^^^^^^^^
+.. automodule:: dpipe.medim.dicom_utils.misc
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Data splitters
+--------------
 
 .. automodule:: dpipe.medim.divide
     :members:
@@ -72,7 +77,7 @@ dpipe.medim.features module
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.hsv module
+Color space conversion
 ----------------------
 
 .. automodule:: dpipe.medim.hsv
@@ -80,66 +85,74 @@ dpipe.medim.hsv module
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.metrics module
---------------------------
+Itertools
+---------
+
+.. automodule:: dpipe.medim.itertools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Metrics
+-------
 
 .. automodule:: dpipe.medim.metrics
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.patch module
-------------------------
+Patch
+-----
 
 .. automodule:: dpipe.medim.patch
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.preprocessing module
---------------------------------
+Preprocessing
+-------------
 
 .. automodule:: dpipe.medim.preprocessing
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.registration module
--------------------------------
+Brain images registration
+-------------------------
 
 .. automodule:: dpipe.medim.registration
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.shape\_utils module
--------------------------------
+Shape utils
+-----------
 
 .. automodule:: dpipe.medim.shape_utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.slices module
--------------------------
+Slices
+------
 
 .. automodule:: dpipe.medim.slices
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.utils module
-------------------------
+Images visualization
+--------------------
 
-.. automodule:: dpipe.medim.utils
+.. automodule:: dpipe.medim.visualize
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.medim.visualize module
-----------------------------
+Various utils
+-------------
 
-.. automodule:: dpipe.medim.visualize
+.. automodule:: dpipe.medim.utils
     :members:
     :undoc-members:
     :show-inheritance:

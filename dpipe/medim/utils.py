@@ -1,9 +1,10 @@
 import os
+from functools import wraps
 from typing import Sequence
 import inspect
 
-import numpy as np
-
+from .types import AxesLike
+from .shape_utils import check_axes
 from .checks import add_check_len
 from .itertools import *
 
@@ -13,8 +14,31 @@ def decode_segmentation(x, segm_decoding_matrix) -> np.array:
     return np.rollaxis(segm_decoding_matrix[x], -1)
 
 
+def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
+    """
+    Apply ``func`` to slices from ``x`` taken along ``axes``.
+
+    Parameters
+    ----------
+    func
+         function to apply. Note that both the input and output must have the same shape.
+    x
+    axes
+    """
+    axes = check_axes(axes)
+    if len(axes) == x.ndim:
+        return func(x)
+
+    other_axes = negate_indices(axes, x.ndim)
+    begin = np.arange(len(other_axes))
+
+    y = np.moveaxis(x, other_axes, begin).reshape(-1, *extract(x.shape, axes))
+    result = np.stack(map(func, y)).reshape(*x.shape)
+    return np.moveaxis(result, begin, other_axes)
+
+
 def extract_dims(array, ndims=1):
-    """Decrease the dimensionality of `array` by extracting `ndim` leading singleton dimensions."""
+    """Decrease the dimensionality of ``array`` by extracting ``ndims`` leading singleton dimensions."""
     for _ in range(ndims):
         assert len(array) == 1
         array = array[0]
@@ -33,6 +57,13 @@ def scale(x):
 
 def bytescale(x):
     return np.uint8(np.round(255 * scale(x)))
+
+
+def makedirs_top(path, mode=0o777, exist_ok=False):
+    """Creates a parent folder if any. See `os.makedirs` for details."""
+    folder = os.path.dirname(path)
+    if folder:
+        os.makedirs(folder, mode, exist_ok)
 
 
 def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> Callable:
@@ -75,7 +106,7 @@ def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> 
 
 def load_image(path: str):
     """
-    Load an image located at `path`.
+    Load an image located at ``path``.
     The following extensions are supported:
         npy, tif, hdr, img, nii, nii.gz
     """
@@ -96,15 +127,14 @@ def load_image(path: str):
 
 def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
     """
-    Yields tuples of objects given their loaders and ids.
+    Yields tuples of objects given their ``loaders`` and ``ids``.
 
     Parameters
     ----------
     loaders: Callable(id)
-    ids: Sequence
-        a sequence of ids to load
-    shuffle: bool, optional
-        whether to shuffle the ids before yielding
+    ids
+    shuffle
+        whether to shuffle the ids before yielding.
     """
     if shuffle:
         ids = np.random.permutation(ids)

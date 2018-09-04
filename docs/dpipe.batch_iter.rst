@@ -6,6 +6,30 @@ Batch iterators
     :undoc-members:
     :show-inheritance:
 
+Sources
+-------
+
+.. automodule:: dpipe.batch_iter.sources
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Pipeline
+--------
+
+.. automodule:: dpipe.batch_iter.pipeline
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dpipe.batch\_iter.base module
+-------------------------------
+
+.. automodule:: dpipe.batch_iter.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 dpipe.batch\_iter.blocks module
 -------------------------------
@@ -30,15 +54,6 @@ dpipe.batch\_iter.simple module
     :members:
     :undoc-members:
     :show-inheritance:
-
-dpipe.batch\_iter.sources module
---------------------------------
-
-.. automodule:: dpipe.batch_iter.sources
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 dpipe.batch\_iter.utils module
 ------------------------------

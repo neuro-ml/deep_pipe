@@ -1,4 +1,3 @@
-import os
 from typing import Callable
 from functools import partial
 
@@ -6,7 +5,8 @@ import numpy as np
 import torch
 from torch.nn import Module
 
-from dpipe.model import Model, FrozenModel, get_model_path
+from dpipe.medim.utils import makedirs_top
+from dpipe.model import Model, FrozenModel
 
 
 def load_model_state(module: torch.nn.Module, path: str, modify_state_fn: Callable = None):
@@ -26,9 +26,7 @@ def load_model_state(module: torch.nn.Module, path: str, modify_state_fn: Callab
 
 
 def save_model_state(module: torch.nn.Module, path: str):
-    folder = os.path.dirname(path)
-    if folder:
-        os.makedirs(folder, exist_ok=True)
+    makedirs_top(path, exist_ok=True)
     torch.save(module.state_dict(), path)
 
 
@@ -122,7 +120,7 @@ class TorchModel(Model):
         return self
 
     def load(self, path: str, modify_state_fn: callable = None):
-        load_model_state(self.model_core, get_model_path(path), modify_state_fn=modify_state_fn)
+        load_model_state(self.model_core, path, modify_state_fn=modify_state_fn)
         return self
 
 
@@ -149,7 +147,7 @@ class TorchFrozenModel(FrozenModel):
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str,
                  cuda: bool = None, modify_state_fn: callable = None):
         self.f = make_do_inf_step(model_core, logits2pred=logits2pred, cuda=cuda, modify_state_fn=modify_state_fn,
-                                  saved_model_path=get_model_path(restore_model_path))
+                                  saved_model_path=restore_model_path)
 
     def do_inf_step(self, *inputs):
         return self.f(*inputs)

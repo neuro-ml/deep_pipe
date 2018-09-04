@@ -90,16 +90,3 @@ ConvBlock3d: ConvBlock = partial(ConvBlock, get_convolution=nn.Conv3d, get_batch
 
 ConvTransposeBlock2d: ConvBlock = partial(ConvBlock, get_convolution=nn.ConvTranspose2d, get_batch_norm=nn.BatchNorm2d)
 ConvTransposeBlock3d: ConvBlock = partial(ConvBlock, get_convolution=nn.ConvTranspose3d, get_batch_norm=nn.BatchNorm3d)
-
-
-# Deprecated
-# ----------
-
-def make_res_init(structure, kernel_size, activation, padding=0):
-    if len(structure) == 2:
-        return nn.Sequential(nn.Conv3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding))
-    else:
-        return nn.Sequential(ConvBlock3d(structure[0], structure[1], kernel_size=kernel_size, padding=padding,
-                                         activation=activation),
-                             *make_res_init(structure[1:], kernel_size=kernel_size, padding=padding,
-                                            activation=activation))

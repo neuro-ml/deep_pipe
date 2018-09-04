@@ -1,14 +1,13 @@
 import numpy as np
 
+from .checks import check_shape_along_axis
 
-def iterate_slices(*data: np.ndarray, axis: int = -1):
+
+def iterate_slices(*data: np.ndarray, axis: int):
     """Iterate over slices of a series of tensors along a given axis."""
+    check_shape_along_axis(*data, axis=axis)
 
-    size = data[0].shape[axis]
-    if any(x.shape[axis] != size for x in data):
-        raise ValueError('All the tensors must have the same size along the given axis')
-
-    for idx in range(size):
+    for idx in range(data[0].shape[axis]):
         yield tuple(x.take(idx, axis=axis) for x in data)
 
 

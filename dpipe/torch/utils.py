@@ -1,9 +1,8 @@
-from abc import ABCMeta
-
+from numpy import deprecate
+import torch
+from torch import nn
 from torch.nn import functional
 from torch.autograd import Variable
-
-from dpipe.layers import *
 
 
 def compress_3d_to_2d(x):
@@ -21,13 +20,14 @@ def softmax_cross_entropy(logits, target, weight=None, reduce=True):
     return nn.functional.cross_entropy(logits, target, weight=weight, reduce=reduce)
 
 
-class Eye(nn.Module, metaclass=ABCMeta):
+class Eye(nn.Module):
     def __init__(self, n_classes):
         super().__init__()
         self.n_classes = n_classes
         self.register_buffer('eye', Variable(torch.eye(n_classes)))
 
 
+@deprecate
 class NormalizedSoftmaxCrossEntropy(Eye):
     def forward(self, logits, target):
         # This is dangerous, as any force cast. Contact with Egor before using it.
@@ -37,3 +37,6 @@ class NormalizedSoftmaxCrossEntropy(Eye):
         weight = flat_target.size()[0] / count
 
         return softmax_cross_entropy(logits, target, weight=weight)
+
+
+Eye = deprecate(Eye)

@@ -1,7 +1,11 @@
 import unittest
+from functools import partial
 
 import numpy as np
-from .utils import pad, zip_equal, flatten
+
+from dpipe.medim.preprocessing import normalize_multichannel_image, normalize_image
+from .utils import pad, filter_mask, apply_along_axes, scale
+from .itertools import zip_equal, flatten, extract, negate_indices
 
 
 def get_random_tuple(low, high, size):
@@ -64,3 +68,32 @@ class TestUtils(unittest.TestCase):
         self.assertListEqual(flatten([1, (2, 3), [[4]]]), [1, (2, 3), 4])
         self.assertListEqual(flatten([1, (2, 3), [[4]]], iterable_types=(list, tuple)), [1, 2, 3, 4])
         self.assertListEqual(flatten(1, iterable_types=list), [1])
+
+    def test_extract(self):
+        idx = [2, 5, 3, 9, 0]
+        self.assertListEqual(extract(range(15), idx), idx)
+
+    def test_filter_mask(self):
+        # TODO: def randomized_test
+        mask = np.random.randint(2, size=15, dtype=bool)
+        values, = np.where(mask)
+        np.testing.assert_array_equal(list(filter_mask(range(15), mask)), values)
+
+    def test_negate_indices(self):
+        idx = [2, 5, 3, 9, 0]
+        other = [1, 4, 6, 7, 8, 10, 11, 12]
+        np.testing.assert_array_equal(negate_indices(idx, 13), other)
+
+
+class TestApplyAlongAxes(unittest.TestCase):
+    def test_apply(self):
+        x = np.random.rand(3, 10, 10) * 2 + 3
+        np.testing.assert_array_almost_equal(
+            apply_along_axes(partial(normalize_image, drop_percentile=20), x, (1, 2)),
+            normalize_multichannel_image(x, drop_percentile=20)
+        )
+
+        axes = (0, 2)
+        y = apply_along_axes(scale, x, axes)
+        np.testing.assert_array_almost_equal(y.max(axes), 1)
+        np.testing.assert_array_almost_equal(y.min(axes), 0)

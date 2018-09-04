@@ -1,15 +1,17 @@
 import os
 import argparse
-import functools
 
-from resource_manager import read_config
+from resource_manager import read_config, ResourceManager
 
 MODULES_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 SHORTCUTS = {
     'dpipe_configs': os.path.join(MODULES_FOLDER, os.pardir, 'dpipe_configs'),
 }
 
-get_resource_manager = functools.partial(read_config, shortcuts=SHORTCUTS)
+
+def get_resource_manager(source_path: str, shortcuts: dict = None) -> ResourceManager:
+    """Read and parse a config. See `resource_manager.read_config for details.`"""
+    return read_config(source_path, shortcuts={**SHORTCUTS, **(shortcuts or {})})
 
 
 def render_config_resource():

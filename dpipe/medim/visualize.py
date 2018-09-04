@@ -1,11 +1,10 @@
-import os
-
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmentation_probabilities
 from .checks import check_shape_along_axis
+from .utils import makedirs_top
 
 
 def _get_rows_cols(max_cols, data):
@@ -102,8 +101,6 @@ def animate3d(*data: np.ndarray, output_path: str, axis: int = -1, scale: int = 
         return images
 
     plt.tight_layout()
-    output_folder = os.path.dirname(output_path)
-    if output_folder:
-        os.makedirs(output_folder, exist_ok=True)
+    makedirs_top(output_path, exist_ok=True)
     FuncAnimation(fig, func=update, frames=data[0].shape[axis], blit=True, repeat=repeat).save(
         output_path, writer=writer, fps=fps)

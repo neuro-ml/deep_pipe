@@ -1,15 +1,4 @@
-import os
 from abc import ABC, abstractmethod
-from warnings import warn
-
-
-# TODO: deprecated
-def get_model_path(path):
-    new_path = os.path.join(path, 'model')
-    if not os.path.exists(new_path):
-        return path
-    warn('"get_model_path" is deprecated. Pass the complete path to load the model.', DeprecationWarning)
-    return new_path
 
 
 class Model(ABC):

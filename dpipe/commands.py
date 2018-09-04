@@ -1,7 +1,4 @@
-"""
-Contains a few more sophisticated commands
-that are usually accessed via the `do.py` script.
-"""
+"""Contains a few more sophisticated commands that are usually accessed directly inside configs."""
 
 import os
 from collections import defaultdict
@@ -17,15 +14,6 @@ def np_filename2id(filename):
     *rest, extension = filename.split('.')
     assert extension == 'npy', f'Expected npy file, got {extension} from {filename}'
     return '.'.join(rest)
-
-
-@np.deprecate
-def train_model(train, model, save_model_path, restore_model_path=None, modify_state_fn=None):
-    if restore_model_path is not None:
-        model.load(restore_model_path, modify_state_fn=modify_state_fn)
-
-    train()
-    model.save(save_model_path)
 
 
 def transform(input_path, output_path, transform_fn):

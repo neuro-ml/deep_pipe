@@ -10,9 +10,13 @@ cd deep_pipe
 pip install -e .
 ```
 
+## Documentation
+
+https://deep-pipe.readthedocs.io/en/latest/
+
 ## Basic usage
 
-1. Create a config file. There are some examples in `dpipe_configs`
+1. Create a config file.
 2. To build the experiment, run 
 ```bash
 python -m dpipe build_experiment --config_path CONFIG_PATH --experiment_path EXPERIMENT_PATH

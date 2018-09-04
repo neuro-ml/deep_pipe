@@ -69,7 +69,7 @@ CONSOLE_ARGUMENT = re.compile(r'^--[^\d\W]\w*$')
 
 
 class ConsoleArguments:
-    """A class that simplifies the access to console arguments."""
+    """A class that simplifies access to console arguments."""
 
     def __init__(self):
         parser = argparse.ArgumentParser()
@@ -85,22 +85,7 @@ class ConsoleArguments:
             self._args[arg[2:]] = value
 
     def __getattr__(self, name: str):
-        """
-        Get the console argument with the corresponding name
-
-        Parameters
-        ----------
-        name: str
-            argument's name
-
-        Returns
-        -------
-        argument_value
-
-        Raises
-        ------
-        AttributeError
-        """
+        """Get the console argument with the corresponding name."""
         try:
             return self._args[name]
         except KeyError:
