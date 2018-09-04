@@ -1,12 +1,12 @@
 import os
 from functools import wraps
-from typing import Sequence
 import inspect
 
 from .types import AxesLike
 from .shape_utils import check_axes
 from .checks import add_check_len
 from .itertools import *
+from .io import load_image
 
 
 def decode_segmentation(x, segm_decoding_matrix) -> np.array:
@@ -104,27 +104,6 @@ def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> 
     return wrapper
 
 
-def load_image(path: str):
-    """
-    Load an image located at ``path``.
-    The following extensions are supported:
-        npy, tif, hdr, img, nii, nii.gz
-    """
-    if path.endswith('.npy'):
-        return np.load(path)
-    if path.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
-        import nibabel as nib
-        return nib.load(path).get_data()
-    if path.endswith('.tif'):
-        from PIL import Image
-        with Image.open(path) as image:
-            return np.asarray(image)
-    if path.endswith(('.png', '.jpg')):
-        from imageio import imread
-        return imread(path)
-    raise ValueError(f"Couldn't read image from path: {path}.\nUnknown file extension.")
-
-
 def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
     """
     Yields tuples of objects given their ``loaders`` and ``ids``.
@@ -140,11 +119,6 @@ def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
         ids = np.random.permutation(ids)
     for identifier in ids:
         yield squeeze_first(tuple(loader(identifier) for loader in loaders))
-
-
-def zdict(keys: Iterable, values: Iterable) -> dict:
-    """Create a `dict` from ``keys`` and ``values``."""
-    return dict(zip_equal(keys, values))
 
 
 def pad(x, padding, padding_values):

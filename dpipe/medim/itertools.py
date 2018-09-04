@@ -6,7 +6,7 @@ import numpy as np
 
 
 def recursive_conditional_map(xr, f, condition):
-    """Walks recursively through iterable data structure `xr`. Applies `f` on objects that satisfy `condition`."""
+    """Walks recursively through iterable data structure ``xr``. Applies ``f`` on objects that satisfy ``condition``."""
     return tuple(f(x) if condition(x) else recursive_conditional_map(x, f, condition) for x in xr)
 
 
@@ -51,6 +51,11 @@ def zip_equal(*args: Union[Sized, Iterable]):
 def lmap(func: Callable, *iterables: Iterable) -> list:
     """Composition of list and map."""
     return list(map(func, *iterables))
+
+
+def zdict(keys: Iterable, values: Iterable) -> dict:
+    """Create a `dict` from ``keys`` and ``values``."""
+    return dict(zip_equal(keys, values))
 
 
 def squeeze_first(inputs):

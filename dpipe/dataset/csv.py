@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from dpipe.medim.utils import load_image
+from dpipe.medim import load_image
 
 
 def multiple_columns(method, index, columns):

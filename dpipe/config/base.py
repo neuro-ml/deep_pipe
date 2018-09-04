@@ -10,7 +10,7 @@ SHORTCUTS = {
 
 
 def get_resource_manager(source_path: str, shortcuts: dict = None) -> ResourceManager:
-    """Read and parse a config. See `resource_manager.read_config for details.`"""
+    """Read and parse a config. See `resource_manager.read_config` for details."""
     return read_config(source_path, shortcuts={**SHORTCUTS, **(shortcuts or {})})
 
 

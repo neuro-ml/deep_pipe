@@ -12,7 +12,7 @@ serial = {'ImagePositionPatient', 'ImageOrientationPatient', 'PixelSpacing'}
 person_class = (valuerep.PersonName3, valuerep.PersonNameBase)
 
 
-def throw(e):
+def _throw(e):
     raise e
 
 
@@ -88,7 +88,7 @@ def walk_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bo
             raise ValueError(f'Each extension must start with a dot: "{extension}".')
 
     def walker():
-        for root_, _, files_ in os.walk(top, onerror=throw):
+        for root_, _, files_ in os.walk(top, onerror=_throw):
             files_ = [file for file in files_ if not any(file.endswith(ext) for ext in ignore_extensions)]
             if files_:
                 yield root_, files_

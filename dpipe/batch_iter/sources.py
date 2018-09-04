@@ -2,10 +2,10 @@ from typing import Sequence, Callable
 
 import numpy as np
 
-from dpipe.medim.utils import pam
+from dpipe.medim.utils import pam, squeeze_first
 
 
-def sample_ids(sequence: Sequence, weights: Sequence[float] = None):
+def sample(sequence: Sequence, weights: Sequence[float] = None):
     """
     Infinitely yield samples from ``sequence`` according to ``weights``.
 
@@ -26,14 +26,15 @@ def sample_ids(sequence: Sequence, weights: Sequence[float] = None):
 
 def load_by_random_id(*loaders: Callable, ids: Sequence, weights: Sequence[float] = None):
     """
-    Infinitely yield objects loaded by identifiers randomly sampled from ``ids`` according to ``weights``.
+    Infinitely yield objects loaded by ``loaders``. Each loader takes a single argument - an identifier.
+    The identifiers are randomly sampled from ``ids`` according to ``weights``.
 
     Parameters
     ----------
-    loaders
+    loaders: Callable(id)
     ids
     weights
         The weights associated with each id. If None, the weights are assumed to be equal.
     """
-    for id_ in sample_ids(ids, weights):
-        yield tuple(pam(loaders, id_))
+    for id_ in sample(ids, weights):
+        yield squeeze_first(tuple(pam(loaders, id_)))

@@ -1,42 +1,83 @@
-from numpy import deprecate
+from typing import Callable
+
+import numpy as np
 import torch
-from torch import nn
-from torch.nn import functional
-from torch.autograd import Variable
+
+from dpipe.medim.utils import makedirs_top
 
 
-def compress_3d_to_2d(x):
-    return x.view(*x.size()[:-2], -1)
+def load_model_state(module: torch.nn.Module, path: str, modify_state_fn: Callable = None):
+    if is_on_cuda(module):
+        map_location = None
+    else:
+        # load models that were trained on GPU, but now run on CPU
+        def map_location(storage, location):
+            return storage
+
+    state_to_load = torch.load(path, map_location=map_location)
+    if modify_state_fn is not None:
+        current_state = module.state_dict()
+        state_to_load = modify_state_fn(current_state, state_to_load)
+    module.load_state_dict(state_to_load)
+    return module
 
 
-def softmax_cross_entropy(logits, target, weight=None, reduce=True):
-    """Softmax cross entropy loss for Nd data."""
-    target = target.long()
-    # Convert 5d input to 4d, because it is faster in functional.cross_entropy
-    if logits.dim() == 5:
-        logits = compress_3d_to_2d(logits)
-        target = compress_3d_to_2d(target)
-
-    return nn.functional.cross_entropy(logits, target, weight=weight, reduce=reduce)
+def save_model_state(module: torch.nn.Module, path: str):
+    makedirs_top(path, exist_ok=True)
+    torch.save(module.state_dict(), path)
 
 
-class Eye(nn.Module):
-    def __init__(self, n_classes):
-        super().__init__()
-        self.n_classes = n_classes
-        self.register_buffer('eye', Variable(torch.eye(n_classes)))
+def is_on_cuda(module: torch.nn.Module):
+    return next(module.parameters()).is_cuda
 
 
-@deprecate
-class NormalizedSoftmaxCrossEntropy(Eye):
-    def forward(self, logits, target):
-        # This is dangerous, as any force cast. Contact with Egor before using it.
-        target = target.long()
-        flat_target = target.view(-1)
-        count = self.eye.index_select(0, flat_target).sum(0)
-        weight = flat_target.size()[0] / count
-
-        return softmax_cross_entropy(logits, target, weight=weight)
+def sequence_to_var(*data, cuda: bool = None, requires_grad: bool = False):
+    return tuple(to_var(x, cuda, requires_grad) for x in data)
 
 
-Eye = deprecate(Eye)
+def sequence_to_np(*data):
+    return tuple(to_np(x) if isinstance(x, torch.Tensor) else x for x in data)
+
+
+def to_np(x: torch.Tensor) -> np.ndarray:
+    """Convert a torch.Tensor to a numpy array."""
+    return x.data.cpu().numpy()
+
+
+def to_var(x: np.ndarray, cuda: bool = None, requires_grad: bool = False) -> torch.Tensor:
+    """
+    Convert a numpy array to a torch Tensor
+
+    Parameters
+    ----------
+    x
+    cuda
+        whether to move tensor to cuda. If None, torch.cuda.is_available() is used to determine that.
+    requires_grad: bool, optional
+    """
+    x = torch.from_numpy(np.asarray(x))
+    if requires_grad:
+        x.requires_grad_()
+    return to_cuda(x, cuda)
+
+
+def to_cuda(x, cuda: bool = None):
+    """
+    Move ``x`` to cuda if specified.
+
+    Parameters
+    ----------
+    x
+    cuda
+        whether to move to cuda. If None, torch.cuda.is_available() is used to determine that.
+    """
+    if cuda or (cuda is None and torch.cuda.is_available()):
+        x = x.cuda()
+    return x
+
+
+def set_lr(optimizer: torch.optim.Optimizer, lr: float) -> torch.optim.Optimizer:
+    """Change an ``optimizer``'s learning rate to `lr`."""
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+    return optimizer

@@ -1,6 +1,6 @@
 import os
 
-from dpipe.medim.utils import load_image
+from dpipe.medim import load_image
 
 
 def remove_extension(name):

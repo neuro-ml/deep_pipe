@@ -32,7 +32,7 @@ def _path_based_call(exists, missing, exists_message, missing_message, paths, ke
 
 def if_missing(func: Callable, *paths: str, verbose: bool = True, **keyword_paths: str):
     """
-    Call `func` if at least some of the `paths` or `keyword_paths` do not exist.
+    Call ``func`` if at least some of the ``paths`` or ``keyword_paths`` do not exist.
 
     Examples
     --------
@@ -49,7 +49,7 @@ def if_missing(func: Callable, *paths: str, verbose: bool = True, **keyword_path
 
 def load_or_create(load: Callable, create: Callable, *paths: str, verbose: bool = False, **keyword_paths: str):
     """
-    Call `load` if at least some of the `paths` or `keyword_paths` do not exist, otherwise call `create`.
+    Call ``load`` if at least some of the ``paths`` or ``keyword_paths`` do not exist, otherwise call ``create``.
 
     Parameters
     ----------
@@ -62,7 +62,7 @@ def load_or_create(load: Callable, create: Callable, *paths: str, verbose: bool 
 
     Returns
     -------
-    The result of `load` or `create`.
+    The result of ``load`` or ``create``.
     """
     return _path_based_call(
         load, create,

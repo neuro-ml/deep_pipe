@@ -7,7 +7,6 @@ from scipy.ndimage.filters import gaussian_filter
 from .itertools import extract
 from .utils import apply_along_axes
 from .types import AxesLike
-from .preprocessing import slice_to_shape, pad_to_shape
 from .shape_utils import expand_axes
 
 
@@ -19,9 +18,3 @@ def elastic_transform(x: np.ndarray, amplitude: float, axes: AxesLike = None, or
     grid = np.mgrid[tuple(map(slice, grid_shape))] + deltas
 
     return apply_along_axes(partial(map_coordinates, coordinates=grid, order=order), x, axes)
-
-
-def pad_slice(x: np.ndarray, shape, axes=None, padding_values=0):
-    return pad_to_shape(
-        slice_to_shape(x, np.minimum(shape, x.shape), axes), np.maximum(shape, x.shape), axes, padding_values
-    )

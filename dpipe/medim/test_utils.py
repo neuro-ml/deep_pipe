@@ -61,7 +61,9 @@ class TestUtils(unittest.TestCase):
             with self.subTest(args=args):
                 self.assertEqual(len(list(zip_equal(*args))), 5)
 
-        self.assertEqual(len(list(zip_equal())), 0)
+        for args in [[], [range(5)], [range(5), range(5)], [range(5), range(5), range(5)]]:
+            with self.subTest(args=args):
+                self.assertListEqual(list(zip_equal(*args)), list(zip(*args)))
 
     def test_flatten(self):
         self.assertListEqual(flatten([1, [2, 3], [[4]]]), [1, 2, 3, 4])

@@ -56,29 +56,58 @@ def load_by_meta(row: pd.Series) -> np.ndarray:
     return x.transpose(*transpose)
 
 
+# TODO: this surely can be simplified
 def print_structure(images: pd.DataFrame, patient_cols: Sequence[str], study_cols: Sequence[str],
                     series_cols: Sequence[str]):
-    def print_indent(*messages, level=0):
-        print('|' + '--' * level, *messages)
+    """
+    Print a tree-like structure containing information from the given columns.
 
-    def print_cols(row, cols, level):
-        for col in cols:
+    Required columns: PatientID, StudyInstanceUID, SeriesInstanceUID, SeriesDescription.
+    """
+
+    def print_indent(*messages, levels):
+        prefix = '  '
+        for j, last in enumerate(levels):
+            if is_last(j, levels):
+                if last:
+                    prefix += '└──'
+                else:
+                    prefix += '├──'
+            else:
+                if last:
+                    prefix += '    '
+                else:
+                    prefix += '│   '
+
+        print(prefix, *messages)
+
+    def is_last(index, array):
+        return index == len(array) - 1
+
+    def print_cols(row, cols, levels, last):
+        cols = [c for c in cols if pd.notnull(row[c])]
+        for i, col in enumerate(cols):
             value = row[col]
-            if pd.notnull(value):
-                print_indent(col, ':', value, level=level)
+            print_indent(col + ':', value, levels=levels + [last and is_last(i, cols)])
 
-    for patient, studies in images.groupby('PatientID'):
-        print_indent('Patient:', patient)
-        print_cols(studies.iloc[0], patient_cols, 1)
+    patients = list(images.groupby('PatientID'))
+    for i, (patient, studies) in enumerate(patients):
+        print('Patient:', patient)
+        print_cols(studies.iloc[0], patient_cols, [], False)
+        studies = list(studies.groupby('StudyInstanceUID'))
 
-        for study, all_series in studies.groupby('StudyInstanceUID'):
-            print_indent()
-            print_indent('Study:', study, level=1)
-            print_cols(studies.iloc[0], study_cols, 2)
+        for ii, (study, all_series) in enumerate(studies):
+            study_levels = [is_last(ii, studies)]
+            print_indent('Study:', study, levels=study_levels)
+            print_cols(all_series.iloc[0], study_cols, study_levels, False)
 
-            for series, data in all_series.groupby('SeriesInstanceUID'):
-                for _, row in data.iterrows():
-                    print_indent()
-                    print_indent('Series:', series, level=2)
-                    print_cols(row, series_cols, 3)
+            all_series = list(all_series.iterrows())
+
+            for iii, (_, row) in enumerate(all_series):
+                series_levels = study_levels + [is_last(iii, all_series)]
+                print('      │')
+                series_id = row.SeriesInstanceUID.split('.')[-1]
+                series_description = row.SeriesDescription or '<no description>'
+                print_indent(series_description, f'(id={series_id})', levels=series_levels)
+                print_cols(row, series_cols, series_levels, True)
         print()
