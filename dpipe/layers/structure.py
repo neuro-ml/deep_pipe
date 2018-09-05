@@ -30,7 +30,7 @@ def build_fpn(structure, make_block, make_up, make_down, split_merge):
 
 def make_blocks_with_splitters(structure, make_block, make_splitter):
     if len(structure) == 1:
-        return make_block(structure[0])
+        return make_block(structure)
     else:
         return nn.Sequential(make_block(structure[0]),
                              make_splitter(),

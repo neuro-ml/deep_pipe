@@ -90,3 +90,5 @@ ConvBlock3d: ConvBlock = partial(ConvBlock, get_convolution=nn.Conv3d, get_batch
 
 ConvTransposeBlock2d: ConvBlock = partial(ConvBlock, get_convolution=nn.ConvTranspose2d, get_batch_norm=nn.BatchNorm2d)
 ConvTransposeBlock3d: ConvBlock = partial(ConvBlock, get_convolution=nn.ConvTranspose3d, get_batch_norm=nn.BatchNorm3d)
+
+make_res_init_path_3d = partial(make_init_path, conv=nn.Conv3d, conv_block=ConvBlock3d)
