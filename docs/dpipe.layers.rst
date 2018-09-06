@@ -32,12 +32,3 @@ dpipe.layers.structure module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: dpipe.layers
-    :members:
-    :undoc-members:
-    :show-inheritance:

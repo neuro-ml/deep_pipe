@@ -55,8 +55,8 @@ dpipe.batch\_iter.simple module
     :undoc-members:
     :show-inheritance:
 
-dpipe.batch\_iter.utils module
-------------------------------
+Utils
+-----
 
 .. automodule:: dpipe.batch_iter.utils
     :members:

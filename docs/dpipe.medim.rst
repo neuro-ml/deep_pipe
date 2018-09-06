@@ -1,5 +1,5 @@
-Medical Imaging utils
-=====================
+Imaging utils
+=============
 
 
 .. automodule:: dpipe.medim
@@ -29,7 +29,6 @@ Checks
 
 .. automodule:: dpipe.medim.checks
     :members:
-    :undoc-members:
     :show-inheritance:
 
 DICOM utils

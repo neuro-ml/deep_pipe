@@ -6,17 +6,16 @@ PyTorch Wrappers
     :undoc-members:
     :show-inheritance:
 
-
-dpipe.torch.model module
-------------------------
+Model wrapper
+-------------
 
 .. automodule:: dpipe.torch.model
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.torch.utils module
-------------------------
+Utils
+-----
 
 .. automodule:: dpipe.torch.utils
     :members:

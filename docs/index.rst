@@ -9,14 +9,12 @@ Subpackages
 .. toctree::
 
     dpipe.config
+    dpipe.experiment
     dpipe.batch_iter
     dpipe.batch_predict
     dpipe.dataset
-    dpipe.experiment
     dpipe.layers
     dpipe.medim
-    dpipe.model_core
-    dpipe.split
     dpipe.torch
     dpipe.train
     dpipe.commands
