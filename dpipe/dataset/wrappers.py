@@ -1,14 +1,16 @@
-"""Wrappers aim to change the dataset's behaviour"""
-
+"""Wrappers change the dataset's behaviour."""
 import functools
-import os
+from os.path import join as jp
 from itertools import chain
 from typing import Sequence, Callable, Iterable
 from collections import ChainMap, namedtuple
+from warnings import warn
 
 import numpy as np
 
 import dpipe.medim as medim
+from dpipe.medim.checks import join
+from dpipe.medim.itertools import zdict
 from dpipe.medim.utils import cache_to_disk
 from .base import Dataset, SegmentationDataset
 
@@ -21,32 +23,29 @@ class Proxy:
         return getattr(self._shadowed, name)
 
 
-def cache_methods(dataset: Dataset, methods: Sequence[str]) -> Dataset:
-    """
-    Wrapper that caches the dataset's methods.
+def cache_methods(instance=None, methods: Iterable[str] = None, dataset=None) -> Dataset:
+    """Cache the ``instamce``'s ``methods``."""
+    cache = functools.lru_cache(None)
+    if dataset is not None:
+        warn('the argument "dataset" is deprecated. unse "instance" instead')
+        assert instance is None
+        instance = dataset
 
-    Parameters
-    ----------
-    dataset: Dataset
-    methods: Sequence[str]
-        a sequence of methods names to be cached
-    """
-    cache = functools.lru_cache(len(dataset.ids))
-
-    new_methods = {method: staticmethod(cache(getattr(dataset, method))) for method in methods}
+    new_methods = {method: staticmethod(cache(getattr(instance, method))) for method in methods}
     proxy = type('Cached', (Proxy,), new_methods)
-    return proxy(dataset)
+    return proxy(instance)
 
 
-def cache_methods_to_disk(instance, **methods: str) -> Dataset:
+def cache_methods_to_disk(instance, base_path: str, **methods: str) -> Dataset:
     """
-    Wrapper that caches the ``methods`` to disk.
+    Cache the ``instamce``'s ``methods`` to disk.
 
     Parameters
     ----------
     instance
-    methods: str
-         each keyword argument has the form `method_name=path_to_cache`.
+    base_path
+    methods
+         each keyword argument has the form `method_name=path_to_cache`, the path is relative to ``base_path``.
          The methods are assumed to take a single argument of type `str`.
 
     Notes
@@ -55,7 +54,7 @@ def cache_methods_to_disk(instance, **methods: str) -> Dataset:
     """
 
     def path_by_id(path, identifier):
-        return os.path.join(path, f'{identifier}.npy')
+        return jp(path, f'{identifier}.npy')
 
     def load(path, identifier):
         return np.load(path_by_id(path, identifier))
@@ -63,7 +62,7 @@ def cache_methods_to_disk(instance, **methods: str) -> Dataset:
     def save(value, path, identifier):
         np.save(path_by_id(path, identifier), value)
 
-    new_methods = {method: staticmethod(cache_to_disk(getattr(instance, method), path, load, save))
+    new_methods = {method: staticmethod(cache_to_disk(getattr(instance, method), jp(base_path, path), load, save))
                    for method, path in methods.items()}
     proxy = type('CachedToDisk', (Proxy,), new_methods)
     return proxy(instance)
@@ -79,7 +78,7 @@ def apply(instance, **methods: Callable):
     Parameters
     ----------
     instance
-    methods: Callable
+    methods
         each keyword argument has the form `method_name=func_to_apply`.
         `func_to_apply` is applied to the `method_name` method.
     """
@@ -110,23 +109,23 @@ def set_attributes(instance, **attributes):
     return proxy(instance)
 
 
-def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = None) -> Dataset:
+def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = ()) -> Dataset:
     """
-    Change the `dataset`'s ids according to the `change_id` function and adapt the provided `methods`
+    Change the ``dataset``'s ids according to the ``change_id`` function and adapt the provided ``methods``
     to work with the new ids.
 
     Parameters
     ----------
-    dataset: Dataset
+    dataset
     change_id: Callable(str) -> str
-    methods: str, optional
+    methods
         the list of methods to be adapted. Each method takes a single argument - the identifier.
     """
     assert 'ids' not in methods
     ids = tuple(map(change_id, dataset.ids))
-    assert len(set(ids)) == len(ids), 'The resulting ids are not unique'
-    new_to_old = dict(zip(ids, dataset.ids))
-    methods = set(methods or []) | {'load_image'}
+    if len(set(ids)) != len(ids):
+        raise ValueError('The resulting ids are not unique.')
+    new_to_old = zdict(ids, dataset.ids)
 
     def decorator(method):
         @functools.wraps(method)
@@ -142,8 +141,7 @@ def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = N
 
 
 def rebind(instance, methods):
-    """Binds the `methods` to the last proxy."""
-
+    """Binds the ``methods`` to the last proxy."""
     new_methods = {method: getattr(instance, method).__func__ for method in methods}
     proxy = type('Rebound', (Proxy,), new_methods)
     return proxy(instance)
@@ -189,25 +187,31 @@ def normalized(dataset: Dataset, mean: bool = True, std: bool = True, drop_perce
                                                        drop_percentile=drop_percentile))
 
 
-def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
+def merge(*datasets: Dataset, methods: Sequence[str] = (), attributes: Sequence[str] = ()) -> Dataset:
     """
-    Merge several datasets into one by preserving the provided methods.
+    Merge several ``datasets`` into one by preserving the provided ``methods`` and ``attributes``.
 
     Parameters
     ----------
-    datasets: Dataset
-    methods: Sequence[str], optional
+    datasets
+    methods
         the list of methods to be preserved. Each method must take a single argument - the identifier.
+    attributes
+        the list of attributes to be preserved. For each dataset their values must coincide.
     """
-
+    clash = set(methods) & set(attributes)
+    if clash:
+        raise ValueError(f'Method names clash with attribute names: {join(clash)}.')
     ids = tuple(id_ for dataset in datasets for id_ in dataset.ids)
-    assert len(set(ids)) == len(ids), 'The ids are not unique'
-    n_chans_images = {dataset.n_chans_image for dataset in datasets}
-    assert len(n_chans_images) == 1, 'Each dataset must have the same number of channels'
+    if len(set(ids)) != len(ids):
+        raise ValueError('The ids are not unique.')
 
-    id_to_dataset = ChainMap(*({id_: dataset for id_ in dataset.ids} for dataset in datasets))
-    n_chans_image = list(n_chans_images)[0]
-    methods = list(set(methods or []) | {'load_image'})
+    preserved_attributes = []
+    for attribute in attributes:
+        values = {getattr(dataset, attribute) for dataset in datasets}
+        preserved_attributes.append(list(values)[0])
+        if len(values) != 1:
+            raise ValueError(f'Datasets have different values of attribute "{attribute}".')
 
     def decorator(method_name):
         def wrapper(identifier):
@@ -215,8 +219,9 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None) -> Dataset:
 
         return wrapper
 
-    Merged = namedtuple('Merged', methods + ['ids', 'n_chans_image'])
-    return Merged(*chain(map(decorator, methods), [ids, n_chans_image]))
+    id_to_dataset = ChainMap(*({id_: dataset for id_ in dataset.ids} for dataset in datasets))
+    Merged = namedtuple('Merged', chain(['ids'], methods, attributes))
+    return Merged(*chain([ids], map(decorator, methods), preserved_attributes))
 
 
 def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,

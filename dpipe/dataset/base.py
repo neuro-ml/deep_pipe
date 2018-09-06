@@ -6,7 +6,11 @@ import numpy as np
 
 
 class AbstractAttribute:
-    pass
+    def __init__(self, description: str):
+        self.description = description
+
+    def __repr__(self):
+        return self.description
 
 
 class ABCAttributesMeta(ABCMeta):

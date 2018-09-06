@@ -8,16 +8,16 @@ from dpipe.config import get_resource_manager
 def flat(split: Iterable, config_path: str, experiment_path: str):
     """
     Generates an experiment with a 'flat' structure: each created subdirectory
-    will contain triples of ids (train, validation, test) defined in the `split`.
+    will contain triples of ids (train, validation, test) defined in the ``split``.
 
     Parameters
     ----------
-    split: Iterable
+    split
         an iterable that yield triplets of ids: (train, validation, test)
-    config_path: str
-        the path to the config file
-    experiment_path: str
-        the path where the experiment will be stored
+    config_path
+        the path to the config file.
+    experiment_path
+        the path where the experiment will be stored.
     """
     for i, ids in enumerate(split):
         local = os.path.join(experiment_path, f'experiment_{i}')

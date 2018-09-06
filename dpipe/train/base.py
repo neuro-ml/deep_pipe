@@ -2,25 +2,25 @@ from typing import Callable
 
 from .batch_iter import BatchIter
 from .logging import Logger
-from .lr_base import LearningRatePolicy
+from dpipe.train.policy import Policy
 
 
-def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, lr_policy: LearningRatePolicy, logger: Logger,
+def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, lr_policy: Policy, logger: Logger,
           validate: Callable = None):
     """
     Train a given model.
 
     Parameters
     ----------
-    do_train_step: Callable
-    batch_iter: BatchIter
+    do_train_step
+    batch_iter
         batch iterator
-    n_epochs: int
+    n_epochs
         number of epochs to train
-    lr_policy: LearningRatePolicy
+    lr_policy
         the learning rate policy
-    logger: Logger
-    validate: callable, optional
+    logger
+    validate
         a function that calculates the loss and metrics on the validation set
     """
     # TODO: stopping policy
@@ -30,12 +30,12 @@ def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, lr_poli
             # train the model
             train_losses = []
             for inputs in batch_iter:
-                train_losses.append(do_train_step(*inputs, lr=lr_policy.lr))
+                train_losses.append(do_train_step(*inputs, lr=lr_policy.value))
                 lr_policy.step_finished(train_losses[-1])
             lr_policy.epoch_finished(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
 
             logger.train(train_losses, epoch)
-            logger.lr(lr_policy.lr, epoch)
+            logger.lr(lr_policy.value, epoch)
 
             if validate is not None:
                 val_result = validate()

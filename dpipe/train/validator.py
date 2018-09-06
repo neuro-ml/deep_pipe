@@ -3,21 +3,17 @@ from typing import Sequence, Callable
 from dpipe.medim.utils import load_by_ids
 
 
-def evaluate(y_true: Sequence, y_pred: Sequence, metrics: dict):
+def evaluate(y_true: Sequence, y_pred: Sequence, metrics: dict) -> dict:
     """
     Calculates the metrics listed in the `metrics` dict.
 
     Parameters
     ----------
-    y_true: ground truth
-    y_pred: predictions
-    metrics: dict
+    y_true
+    y_pred
+    metrics
         a dict, where the key is the metric's name and the value is a
         callable with the standard sklearn signature: (y_true, y_pred) -> metric
-
-    Returns
-    -------
-    calculated_metrics: dict
     """
     return {name: metric(y_true, y_pred) for name, metric in metrics.items()}
 
@@ -28,13 +24,13 @@ def validate(validate_fn: Callable, load_x: Callable, load_y: Callable, ids: Seq
 
     Parameters
     ----------
-    validate_fn: callable(x_batch, y_batch) -> (prediction, loss)
-    load_x: callable(id)
-    load_y: callable(id)
-    ids: Sequence[str]
-    metrics: dict
+    validate_fn: Callable(x_batch, y_batch) -> (prediction, loss)
+    load_x: Callable(id)
+    load_y: Callable(id)
+    ids
+    metrics
         a dict, where the key is the metric's name and the value is a
-        callable with the standard sklearn signature: (y_true, y_pred) -> metric
+        callable with the standard sklearn signature: (target, prediction) -> metric_value
 
     Returns
     -------

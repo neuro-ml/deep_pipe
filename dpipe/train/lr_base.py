@@ -1,29 +1,9 @@
-from typing import Sequence
+from warnings import warn
 
+from numpy import deprecate
 
-class LearningRatePolicy:
-    """Interface for learning rate policies. The current learning rate is stored in the "lr" attribute."""
+from .policy import Policy
 
-    def __init__(self, lr_init):
-        self.epoch = 0
-        self.step = 0
-        self.total_steps = 0
-        self.lr = lr_init
+LearningRatePolicy = deprecate(Policy, old_name='LearningRatePolicy', new_name='Policy')
 
-    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None,
-                          metrics: dict = None):
-        """Indicate that an epoch has finished, with corresponding losses and metrics."""
-
-    def epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None,
-                       metrics: dict = None):
-        self.on_epoch_finished(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
-        self.step = 0
-        self.epoch += 1
-
-    def on_step_finished(self, train_loss: float):
-        """Indicate that a new training step in the current epoch has finished."""
-
-    def step_finished(self, train_loss: float):
-        self.on_step_finished(train_loss)
-        self.step += 1
-        self.total_steps += 1
+warn('dpipe.train.lr_base is deprecated', DeprecationWarning)

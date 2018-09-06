@@ -1,86 +1,9 @@
-from typing import Sequence, Callable
+from warnings import warn
 
-import numpy as np
+from numpy import deprecate
 
-from .lr_base import LearningRatePolicy
+from .policy import *
 
+LearningRatePolicy = deprecate(Policy, old_name='LearningRatePolicy', new_name='Policy')
 
-class Decreasing(LearningRatePolicy):
-    """
-    Learning rate policy that traces average train loss or val loss (trace_train or trace_val parameter) and if
-    it didn't decrease according to atol or rtol for patience epochs, multiply lr by lr_dec_mul.
-    """
-
-    def __init__(self, *, lr_init: float, lr_dec_mul: float, patience: int, trace_train=False,
-                 trace_val=False, rtol, atol):
-        super().__init__(lr_init)
-
-        assert (trace_train ^ trace_val), 'either trace_train or trace_val should be activated'
-
-        self.lr_dec_mul = lr_dec_mul
-        self.patience = patience
-        self.epochs_waited = 0
-        self.trace_train = trace_train
-        self.get_margin_loss = lambda loss: max([loss * (1 - rtol), loss - atol])
-        self.margin_loss = np.inf
-
-    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None, **kwargs):
-        loss = np.mean(train_losses if self.trace_train else val_losses)
-        if loss < self.margin_loss:
-            self.margin_loss = self.get_margin_loss(loss)
-            self.epochs_waited = 0
-        else:
-            self.epochs_waited += 1
-
-            if self.epochs_waited > self.patience:
-                self.lr *= self.lr_dec_mul
-                self.epochs_waited = 0
-
-
-class Exponential(LearningRatePolicy):
-    def __init__(self, lr_init: float, multiplier: float, step_length: int = 1, floordiv: bool = True):
-        super().__init__(lr_init)
-        self.multiplier = multiplier
-        self.initial = lr_init
-        self.step_length = step_length
-        self.floordiv = floordiv
-
-    def on_epoch_finished(self, **kwargs):
-        if self.floordiv:
-            power = self.epoch // self.step_length
-        else:
-            power = self.epoch / self.step_length
-        self.lr = self.initial * self.multiplier ** power
-
-
-class Schedule(LearningRatePolicy):
-    def __init__(self, lr_init: float, epoch2lr_dec_mul: dict):
-        super().__init__(lr_init)
-        self.epoch2lr_dec_mul = epoch2lr_dec_mul
-
-    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None,
-                          metrics: dict = None):
-        if self.epoch in self.epoch2lr_dec_mul:
-            self.lr *= self.epoch2lr_dec_mul[self.epoch]
-
-    @classmethod
-    def constant_multiplier(cls, lr_init: float, multiplier: float, epochs: Sequence):
-        return cls(lr_init, dict(zip(epochs, [multiplier] * len(epochs))))
-
-
-class LambdaEpoch(LearningRatePolicy):
-    """
-    Use the passed function to calculate the learning rate for the next epoch.
-
-    Parameters
-    ----------
-    func: Callable(int) -> float
-        get the learning rate for the next epoch
-    """
-
-    def __init__(self, func: Callable[[int], float]):
-        super().__init__(func(0))
-        self.func = func
-
-    def on_epoch_finished(self, **kwargs):
-        self.lr = self.func(self.epoch + 1)
+warn('dpipe.train.lr_policy is deprecated', DeprecationWarning)

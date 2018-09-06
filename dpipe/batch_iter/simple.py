@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Callable
 
 import pdp
 
@@ -7,22 +7,18 @@ from dpipe.batch_iter import make_batch_iter_from_finite
 from .blocks import make_batch_blocks
 
 
-def load_combine(ids: Sequence, load_x: callable, load_y: callable, batch_size: int, *, shuffle: bool = False):
+def load_combine(ids: Sequence, load_x: Callable, load_y: Callable, batch_size: int, *, shuffle: bool = False):
     """
-    A simple batch iterator that loads the data and packs it into batches.
+    A simple batch iterator that loads the data and packs it into batches of size ``batch_size``.
 
     Parameters
     ----------
-    ids: Sequence
-    load_x: callable(id)
-    load_y: callable(id)
-    batch_size: int
-    shuffle: bool, optional
+    ids
+    load_x: Callable(id)
+    load_y: Callable(id)
+    batch_size
+    shuffle
         whether to shuffle the ids before yielding batches.
-
-    Yields
-    ------
-    batches of size `batch_size`
     """
 
     def pipeline():
