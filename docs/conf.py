@@ -4,6 +4,7 @@ import matplotlib
 
 sys.path.insert(0, os.path.abspath('../'))
 matplotlib.use('agg')
+import docs.named_mock
 
 # -- General configuration ------------------------------------------------
 
@@ -48,7 +49,7 @@ pygments_style = 'sphinx'
 # -- Options for HTML output ----------------------------------------------
 
 html_theme = "sphinx_rtd_theme"
-html_static_path = ['_static']
+# html_static_path = ['_static']
 html_theme_options = {
     'navigation_depth': 4,
 }
@@ -91,8 +92,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'dpipe', 'dpipe Documentation',
-     [author], 1)
+    (master_doc, 'dpipe', 'dpipe Documentation', [author], 1)
 ]
 
 # -- Options for Texinfo output -------------------------------------------
@@ -101,9 +101,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'dpipe', 'dpipe Documentation',
-     author, 'dpipe', 'One line description of project.',
-     'Miscellaneous'),
+    (master_doc, 'dpipe', 'dpipe Documentation', author, 'dpipe', 'One line description of project.', 'Miscellaneous'),
 ]
 
 # -- Options for Epub output ----------------------------------------------

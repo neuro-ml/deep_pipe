@@ -10,12 +10,12 @@ Subpackages
 
     dpipe.config
     dpipe.experiment
+    dpipe.medim
+    dpipe.dataset
+    dpipe.train
     dpipe.batch_iter
     dpipe.batch_predict
-    dpipe.dataset
     dpipe.layers
-    dpipe.medim
     dpipe.torch
-    dpipe.train
     dpipe.commands
     dpipe.model

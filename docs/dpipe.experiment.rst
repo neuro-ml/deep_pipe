@@ -25,11 +25,6 @@ Splitters
 Cross-validation splitters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: dpipe.split.base
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. automodule:: dpipe.split.cv
     :members:
     :undoc-members:
