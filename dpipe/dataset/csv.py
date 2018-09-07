@@ -13,7 +13,7 @@ def multiple_columns(method, index, columns):
 class CSV:
     """A small wrapper for csv files."""
 
-    def __init__(self, path, filename='meta.csv', index_col='id'):
+    def __init__(self, path: str, filename: str = 'meta.csv', index_col: str = 'id'):
         self.path = path
         self.filename = filename
 
@@ -29,7 +29,7 @@ class CSV:
 
     def get_global_path(self, index: str, col: str) -> str:
         """
-        Join the slice's result with the data frame's `path`.
+        Join the slice's result with the data frame's ``path``.
         Often data frames contain path to data, this is a convenient way to obtain
         the global path.
         """

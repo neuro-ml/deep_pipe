@@ -5,7 +5,7 @@ from dpipe.medim.utils import load_by_ids
 
 def evaluate(y_true: Sequence, y_pred: Sequence, metrics: dict) -> dict:
     """
-    Calculates the metrics listed in the `metrics` dict.
+    Calculates the metrics listed in the ``metrics`` dict.
 
     Parameters
     ----------

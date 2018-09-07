@@ -21,7 +21,7 @@ def _path_based_call(exists, missing, exists_message, missing_message, paths, ke
         value = missing(*paths, **keyword_paths)
     except BaseException as e:
         list(map(shutil.rmtree, filter(os.path.exists, outputs)))
-        raise RuntimeError('An exception occurred. Cleaning up...\n') from e
+        raise RuntimeError('An exception occurred. The outputs were cleaned up.\n') from e
 
     missing_paths = [path for path in outputs if not os.path.exists(path)]
     if missing_paths:

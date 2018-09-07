@@ -23,7 +23,7 @@ class Proxy:
         return getattr(self._shadowed, name)
 
 
-def cache_methods(instance=None, methods: Iterable[str] = None, dataset=None) -> Dataset:
+def cache_methods(instance=None, methods: Iterable[str] = None, dataset=None):
     """Cache the ``instamce``'s ``methods``."""
     cache = functools.lru_cache(None)
     if dataset is not None:
@@ -36,7 +36,7 @@ def cache_methods(instance=None, methods: Iterable[str] = None, dataset=None) ->
     return proxy(instance)
 
 
-def cache_methods_to_disk(instance, base_path: str, **methods: str) -> Dataset:
+def cache_methods_to_disk(instance, base_path: str, **methods: str):
     """
     Cache the ``instamce``'s ``methods`` to disk.
 
