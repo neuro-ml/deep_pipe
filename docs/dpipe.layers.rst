@@ -1,32 +1,32 @@
 NN Layers
 =========
 
-dpipe.layers.block module
--------------------------
+ConvBlocks
+----------
 
 .. automodule:: dpipe.layers.block
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.layers.functional module
-------------------------------
+Functions
+---------
 
 .. automodule:: dpipe.layers.functional
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.layers.layer module
--------------------------
+Layers
+------
 
 .. automodule:: dpipe.layers.layer
     :members:
     :undoc-members:
     :show-inheritance:
 
-dpipe.layers.structure module
------------------------------
+Structure
+---------
 
 .. automodule:: dpipe.layers.structure
     :members:
