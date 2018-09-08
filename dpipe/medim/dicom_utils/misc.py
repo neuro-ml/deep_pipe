@@ -27,7 +27,7 @@ def _contains_info(row, *cols):
     return all(col in row and pd.notnull(row[col]) for col in cols)
 
 
-def load_by_meta(row: pd.Series) -> np.ndarray:
+def load_image(row: pd.Series) -> np.ndarray:
     """
     Loads an image based on its ``row`` in the metadata dataframe.
 
@@ -111,3 +111,6 @@ def print_structure(images: pd.DataFrame, patient_cols: Sequence[str], study_col
                 print_indent(series_description, f'(id={series_id})', levels=series_levels)
                 print_cols(row, series_cols, series_levels, True)
         print()
+
+
+load_by_meta = np.deprecate(load_image, old_name='load_by_meta', new_name='load_image')

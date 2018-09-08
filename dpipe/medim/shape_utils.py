@@ -41,7 +41,7 @@ def broadcast_shape(x_shape, y_shape):
     return tuple(reversed(shape))
 
 
-def check_axes(axes):
+def check_axes(axes) -> tuple:
     axes = np.atleast_1d(axes)
     if axes.ndim != 1:
         raise ValueError(f'Axes must be 1D, but {axes.ndim}D provided.')
@@ -54,9 +54,8 @@ def check_axes(axes):
 
 
 def expand_axes(axes, values) -> tuple:
-    values = np.atleast_1d(values)
     if axes is None:
-        axes = list(range(-len(values), 0))
+        axes = list(range(-len(np.atleast_1d(values)), 0))
     return check_axes(axes)
 
 

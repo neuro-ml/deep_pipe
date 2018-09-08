@@ -108,25 +108,6 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
     return pad(x, padding_width, padding_values)
 
 
-def pad_even(x: np.ndarray, multiplier: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0) -> np.ndarray:
-    """
-    Pad a tensor so that its shape becomes dividable by ``multiplier`` along ``axes``.
-
-    Parameters
-    ----------
-    x
-        tensor to pad.
-    multiplier
-    padding_values
-        values to pad the tensor with.
-    axes
-        axes along which the tensor will be padded. If None - the last `len(shape)` axes are used.
-    """
-    axes = expand_axes(axes, multiplier)
-    shape = extract(x.shape, axes)
-    return pad_to_shape(x, shape + (multiplier - shape) % multiplier, axes=axes, padding_values=padding_values)
-
-
 def slice_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None) -> np.ndarray:
     """
     Slice a tensor to ``shape`` along ``axes``.
