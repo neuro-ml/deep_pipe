@@ -72,19 +72,21 @@ def combine(x_parts, x_shape):
     return x
 
 
-def grid_patches(*arrays: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None) -> np.ndarray:
+def grid_patch(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
+               valid: bool = False) -> np.ndarray:
     """
-    A convolution-like approach to generating patches from a sequence of tensors.
+    A convolution-like approach to generating patches from a tensor.
 
     Parameters
     ----------
-    arrays
+    x
     patch_size
     axes
         dimensions along which the slices will be taken.
     stride
         the stride (step-size) of the slice.
+    valid
+        whether patches of size smaller than ``patch_size`` should be left out.
     """
-    for box in get_boxes_grid(arrays[0].shape, patch_size, stride=stride, axes=axes):
-        slc = (..., *build_slices(*box))
-        yield tuple(array[slc] for array in arrays)
+    for box in get_boxes_grid(x.shape, patch_size, stride, axes, valid=valid):
+        yield x[build_slices(*box)]

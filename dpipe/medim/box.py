@@ -107,7 +107,7 @@ def box2slices(box):
     return build_slices(*box)
 
 
-def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None):
+def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None, valid: bool = True):
     """
     A convolution-like approach to generating slices from a tensor.
 
@@ -120,11 +120,14 @@ def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: 
         axes along which the slices will be taken.
     stride
         the stride (step-size) of the slice.
+    valid
+        whether boxes of size smaller than ``box_size`` should be left out.
     """
-    final_shape = shape_after_full_convolution(shape, box_size, axes, stride)
+    final_shape = shape_after_full_convolution(shape, box_size, axes, stride, valid=valid)
+    box_size, stride = np.broadcast_arrays(box_size, stride)
     full_box = fill_by_indices(shape, box_size, axes)
     full_stride = fill_by_indices(np.ones_like(shape), stride, axes)
 
     for start in np.ndindex(*final_shape):
         start = np.asarray(start) * full_stride
-        yield make_box_([start, start + full_box])
+        yield make_box_([start, np.minimum(start + full_box, shape)])
