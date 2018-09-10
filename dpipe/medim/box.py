@@ -8,7 +8,8 @@ import numpy as np
 
 from .types import AxesLike
 from .checks import check_len
-from .shape_utils import compute_shape_from_spatial, fill_by_indices, shape_after_full_convolution
+from .shape_utils import compute_shape_from_spatial, shape_after_full_convolution
+from .axes import fill_by_indices
 from .utils import build_slices
 
 

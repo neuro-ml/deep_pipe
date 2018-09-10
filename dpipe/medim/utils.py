@@ -3,7 +3,7 @@ from functools import wraps
 import inspect
 
 from .types import AxesLike
-from .shape_utils import check_axes
+from .axes import check_axes
 from .checks import add_check_len
 from .itertools import *
 from .io import load_image

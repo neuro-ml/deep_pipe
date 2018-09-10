@@ -3,7 +3,7 @@ from scipy import ndimage
 
 from .itertools import extract
 from .types import AxesParams, AxesLike
-from .shape_utils import fill_by_indices, expand_axes
+from .axes import fill_by_indices, expand_axes
 from .utils import build_slices, pad, apply_along_axes, scale as _scale
 
 
