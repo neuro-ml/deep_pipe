@@ -6,10 +6,8 @@ from functools import wraps
 
 import numpy as np
 
-from .types import AxesLike
 from .checks import check_len
-from .shape_utils import compute_shape_from_spatial, shape_after_full_convolution
-from .axes import fill_by_indices
+from .shape_utils import compute_shape_from_spatial
 from .utils import build_slices
 
 
@@ -40,11 +38,17 @@ def returns_box(func):
 
 
 @returns_box
-def broadcast_spatial_box(shape, spatial_box, spatial_dims):
-    """Returns `box`, such that it contains `spatial_box` across `spatial_dims` and whole array
+def get_containing_box(shape: tuple):
+    """Returns box that contains complete array of shape `shape`."""
+    return [0] * len(shape), shape
+
+
+@returns_box
+def broadcast_box(box, shape: tuple, dims: tuple):
+    """Returns box, such that it contains `box` across ``dims`` and whole array
     with shape `shape` across other dimensions."""
-    return (compute_shape_from_spatial([0] * len(shape), spatial_box[0], spatial_dims),
-            compute_shape_from_spatial(shape, spatial_box[1], spatial_dims))
+    return (compute_shape_from_spatial([0] * len(shape), box[0], dims),
+            compute_shape_from_spatial(shape, box[1], dims))
 
 
 @returns_box
@@ -97,38 +101,5 @@ def mask2bounding_box(mask: np.ndarray):
     return start, stop
 
 
-@returns_box
-def get_random_box(shape: AxesLike, box_shape: AxesLike, axes: AxesLike = None):
-    """Get a random box of corresponding shape that fits in the `shape` along the given axes."""
-    start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
-    return start, start + fill_by_indices(shape, box_shape, axes)
-
-
 def box2slices(box):
     return build_slices(*box)
-
-
-def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None, valid: bool = True):
-    """
-    A convolution-like approach to generating slices from a tensor.
-
-    Parameters
-    ----------
-    shape
-        the input tensor's shape.
-    box_size
-    axes
-        axes along which the slices will be taken.
-    stride
-        the stride (step-size) of the slice.
-    valid
-        whether boxes of size smaller than ``box_size`` should be left out.
-    """
-    final_shape = shape_after_full_convolution(shape, box_size, axes, stride, valid=valid)
-    box_size, stride = np.broadcast_arrays(box_size, stride)
-    full_box = fill_by_indices(shape, box_size, axes)
-    full_stride = fill_by_indices(np.ones_like(shape), stride, axes)
-
-    for start in np.ndindex(*final_shape):
-        start = np.asarray(start) * full_stride
-        yield make_box_([start, np.minimum(start + full_box, shape)])

@@ -1,7 +1,7 @@
 import unittest
 from functools import partial
 
-from .test_utils import get_random_tuple
+from .utils import get_random_tuple
 from .shape_utils import *
 
 

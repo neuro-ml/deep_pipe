@@ -20,7 +20,7 @@ class AddExtractDims(BatchPredict):
 
     def validate(self, *inputs, validate_fn: Callable):
         y_pred, loss = validate_fn(*add_dims(*inputs, ndims=self.ndims))
-        return extract_dims(y_pred, ndims=self.ndims), loss
+        return extract_dims(y_pred, ndim=self.ndims), loss
 
     def predict(self, *inputs, predict_fn):
-        return extract_dims(predict_fn(*add_dims(*inputs, ndims=self.ndims)), ndims=self.ndims)
+        return extract_dims(predict_fn(*add_dims(*inputs, ndims=self.ndims)), ndim=self.ndims)

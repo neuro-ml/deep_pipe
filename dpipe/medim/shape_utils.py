@@ -1,9 +1,8 @@
 import numpy as np
 
 from .itertools import extract
-from .types import AxesLike
 from .checks import check_len
-from .axes import broadcast_to_axes, fill_by_indices
+from .axes import broadcast_to_axes, fill_by_indices, AxesLike
 
 
 def compute_shape_from_spatial(complete_shape, spatial_shape, spatial_dims):

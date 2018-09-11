@@ -3,10 +3,11 @@ Tools for patch extraction and generation.
 """
 import numpy as np
 
-from .axes import expand_axes
-from .types import AxesLike
+from .box import returns_box
+from .axes import expand_axes, fill_by_indices, AxesLike
+from .shape_utils import shape_after_full_convolution
 from .checks import check_len, check_shape_along_axis
-from .box import limit_box, get_box_padding, broadcast_spatial_box, get_random_box
+from .box import limit_box, get_box_padding, broadcast_box
 from .utils import build_slices, pad
 from .itertools import squeeze_first
 
@@ -28,7 +29,7 @@ def extract_patch(x: np.ndarray, *, box: np.array, padding_values=None) -> np.ar
 
 def extract_patch_spatial_box(x: np.ndarray, spatial_box: np.ndarray, spatial_dims, padding_values=None):
     check_len(*spatial_box, spatial_dims)
-    return extract_patch(x, box=broadcast_spatial_box(x.shape, spatial_box, spatial_dims),
+    return extract_patch(x, box=broadcast_box(spatial_box, x.shape, spatial_dims),
                          padding_values=padding_values)
 
 
@@ -50,3 +51,10 @@ def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike =
 
     slc = (..., *build_slices(*get_random_box(arrays[0].shape, patch_size, axes)))
     return squeeze_first(tuple(arr[slc] for arr in arrays))
+
+
+@returns_box
+def get_random_box(shape: AxesLike, box_shape: AxesLike, axes: AxesLike = None):
+    """Get a random box of corresponding shape that fits in the `shape` along the given axes."""
+    start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
+    return start, start + fill_by_indices(shape, box_shape, axes)

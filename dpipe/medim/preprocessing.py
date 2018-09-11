@@ -2,8 +2,7 @@ import numpy as np
 from scipy import ndimage
 
 from .itertools import extract
-from .types import AxesParams, AxesLike
-from .axes import fill_by_indices, expand_axes
+from .axes import fill_by_indices, expand_axes, AxesLike, AxesParams
 from .utils import build_slices, pad, apply_along_axes, scale as _scale
 
 

@@ -9,10 +9,6 @@ from .utils import pad, filter_mask, apply_along_axes, scale
 from .itertools import zip_equal, flatten, extract, negate_indices
 
 
-def get_random_tuple(low, high, size):
-    return tuple(np.random.randint(low, high, size=size, dtype=int))
-
-
 class TestPad(unittest.TestCase):
     def test_pad(self):
         x = np.arange(12).reshape((3, 2, 2))

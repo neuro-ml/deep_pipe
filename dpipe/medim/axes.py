@@ -1,10 +1,12 @@
-from typing import Union
+from typing import Union, Sequence
 
 import numpy as np
 
-from dpipe.medim.itertools import lmap
+from .itertools import lmap
 from .checks import join
-from .types import AxesLike, AxesParams
+
+AxesLike = Union[int, Sequence[int]]
+AxesParams = Union[float, Sequence[float]]
 
 
 def fill_by_indices(target, values, indices):

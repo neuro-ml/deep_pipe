@@ -6,8 +6,7 @@ from scipy.ndimage.filters import gaussian_filter
 
 from .itertools import extract
 from .utils import apply_along_axes
-from .types import AxesLike
-from .axes import expand_axes
+from .axes import expand_axes, AxesLike
 
 
 def elastic_transform(x: np.ndarray, amplitude: float, axes: AxesLike = None, order: int = 1):
