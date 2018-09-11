@@ -1,4 +1,4 @@
-from typing import Sequence, Callable
+from typing import Sequence, Callable, Iterable
 
 from dpipe.medim.utils import load_by_ids
 
@@ -48,6 +48,26 @@ def validate(validate_fn: Callable, load_x: Callable, load_y: Callable, ids: Seq
             predictions.append(prediction)
 
     return losses, evaluate(ys, predictions, metrics or {})
+
+
+def evaluate_predict(predict: Callable, xs, ys_true, metrics: dict = None):
+    """
+    Evaluate predict function according to metrics
+
+    Parameters
+    ----------
+    predict: Callable(x) -> prediction
+    xs: Iterable[x]
+    ys_true: Iterable[y_true]
+    metrics
+        a dict, where the key is the metric's name and the value is a
+        callable with the standard sklearn signature: (y_true, y_pred) -> metric_value
+
+    Returns
+    -------
+    calculated_metrics: dict
+    """
+    return evaluate(ys_true, [predict(x) for x in xs], metrics)
 
 
 def compute_metrics(predict: Callable, load_x: Callable, load_y: Callable, ids: Sequence[str], metrics: dict):

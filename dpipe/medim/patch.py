@@ -5,7 +5,7 @@ import numpy as np
 
 from .types import AxesLike
 from .checks import check_len
-from .box import limit_box, get_box_padding, broadcast_spatial_box, get_random_box
+from .box import limit_box, get_box_padding, broadcast_box, get_random_box
 from .utils import build_slices, pad, squeeze_first
 
 
@@ -26,7 +26,7 @@ def extract_patch(x: np.ndarray, *, box: np.array, padding_values=None) -> np.ar
 
 def extract_patch_spatial_box(x: np.ndarray, spatial_box: np.ndarray, spatial_dims, padding_values=None):
     check_len(*spatial_box, spatial_dims)
-    return extract_patch(x, box=broadcast_spatial_box(x.shape, spatial_box, spatial_dims),
+    return extract_patch(x, box=broadcast_box(spatial_box, x.shape, spatial_dims),
                          padding_values=padding_values)
 
 

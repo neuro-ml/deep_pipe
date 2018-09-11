@@ -6,7 +6,6 @@ from .types import AxesLike
 from .shape_utils import check_axes
 from .checks import add_check_len
 from .itertools import *
-from .io import load_image
 
 
 def decode_segmentation(x, segm_decoding_matrix) -> np.array:
@@ -37,17 +36,20 @@ def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
     return np.moveaxis(result.reshape(*y.shape), begin, other_axes)
 
 
-def extract_dims(array, ndims=1):
+def extract_dims(array, ndim=1):
     """Decrease the dimensionality of ``array`` by extracting ``ndims`` leading singleton dimensions."""
-    for _ in range(ndims):
+    for _ in range(ndim):
         assert len(array) == 1
         array = array[0]
     return array
 
 
 @add_check_len
-def build_slices(start, stop):
-    return tuple(map(slice, start, stop))
+def build_slices(start, stop=None):
+    if stop is not None:
+        return tuple(map(slice, start, stop))
+    else:
+        return tuple(map(slice, start))
 
 
 def scale(x):
@@ -122,6 +124,7 @@ def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
 
 
 def pad(x, padding, padding_values):
+    # TODO it might be dangerous
     padding = np.broadcast_to(padding, [x.ndim, 2])
 
     new_shape = np.array(x.shape) + np.sum(padding, axis=1)
@@ -132,3 +135,14 @@ def pad(x, padding, padding_values):
     end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
     new_x[build_slices(start, end)] = x
     return new_x
+
+
+def ndim2spatial_axes(ndim):
+    """
+    >>> ndim2spatial_axes(3)
+    (-3, -2, -1)
+
+    >>> ndim2spatial_axes(1)
+    (-1,)
+    """
+    return tuple(range(-ndim, 0))

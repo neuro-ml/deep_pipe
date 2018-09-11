@@ -10,13 +10,17 @@ class TestBox(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'destination is read-only'):
             box[0, 0] = 1
 
-    def test_broadcast_spatial_box(self):
+    def test_broadcast_box(self):
         spatial_box = make_box_(((2, 3), (5, 5)))
         shape = np.array([3, 10, 10, 10])
         spatial_dims = (-3, -2)
 
-        np.testing.assert_equal(broadcast_spatial_box(shape, spatial_box, spatial_dims),
+        np.testing.assert_equal(broadcast_box(spatial_box, shape, spatial_dims),
                                 ((0, 2, 3, 0), (3, 5, 5, 10)))
+
+    def test_get_containing_box(self):
+        shape = (3, 4, 10, 12)
+        np.testing.assert_equal(get_containing_box(shape), [[0, 0, 0, 0], shape])
 
     def test_return_box(self):
         box = returns_box(lambda: ((0, 0), (12, 123)))()

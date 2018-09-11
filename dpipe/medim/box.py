@@ -6,6 +6,9 @@ from functools import wraps
 
 import numpy as np
 
+from dpipe.medim.shape_utils import shape_after_full_convolution, fill_by_indices
+from dpipe.medim.types import AxesLike
+
 from .types import AxesLike
 from .checks import check_len
 from .shape_utils import compute_shape_from_spatial, fill_by_indices, shape_after_full_convolution
@@ -39,11 +42,17 @@ def returns_box(func):
 
 
 @returns_box
-def broadcast_spatial_box(shape, spatial_box, spatial_dims):
-    """Returns `box`, such that it contains `spatial_box` across `spatial_dims` and whole array
+def get_containing_box(shape: tuple):
+    """Returns box that contains complete array of shape `shape`."""
+    return [0] * len(shape), shape
+
+
+@returns_box
+def broadcast_box(box, shape: tuple, dims: tuple):
+    """Returns box, such that it contains `box` across ``dims`` and whole array
     with shape `shape` across other dimensions."""
-    return (compute_shape_from_spatial([0] * len(shape), spatial_box[0], spatial_dims),
-            compute_shape_from_spatial(shape, spatial_box[1], spatial_dims))
+    return (compute_shape_from_spatial([0] * len(shape), box[0], dims),
+            compute_shape_from_spatial(shape, box[1], dims))
 
 
 @returns_box
@@ -96,15 +105,15 @@ def mask2bounding_box(mask: np.ndarray):
     return start, stop
 
 
+def box2slices(box):
+    return build_slices(*box)
+
+
 @returns_box
 def get_random_box(shape: AxesLike, box_shape: AxesLike, axes: AxesLike = None):
     """Get a random box of corresponding shape that fits in the `shape` along the given axes."""
     start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
     return start, start + fill_by_indices(shape, box_shape, axes)
-
-
-def box2slices(box):
-    return build_slices(*box)
 
 
 def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None):
@@ -121,7 +130,7 @@ def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: 
     stride
         the stride (step-size) of the slice.
     """
-    final_shape = shape_after_full_convolution(shape, box_size, axes, stride)
+    final_shape = shape_after_full_convolution(shape, box_size, axes, stride, valid=False)
     full_box = fill_by_indices(shape, box_size, axes)
     full_stride = fill_by_indices(np.ones_like(shape), stride, axes)
 
