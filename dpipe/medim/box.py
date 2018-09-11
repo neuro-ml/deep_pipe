@@ -6,12 +6,8 @@ from functools import wraps
 
 import numpy as np
 
-from dpipe.medim.shape_utils import shape_after_full_convolution, fill_by_indices
-from dpipe.medim.types import AxesLike
-
-from .types import AxesLike
 from .checks import check_len
-from .shape_utils import compute_shape_from_spatial, fill_by_indices, shape_after_full_convolution
+from .shape_utils import compute_shape_from_spatial
 from .utils import build_slices
 
 
@@ -107,33 +103,3 @@ def mask2bounding_box(mask: np.ndarray):
 
 def box2slices(box):
     return build_slices(*box)
-
-
-@returns_box
-def get_random_box(shape: AxesLike, box_shape: AxesLike, axes: AxesLike = None):
-    """Get a random box of corresponding shape that fits in the `shape` along the given axes."""
-    start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
-    return start, start + fill_by_indices(shape, box_shape, axes)
-
-
-def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None):
-    """
-    A convolution-like approach to generating slices from a tensor.
-
-    Parameters
-    ----------
-    shape
-        the input tensor's shape.
-    box_size
-    axes
-        axes along which the slices will be taken.
-    stride
-        the stride (step-size) of the slice.
-    """
-    final_shape = shape_after_full_convolution(shape, box_size, axes, stride, valid=False)
-    full_box = fill_by_indices(shape, box_size, axes)
-    full_stride = fill_by_indices(np.ones_like(shape), stride, axes)
-
-    for start in np.ndindex(*final_shape):
-        start = np.asarray(start) * full_stride
-        yield make_box_([start, start + full_box])

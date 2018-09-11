@@ -5,7 +5,7 @@ from functools import partial, wraps
 import numpy as np
 
 from dpipe.medim.utils import extract_dims, ndim2spatial_axes, pad
-from dpipe.medim.divide import combine, divide
+from dpipe.medim.grid import combine, grid_patch
 from dpipe.medim.checks import check_len
 
 from .functional import trim_spatial_size, pad_to_dividable
@@ -41,7 +41,7 @@ def divide_combine_patches(x, predict, patch_size: np.ndarray, stride: np.ndarra
 
     padding = np.array((x.ndim - ndim) * [0] + list((patch_size - stride) // 2))[None][[0, 0]].T
     x_padded = pad(x, padding=padding, padding_values=np.min(x, axis=ndim2spatial_axes(ndim), keepdims=True))
-    x_parts = divide(x_padded, patch_size=patch_size, stride=stride)
+    x_parts = grid_patch(x_padded, patch_size=patch_size, stride=stride, valid=False)
     y_parts = predict(x_parts)
 
     return combine(y_parts, (*y_parts[0].shape[:-ndim], *x.shape[-ndim:]))

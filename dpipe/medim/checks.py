@@ -1,13 +1,17 @@
 from functools import wraps
 from typing import Callable
 
+import numpy as np
+
+from .itertools import extract
+
 
 def join(values):
     return ", ".join(map(str, values))
 
 
 def check_shape_along_axis(*arrays, axis):
-    sizes = [x.shape[axis] for x in arrays]
+    sizes = [tuple(extract(x.shape, np.atleast_1d(axis))) for x in arrays]
     if any(x != sizes[0] for x in sizes):
         raise ValueError(f'Arrays of equal size along axis {axis} are required: {join(sizes)}')
 
@@ -40,7 +44,8 @@ def add_check_function(check_function: Callable):
 
         return wrapper
 
-    decorator.__doc__ = f'Check the function\'s arguments via `{check_function.__name__}` before calling it.'
+    name = getattr(check_function, '__name__', '`func`')
+    decorator.__doc__ = f"Check the function's arguments via `{name}` before calling it."
     return decorator
 
 

@@ -2,8 +2,9 @@ import os
 from functools import wraps
 import inspect
 
-from .types import AxesLike
-from .shape_utils import check_axes
+import numpy as np
+
+from .axes import check_axes, AxesLike
 from .checks import add_check_len
 from .itertools import *
 
@@ -146,3 +147,7 @@ def ndim2spatial_axes(ndim):
     (-1,)
     """
     return tuple(range(-ndim, 0))
+
+
+def get_random_tuple(low, high, size):
+    return tuple(np.random.randint(low, high, size=size, dtype=int))

@@ -2,11 +2,21 @@ from itertools import islice
 from typing import Iterable, Callable, Union
 
 import pdp
+import numpy as np
+
+
+def combine_batches(inputs):
+    return tuple(zip(*inputs))
+
+
+def combine_to_arrays(inputs):
+    return tuple(map(np.array, combine_batches(inputs)))
 
 
 def make_infinite_batch_iter(source: Union[Iterable, pdp.Source],
                              *transformers: Union[Callable, pdp.One2One, pdp.One2Many],
-                             batch_size: int, n_iters_per_epoch: int, buffer_size: int = 3):
+                             batch_size: int, n_iters_per_epoch: int, buffer_size: int = 3,
+                             combiner: Callable = combine_to_arrays):
     """
     Combine ``source`` and ``transformers`` into a batch iterator that yields batches of size ``batch_size``.
 
@@ -21,6 +31,8 @@ def make_infinite_batch_iter(source: Union[Iterable, pdp.Source],
         how many batches to yield before exhaustion.
     buffer_size
         how many objects to keep buffered in each pipeline element.
+    combiner
+        combines chunks of single batches in multiple batches, e.g. combiner([(x, y), (x, y)]) -> ([x, x], [y, y])
     """
 
     def wrap(o):
@@ -28,14 +40,11 @@ def make_infinite_batch_iter(source: Union[Iterable, pdp.Source],
             o = pdp.One2One(o, buffer_size=buffer_size)
         return o
 
-    def combine_batches(inputs):
-        return tuple(zip(*inputs))
-
     if not isinstance(source, pdp.Source):
         source = pdp.Source(source, buffer_size=buffer_size)
 
     pipeline = pdp.Pipeline(source, *map(wrap, transformers), pdp.Many2One(chunk_size=batch_size, buffer_size=3),
-                            pdp.One2One(combine_batches, buffer_size=buffer_size))
+                            pdp.One2One(combiner, buffer_size=buffer_size))
 
     class Pipeline:
         """Wrapper for `pdp.Pipeline`."""

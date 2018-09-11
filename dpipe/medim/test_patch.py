@@ -2,8 +2,9 @@ import unittest
 
 import numpy as np
 
-from .patch import sample_box_center_uniformly, extract_patch, get_random_patch
+from .patch import sample_box_center_uniformly, extract_patch, get_random_patch, get_random_box
 from .box import make_box_, get_centered_box
+from .utils import get_random_tuple
 
 
 class TestPatch(unittest.TestCase):
@@ -56,3 +57,19 @@ class TestRandomPatch(unittest.TestCase):
         x = np.empty((3, 4, 10))
         patch = get_random_patch(x, patch_size=[2, 2], axes=[0, 2])
         self.assertEqual(patch.shape, (2, 4, 2))
+
+    def test_get_random_box(self):
+        for _ in range(100):
+            size = np.random.randint(1, 6)
+            shape = get_random_tuple(5, 20, size)
+            kernel_size = get_random_tuple(1, min(shape) + 1, size)
+
+            with self.subTest(shape=shape, kernel_size=kernel_size):
+                start, stop = get_random_box(shape, kernel_size)
+                np.testing.assert_array_compare(np.less_equal, 0, start)
+                np.testing.assert_array_compare(np.less_equal, start, stop)
+                np.testing.assert_array_compare(np.less_equal, stop, shape)
+
+        with self.assertRaises(ValueError):
+            get_random_box([3], [4])
+
