@@ -38,8 +38,5 @@ def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, lr_poli
             logger.lr(lr_policy.value, epoch)
 
             if validate is not None:
-                val_result = validate()
-                if val_result is not None:
-                    val_losses, metrics = val_result
-                    logger.validation(val_losses, epoch)
-                    logger.metrics(metrics, epoch)
+                metrics = validate()
+                logger.metrics(metrics, epoch)

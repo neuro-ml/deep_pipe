@@ -19,9 +19,7 @@ def pad_spatial_size(x, spatial_size: np.array):
 
 
 def trim_spatial_size(x, spatial_size):
-    ndim = len(spatial_size)
-    slices = [slice(None)] * (x.ndim - ndim) + [*build_slices(spatial_size)]
-    return x[tuple(slices)]
+    return x[(..., *build_slices(spatial_size))]
 
 
 def pad_to_dividable(x, divisor, ndim=3):
