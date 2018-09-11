@@ -15,17 +15,14 @@ class Policy:
         self.total_steps = 0
         self.value = initial
 
-    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None,
-                          metrics: dict = None):
+    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, metrics: dict = None):
         """
         Update the `value` after an epoch is finished.
 
-        The history of ``train_losses``, ``val_losses`` and ``metrics``
-        from the entire epoch is provided as additional information.
+        The history of ``train_losses`` and ``metrics`` from the entire epoch is provided as additional information.
         """
 
-    def epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None,
-                       metrics: dict = None):
+    def epoch_finished(self, *, train_losses: Sequence[float] = None, metrics: dict = None):
         """
         Update the `value` and the counters after an epoch is finished.
 
@@ -33,7 +30,7 @@ class Policy:
         -----
         Normally you don't need to override this method. See `on_epoch_finished`.
         """
-        self.on_epoch_finished(train_losses=train_losses, val_losses=val_losses, metrics=metrics)
+        self.on_epoch_finished(train_losses=train_losses, metrics=metrics)
         self.step = 0
         self.epoch += 1
 
@@ -68,25 +65,21 @@ Constant = Policy
 
 class DecreasingOnPlateau(Policy):
     """
-    Policy that traces average train loss or val loss (trace_train or trace_val parameter) and if
-    it didn't decrease according to ``atol`` or ``rtol`` for patience epochs, multiply `value` by ``multiplier``.
+    Policy that traces average train loss and if it didn't decrease according to ``atol``
+    or ``rtol`` for ``patience`` epochs, multiply `value` by ``multiplier``.
     """
 
-    def __init__(self, *, initial: float, multiplier: float, patience: int, trace_train=False,
-                 trace_val=False, rtol, atol):
+    def __init__(self, *, initial: float, multiplier: float, patience: int, rtol, atol):
         super().__init__(initial)
-
-        assert (trace_train ^ trace_val), 'either trace_train or trace_val should be activated'
 
         self.lr_dec_mul = multiplier
         self.patience = patience
         self.epochs_waited = 0
-        self.trace_train = trace_train
         self.get_margin_loss = lambda loss: max([loss * (1 - rtol), loss - atol])
         self.margin_loss = np.inf
 
-    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, val_losses: Sequence[float] = None, **kwargs):
-        loss = np.mean(train_losses if self.trace_train else val_losses)
+    def on_epoch_finished(self, *, train_losses: Sequence[float], **kwargs):
+        loss = np.mean(train_losses)
         if loss < self.margin_loss:
             self.margin_loss = self.get_margin_loss(loss)
             self.epochs_waited = 0
@@ -144,9 +137,3 @@ class LambdaEpoch(Policy):
 
     def on_epoch_finished(self, **kwargs):
         self.value = self.func(self.epoch + 1)
-
-
-# Deprecated
-# ----------
-
-Decreasing = DecreasingOnPlateau
