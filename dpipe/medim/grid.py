@@ -10,7 +10,8 @@ from .utils import build_slices
 
 
 def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None, valid: bool = True):
-    """A convolution-like approach to generating slices from a tensor.
+    """
+    Yield boxes appropriate for a tensor of shape ``shape`` in a convolution-like fashion.
 
     Parameters
     ----------
