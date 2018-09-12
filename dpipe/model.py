@@ -7,7 +7,7 @@ class Model(ABC):
     """
 
     @abstractmethod
-    def do_train_step(self, *inputs, lr: float) -> float:
+    def do_train_step(self, *inputs) -> float:
         """
         Perform a train step
 
@@ -16,8 +16,6 @@ class Model(ABC):
         inputs: Sequence
             a sequence of batches that will be fed into the network
             and used to calculate the loss.
-        lr: float
-            the learning rate for the gradient step
 
         Returns
         -------

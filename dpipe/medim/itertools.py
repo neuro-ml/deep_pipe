@@ -1,6 +1,8 @@
 from contextlib import suppress
+from functools import wraps
+from itertools import chain
 from operator import itemgetter
-from typing import Iterable, Sized, Union, Callable, Sequence
+from typing import Iterable, Sized, Union, Callable, Sequence, Any, Tuple
 
 import numpy as np
 
@@ -46,6 +48,24 @@ def zip_equal(*args: Union[Sized, Iterable]):
 
     if len(result) != 0:
         raise ValueError(f'The iterables did not exhaust simultaneously.')
+
+
+def head_tail(iterable: Iterable) -> Tuple[Any, Iterable]:
+    """Split the ``iterable`` into the first and the rest of the elements."""
+    iterable = iter(iterable)
+    return next(iterable), iterable
+
+
+def peek(iterable: Iterable) -> Tuple[Any, Iterable]:
+    """
+    Return the first element from ``iterable`` and the whole iterable.
+
+    Notes
+    -----
+    The incoming ``iterable`` might be mutated, use the returned iterable instead.
+    """
+    head, tail = head_tail(iterable)
+    return head, chain([head], tail)
 
 
 def lmap(func: Callable, *iterables: Iterable) -> list:
@@ -124,3 +144,13 @@ def make_chunks(iterable: Iterable, chunk_size: int, incomplete: bool = True):
 
     if incomplete and chunk:
         yield chunk
+
+
+def collect(func: Callable):
+    """Make a function that returns a list from a function that returns an iterator."""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return list(func(args, **kwargs))
+
+    return wrapper

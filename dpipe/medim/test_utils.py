@@ -6,7 +6,7 @@ import numpy as np
 from dpipe.layers import identity
 from .preprocessing import normalize_multichannel_image, normalize_image
 from .utils import pad, filter_mask, apply_along_axes, scale
-from .itertools import zip_equal, flatten, extract, negate_indices
+from .itertools import zip_equal, flatten, extract, negate_indices, head_tail, peek
 
 
 class TestPad(unittest.TestCase):
@@ -41,10 +41,14 @@ class TestPad(unittest.TestCase):
         ]))
 
 
-class TestUtils(unittest.TestCase):
+class TestItertools(unittest.TestCase):
     @staticmethod
     def get_map(size):
-        return map(lambda x: x, range(size))
+        return TestItertools.make_iterable(range(size))
+
+    @staticmethod
+    def make_iterable(it):
+        return map(lambda x: x, it)
 
     def test_zip_equal_raises(self):
         for args in [[range(5), range(6)], [self.get_map(5), self.get_map(6)], [range(7), self.get_map(6)],
@@ -82,6 +86,20 @@ class TestUtils(unittest.TestCase):
         idx = [2, 5, 3, 9, 0]
         other = [1, 4, 6, 7, 8, 10, 11, 12]
         np.testing.assert_array_equal(negate_indices(idx, 13), other)
+
+    def test_head_tail(self):
+        for size in range(1, 20):
+            it = np.random.randint(1000, size=size).tolist()
+            head, tail = head_tail(self.make_iterable(it))
+            self.assertEqual(head, it[0])
+            self.assertListEqual(list(tail), it[1:])
+
+    def test_peek(self):
+        for size in range(1, 20):
+            it = np.random.randint(1000, size=size).tolist()
+            head, new_it = peek(self.make_iterable(it))
+            self.assertEqual(head, it[0])
+            self.assertListEqual(list(new_it), it)
 
 
 class TestApplyAlongAxes(unittest.TestCase):

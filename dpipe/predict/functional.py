@@ -4,7 +4,7 @@ from dpipe.medim.utils import pad, build_slices, ndim2spatial_axes
 
 
 def predict_input_parts(batch_iterator, *, predict):
-    return [predict(x) for x in batch_iterator]
+    return map(predict, batch_iterator)
 
 
 def predict_inputs_parts(batch_iterator, *, predict):

@@ -14,7 +14,7 @@ class TestGrid(unittest.TestCase):
 
     def test_divide_n_parts(self):
         x = np.zeros(self.x_shape)
-        x_parts = grid_patch(x, self.patch_size, self.stride)
+        x_parts = list(grid_patch(x, self.patch_size, self.stride))
         self.assertEqual(len(x_parts), np.prod((1, 5, 7, 9)))
 
     def test_divide_combine(self):
@@ -43,4 +43,4 @@ class TestGrid(unittest.TestCase):
             with self.subTest(shape=shape):
                 x = np.random.randn(1, *shape)
                 np.testing.assert_array_almost_equal(
-                    x, combine_grid_patches(list(grid_patch(x, patch_size, stride)), shape, stride))
+                    x, combine_grid_patches(grid_patch(x, patch_size, stride), shape, stride))

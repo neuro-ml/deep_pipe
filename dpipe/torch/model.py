@@ -111,6 +111,9 @@ class TorchFrozenModel(FrozenModel):
 
     def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str,
                  cuda: bool = None, modify_state_fn: callable = None):
+        self.model_core = to_cuda(model_core, cuda)
+        self.logits2pred = logits2pred
+        self.cuda = cuda
         self.f = make_do_inf_step(model_core, logits2pred=logits2pred, cuda=cuda, modify_state_fn=modify_state_fn,
                                   saved_model_path=restore_model_path)
 

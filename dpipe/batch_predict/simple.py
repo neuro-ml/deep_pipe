@@ -1,11 +1,9 @@
 from typing import Callable
-from functools import partial
 
 import numpy as np
 
 from .base import BatchPredict
 from ..medim.utils import extract_dims
-from .utils import pad_spatial_size, slice_spatial_size
 
 
 def add_dims(*data, ndims=1):

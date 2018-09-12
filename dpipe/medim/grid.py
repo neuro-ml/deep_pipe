@@ -1,10 +1,10 @@
-from typing import Sequence
+from typing import Iterable
 
 import numpy as np
 
 from .axes import expand_axes, broadcast_to_axes, fill_by_indices, AxesLike
 from .box import make_box_
-from .itertools import zip_equal, extract
+from .itertools import zip_equal, extract, peek
 from .shape_utils import shape_after_full_convolution
 from .utils import build_slices
 
@@ -37,7 +37,7 @@ def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: 
 
 
 def grid_patch(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
-               valid: bool = False):
+               valid: bool = False) -> Iterable[np.ndarray]:
     """
     A convolution-like approach to generating patches from a tensor.
 
@@ -52,19 +52,17 @@ def grid_patch(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: Axes
     valid
         whether patches of size smaller than ``patch_size`` should be left out.
     """
-    return [x[build_slices(*box)] for box in get_boxes_grid(x.shape, patch_size, stride, axes, valid=valid)]
+    for box in get_boxes_grid(x.shape, patch_size, stride, axes, valid=valid):
+        yield x[build_slices(*box)]
 
 
-def combine(x_parts, x_shape):
+def combine(x_parts: Iterable[np.ndarray], x_shape):
     """Combines parts of one big array of shape x_shape back into one array by simple concatenation."""
-    x = np.zeros(x_shape, dtype=x_parts[0].dtype)
-    part_shape = x_parts[0].shape
-    for i, box in enumerate(get_boxes_grid(x_shape, box_size=part_shape, stride=part_shape, valid=False)):
-        x[build_slices(*box)] = x_parts[i]
-    return x
+    return combine_grid_patches(x_parts, x_shape)
 
 
-def combine_grid_patches(patches: Sequence[np.ndarray], output_shape: AxesLike, stride: AxesLike,
+# TODO: better doc
+def combine_grid_patches(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike = None,
                          axes: AxesLike = None) -> np.ndarray:
     """
     Build a tensor of shape ``output_shape`` from ``patches`` obtained in a convolution-like approach
@@ -74,9 +72,12 @@ def combine_grid_patches(patches: Sequence[np.ndarray], output_shape: AxesLike, 
     ----------
     `grid_patch` `get_boxes_grid`
     """
-    patch = patches[0]
+    patch, patches = peek(patches)
     axes = expand_axes(axes, output_shape)
-    axes, stride = broadcast_to_axes(axes, stride)
+    if stride is None:
+        stride = extract(patch.shape, axes)
+    else:
+        _, stride = broadcast_to_axes(axes, stride)
     output_shape = fill_by_indices(patch.shape, output_shape, axes)
 
     result = np.zeros(output_shape, patch.dtype)

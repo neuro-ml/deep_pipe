@@ -6,8 +6,8 @@ from .policy import Policy
 from .logging import Logger
 
 
-def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, lr_policy: Policy, logger: Logger,
-          validate: Callable = None):
+def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger: Logger,
+          validate: Callable = None, **policies: Policy):
     """
     Train a given model.
 
@@ -18,8 +18,8 @@ def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, lr_poli
         batch iterator
     n_epochs
         number of epochs to train
-    lr_policy
-        the learning rate policy
+    policies:
+        a collection of policies to be passed to ``do_train_step``
     logger
     validate
         a function that calculates the loss and metrics on the validation set
@@ -30,20 +30,25 @@ def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, lr_poli
             # train the model
             train_losses = []
             for inputs in batch_iter:
-                train_losses.append(do_train_step(*inputs, lr=lr_policy.value))
-                lr_policy.step_finished(train_losses[-1])
+                train_losses.append(do_train_step(
+                    *inputs, **{name: policy.value for name, policy in policies.items()}))
+
+                for policy in policies.values():
+                    policy.step_finished(train_losses[-1])
 
             logger.train(train_losses, epoch)
-            logger.lr(lr_policy.value, epoch)
+            # TODO: generalize
+            if 'lr' in policies:
+                logger.lr(policies['lr'].value, epoch)
 
             if validate is not None:
                 metrics = validate()
                 if not isinstance(metrics, dict):
                     warn('Validation losses are deprecated. '
                          'If you need val losses just put them in the metrics dict.', DeprecationWarning)
-                    logger.validation(metrics[0], epoch)
                     metrics = metrics[1]
 
                 logger.metrics(metrics, epoch)
 
-            lr_policy.epoch_finished(train_losses=train_losses, metrics=metrics)
+            for policy in policies.values():
+                policy.epoch_finished(train_losses=train_losses, metrics=metrics)

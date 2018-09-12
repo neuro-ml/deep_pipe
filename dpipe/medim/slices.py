@@ -12,6 +12,4 @@ def iterate_slices(*data: np.ndarray, axis: int):
 
 
 def iterate_axis(x: np.ndarray, axis: int):
-    assert axis < x.ndim
-    for i in range(x.shape[axis]):
-        yield x.take(i, axis=axis)
+    return np.moveaxis(x, axis, 0)

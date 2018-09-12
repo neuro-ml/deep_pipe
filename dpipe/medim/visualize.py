@@ -1,10 +1,14 @@
+from typing import Union
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
+from matplotlib.colors import Colormap
 
 from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmentation_probabilities
 from .checks import check_shape_along_axis
 from .utils import makedirs_top
+from .axes import AxesParams
 
 
 def _get_rows_cols(max_cols, data):
@@ -12,35 +16,37 @@ def _get_rows_cols(max_cols, data):
     return (len(data) - 1) // columns + 1, columns
 
 
-# TODO: vlim must be of shape (len(data), 2)
-def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int = None,
-            colorbar: bool = False, show_axes: bool = False, cmap: str = None, vlim=(None, None)):
+def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int = None, colorbar: bool = False,
+            show_axes: bool = False, cmap: Union[Colormap, str] = None, vlim: AxesParams = None):
     """
     Creates an interactive plot, simultaneously showing slices along a given ``axis`` for all the passed images.
 
     Parameters
     ----------
-    data: np.ndarray
-    axis: int
-    scale: int
+    data
+    axis
+    scale
         the figure scale.
-    max_columns: int
+    max_columns
         the maximal number of figures in a row. If None - all figures will be in the same row.
-    colorbar: bool
+    colorbar
         Whether to display a colorbar.
-    show_axes: bool
+    show_axes
         Whether to do display grid on the image.
-    cmap,vlim:
-        parameters passed to matplotlib.pyplot.imshow
+    cmap
+    vlim
+        used to normalize luminance data. If None - the limits are determined automatically.
+        Must be broadcastable to (len(data), 2). See `matplotlib.pyplot.imshow` (vmin and vmax) for details.
     """
     from ipywidgets import interact, IntSlider
     check_shape_along_axis(*data, axis=axis)
+    vlim = np.broadcast_to(vlim, [len(data), 2]).tolist()
     rows, columns = _get_rows_cols(max_columns, data)
 
     def update(idx):
         fig, axes = plt.subplots(rows, columns, figsize=(scale * columns, scale * rows))
-        for ax, x in zip(np.array(axes).flatten(), data):
-            im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vlim[0], vmax=vlim[1])
+        for ax, x, (vmin, vmax) in zip(np.array(axes).flatten(), data, vlim):
+            im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vmin, vmax=vmax)
             if colorbar:
                 fig.colorbar(im, ax=ax, orientation='horizontal')
             if not show_axes:

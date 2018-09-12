@@ -50,15 +50,15 @@ def validate(validate_fn: Callable, load_x: Callable, load_y: Callable, ids: Seq
     return losses, evaluate(ys, predictions, metrics or {})
 
 
-def evaluate_predict(predict: Callable, xs, ys_true, metrics: dict = None):
+def evaluate_predict(predict: Callable, xs: Iterable, ys_true: Sequence, metrics: dict = None):
     """
     Evaluate predict function according to metrics
 
     Parameters
     ----------
     predict: Callable(x) -> prediction
-    xs: Iterable[x]
-    ys_true: Iterable[y_true]
+    xs
+    ys_true
     metrics
         a dict, where the key is the metric's name and the value is a
         callable with the standard sklearn signature: (y_true, y_pred) -> metric_value

@@ -31,9 +31,6 @@ class Logger:
     def train(self, train_losses, step):
         pass
 
-    def validation(self, val_losses, step):
-        pass
-
     def lr(self, lr, step):
         pass
 
@@ -69,12 +66,11 @@ class TBLogger(Logger):
 
 
 class NamedTBLogger(TBLogger):
-    def __init__(self, log_path, loss_names: Sequence[str], val_loss_names: Sequence[str] = None):
+    def __init__(self, log_path, loss_names: Sequence[str]):
         super().__init__(log_path)
-        self.train_loss_names = loss_names
-        self.val_loss_names = val_loss_names or loss_names
+        self.loss_names = loss_names
 
     def train(self, train_losses, step):
         values = np.mean(train_losses, axis=0)
-        for name, value in zip_equal(self.train_loss_names, values):
+        for name, value in zip_equal(self.loss_names, values):
             self.logger.log_scalar(f'train/loss/{name}', value, step)
