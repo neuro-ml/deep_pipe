@@ -14,7 +14,7 @@ Subpackages
     dpipe.dataset
     dpipe.train
     dpipe.batch_iter
-    dpipe.batch_predict
+    dpipe.predict
     dpipe.layers
     dpipe.torch
     dpipe.commands

@@ -16,10 +16,26 @@ Data augmentation
     :undoc-members:
     :show-inheritance:
 
+Axes inference
+--------------
+
+.. automodule:: dpipe.medim.axes
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Box
 ---
 
 .. automodule:: dpipe.medim.box
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Grid splitters
+--------------
+
+.. automodule:: dpipe.medim.grid
     :members:
     :undoc-members:
     :show-inheritance:
@@ -29,6 +45,7 @@ Checks
 
 .. automodule:: dpipe.medim.checks
     :members:
+    :undoc-members:
     :show-inheritance:
 
 DICOM utils
@@ -56,22 +73,6 @@ Aggregation
 Miscellaneous
 ^^^^^^^^^^^^^
 .. automodule:: dpipe.medim.dicom_utils.misc
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Data splitters
---------------
-
-.. automodule:: dpipe.medim.divide
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe.medim.features module
----------------------------
-
-.. automodule:: dpipe.medim.features
     :members:
     :undoc-members:
     :show-inheritance:
