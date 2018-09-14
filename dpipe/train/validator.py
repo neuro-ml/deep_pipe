@@ -50,7 +50,7 @@ def validate(validate_fn: Callable, load_x: Callable, load_y: Callable, ids: Seq
     return losses, evaluate(ys, predictions, metrics or {})
 
 
-def evaluate_predict(predict: Callable, xs: Iterable, ys_true: Sequence, metrics: dict = None):
+def evaluate_predict(predict: Callable, xs: Iterable, ys_true: Sequence, metrics: dict):
     """
     Evaluate predict function according to metrics
 

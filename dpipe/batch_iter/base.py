@@ -90,11 +90,3 @@ def make_batch_iter_from_finite(get_batch_iter):
 
 def make_batch_iter_from_infinite(get_batch_iter, n_iters_per_epoch):
     return BatchIterSlicer(get_batch_iter, n_iters_per_epoch)
-
-
-# Deprecated
-# ----------
-
-from .pipeline import make_infinite_batch_iter
-
-wrap_infinite_pipeline = make_infinite_batch_iter
