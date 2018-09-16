@@ -69,7 +69,6 @@ class TorchModel(Model):
         self.optimizer = optimize(model_core.parameters())
 
     def do_train_step(self, *inputs, lr):
-        # TODO: need a way to pass other counters: write a wrapper
         return do_train_step(*inputs, lr=lr, inputs2logits=self.model_core,
                              logits2loss=self.logits2loss, optimizer=self.optimizer)
 
