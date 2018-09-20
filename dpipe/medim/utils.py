@@ -1,10 +1,7 @@
 import os
-from functools import wraps
 import inspect
 
-import numpy as np
-
-from .axes import check_axes, AxesLike
+from .axes import check_axes, AxesLike, ndim2spatial_axes
 from .checks import add_check_len
 from .itertools import *
 
@@ -46,7 +43,7 @@ def extract_dims(array, ndim=1):
 
 
 @add_check_len
-def build_slices(start, stop=None):
+def build_slices(start: Sequence[int], stop: Sequence[int] = None) -> Tuple[slice, ...]:
     if stop is not None:
         return tuple(map(slice, start, stop))
     else:
@@ -138,16 +135,13 @@ def pad(x, padding, padding_values):
     return new_x
 
 
-def ndim2spatial_axes(ndim):
-    """
-    >>> ndim2spatial_axes(3)
-    (-3, -2, -1)
-
-    >>> ndim2spatial_axes(1)
-    (-1,)
-    """
-    return tuple(range(-ndim, 0))
-
-
 def get_random_tuple(low, high, size):
     return tuple(np.random.randint(low, high, size=size, dtype=int))
+
+
+def unpack_args(func: Callable):
+    @wraps(func)
+    def wrapper(argument):
+        return func(*argument)
+
+    return wrapper

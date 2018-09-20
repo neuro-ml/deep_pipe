@@ -50,3 +50,14 @@ def check_axes(axes) -> tuple:
 
 def expand_axes(axes, values) -> tuple:
     return broadcast_to_axes(axes, values)[0]
+
+
+def ndim2spatial_axes(ndim):
+    """
+    >>> ndim2spatial_axes(3)
+    (-3, -2, -1)
+
+    >>> ndim2spatial_axes(1)
+    (-1,)
+    """
+    return tuple(range(-ndim, 0))

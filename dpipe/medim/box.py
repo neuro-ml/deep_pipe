@@ -3,6 +3,7 @@ Left is inclusive, right is non-inclusive, so this box can be used as `build_sli
  All boxes are immutable."""
 import itertools
 from functools import wraps
+from typing import Callable
 
 import numpy as np
 
@@ -10,8 +11,11 @@ from .checks import check_len
 from .shape_utils import compute_shape_from_spatial
 from .utils import build_slices
 
+# box type
+Box = np.ndarray
 
-def make_box_(iterable):
+
+def make_box_(iterable) -> Box:
     """Returns `box`, generated inplace from the `iterable`. If `iterable` was a numpy array, will make it
     immutable and return."""
     box = np.asarray(iterable)
@@ -23,17 +27,18 @@ def make_box_(iterable):
     return box
 
 
-def get_box_volume(box):
+def get_volume(box):
     return np.prod(box[1] - box[0], axis=0)
 
 
-def returns_box(func):
+def returns_box(func: Callable) -> Callable:
     """Returns function, decorated so that it returns a box."""
 
     @wraps(func)
     def func_returning_box(*args, **kwargs):
         return make_box_(func(*args, **kwargs))
 
+    func_returning_box.__annotations__['return'] = Box
     return func_returning_box
 
 
@@ -101,5 +106,12 @@ def mask2bounding_box(mask: np.ndarray):
     return start, stop
 
 
-def box2slices(box):
+def box2slices(box: Box):
     return build_slices(*box)
+
+
+# Deprecated
+# ----------
+
+
+get_box_volume = get_volume

@@ -1,13 +1,13 @@
 """Functions that build prediction pipeline. Each prepares input in certain way, predicts and then fixes output.
 So nearly all functions receive `predict` argument."""
-from functools import partial, wraps
+from functools import partial
 
 import numpy as np
 
-from dpipe.medim.utils import extract_dims, ndim2spatial_axes, pad
-from dpipe.medim.grid import combine, grid_patch
+from dpipe.medim.utils import extract_dims, pad
+from dpipe.medim.axes import ndim2spatial_axes
+from dpipe.medim import grid
 from dpipe.medim.checks import check_len
-
 from .functional import trim_spatial_size, pad_to_dividable
 from .utils import add_dims
 
@@ -41,8 +41,8 @@ def divide_combine_patches(x, predict, patch_size: np.ndarray, stride: np.ndarra
 
     padding = np.array((x.ndim - ndim) * [0] + list((patch_size - stride) // 2))[None][[0, 0]].T
     x_padded = pad(x, padding=padding, padding_values=np.min(x, axis=ndim2spatial_axes(ndim), keepdims=True))
-    x_parts = grid_patch(x_padded, patch_size=patch_size, stride=stride, valid=False)
-    return combine(predict(x_parts), x.shape[-ndim:])
+    x_parts = grid.divide(x_padded, patch_size=patch_size, stride=stride, valid=False)
+    return grid.combine(predict(x_parts), x.shape[-ndim:])
 
 
 def chain_predicts(*predicts):

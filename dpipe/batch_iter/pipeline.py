@@ -13,10 +13,9 @@ def combine_to_arrays(inputs):
     return tuple(map(np.array, combine_batches(inputs)))
 
 
-def make_infinite_batch_iter(source: Union[Iterable, pdp.Source],
-                             *transformers: Union[Callable, pdp.One2One, pdp.One2Many],
-                             batch_size: int, n_iters_per_epoch: int, buffer_size: int = 3,
-                             combiner: Callable = combine_to_arrays):
+def make_infinite_batch_iter(
+        source: Union[Iterable, pdp.Source], *transformers: Union[Callable, pdp.One2One, pdp.One2Many],
+        batch_size: int, n_iters_per_epoch: int, buffer_size: int = 3, combiner: Callable = combine_to_arrays):
     """
     Combine ``source`` and ``transformers`` into a batch iterator that yields batches of size ``batch_size``.
 
