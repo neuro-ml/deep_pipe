@@ -6,6 +6,8 @@ from typing import Iterable, Sized, Union, Callable, Sequence, Any, Tuple
 
 import numpy as np
 
+from .checks import join
+
 
 def recursive_conditional_map(xr, f, condition):
     """Walks recursively through iterable data structure ``xr``. Applies ``f`` on objects that satisfy ``condition``."""
@@ -18,7 +20,7 @@ def pam(functions: Iterable[Callable], *args, **kwargs):
         yield f(*args, **kwargs)
 
 
-def zip_equal(*args: Union[Sized, Iterable]):
+def zip_equal(*args: Union[Sized, Iterable]) -> Iterable[Tuple]:
     """zip over the given iterables, but enforce that all of them exhaust simultaneously."""
     if not args:
         return
@@ -33,7 +35,7 @@ def zip_equal(*args: Union[Sized, Iterable]):
             all_lengths.append('?')
 
     if lengths and not all(x == lengths[0] for x in lengths):
-        raise ValueError(f'The arguments have different lengths: {", ".join(map(str, all_lengths))}.')
+        raise ValueError(f'The arguments have different lengths: {join(all_lengths)}.')
 
     iterables = [iter(arg) for arg in args]
     while True:
@@ -153,4 +155,5 @@ def collect(func: Callable):
     def wrapper(*args, **kwargs):
         return list(func(*args, **kwargs))
 
+    wrapper.__annotations__['return'] = list
     return wrapper
