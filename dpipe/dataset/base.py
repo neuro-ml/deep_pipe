@@ -37,9 +37,12 @@ class ABCAttributesMeta(ABCMeta):
 
 
 class Dataset(metaclass=ABCAttributesMeta):
-    """Interface for datasets containing images."""
+    """Interface for datasets."""
 
     ids: Tuple[str] = AbstractAttribute
+
+
+class ImageDataset(Dataset):
     n_chans_image: int = AbstractAttribute
 
     @abstractmethod
@@ -59,7 +62,7 @@ class Dataset(metaclass=ABCAttributesMeta):
         """
 
 
-class SegmentationDataset(Dataset):
+class SegmentationDataset(ImageDataset):
     """Abstract class that describes a dataset for medical image segmentation with labels for pixel."""
 
     @abstractmethod
@@ -79,7 +82,7 @@ class SegmentationDataset(Dataset):
         """
 
 
-class ClassificationDataset(Dataset):
+class ClassificationDataset(ImageDataset):
     """Abstract class that describes a dataset for classification."""
 
     n_classes: int = AbstractAttribute

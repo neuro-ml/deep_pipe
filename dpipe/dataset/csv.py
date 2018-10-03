@@ -4,13 +4,14 @@ import numpy as np
 import pandas as pd
 
 from dpipe.medim import load_image
+from .base import Dataset
 
 
 def multiple_columns(method, index, columns):
     return np.array([method(index, col) for col in columns])
 
 
-class CSV:
+class CSV(Dataset):
     """A small wrapper for csv files."""
 
     def __init__(self, path: str, filename: str = 'meta.csv', index_col: str = 'id'):
