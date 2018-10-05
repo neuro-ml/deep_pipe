@@ -145,3 +145,16 @@ def unpack_args(func: Callable):
         return func(*argument)
 
     return wrapper
+
+
+def composition(func: Callable):
+    """Applies ``func`` to the output of the decorated function."""
+
+    def decorator(decorated: Callable):
+        @wraps(decorated)
+        def wrapper(*args, **kwargs):
+            return func(decorated(*args, **kwargs))
+
+        return wrapper
+
+    return decorator
