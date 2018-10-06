@@ -22,14 +22,16 @@ class ABCAttributesMeta(ABCMeta):
         def __init__(self, *args_, **kwargs_):
             return_value = initialize(self, *args_, **kwargs_)
 
-            missing = []
-            for name in dir(self):
-                value = getattr(self, name)
-                if isinstance(value, AbstractAttribute) or value is AbstractAttribute:
-                    missing.append(name)
-            if missing:
-                raise AttributeError(f'Class "{cls.__name__}" requires the following attributes '
-                                     f'which are not defined during init: {", ".join(missing)}.')
+            # the check must be performed only after own __init__ is called
+            if type(self) is cls:
+                missing = []
+                for name in dir(self):
+                    value = getattr(self, name)
+                    if isinstance(value, AbstractAttribute) or value is AbstractAttribute:
+                        missing.append(name)
+                if missing:
+                    raise AttributeError(f'Class "{cls.__name__}" requires the following attributes '
+                                         f'which are not defined during init: {", ".join(missing)}.')
             return return_value
 
         cls.__init__ = __init__

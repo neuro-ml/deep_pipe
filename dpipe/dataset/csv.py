@@ -22,6 +22,9 @@ class CSV(Dataset):
         if index_col is not None:
             df[index_col] = df[index_col].astype(str)
             df = df.set_index(index_col).sort_index()
+            if len(df.index.unique()) != len(df):
+                raise ValueError(f'The column "{index_col}" doesn\'t contain unique values.')
+
         self.df: pd.DataFrame = df
         self.ids = tuple(self.df.index)
 
