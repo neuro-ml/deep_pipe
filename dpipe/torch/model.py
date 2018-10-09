@@ -1,3 +1,4 @@
+from typing import Sequence
 from functools import partial
 
 import torch
@@ -86,6 +87,38 @@ class TorchModel(Model):
     def load(self, path: str, modify_state_fn: callable = None):
         load_model_state(self.model_core, path, modify_state_fn=modify_state_fn)
         return self
+
+
+def do_train_step_multiloss(*inputs, lr, inputs2logits, optimizer, seq_logits2loss):
+    inputs2logits.train()
+    *inputs, target = sequence_to_var(*inputs, cuda=is_on_cuda(inputs2logits))
+
+    logits = inputs2logits(*inputs)
+
+    losses = []
+    total_loss = 0
+    for logits2loss in seq_logits2loss:
+        loss = logits2loss(logits, target)
+        total_loss += loss
+        losses.append(to_np(loss).tolist())
+
+    losses.append(to_np(total_loss).tolist())
+
+    set_lr(optimizer, lr)
+    optimizer.zero_grad()
+    total_loss.backward()
+    optimizer.step()
+    return losses
+
+
+class TorchModelMultiloss(TorchModel):
+    def __init__(self, model_core: torch.nn.Module, logits2pred: Callable, seq_logits2loss: Sequence[Callable],
+                 optimize: torch.optim.Optimizer, cuda: bool = None):
+        super().__init__(model_core, logits2pred, logits2loss=seq_logits2loss, optimize=optimize, cuda=cuda)
+
+    def do_train_step(self, *inputs, lr):
+        return do_train_step_multiloss(*inputs, lr=lr, inputs2logits=self.model_core, optimizer=self.optimizer,
+                                       seq_logits2loss=self.logits2loss)
 
 
 def make_do_inf_step(inputs2logits, logits2pred, saved_model_path, cuda, modify_state_fn=None):
