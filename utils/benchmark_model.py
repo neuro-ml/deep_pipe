@@ -1,9 +1,9 @@
-import os
 import time
 import argparse
 
 import numpy as np
 import torch.nn as nn
+import gpustat
 
 from dpipe.config import get_resource_manager
 
@@ -23,7 +23,6 @@ if __name__ == '__main__':
 
     def sample():
         return np.random.randn(*shape).astype(np.float32)
-
 
     for cuda in (True, False):
         if cuda:
@@ -49,3 +48,6 @@ if __name__ == '__main__':
         time_per_sample = total_time / n_samples
 
         print(f'GPU: {cuda}, time: {time_per_sample:.4f}')
+        if cuda:
+            for gpu in gpustat.new_query():
+                print(f'used: {gpu.memory_used} total: {gpu.memory_total}')
