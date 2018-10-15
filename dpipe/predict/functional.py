@@ -2,7 +2,7 @@ from typing import Callable
 
 import numpy as np
 
-from dpipe.medim.utils import pad, build_slices, unpack_args
+from dpipe.medim.utils import pad, build_slices, unpack_args, wraps
 from dpipe.medim.axes import ndim2spatial_axes
 
 
@@ -27,7 +27,7 @@ def make_predictor(divide: Callable, combine: Callable, predict: Callable) -> Ca
     predict: Callable
         predicts a single batch.
     """
-    return lambda x: combine(map(predict, divide(x)))
+    return lambda *args, **kwargs: combine(map(predict, divide(*args, **kwargs)))
 
 
 def pad_spatial_size(x, spatial_size: np.array):

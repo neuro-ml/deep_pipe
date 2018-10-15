@@ -7,7 +7,7 @@ from dpipe.medim.utils import build_slices, pam
 
 
 def make_pipeline(structure, make_transformer):
-    assert all([type(s) is int for s in structure]), f'{structure}'
+    assert all(isinstance(s, int) for s in structure), f'{structure}'
     return nn.Sequential(*[
         make_transformer(n_chans_in, n_chans_out) for n_chans_in, n_chans_out in zip(structure[:-1], structure[1:])
     ])

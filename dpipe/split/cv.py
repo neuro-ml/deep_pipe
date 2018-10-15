@@ -1,5 +1,7 @@
 import numpy as np
+from sklearn.model_selection import StratifiedKFold, train_test_split
 
+from dpipe.medim.itertools import extract
 from .base import split_train, kfold_split, indices_to_subj_ids
 
 
@@ -63,11 +65,22 @@ def group_train_val_test_split(ids, groups: np.array, *, val_size, n_splits, ran
         absolute number of validation samples.
     n_splits: int
         the number of cross-validation folds
-
-    Returns
-    -------
-    splits: Sequence of triplets
     """
     split_indices = kfold_split(ids, n_splits, groups=groups, random_state=random_state)
     split_indices = split_train(split_indices, val_size, groups=groups, random_state=random_state)
     return indices_to_subj_ids(split_indices, ids)
+
+
+def stratified_train_val_test_split(ids, labels, *, val_size, n_splits, random_state=42):
+    cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+
+    train_val_test_ids = []
+    for i, (train_val_indices, test_indices) in enumerate(cv.split(ids, labels)):
+        train_val_ids = extract(ids, train_val_indices)
+        test_ids = extract(ids, test_indices)
+        train_ids, val_ids = train_test_split(
+            train_val_ids, test_size=val_size, random_state=25 + i
+        )
+        train_val_test_ids.append((train_ids, val_ids, test_ids))
+
+    return train_val_test_ids

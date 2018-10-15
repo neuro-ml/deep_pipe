@@ -51,7 +51,7 @@ Checks
 DICOM utils
 -----------
 
-.. automodule:: dpipe.medim.dicom_utils
+.. automodule:: dpipe.medim.dicom
     :members:
     :undoc-members:
     :show-inheritance:
