@@ -66,7 +66,8 @@ class ResBlock(nn.Module):
                                        pre_activation(n_chans_out))
 
         # Shortcut
-        spatial_difference = np.broadcast_to(np.int(np.floor(dilation * (kernel_size - 1) - 2 * padding)), dims)
+        spatial_difference = np.broadcast_to(
+            (np.floor(dilation * (np.asarray(kernel_size) - 1) - 2 * np.asarray(padding))).astype(int), dims)
         assert (spatial_difference >= 0).all(), spatial_difference
         self.crop = CenteredCrop(start=spatial_difference) if (spatial_difference > 0).any() else identity
 
