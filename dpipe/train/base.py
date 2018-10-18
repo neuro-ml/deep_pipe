@@ -1,7 +1,7 @@
 from typing import Callable, Iterable
 
 from dpipe.batch_iter import BatchIter
-from dpipe.train.backup import Backup
+from dpipe.train.checkpoint import CheckpointManager
 from .policy import Policy
 from .logging import Logger
 
@@ -54,12 +54,12 @@ def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger:
             one_epoch(epoch, do_train_step, batch_iter, logger, validate, **policies)
 
 
-def train_with_backups(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger: Logger, backup: Backup,
-                       validate: Callable = None, **policies: Policy):
-    backup.restore()
-    last_epoch = backup.backup_iteration
+def train_with_checkpoints(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger: Logger,
+                           checkpoint_manager: CheckpointManager, validate: Callable = None, **policies: Policy):
+    checkpoint_manager.restore()
+    last_epoch = checkpoint_manager.iteration
 
     with batch_iter:
         for epoch in range(last_epoch, n_epochs):
             one_epoch(epoch, do_train_step, batch_iter, logger, validate, **policies)
-            backup.save()
+            checkpoint_manager.save()
