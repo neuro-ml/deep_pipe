@@ -1,9 +1,33 @@
-from typing import Callable
-from warnings import warn
+from typing import Callable, Iterable
 
 from dpipe.batch_iter import BatchIter
+from dpipe.train.backup import Backup
 from .policy import Policy
 from .logging import Logger
+
+
+def one_epoch(epoch: int, do_train_step: Callable, batch_iter: Iterable, logger: Logger, validate: Callable = None,
+              **policies: Policy):
+    metrics = None
+    train_losses = []
+    for inputs in batch_iter:
+        train_losses.append(do_train_step(
+            *inputs, **{name: policy.value for name, policy in policies.items()}))
+
+        for policy in policies.values():
+            policy.step_finished(train_losses[-1])
+
+    logger.train(train_losses, epoch)
+    # TODO: generalize
+    if 'lr' in policies:
+        logger.lr(policies['lr'].value, epoch)
+
+    if validate is not None:
+        metrics = validate()
+        logger.metrics(metrics, epoch)
+
+    for policy in policies.values():
+        policy.epoch_finished(train_losses=train_losses, metrics=metrics)
 
 
 def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger: Logger,
@@ -24,31 +48,18 @@ def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger:
     validate
         a function that calculates the loss and metrics on the validation set
     """
-    metrics = None
+
     with batch_iter:
         for epoch in range(n_epochs):
-            # train the model
-            train_losses = []
-            for inputs in batch_iter:
-                train_losses.append(do_train_step(
-                    *inputs, **{name: policy.value for name, policy in policies.items()}))
+            one_epoch(epoch, do_train_step, batch_iter, logger, validate, **policies)
 
-                for policy in policies.values():
-                    policy.step_finished(train_losses[-1])
 
-            logger.train(train_losses, epoch)
-            # TODO: generalize
-            if 'lr' in policies:
-                logger.lr(policies['lr'].value, epoch)
+def train_with_backups(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger: Logger, backup: Backup,
+                       validate: Callable = None, **policies: Policy):
+    backup.restore()
+    last_epoch = backup.backup_iteration
 
-            if validate is not None:
-                metrics = validate()
-                if not isinstance(metrics, dict):
-                    warn('Validation losses are deprecated. '
-                         'If you need val losses just put them in the metrics dict.', DeprecationWarning)
-                    metrics = metrics[1]
-
-                logger.metrics(metrics, epoch)
-
-            for policy in policies.values():
-                policy.epoch_finished(train_losses=train_losses, metrics=metrics)
+    with batch_iter:
+        for epoch in range(last_epoch, n_epochs):
+            one_epoch(epoch, do_train_step, batch_iter, logger, validate, **policies)
+            backup.save()
