@@ -46,7 +46,7 @@ class CheckpointManager:
 
         # TODO: generalize
         for relative_path, o in self.pickled_objects.items():
-            save_pickle(o, next_folder/ relative_path)
+            save_pickle(o, next_folder / relative_path)
 
         for relative_path, o in self.state_dict_objects.items():
             save_torch(o, next_folder / relative_path)
@@ -70,10 +70,10 @@ class CheckpointManager:
 
         # TODO: generalize
         for relative_path, o in self.pickled_objects.items():
-            self.pickled_objects[relative_path] = load_pickle(o, current_folder / relative_path)
+            load_pickle(o, current_folder / relative_path)
 
         for relative_path, o in self.state_dict_objects.items():
-            self.state_dict_objects[relative_path] = load_model_state(o, current_folder / relative_path)
+            load_model_state(o, current_folder / relative_path)
 
     def get_value(self, name):
         if name in self.state_dict_objects:

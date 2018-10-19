@@ -72,11 +72,15 @@ class DecreasingOnPlateau(Policy):
     def __init__(self, *, initial: float, multiplier: float, patience: int, rtol, atol):
         super().__init__(initial)
 
+        self.atol = atol
+        self.rtol = rtol
         self.lr_dec_mul = multiplier
         self.patience = patience
         self.epochs_waited = 0
-        self.get_margin_loss = lambda loss: max([loss * (1 - rtol), loss - atol])
         self.margin_loss = np.inf
+
+    def get_margin_loss(self, loss):
+        return max([loss * (1 - self.rtol), loss - self.atol])
 
     def on_epoch_finished(self, *, train_losses: Sequence[float], **kwargs):
         loss = np.mean(train_losses)
