@@ -5,11 +5,10 @@ from pathlib import Path
 
 import torch
 
-from dpipe.torch import load_model_state
-
 
 def save_pickle(o, path):
     with open(path, 'wb') as file:
+        # TODO: in case of policies __dict__ is an overkill
         pickle.dump(o.__dict__, file)
 
 
@@ -24,6 +23,11 @@ def save_torch(o, path):
     torch.save(o.state_dict(), path)
 
 
+# TODO: no CPU - GPU interchange for now
+def load_torch(o, path):
+    o.load_state_dict(torch.load(path))
+
+
 class CheckpointManager:
     def __init__(self, base_path: str, pickled_objects: dict = None, state_dict_objects: dict = None):
         self.base_path = Path(base_path)
@@ -34,28 +38,31 @@ class CheckpointManager:
 
         assert not (set(self.state_dict_objects) & set(self.pickled_objects))
 
-    def _get_next_folder(self):
-        return self.base_path / f'{self._checkpoint_prefix}{self.iteration + 1}'
+    def _get_previous_folder(self):
+        return self.base_path / f'{self._checkpoint_prefix}{self.iteration - 1}'
 
     def _get_current_folder(self):
         return self.base_path / f'{self._checkpoint_prefix}{self.iteration}'
 
     def save(self):
-        next_folder = self._get_next_folder()
-        os.makedirs(next_folder)
+        current_folder = self._get_current_folder()
+        os.makedirs(current_folder)
 
         # TODO: generalize
         for relative_path, o in self.pickled_objects.items():
-            save_pickle(o, next_folder / relative_path)
+            save_pickle(o, current_folder / relative_path)
 
         for relative_path, o in self.state_dict_objects.items():
-            save_torch(o, next_folder / relative_path)
+            save_torch(o, current_folder / relative_path)
 
         if self.iteration:
-            self.clear_checkpoint()
+            shutil.rmtree(self._get_previous_folder())
         self.iteration += 1
 
     def restore(self):
+        if not self.base_path.exists():
+            return
+
         max_iteration = -1
         for file in os.listdir(self.base_path):
             if file.startswith(self._checkpoint_prefix):
@@ -65,20 +72,12 @@ class CheckpointManager:
         if max_iteration < 0:
             return
 
-        self.iteration = max_iteration
-        current_folder = self._get_current_folder()
+        self.iteration = max_iteration + 1
+        last_folder = self._get_previous_folder()
 
         # TODO: generalize
         for relative_path, o in self.pickled_objects.items():
-            load_pickle(o, current_folder / relative_path)
+            load_pickle(o, last_folder / relative_path)
 
         for relative_path, o in self.state_dict_objects.items():
-            load_model_state(o, current_folder / relative_path)
-
-    def get_value(self, name):
-        if name in self.state_dict_objects:
-            return self.state_dict_objects[name]
-        return self.pickled_objects[name]
-
-    def clear_checkpoint(self):
-        shutil.rmtree(self._get_current_folder())
+            load_torch(o, last_folder / relative_path)

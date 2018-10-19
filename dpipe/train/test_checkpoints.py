@@ -30,11 +30,13 @@ class TestCheckpoints(unittest.TestCase):
             }
             manager = CheckpointManager(tempdir, pickled_objects=policies)
 
-            self.advance_policies(policies.values(), 4)
-            manager.save()
+            for _ in range(10):
+                self.advance_policies(policies.values(), 4)
+                manager.save()
 
-            params = self.get_params(policies.values())
-            self.advance_policies(policies.values(), 4)
+                params = self.get_params(policies.values())
+                self.advance_policies(policies.values(), 4)
+                self.assertTrue(any(old != new for old, new in zip(params, self.get_params(policies.values()))))
 
-            manager.restore()
-            self.assertListEqual(params, self.get_params(policies.values()))
+                manager.restore()
+                self.assertListEqual(params, self.get_params(policies.values()))

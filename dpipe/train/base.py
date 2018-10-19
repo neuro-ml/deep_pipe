@@ -57,9 +57,9 @@ def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger:
 def train_with_checkpoints(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger: Logger,
                            checkpoint_manager: CheckpointManager, validate: Callable = None, **policies: Policy):
     checkpoint_manager.restore()
-    last_epoch = checkpoint_manager.iteration
+    current_epoch = checkpoint_manager.iteration
 
     with batch_iter:
-        for epoch in range(last_epoch, n_epochs):
+        for epoch in range(current_epoch, n_epochs):
             one_epoch(epoch, do_train_step, batch_iter, logger, validate, **policies)
             checkpoint_manager.save()
