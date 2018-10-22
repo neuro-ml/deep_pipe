@@ -1,6 +1,9 @@
 import os
 import shutil
+import atexit
+from pathlib import Path
 from typing import Callable
+
 
 
 def _path_based_call(exists, missing, exists_message, missing_message, paths, keyword_paths, verbose):
@@ -76,3 +79,27 @@ def run(*args):
     if not args:
         raise ValueError('Nothing to run.')
     return args[-1]
+
+
+def lock_experiment_dir(filename='.lock'):
+    """Lock current dir by generating special file, close everything if dir is already locked."""
+    if not os.path.exists(filename):
+        Path(filename).touch(exist_ok=False)
+        atexit.register(os.remove, filename)
+    else:
+        text = f'Running experiment from {os.path.abspath("./")}, but the directory is already locked! Exit is called!'
+        text_len = len(text)
+        filler = '#' * text_len
+        message = '\n'.join([
+            '\n' * 4,
+            filler,
+            filler,
+            filler,
+            text,
+            filler,
+            filler,
+            filler,
+            '\n' * 4,
+        ])
+        print(message, flush=True)
+        raise EnvironmentError('Directory is locked.')
