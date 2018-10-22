@@ -123,9 +123,11 @@ class Schedule(Policy):
         if self.epoch in self.epoch2value_multiplier:
             self.value *= self.epoch2value_multiplier[self.epoch]
 
-    @classmethod
-    def constant_multiplier(cls, initial: float, multiplier: float, epochs: Sequence[int]):
-        return cls(initial, dict(zip(epochs, [multiplier] * len(epochs))))
+    # ----------------------------------
+    # Factories to build Schedule object
+    @staticmethod
+    def constant_multiplier(initial: float, multiplier: float, epochs: Sequence[int]):
+        return Schedule(initial=initial, epoch2value_multiplier=dict(zip(epochs, [multiplier] * len(epochs))))
 
 
 class LambdaEpoch(Policy):
