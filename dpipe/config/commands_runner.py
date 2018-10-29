@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Callable
 
 
-
 def _path_based_call(exists, missing, exists_message, missing_message, paths, keyword_paths, verbose):
     outputs = paths + tuple(keyword_paths.values())
     if not outputs:

@@ -22,6 +22,9 @@ class Proxy:
     def __getattr__(self, name):
         return getattr(self._shadowed, name)
 
+    def __dir__(self):
+        return list(set(super().__dir__()) | set(dir(self._shadowed)))
+
 
 def cache_methods(instance=None, methods: Iterable[str] = None, dataset=None):
     """Cache the ``instamce``'s ``methods``."""
