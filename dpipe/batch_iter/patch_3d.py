@@ -20,8 +20,8 @@ def make_block_find_padding():
     return pdp.One2One(add_padding, buffer_size=DEFAULT_BUFFER_SIZE)
 
 
-def make_init_blocks(ids, load_x, load_y):
-    return (make_source_random(ids), make_block_load_x_y(load_x, load_y, buffer_size=len(ids)),
+def make_init_blocks(ids, load_x, load_y, probs=None):
+    return (make_source_random(ids, probs=probs), make_block_load_x_y(load_x, load_y, buffer_size=len(ids)),
             make_block_find_padding())
 
 
