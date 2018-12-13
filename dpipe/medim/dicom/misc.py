@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from pydicom import read_file
 
-from ..utils import extract_dims
+from ..utils import extract_dims, lmap
 from ..itertools import zip_equal
 
 ORIENTATION = [f'ImageOrientationPatient{i}' for i in range(6)]
@@ -21,6 +21,41 @@ def get_orientation_matrix(metadata: Union[pd.Series, pd.DataFrame]):
     if metadata.ndim == 1:
         result = extract_dims(result)
     return result
+
+
+def get_orientation_axis(row: pd.Series):
+    m = get_orientation_matrix(row)
+    assert not np.isnan(m).any()
+    return np.abs(m).argmax(axis=0)[2]
+
+
+def restore_orientation_matrix(metadata: Union[pd.Series, pd.DataFrame]):
+    """
+    Required columns: ImageOrientationPatient[0-5]
+
+    Notes
+    -----
+    The input dataframe will be mutated.
+    """
+
+    def restore(vector):
+        null = pd.isnull(vector)
+        if null.any() and not null.all():
+            length = 1 - (vector[~null] ** 2).sum()
+            vector = vector.copy()
+            vector[null] = length / np.sqrt(null.sum())
+
+        return vector
+
+    x, y = np.moveaxis(metadata[ORIENTATION].astype(float).values.reshape(-1, 2, 3), 1, 0)
+
+    result = np.concatenate([lmap(restore, x), lmap(restore, y)], axis=1)
+
+    if metadata.ndim == 1:
+        result = extract_dims(result)
+
+    metadata[ORIENTATION] = result
+    return metadata
 
 
 def _contains_info(row, *cols):

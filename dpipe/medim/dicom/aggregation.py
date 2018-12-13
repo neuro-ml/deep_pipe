@@ -40,7 +40,7 @@ def aggregate_images(metadata: pd.DataFrame) -> pd.DataFrame:
         # TODO: detect duplicates
         try:
             res['InstanceNumbers'] = ','.join(map(_remove_dots, entry.InstanceNumber))
-        except ValueError:
+        except (ValueError, TypeError):
             res['InstanceNumbers'] = None
 
         return res.drop(['InstanceNumber', 'FileName'], 1, errors='ignore')

@@ -9,8 +9,8 @@ from .shape_utils import shape_after_full_convolution
 from .utils import build_slices
 
 
-def get_boxes_grid(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
-                   valid: bool = True) -> Iterable[Box]:
+def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
+              valid: bool = True) -> Iterable[Box]:
     """
     Yield boxes appropriate for a tensor of shape ``shape`` in a convolution-like fashion.
 
@@ -92,3 +92,4 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
 
 combine_grid_patches = np.deprecate(combine, old_name='combine_grid_patches', new_name='combine')
 grid_patch = np.deprecate(divide, old_name='grid_patch', new_name='divide')
+get_boxes_grid = np.deprecate(get_boxes, old_name='get_boxes_grid', new_name='get_boxes')
