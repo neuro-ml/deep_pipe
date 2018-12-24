@@ -53,7 +53,7 @@ def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike
     valid
         whether patches of size smaller than ``patch_size`` should be left out.
     """
-    for box in get_boxes_grid(x.shape, patch_size, stride, axes, valid=valid):
+    for box in get_boxes(x.shape, patch_size, stride, axes, valid=valid):
         yield x[build_slices(*box)]
 
 
@@ -79,7 +79,7 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     result = np.zeros(output_shape, patch.dtype)
     counts = np.zeros(output_shape, int)
     for box, patch in zip_equal(
-            get_boxes_grid(output_shape, extract(patch.shape, axes), stride, axes, valid=False), patches):
+            get_boxes(output_shape, extract(patch.shape, axes), stride, axes, valid=False), patches):
         slc = build_slices(*box)
         result[slc] += patch
         counts[slc] += 1

@@ -17,14 +17,14 @@ class TestPipe(unittest.TestCase):
             np.testing.assert_equal(extract_dims(a), self.x)
             return a
 
-        np.testing.assert_equal(self.x, add_remove_first_dims(predict=predict)(self.x))
+        np.testing.assert_equal(self.x, add_remove_first_dims(self.x, predict=predict))
 
     def test_pad_to_dividable2predict2trim_spatial_size(self):
         def predict(a):
             np.testing.assert_equal(a.shape, [2, 32, 32, 32])
             return a
 
-        np.testing.assert_equal(self.x, pad_trim_last_dims_to_dividable(predict=predict, divisor=4)(self.x))
+        np.testing.assert_equal(self.x, pad_trim_last_dims_to_dividable(self.x, predict=predict, divisor=4))
 
     def check_divide_to_patches2predict2combine(self, patch_size, stride):
         patch_size = np.array(patch_size)
@@ -40,7 +40,7 @@ class TestPipe(unittest.TestCase):
                 results.append(patch[slices])
             return results
 
-        y_pred = divide_combine_patches(patch_size, stride, predict)(self.x)
+        y_pred = divide_combine_patches(self.x, predict, patch_size=patch_size, stride=stride)
         np.testing.assert_equal(self.x, y_pred)
 
     def test_divide_to_patches2predict2combine(self):
