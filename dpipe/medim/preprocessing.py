@@ -3,7 +3,7 @@ from scipy import ndimage
 
 from .itertools import extract
 from .axes import fill_by_indices, expand_axes, AxesLike, AxesParams
-from .utils import build_slices, pad, apply_along_axes, scale as _scale
+from .utils import build_slices, pad as pad_, apply_along_axes, scale as _scale
 
 
 def normalize_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None):
@@ -82,9 +82,28 @@ def scale_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order:
     return ndimage.zoom(x, new_shape / old_shape, order=order)
 
 
+def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0) -> np.ndarray:
+    """
+    Pad a tensor to ``shape` along the ``axes``.
+
+    Parameters
+    ----------
+    x
+        tensor to pad.
+    padding
+        padding in a format compatible with `numpy.pad`
+    padding_values
+        values to pad the tensor with.
+    axes
+        axes along which the tensor will be padded. If None - the last `len(padding)` axes are used.
+    """
+    padding = fill_by_indices(np.zeros((x.ndim, 2), dtype=int), np.atleast_2d(padding), axes)
+    return pad_(x, padding, padding_values)
+
+
 def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0) -> np.ndarray:
     """
-    Pad a tensor to `shape` along the `axes`.
+    Pad a tensor to ``shape`` along the ``axes``.
 
     Parameters
     ----------
@@ -102,9 +121,9 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
         raise ValueError(f'The resulting shape cannot be smaller than the original: {old_shape} vs {new_shape}')
 
     delta = new_shape - old_shape
-    padding_width = np.array((delta // 2, (delta + 1) // 2)).T.astype(int)
+    padding = np.array((delta // 2, (delta + 1) // 2)).T.astype(int)
 
-    return pad(x, padding_width, padding_values)
+    return pad(x, padding, padding_values=padding_values)
 
 
 def slice_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None) -> np.ndarray:

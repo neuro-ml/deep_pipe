@@ -84,11 +84,11 @@ def aggregate_metric(xs, ys, metric, aggregate_fn=np.mean):
     return aggregate_fn([metric(x, y) for x, y in zip_equal(xs, ys)])
 
 
-def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn=np.mean, key_prefix=''):
-    return dict(zip(
-        [key_prefix + key for key in metrics],
-        [partial(aggregate_metric, metric=metric, aggregate_fn=aggregate_fn) for metric in metrics.values()]
-    ))
+def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn: Callable = np.mean, key_prefix: str = ''):
+    return {
+        key_prefix + key: partial(aggregate_metric, metric=metric, aggregate_fn=aggregate_fn)
+        for key, metric in metrics.items()
+    }
 
 
 @add_check_bool
