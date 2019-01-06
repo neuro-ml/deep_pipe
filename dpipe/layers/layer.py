@@ -31,3 +31,12 @@ class PyramidPooling(nn.Module):
     @staticmethod
     def get_out_features(in_features, levels, ndim):
         return in_features * PyramidPooling.get_multiplier(levels, ndim)
+
+
+class Lambda(nn.Module):
+    def __init__(self, func):
+        super().__init__()
+        self.func = func
+
+    def forward(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
