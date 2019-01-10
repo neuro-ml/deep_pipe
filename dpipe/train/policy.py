@@ -2,18 +2,21 @@ from typing import Sequence, Callable, Dict
 
 import numpy as np
 
-from dpipe.dataset.base import AbstractAttribute
+from dpipe.dataset.base import AbstractAttribute, ABCAttributesMeta
+
+
+class EarlyStopping(Exception):
+    """Policy can raise this error to signal early stopping condition"""
+    pass
 
 
 class Policy:
     """Interface for various policies."""
-    value = AbstractAttribute('The current value')
 
-    def __init__(self, initial):
+    def __init__(self):
         self.epoch = 0
         self.step = 0
         self.total_steps = 0
-        self.value = initial
 
     def on_epoch_finished(self, *, train_losses: Sequence[float] = None, metrics: dict = None):
         """
@@ -53,17 +56,20 @@ class Policy:
         self.step += 1
         self.total_steps += 1
 
-    @property
-    @np.deprecate
-    def lr(self):
-        return self.value
+
+class ValuePolicy(Policy, metaclass=ABCAttributesMeta):
+    value = AbstractAttribute('The current value')
+
+    def __init__(self, initial):
+        super().__init__()
+        self.value = initial
 
 
 # useful alias
-Constant = Policy
+Constant = ValuePolicy
 
 
-class DecreasingOnPlateau(Policy):
+class DecreasingOnPlateau(ValuePolicy):
     """
     Policy that traces average train loss and if it didn't decrease according to ``atol``
     or ``rtol`` for ``patience`` epochs, multiply `value` by ``multiplier``.
@@ -95,7 +101,7 @@ class DecreasingOnPlateau(Policy):
                 self.epochs_waited = 0
 
 
-class Exponential(Policy):
+class Exponential(ValuePolicy):
     """
     Exponentially change the `value` by a factor of ``multiplier`` each ``step_length`` epochs.
     If ``floordiv`` is False - the `value` will be changed continuously.
@@ -116,7 +122,7 @@ class Exponential(Policy):
         self.value = self.initial * self.multiplier ** power
 
 
-class Schedule(Policy):
+class Schedule(ValuePolicy):
     """Multiply `value` by multipliers given by ``epoch2value_multiplier`` at corresponding epochs."""
 
     def __init__(self, initial: float, epoch2value_multiplier: Dict[int, float]):
@@ -134,7 +140,7 @@ class Schedule(Policy):
         return Schedule(initial=initial, epoch2value_multiplier=dict(zip(epochs, [multiplier] * len(epochs))))
 
 
-class LambdaEpoch(Policy):
+class LambdaEpoch(ValuePolicy):
     """Use the passed function to calculate the `value` for the current epoch (starting with 0)."""
 
     def __init__(self, func: Callable):
@@ -143,3 +149,16 @@ class LambdaEpoch(Policy):
 
     def on_epoch_finished(self, **kwargs):
         self.value = self.func(self.epoch + 1)
+
+
+class LossStop(Policy):
+    def __init__(self, max_loss_drop=3):
+        super().__init__()
+        self.min_loss = np.inf
+        self.max_loss_drop = max_loss_drop
+
+    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, metrics: dict = None):
+        loss = np.mean(train_losses)
+        self.min_loss = min(self.min_loss, loss)
+        if loss > 3 * self.min_loss:
+            raise EarlyStopping
