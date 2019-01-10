@@ -33,13 +33,19 @@ def make_infinite_batch_iter(
     combiner
         combines chunks of single batches in multiple batches, e.g. combiner([(x, y), (x, y)]) -> ([x, x], [y, y])
     """
+    # backwards compatibility with pdp==0.2.1
+    if hasattr(pdp.interface, 'ComponentDescription'):
+        source_class = transformer_class = pdp.interface.ComponentDescription
+    else:
+        source_class = pdp.Source
+        transformer_class = pdp.interface.TransformerDescription
 
     def wrap(o):
-        if not isinstance(o, pdp.interface.TransformerDescription):
+        if not isinstance(o, transformer_class):
             o = pdp.One2One(o, buffer_size=buffer_size)
         return o
 
-    if not isinstance(source, pdp.Source):
+    if not isinstance(source, source_class):
         source = pdp.Source(source, buffer_size=buffer_size)
 
     pipeline = pdp.Pipeline(source, *map(wrap, transformers), pdp.Many2One(chunk_size=batch_size, buffer_size=3),

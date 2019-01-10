@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 
 import numpy as np
 import torch
@@ -27,8 +27,11 @@ def save_model_state(module: torch.nn.Module, path: str):
     torch.save(module.state_dict(), path)
 
 
-def is_on_cuda(module: torch.nn.Module):
-    return next(module.parameters()).is_cuda
+def is_on_cuda(x: Union[torch.nn.Module, torch.Tensor]):
+    if isinstance(x, torch.nn.Module):
+        x = next(x.parameters())
+
+    return x.is_cuda
 
 
 def sequence_to_var(*data, cuda: bool = None, requires_grad: bool = False):
