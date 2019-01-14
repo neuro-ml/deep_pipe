@@ -30,9 +30,9 @@ class TestCheckpoints(unittest.TestCase):
             }
             manager = CheckpointManager(tempdir, pickled_objects=policies)
 
-            for _ in range(10):
+            for epoch in range(10):
                 self.advance_policies(policies.values(), 4)
-                manager.save()
+                manager.save(epoch)
 
                 params = self.get_params(policies.values())
                 self.advance_policies(policies.values(), 4)

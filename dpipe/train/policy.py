@@ -5,7 +5,7 @@ import numpy as np
 from dpipe.dataset.base import AbstractAttribute, ABCAttributesMeta
 
 
-class EarlyStopping(Exception):
+class EarlyStopping(StopIteration):
     """Policy can raise this error to signal early stopping condition"""
     pass
 
@@ -13,48 +13,23 @@ class EarlyStopping(Exception):
 class Policy:
     """Interface for various policies."""
 
-    def __init__(self):
-        self.epoch = 0
-        self.step = 0
-        self.total_steps = 0
-
-    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, metrics: dict = None):
+    def epoch_started(self, epoch: int):
         """
-        Update the `value` after an epoch is finished.
-
-        The history of ``train_losses`` and ``metrics`` from the entire epoch is provided as additional information.
+        Update the policy before an epoch will start. The epochs numeration starts at zero.
         """
+        pass
 
-    def epoch_finished(self, *, train_losses: Sequence[float] = None, metrics: dict = None):
-        """
-        Update the `value` and the counters after an epoch is finished.
+    @np.deprecate
+    def on_epoch_finished(self, epoch: int, *, train_losses: Sequence[float] = None, metrics: dict = None):
+        pass
 
-        Notes
-        -----
-        Normally you don't need to override this method. See `on_epoch_finished`.
+    def epoch_finished(self, epoch: int, *, train_losses: Sequence[float] = None, metrics: dict = None):
         """
-        self.on_epoch_finished(train_losses=train_losses, metrics=metrics)
-        self.step = 0
-        self.epoch += 1
+        Update the policy after an epoch is finished. The epochs numeration starts at zero.
 
-    def on_step_finished(self, train_loss: float):
+        The history of ``train_losses`` and ``metrics`` from the entire ``epoch`` is provided as additional information.
         """
-        Update the `value` after a step is finished.
-
-        The current ``train_loss`` is provided as additional information.
-        """
-
-    def step_finished(self, train_loss: float):
-        """
-        Update the `value` and the counters after a step is finished.
-
-        Notes
-        -----
-        Normally you don't need to override this method. See `on_step_finished`.
-        """
-        self.on_step_finished(train_loss)
-        self.step += 1
-        self.total_steps += 1
+        self.on_epoch_finished(epoch, train_losses, metrics)
 
 
 class ValuePolicy(Policy, metaclass=ABCAttributesMeta):
@@ -88,7 +63,7 @@ class DecreasingOnPlateau(ValuePolicy):
     def get_margin_loss(self, loss):
         return max([loss * (1 - self.rtol), loss - self.atol])
 
-    def on_epoch_finished(self, *, train_losses: Sequence[float], **kwargs):
+    def epoch_finished(self, epoch: int, *, train_losses: Sequence[float], **kwargs):
         loss = np.mean(train_losses)
         if loss < self.margin_loss:
             self.margin_loss = self.get_margin_loss(loss)
@@ -114,11 +89,11 @@ class Exponential(ValuePolicy):
         self.step_length = step_length
         self.floordiv = floordiv
 
-    def on_epoch_finished(self, **kwargs):
+    def epoch_finished(self, epoch, **kwargs):
         if self.floordiv:
-            power = self.epoch // self.step_length
+            power = epoch // self.step_length
         else:
-            power = self.epoch / self.step_length
+            power = epoch / self.step_length
         self.value = self.initial * self.multiplier ** power
 
 
@@ -129,9 +104,9 @@ class Schedule(ValuePolicy):
         super().__init__(initial)
         self.epoch2value_multiplier = epoch2value_multiplier
 
-    def on_epoch_finished(self, **kwargs):
-        if self.epoch in self.epoch2value_multiplier:
-            self.value *= self.epoch2value_multiplier[self.epoch]
+    def epoch_finished(self, epoch, **kwargs):
+        if epoch in self.epoch2value_multiplier:
+            self.value *= self.epoch2value_multiplier[epoch]
 
     # ----------------------------------
     # Factories to build Schedule object
@@ -147,18 +122,28 @@ class LambdaEpoch(ValuePolicy):
         super().__init__(func(0))
         self.func = func
 
-    def on_epoch_finished(self, **kwargs):
-        self.value = self.func(self.epoch + 1)
+    def epoch_finished(self, epoch, **kwargs):
+        self.value = self.func(epoch + 1)
 
 
 class LossStop(Policy):
-    def __init__(self, max_loss_drop=3):
+    def __init__(self, max_ratio: float = 3):
         super().__init__()
         self.min_loss = np.inf
-        self.max_loss_drop = max_loss_drop
+        self.max_ratio = max_ratio
 
-    def on_epoch_finished(self, *, train_losses: Sequence[float] = None, metrics: dict = None):
+    def epoch_finished(self, epoch, *, train_losses: Sequence[float] = None, metrics: dict = None):
         loss = np.mean(train_losses)
         self.min_loss = min(self.min_loss, loss)
-        if loss > 3 * self.min_loss:
+        if loss > self.max_ratio * self.min_loss:
+            raise EarlyStopping
+
+
+class NEpochs(Policy):
+    def __init__(self, n_epochs):
+        super().__init__()
+        self.n_epochs = n_epochs
+
+    def epoch_started(self, epoch: int):
+        if epoch >= self.n_epochs:
             raise EarlyStopping

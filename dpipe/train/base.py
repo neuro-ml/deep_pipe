@@ -1,38 +1,34 @@
 from typing import Callable, Iterable
 
 from dpipe.batch_iter import BatchIter
-from dpipe.train.checkpoint import CheckpointManager
+from .checkpoint import CheckpointManager, DummyCheckpointManager
 from .policy import Policy, ValuePolicy, EarlyStopping
-from .logging import Logger
+from .logging import Logger, DummyLogger
 
 
 def one_epoch(epoch: int, do_train_step: Callable, batch_iter: Iterable, logger: Logger, validate: Callable = None,
               **policies: Policy):
+    def get_values():
+        return {name: policy_.value for name, policy_ in policies.items() if isinstance(policy_, ValuePolicy)}
+
     metrics = None
     train_losses = []
     for inputs in batch_iter:
-        policy_values = {name: policy.value for name, policy in policies.items()
-                         if issubclass(type(policy), ValuePolicy)}
-        train_losses.append(do_train_step(*inputs, **policy_values))
-
-        for policy in policies.values():
-            policy.step_finished(train_losses[-1])
+        train_losses.append(do_train_step(*inputs, **get_values()))
 
     logger.train(train_losses, epoch)
-    # TODO: generalize
-    if 'lr' in policies:
-        logger.lr(policies['lr'].value, epoch)
+    logger.policies(get_values(), epoch)
 
     if validate is not None:
         metrics = validate()
         logger.metrics(metrics, epoch)
 
     for policy in policies.values():
-        policy.epoch_finished(train_losses=train_losses, metrics=metrics)
+        policy.epoch_finished(epoch, train_losses=train_losses, metrics=metrics)
 
 
-def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger: Logger,
-          validate: Callable = None, **policies: Policy):
+def train(do_train_step: Callable, batch_iter: BatchIter, logger: Logger = None,
+          checkpoint_manager: CheckpointManager = None, validate: Callable = None, **policies: Policy):
     """
     Train a given model.
 
@@ -41,31 +37,28 @@ def train(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger:
     do_train_step
     batch_iter
         batch iterator
-    n_epochs
-        number of epochs to train
+    logger
+    checkpoint_manager
+    validate
+        a function that calculates metrics on the validation set
     policies:
         a collection of policies to run at each step.
         Policies, inherited from ValuePolicy will be passed to ``do_train_step``.
-        The rest can be used to do early stopping with corresponding error.
-    logger
-    validate
-        a function that calculates the loss and metrics on the validation set
+        The rest can be used for early stopping.
     """
+    if checkpoint_manager is None:
+        checkpoint_manager = DummyCheckpointManager()
+    if logger is None:
+        logger = DummyLogger()
+
+    epoch = checkpoint_manager.restore()
 
     with batch_iter:
         try:
-            for epoch in range(n_epochs):
+            while True:
                 one_epoch(epoch, do_train_step, batch_iter, logger, validate, **policies)
+                epoch += 1
+                checkpoint_manager.save(epoch)
+
         except EarlyStopping:
-            print('Early stopping!')
-
-
-def train_with_checkpoints(do_train_step: Callable, batch_iter: BatchIter, n_epochs: int, logger: Logger,
-                           checkpoint_manager: CheckpointManager, validate: Callable = None, **policies: Policy):
-    checkpoint_manager.restore()
-    current_epoch = checkpoint_manager.iteration
-
-    with batch_iter:
-        for epoch in range(current_epoch, n_epochs):
-            one_epoch(epoch, do_train_step, batch_iter, logger, validate, **policies)
-            checkpoint_manager.save()
+            pass

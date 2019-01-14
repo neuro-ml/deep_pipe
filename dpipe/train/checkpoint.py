@@ -1,6 +1,7 @@
 import os
 import shutil
 import pickle
+from abc import abstractmethod
 from pathlib import Path
 
 import torch
@@ -28,24 +29,48 @@ def load_torch(o, path):
     o.load_state_dict(torch.load(path))
 
 
+class CheckpointManagerBase:
+    @abstractmethod
+    def save(self, iteration: int):
+        """Save the states of all tracked objects."""
+
+    @abstractmethod
+    def restore(self) -> int:
+        """
+        Restore the most recent states of all tracked objects and return
+        the corresponding iteration.
+        """
+
+
+class DummyCheckpointManager:
+    def save(self, iteration: int):
+        pass
+
+    @staticmethod
+    def restore():
+        return 0
+
+
 class CheckpointManager:
     def __init__(self, base_path: str, pickled_objects: dict = None, state_dict_objects: dict = None):
         self.base_path = Path(base_path)
-        self.iteration = 0
         self._checkpoint_prefix = 'checkpoint_'
         self.pickled_objects = pickled_objects or {}
         self.state_dict_objects = state_dict_objects or {}
 
         assert not (set(self.state_dict_objects) & set(self.pickled_objects))
 
-    def _get_previous_folder(self):
-        return self.base_path / f'{self._checkpoint_prefix}{self.iteration - 1}'
+    def _get_previous_folder(self, iteration):
+        return self.base_path / f'{self._checkpoint_prefix}{iteration - 1}'
 
-    def _get_current_folder(self):
-        return self.base_path / f'{self._checkpoint_prefix}{self.iteration}'
+    def _get_current_folder(self, iteration):
+        return self.base_path / f'{self._checkpoint_prefix}{iteration}'
 
-    def save(self):
-        current_folder = self._get_current_folder()
+    def _clear_previous(self, iteration):
+        shutil.rmtree(self._get_previous_folder(iteration))
+
+    def save(self, iteration: int):
+        current_folder = self._get_current_folder(iteration)
         os.makedirs(current_folder)
 
         # TODO: generalize
@@ -55,13 +80,12 @@ class CheckpointManager:
         for relative_path, o in self.state_dict_objects.items():
             save_torch(o, current_folder / relative_path)
 
-        if self.iteration:
-            shutil.rmtree(self._get_previous_folder())
-        self.iteration += 1
+        if iteration:
+            self._clear_previous(iteration)
 
     def restore(self):
         if not self.base_path.exists():
-            return
+            return 0
 
         max_iteration = -1
         for file in os.listdir(self.base_path):
@@ -70,10 +94,10 @@ class CheckpointManager:
 
         # no backups found
         if max_iteration < 0:
-            return
+            return 0
 
-        self.iteration = max_iteration + 1
-        last_folder = self._get_previous_folder()
+        iteration = max_iteration + 1
+        last_folder = self._get_previous_folder(iteration)
 
         # TODO: generalize
         for relative_path, o in self.pickled_objects.items():
@@ -81,3 +105,5 @@ class CheckpointManager:
 
         for relative_path, o in self.state_dict_objects.items():
             load_torch(o, last_folder / relative_path)
+
+        return iteration

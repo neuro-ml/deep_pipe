@@ -28,13 +28,32 @@ def make_log_vector(logger: tensorboard_easy.Logger, tag: str, first_step: int =
 
 
 class Logger:
+    def _dict(self, prefix, d, step):
+        for name, value in d.items():
+            self.value(f'{prefix}/{name}', value, step)
+
+    def train(self, train_losses, step):
+        raise NotImplementedError
+
+    def value(self, name, value, step):
+        raise NotImplementedError
+
+    def policies(self, policies: dict, step: int):
+        self._dict('policies', policies, step)
+
+    @np.deprecate
+    def lr(self, lr, step):
+        self.value('lr', lr, step)
+
+    def metrics(self, metrics, step):
+        self._dict('val/metrics', metrics, step)
+
+
+class DummyLogger(Logger):
     def train(self, train_losses, step):
         pass
 
-    def lr(self, lr, step):
-        pass
-
-    def metrics(self, metrics, step):
+    def value(self, name, value, step):
         pass
 
 
@@ -54,12 +73,8 @@ class TBLogger(Logger):
     def train(self, train_losses, step):
         log_scalar_or_vector(self.logger, 'train/loss', np.mean(train_losses, axis=0), step)
 
-    def lr(self, lr, step):
-        log_scalar_or_vector(self.logger, 'train/lr', lr, step)
-
-    def metrics(self, metrics, step):
-        for name, value in metrics.items():
-            log_scalar_or_vector(self.logger, f'val/metrics/{name}', value, step)
+    def value(self, name, value, step):
+        log_scalar_or_vector(self.logger, name, value, step)
 
     def __getattr__(self, item):
         return getattr(self.logger, item)
