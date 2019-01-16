@@ -125,6 +125,15 @@ Preprocessing
     :undoc-members:
     :show-inheritance:
 
+Shape operations
+----------------
+
+.. automodule:: dpipe.medim.shape_ops
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Brain images registration
 -------------------------
 

@@ -19,6 +19,11 @@ Interfaces
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: dpipe.dataset.dicom
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: dpipe.dataset.path
     :members:
     :undoc-members:

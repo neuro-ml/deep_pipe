@@ -11,6 +11,15 @@ Training
     :undoc-members:
     :show-inheritance:
 
+Checkpoints
+-----------
+
+.. automodule:: dpipe.train.checkpoint
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Policies
 --------
 
