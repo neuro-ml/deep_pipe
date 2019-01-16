@@ -17,11 +17,6 @@ class Policy:
         """
         Update the policy before an epoch will start. The epochs numeration starts at zero.
         """
-        pass
-
-    @np.deprecate
-    def on_epoch_finished(self, epoch: int, *, train_losses: Sequence[float] = None, metrics: dict = None):
-        pass
 
     def epoch_finished(self, epoch: int, *, train_losses: Sequence[float] = None, metrics: dict = None):
         """
@@ -29,7 +24,6 @@ class Policy:
 
         The history of ``train_losses`` and ``metrics`` from the entire ``epoch`` is provided as additional information.
         """
-        self.on_epoch_finished(epoch, train_losses, metrics)
 
 
 class ValuePolicy(Policy, metaclass=ABCAttributesMeta):
@@ -90,10 +84,9 @@ class Exponential(ValuePolicy):
         self.floordiv = floordiv
 
     def epoch_finished(self, epoch, **kwargs):
+        power = epoch / self.step_length
         if self.floordiv:
-            power = epoch // self.step_length
-        else:
-            power = epoch / self.step_length
+            power = np.floor(power)
         self.value = self.initial * self.multiplier ** power
 
 
