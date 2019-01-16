@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Sequence, Dict, Callable
+from typing import Dict, Callable
 
 import numpy as np
 from scipy.ndimage.morphology import distance_transform_edt, binary_erosion
@@ -52,31 +52,6 @@ def multichannel_dice_score(a, b) -> [float]:
     """
     assert len(a) == len(b), f'number of channels is different: {len(a)} != {len(b)}'
     return list(map(dice_score, a, b))
-
-
-@np.deprecate
-def calc_max_dices(true_masks: Sequence, predicted_masks: Sequence) -> float:
-    """
-    Calculates the dice score between the true and predicted masks.
-    The threshold is selected to maximize the mean dice.
-
-    Parameters
-    ----------
-    true_masks: bool tensor
-    predicted_masks: float tensor
-    """
-    assert len(true_masks) == len(predicted_masks)
-
-    dices = []
-    thresholds = np.linspace(0, 1, 20)
-    for true, pred in zip(true_masks, predicted_masks):
-        temp = []
-        for i in range(len(true)):
-            temp.append([dice_score(pred[i] > thr, true[i].astype(bool))
-                         for thr in thresholds])
-        dices.append(temp)
-    dices = np.asarray(dices)
-    return dices.mean(axis=0).max(axis=1)
 
 
 def aggregate_metric(xs, ys, metric, aggregate_fn=np.mean):

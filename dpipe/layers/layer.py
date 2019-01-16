@@ -1,10 +1,12 @@
+from typing import Union, Callable
+
 import numpy as np
 import torch
 import torch.nn as nn
 
 
 class PyramidPooling(nn.Module):
-    def __init__(self, pooling, levels: int = 1):
+    def __init__(self, pooling: Callable, levels: int = 1):
         super().__init__()
         self.levels = levels
         self.pooling = pooling
@@ -40,3 +42,23 @@ class Lambda(nn.Module):
 
     def forward(self, *args, **kwargs):
         return self.func(*args, **kwargs)
+
+
+class Reshape(nn.Module):
+    """
+    Reshape the incoming tensor to the given ``shape``.
+
+    Parameters
+    ----------
+    shape
+        the final shape. String values denote indices in the input tensor's shape.
+        So, (1, '2', 3) will be interpreted as (1, input.shape[2], 3).
+    """
+
+    def __init__(self, *shape: Union[int, str]):
+        super().__init__()
+        self.shape = shape
+
+    def forward(self, x: torch.Tensor):
+        shape = [x.shape[int(i)] if isinstance(i, str) else i for i in self.shape]
+        return x.reshape(*shape)

@@ -15,19 +15,19 @@ class TestPrep(unittest.TestCase):
 
     def test_scale_to_shape(self):
         shape = (3, 4, 15)
-        self.assertTupleEqual(prep.scale_to_shape(self.x, shape).shape, shape)
-        self.assertTupleEqual(prep.scale_to_shape(self.x, shape[::-1]).shape, shape[::-1])
+        self.assertTupleEqual(prep.zoom_to_shape(self.x, shape).shape, shape)
+        self.assertTupleEqual(prep.zoom_to_shape(self.x, shape[::-1]).shape, shape[::-1])
 
     def test_pad_to_shape(self):
         self._test_to_shape(prep.pad_to_shape, (3, 15, 16), (3, 4, 10))
 
     def test_slice_to_shape(self):
-        self._test_to_shape(prep.slice_to_shape, (3, 4, 8), (3, 15, 10))
+        self._test_to_shape(prep.crop_to_shape, (3, 4, 8), (3, 15, 10))
 
     def test_scale(self):
-        self.assertTupleEqual(prep.scale(self.x, (3, 4, 15)).shape, (9, 40, 150))
+        self.assertTupleEqual(prep.zoom(self.x, (3, 4, 15)).shape, (9, 40, 150))
 
-        self.assertTupleEqual(prep.scale(self.x, (4, 3)).shape, (3, 40, 30))
+        self.assertTupleEqual(prep.zoom(self.x, (4, 3)).shape, (3, 40, 30))
 
     def test_normalize_image(self):
         x = prep.normalize_image(self.x)

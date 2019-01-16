@@ -1,8 +1,8 @@
 import os
 import inspect
 
-from .axes import check_axes, AxesLike, ndim2spatial_axes
-from .checks import add_check_len
+from .axes import check_axes, AxesLike
+from .checks import check_len
 from .itertools import *
 
 
@@ -35,19 +35,19 @@ def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
 
 
 def extract_dims(array, ndim=1):
-    """Decrease the dimensionality of ``array`` by extracting ``ndims`` leading singleton dimensions."""
+    """Decrease the dimensionality of ``array`` by extracting ``ndim`` leading singleton dimensions."""
     for _ in range(ndim):
         assert len(array) == 1
         array = array[0]
     return array
 
 
-@add_check_len
 def build_slices(start: Sequence[int], stop: Sequence[int] = None) -> Tuple[slice, ...]:
     if stop is not None:
+        check_len(start, stop)
         return tuple(map(slice, start, stop))
-    else:
-        return tuple(map(slice, start))
+
+    return tuple(map(slice, start))
 
 
 def scale(x):
@@ -158,3 +158,7 @@ def composition(func: Callable):
         return wrapper
 
     return decorator
+
+
+def name_changed(func: Callable, old_name: str, date: str):
+    return np.deprecate(func, old_name=old_name, new_name=func.__name__)

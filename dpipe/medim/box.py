@@ -9,7 +9,7 @@ import numpy as np
 
 from .checks import check_len
 from .shape_utils import compute_shape_from_spatial
-from .utils import build_slices
+from .utils import build_slices, name_changed
 
 # box type
 Box = np.ndarray
@@ -27,7 +27,7 @@ def make_box_(iterable) -> Box:
     return box
 
 
-def get_volume(box):
+def get_volume(box: Box):
     return np.prod(box[1] - box[0], axis=0)
 
 
@@ -49,7 +49,7 @@ def get_containing_box(shape: tuple):
 
 
 @returns_box
-def broadcast_box(box, shape: tuple, dims: tuple):
+def broadcast_box(box: Box, shape: tuple, dims: tuple):
     """Returns box, such that it contains `box` across ``dims`` and whole array
     with shape `shape` across other dimensions."""
     return (compute_shape_from_spatial([0] * len(shape), box[0], dims),
@@ -64,7 +64,7 @@ def limit_box(box, limit):
     return np.maximum(box[0], 0), np.minimum(box[1], limit)
 
 
-def get_box_padding(box: np.ndarray, limit):
+def get_box_padding(box: Box, limit):
     """Returns padding that is necessary to get `box` from array of shape `limit`.
      Returns padding in numpy form, so it can be given to `numpy.pad`."""
     check_len(*box, limit)
@@ -72,7 +72,7 @@ def get_box_padding(box: np.ndarray, limit):
 
 
 @returns_box
-def add_margin(box: np.ndarray, margin):
+def add_margin(box: Box, margin):
     """Returns `box` with size increased by the `margin` (need to be broadcastable to the box)
     compared to the input `box`."""
     margin = np.broadcast_to(margin, box.shape)
@@ -114,4 +114,4 @@ def box2slices(box: Box):
 # ----------
 
 
-get_box_volume = get_volume
+get_box_volume = name_changed(get_volume, 'get_box_volume', '~01.11.2018')

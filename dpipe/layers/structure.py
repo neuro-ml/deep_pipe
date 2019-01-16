@@ -51,16 +51,6 @@ class CenteredCrop(nn.Module):
         return x[self.slices]
 
 
-class Reshape(nn.Module):
-    def __init__(self, *shape):
-        super().__init__()
-        self.shape = shape
-
-    def forward(self, x: torch.Tensor):
-        batch_size = x.shape[0]
-        return x.reshape(batch_size, *self.shape)
-
-
 class SplitReduce(nn.Module):
     def __init__(self, reduce, *paths):
         super().__init__()
@@ -88,16 +78,6 @@ class SplitAdd(nn.Module):
             result = result + path(x)
 
         return result
-
-
-class SplitReduce(nn.Module):
-    def __init__(self, reduce, *paths):
-        super().__init__()
-        self.reduce = reduce
-        self.paths = nn.ModuleList(list(paths))
-
-    def forward(self, x):
-        return self.reduce(path(x) for path in self.paths)
 
 
 class UpsampleToInput(nn.Module):

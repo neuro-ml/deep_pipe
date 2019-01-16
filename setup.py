@@ -14,7 +14,7 @@ with open('requirements.txt', encoding='utf-8') as file:
 
 setup(
     name='deep_pipe',
-    packages=find_packages(),
+    packages=find_packages(include=('deep_pipe',)),
     include_package_data=True,
     version=__version__,
     long_description=long_description,

@@ -63,10 +63,8 @@ class TestShapeAfterConvolution(unittest.TestCase):
                 try:
                     new_shape = shape_after_convolution(shape, **params)
                 except ValueError:
-                    # TODO: looks like pytorch doesn't fall if dilation > 1. remove this after the issue is resolved
-                    if max(params['dilation']) == 1:
-                        with self.assertRaises(RuntimeError):
-                            conv(tensor)
+                    with self.assertRaises(RuntimeError):
+                        conv(tensor)
                 else:
                     self.assertTupleEqual(new_shape, tuple(conv(tensor).shape[2:]))
 
