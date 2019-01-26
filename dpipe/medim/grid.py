@@ -8,6 +8,8 @@ from .itertools import zip_equal, extract, peek
 from .shape_utils import shape_after_full_convolution
 from .utils import build_slices
 
+__all__ = 'get_boxes', 'divide', 'combine'
+
 
 def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
               valid: bool = True) -> Iterable[Box]:
@@ -66,7 +68,7 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
 
     References
     ----------
-    `grid_patch` `get_boxes_grid`
+    `divide` `get_boxes`
     """
     patch, patches = peek(patches)
     axes = expand_axes(axes, output_shape)
@@ -85,11 +87,3 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
         counts[slc] += 1
 
     return result / np.maximum(1, counts)
-
-
-# Deprecated
-# ----------
-
-combine_grid_patches = np.deprecate(combine, old_name='combine_grid_patches', new_name='combine')
-grid_patch = np.deprecate(divide, old_name='grid_patch', new_name='divide')
-get_boxes_grid = np.deprecate(get_boxes, old_name='get_boxes_grid', new_name='get_boxes')

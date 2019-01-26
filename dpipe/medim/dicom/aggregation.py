@@ -13,7 +13,8 @@ def aggregate_images(metadata: pd.DataFrame) -> pd.DataFrame:
     """
     Groups DICOM ``metadata`` into images (series).
 
-    Required columns: PatientID, SeriesInstanceUID, StudyInstanceUID, PathToFolder, FileName.
+    Required columns: PatientID, SeriesInstanceUID, StudyInstanceUID,
+        SequenceName, PixelArrayShape. PathToFolder, FileName
 
     Notes
     -----
@@ -46,9 +47,8 @@ def aggregate_images(metadata: pd.DataFrame) -> pd.DataFrame:
         return res.drop(['InstanceNumber', 'FileName'], 1, errors='ignore')
 
     # TODO: move constants out. Make PixelArrayShape required
-    group_by = ['PatientID', 'SeriesInstanceUID', 'StudyInstanceUID', 'PathToFolder']
-    optional = {'SequenceName', 'PixelArrayShape'}
-    group_by.extend(optional & set(metadata))
+    group_by = ['PatientID', 'SeriesInstanceUID', 'StudyInstanceUID', 'PathToFolder', 'SequenceName', 'PixelArrayShape']
+    group_by.extend(set(metadata))
 
     not_string = metadata[group_by].applymap(lambda x: not isinstance(x, str)).any()
     if not_string.any():

@@ -4,7 +4,7 @@ from functools import partial
 import torch
 from torch.nn import Module
 
-from dpipe.model import Model, FrozenModel
+from ..model import Model, FrozenModel
 from .utils import *
 
 
@@ -26,18 +26,6 @@ def do_inf_step(*inputs, inputs2logits, logits2pred):
     inputs2logits.eval()
     with torch.no_grad():
         return to_np(logits2pred(inputs2logits(*sequence_to_var(*inputs, cuda=is_on_cuda(inputs2logits)))))
-
-
-def do_val_step(*inputs, inputs2logits, logits2loss, logits2pred):
-    inputs2logits.eval()
-    *inputs, target = sequence_to_var(*inputs, cuda=is_on_cuda(inputs2logits))
-
-    with torch.no_grad():
-        logits = inputs2logits(*inputs)
-        y_pred = logits2pred(logits)
-        loss = logits2loss(logits, target)
-
-        return sequence_to_np(y_pred, loss)
 
 
 class TorchModel(Model):
@@ -72,10 +60,6 @@ class TorchModel(Model):
     def do_train_step(self, *inputs, lr):
         return do_train_step(*inputs, lr=lr, inputs2logits=self.model_core,
                              logits2loss=self.logits2loss, optimizer=self.optimizer)
-
-    def do_val_step(self, *inputs):
-        return do_val_step(*inputs, inputs2logits=self.model_core, logits2loss=self.logits2loss,
-                           logits2pred=self.logits2pred)
 
     def do_inf_step(self, *inputs):
         return do_inf_step(*inputs, inputs2logits=self.model_core, logits2pred=self.logits2pred)

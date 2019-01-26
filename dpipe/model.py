@@ -23,24 +23,6 @@ class Model(ABC):
         """
 
     @abstractmethod
-    def do_val_step(self, *inputs):
-        """
-        Perform a validation step
-
-        Parameters
-        ----------
-        inputs: Sequence
-            a sequence of batches that will be fed into the network
-            and used to calculate the loss.
-
-        Returns
-        -------
-        prediction: batch
-            the prediction for the input batch
-        loss: float
-        """
-
-    @abstractmethod
     def do_inf_step(self, *inputs):
         """
         Perform an inference step
