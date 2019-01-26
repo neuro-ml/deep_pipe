@@ -33,6 +33,9 @@ def make_infinite_batch_iter(
     combiner
         combines chunks of single batches in multiple batches, e.g. combiner([(x, y), (x, y)]) -> ([x, x], [y, y])
     """
+    if n_iters_per_epoch <= 0:
+        raise ValueError(f'Expected a positive amount of iterations per epoch, but got {n_iters_per_epoch}')
+
     # backwards compatibility with pdp==0.2.1
     if hasattr(pdp.interface, 'ComponentDescription'):
         source_class = transformer_class = pdp.interface.ComponentDescription

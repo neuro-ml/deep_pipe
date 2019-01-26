@@ -12,14 +12,14 @@ def pad_batch_equal(batch, padding_values=0):
     return np.array([pad_to_shape(x, max_shapes, padding_values=padding_values) for x in batch])
 
 
-def multiply(func: Callable):
+def multiply(func: Callable, *args, **kwargs):
     """
     Returns a functions that takes an iterable and maps ``func`` over it.
     Useful when multiple batches require the same function.
     """
 
-    def wrapped(x: Iterable):
-        return tuple(map(func, x))
+    def wrapped(xs: Iterable) -> tuple:
+        return tuple(func(x, *args, **kwargs) for x in xs)
 
     name = getattr(func, '__name__', '`func`')
     wrapped.__doc__ = f"Maps `{name}` over ``x``."

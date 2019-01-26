@@ -4,6 +4,8 @@ import atexit
 from pathlib import Path
 from typing import Callable
 
+from ..medim.checks import join
+
 
 def _path_based_call(exists, missing, exists_message, missing_message, paths, keyword_paths, verbose):
     outputs = paths + tuple(keyword_paths.values())
@@ -12,7 +14,7 @@ def _path_based_call(exists, missing, exists_message, missing_message, paths, ke
 
     def _print_message(message):
         if message and verbose:
-            print(f'\n>>> {message}: {", ".join(outputs)}\n', flush=True)
+            print(f'\n>>> {message}: {join(outputs)}\n', flush=True)
 
     if all(map(os.path.exists, outputs)):
         _print_message(exists_message)
@@ -27,7 +29,7 @@ def _path_based_call(exists, missing, exists_message, missing_message, paths, ke
 
     missing_paths = [path for path in outputs if not os.path.exists(path)]
     if missing_paths:
-        raise FileNotFoundError(f'The following outputs were not generated: {", ".join(missing_paths)}')
+        raise FileNotFoundError(f'The following outputs were not generated: {join(missing_paths)}')
 
     return value
 

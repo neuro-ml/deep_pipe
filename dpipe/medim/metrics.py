@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Dict, Callable
+from typing import Dict, Callable, Union
 
 import numpy as np
 from scipy.ndimage.morphology import distance_transform_edt, binary_erosion
@@ -115,3 +115,34 @@ def hausdorff_distance(x, y, voxel_shape=None):
         return np.nan
 
     return max(sd1.max(), sd2.max())
+
+
+def cross_entropy_with_logits(target: np.ndarray, logits: np.ndarray, axis: int = 1,
+                              reduce: Union[Callable, None] = np.mean):
+    """
+    A numerically stable cross entropy for numpy arrays.
+    ``target`` and ``logits`` must have the same shape except for ``axis``.
+
+    Parameters
+    ----------
+    target
+        integer array of shape (d1, ..., di, dj, ..., dn)
+    logits
+        array of shape (d1, ..., di, k, dj, ..., dn)
+    axis
+        the axis containing the logits for each class: ``logits.shape[axis] == k``
+    reduce
+        the reduction operation to be applied to the final loss.
+        If None - no reduction will be performed.
+    """
+    main = np.take_along_axis(logits, np.expand_dims(target, axis), axis)
+    max_ = np.maximum(0, logits.max(axis, keepdims=True))
+
+    loss = -main + max_ + np.log(np.exp(logits - max_).sum(axis, keepdims=True))
+
+    assert loss.shape[axis] == 1, loss.shape
+    loss = np.take(loss, 0, axis)
+
+    if reduce is not None:
+        loss = reduce(loss)
+    return loss
