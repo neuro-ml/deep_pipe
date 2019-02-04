@@ -1,2 +1,3 @@
-from .pipeline import make_infinite_batch_iter
+from .pipeline import *
+from .sources import *
 from .base import *

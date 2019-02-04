@@ -2,9 +2,9 @@ import unittest
 
 import numpy as np
 
-from .patch import sample_box_center_uniformly, extract_patch, get_random_patch, get_random_box
-from .box import make_box_, get_centered_box
-from .utils import get_random_tuple
+from dpipe.medim.patch import sample_box_center_uniformly, extract_patch, get_random_patch, get_random_box
+from dpipe.medim.box import make_box_, get_centered_box
+from dpipe.medim.utils import get_random_tuple
 
 
 class TestPatch(unittest.TestCase):

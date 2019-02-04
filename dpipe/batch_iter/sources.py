@@ -4,6 +4,8 @@ import numpy as np
 
 from dpipe.medim.utils import pam, squeeze_first
 
+__all__ = 'sample', 'load_by_random_id'
+
 
 def sample(sequence: Sequence, weights: Sequence[float] = None):
     """

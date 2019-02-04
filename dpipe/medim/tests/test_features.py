@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from .features import get_coordinate_features
+from dpipe.medim.features import get_coordinate_features
 
 
 class TestCoordinateFeatures(unittest.TestCase):

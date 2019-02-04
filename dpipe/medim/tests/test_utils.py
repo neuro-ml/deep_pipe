@@ -4,9 +4,9 @@ from functools import partial
 import numpy as np
 
 from dpipe.layers import identity
-from .preprocessing import normalize_multichannel_image, normalize_image
-from .utils import pad, filter_mask, apply_along_axes, scale
-from .itertools import zip_equal, flatten, extract, negate_indices, head_tail, peek
+from dpipe.medim.preprocessing import normalize_multichannel_image, normalize_image
+from dpipe.medim.utils import pad, filter_mask, apply_along_axes, scale
+from dpipe.medim.itertools import zip_equal, flatten, extract, negate_indices, head_tail, peek
 
 
 class TestPad(unittest.TestCase):

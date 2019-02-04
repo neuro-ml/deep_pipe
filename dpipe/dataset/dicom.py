@@ -20,6 +20,3 @@ class DICOMDataset(CSV, ImageDataset):
 
     def load_shape(self, identifier):
         return (*map(int, self.get(identifier, 'PixelArrayShape').split(',')), int(self.get(identifier, 'SlicesCount')))
-
-    def load_pixel_spacing(self, identifier):
-        return self.get(identifier, ['PixelSpacing0', 'PixelSpacing1']).values

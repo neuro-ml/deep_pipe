@@ -4,9 +4,12 @@ import json
 import re
 import os
 from pathlib import Path
+from typing import Union
 
 import numpy
 import numpy as np
+
+PathLike = Union[Path, str]
 
 
 def load_pred(identifier, predictions_path):
@@ -40,7 +43,7 @@ def load_experiment_test_pred(identifier, experiment_path):
         raise FileNotFoundError('No prediction found')
 
 
-def load_image(path: str):
+def load_image(path: PathLike):
     """
     Load an image located at ``path``.
     The following extensions are supported:
@@ -61,7 +64,7 @@ def load_image(path: str):
     raise ValueError(f"Couldn't read image from path: {path}. Unknown file extension.")
 
 
-def load_json(path: str):
+def load_json(path: PathLike):
     """Load the contents of a json file."""
     with open(path, 'r') as f:
         return json.load(f)
@@ -76,7 +79,7 @@ class NumpyEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-def dump_json(value, path: str, *, indent: int = None):
+def dump_json(value, path: PathLike, *, indent: int = None):
     """Dump a json-serializable object to a json file."""
     # TODO: probably should add makedirs here
     with open(path, 'w') as f:

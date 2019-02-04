@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from . import prep
+from dpipe.medim import prep
 
 
 class TestPrep(unittest.TestCase):

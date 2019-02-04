@@ -17,7 +17,7 @@ def _get_rows_cols(max_cols, data):
 
 
 def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int = None, colorbar: bool = False,
-            show_axes: bool = False, cmap: Union[Colormap, str] = None, vlim: AxesParams = None):
+            show_axes: bool = False, cmap: Union[Colormap, str] = 'gray', vlim: AxesParams = None):
     """
     Creates an interactive plot, simultaneously showing slices along a given ``axis`` for all the passed images.
 
@@ -58,7 +58,7 @@ def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int 
 
 
 def animate3d(*data: np.ndarray, output_path: str, axis: int = -1, scale: int = 5, max_columns: int = None,
-              colorbar: bool = False, show_axes: bool = False, cmap: str = None, vlim=(None, None), fps: int = 30,
+              colorbar: bool = False, show_axes: bool = False, cmap: str = 'gray', vlim=(None, None), fps: int = 30,
               writer: str = 'imagemagick', repeat: bool = True):
     """
     Saves an animation to ``output_path``, simultaneously showing slices
