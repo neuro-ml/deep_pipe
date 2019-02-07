@@ -8,6 +8,8 @@ import pandas as pd
 from tqdm import tqdm
 from pydicom import valuerep, errors, read_file
 
+from ..io import PathLike
+
 serial = {'ImagePositionPatient', 'ImageOrientationPatient', 'PixelSpacing'}
 person_class = (valuerep.PersonName3, valuerep.PersonNameBase)
 
@@ -16,7 +18,7 @@ def _throw(e):
     raise e
 
 
-def get_file_meta(path: str) -> dict:
+def get_file_meta(path: PathLike) -> dict:
     """
     Get a dict containing the metadata from the DICOM file located at ``path``.
 
@@ -44,7 +46,8 @@ def get_file_meta(path: str) -> dict:
     except (TypeError, NotImplementedError):
         has_px = False
     else:
-        result['PixelArrayShape'] = ','.join(map(str, dc.pixel_array.shape))
+        if has_px:
+            result['PixelArrayShape'] = ','.join(map(str, dc.pixel_array.shape))
     result['HasPixelArray'] = has_px
 
     for attr in dc.dir():
@@ -66,7 +69,7 @@ def get_file_meta(path: str) -> dict:
     return result
 
 
-def files_to_df(folder: str, files: Iterable[str]) -> pd.DataFrame:
+def files_to_df(folder: PathLike, files: Iterable[PathLike]) -> pd.DataFrame:
     result = []
     for file in files:
         entry = get_file_meta(jp(folder, file))
@@ -82,7 +85,7 @@ def folder_to_df(path):
         return files_to_df(root, files)
 
 
-def walk_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bool = True):
+def walk_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), verbose: bool = True):
     for extension in ignore_extensions:
         if not extension.startswith('.'):
             raise ValueError(f'Each extension must start with a dot: "{extension}".')
@@ -104,7 +107,7 @@ def walk_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bo
         yield relative, files_to_df(root, files)
 
 
-def join_dicom_tree(top: str, ignore_extensions: Sequence[str] = (), verbose: bool = True) -> pd.DataFrame:
+def join_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), verbose: bool = True) -> pd.DataFrame:
     """
     Returns a dataframe containing metadata for each file in all the subfolders of ``top``.
 
