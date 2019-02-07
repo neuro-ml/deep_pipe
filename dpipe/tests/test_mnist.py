@@ -16,15 +16,21 @@ class TestMNIST(unittest.TestCase):
     base_rm = get_resource_manager('dpipe/tests/mnist/setup.config')
     experiment_path = base_rm.experiment_path
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         def download(filename):
-            path = self.base_path / filename
+            path = cls.base_path / filename
             if not path.exists():
-                os.makedirs(self.base_path, exist_ok=True)
+                os.makedirs(cls.base_path, exist_ok=True)
                 urlretrieve('http://yann.lecun.com/exdb/mnist/' + filename, path)
 
         download('train-images-idx3-ubyte.gz')
         download('train-labels-idx1-ubyte.gz')
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.experiment_path.exists():
+            shutil.rmtree(cls.experiment_path)
 
     def test_build_experiment(self):
         self.base_rm.build_experiment
@@ -49,6 +55,8 @@ class TestMNIST(unittest.TestCase):
         for first, second in itertools.permutations(test_ids, 2):
             self.assertFalse(first & second)
 
-    def tearDown(self):
-        if self.experiment_path.exists():
-            shutil.rmtree(self.experiment_path)
+    def test_score(self):
+        rm = get_resource_manager(self.experiment_path / 'resources.config')
+        os.chdir(self.experiment_path / 'experiment_0')
+        rm.run_experiment
+        self.assertGreater(.97, load_json('test_metrics/accuracy.json'))

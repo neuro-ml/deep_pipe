@@ -104,6 +104,8 @@ def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> 
     return wrapper
 
 
+# 07.02.2019
+@np.deprecate
 def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
     """
     Yields tuples of objects given their ``loaders`` and ``ids``.
@@ -147,13 +149,16 @@ def unpack_args(func: Callable):
     return wrapper
 
 
-def composition(func: Callable):
-    """Applies ``func`` to the output of the decorated function."""
+def composition(func: Callable, *args, **kwargs):
+    """
+    Applies ``func`` to the output of the decorated function.
+    ``args`` and ``kwargs`` are passed as additional positional and keyword arguments respectively.
+    """
 
     def decorator(decorated: Callable):
         @wraps(decorated)
-        def wrapper(*args, **kwargs):
-            return func(decorated(*args, **kwargs))
+        def wrapper(*args_, **kwargs_):
+            return func(decorated(*args_, **kwargs_), *args, **kwargs)
 
         return wrapper
 

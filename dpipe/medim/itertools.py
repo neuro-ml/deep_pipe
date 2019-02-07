@@ -15,13 +15,29 @@ def recursive_conditional_map(xr, f, condition):
 
 
 def pam(functions: Iterable[Callable], *args, **kwargs):
-    """Inverse of `map`. Apply a sequence of callables to fixed arguments."""
+    """
+    Inverse of `map`. Apply a sequence of callables to fixed arguments.
+
+    Examples
+    --------
+    >>> list(pam([np.sqrt, np.square, np.cbrt], 64))
+    [8, 4096, 4]
+    """
     for f in functions:
         yield f(*args, **kwargs)
 
 
 def zip_equal(*args: Union[Sized, Iterable]) -> Iterable[Tuple]:
-    """zip over the given iterables, but enforce that all of them exhaust simultaneously."""
+    """
+    zip over the given iterables, but enforce that all of them exhaust simultaneously.
+
+    Examples
+    --------
+    >>> zip_equal([1, 2, 3], [4, 5, 6]) # ok
+    >>> zip_equal([1, 2, 3], [4, 5, 6, 7]) # raises ValueError
+    # ValueError is raised if the lengths are not known
+    >>> zip_equal([1, 2, 3], map(np.sqrt, [4, 5, 6, 7])) # raises ValueError
+    """
     if not args:
         return
 
@@ -53,7 +69,15 @@ def zip_equal(*args: Union[Sized, Iterable]) -> Iterable[Tuple]:
 
 
 def head_tail(iterable: Iterable) -> Tuple[Any, Iterable]:
-    """Split the ``iterable`` into the first and the rest of the elements."""
+    """
+    Split the ``iterable`` into the first and the rest of the elements.
+
+    Examples
+    --------
+    >>> head, tail = head_tail(map(np.square, [1, 2, 3]))
+    >>> head, list(tail)
+    1, [4, 9]
+    """
     iterable = iter(iterable)
     return next(iterable), iterable
 
@@ -65,6 +89,14 @@ def peek(iterable: Iterable) -> Tuple[Any, Iterable]:
     Notes
     -----
     The incoming ``iterable`` might be mutated, use the returned iterable instead.
+
+    Examples
+    --------
+    >>> original_iterable = map(np.square, [1, 2, 3])
+    >>> head, iterable = peek(original_iterable)
+    >>> head, list(iterable)
+    1, [1, 4, 9]
+    # list(original_iterable) would return [4, 9]
     """
     head, tail = head_tail(iterable)
     return head, chain([head], tail)
@@ -149,7 +181,19 @@ def make_chunks(iterable: Iterable, chunk_size: int, incomplete: bool = True):
 
 
 def collect(func: Callable):
-    """Make a function that returns a list from a function that returns an iterator."""
+    """
+    Make a function that returns a list from a function that returns an iterator.
+
+    Examples
+    --------
+    >>> @collect
+    >>> def squares(n):
+    >>>     for i in range(n):
+    >>>         yield i
+    >>>
+    >>> squares(3)
+    [1, 4, 9]
+    """
 
     @wraps(func)
     def wrapper(*args, **kwargs):

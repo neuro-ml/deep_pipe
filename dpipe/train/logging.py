@@ -58,12 +58,15 @@ class DummyLogger(Logger):
 
 
 class ConsoleLogger(Logger):
+    def value(self, name, value, step):
+        pass
+
     def train(self, train_losses, step):
-        print(f'{step:>05}: train loss: {train_losses.mean()}', flush=True)
+        print(f'{step:>05}: train loss: {np.mean(train_losses)}', flush=True)
 
     def metrics(self, metrics, step):
-        for metric in metrics:
-            print(f'{step:>05}: {metric} = {metrics[metric]}')
+        for name, value in metrics.items():
+            print(f'{step:>05}: {name} = {value}')
 
 
 class TBLogger(Logger):

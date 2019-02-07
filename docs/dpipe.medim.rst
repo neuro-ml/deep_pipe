@@ -58,21 +58,21 @@ DICOM utils
 
 Crawling
 ^^^^^^^^
-.. automodule:: dpipe.medim.dicom_utils.crawler
+.. automodule:: dpipe.medim.dicom.crawler
     :members:
     :undoc-members:
     :show-inheritance:
 
 Aggregation
 ^^^^^^^^^^^
-.. automodule:: dpipe.medim.dicom_utils.aggregation
+.. automodule:: dpipe.medim.dicom.aggregation
     :members:
     :undoc-members:
     :show-inheritance:
 
 Miscellaneous
 ^^^^^^^^^^^^^
-.. automodule:: dpipe.medim.dicom_utils.misc
+.. automodule:: dpipe.medim.dicom.misc
     :members:
     :undoc-members:
     :show-inheritance:
