@@ -26,14 +26,9 @@ class Proxy:
         return list(set(super().__dir__()) | set(dir(self._shadowed)))
 
 
-def cache_methods(instance=None, methods: Iterable[str] = None, dataset=None):
+def cache_methods(instance, methods: Iterable[str]):
     """Cache the ``instamce``'s ``methods``."""
     cache = functools.lru_cache(None)
-    if dataset is not None:
-        warn('the argument "dataset" is deprecated. unse "instance" instead')
-        assert instance is None
-        instance = dataset
-
     new_methods = {method: staticmethod(cache(getattr(instance, method))) for method in methods}
     proxy = type('Cached', (Proxy,), new_methods)
     return proxy(instance)

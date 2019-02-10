@@ -17,6 +17,3 @@ class DICOMDataset(CSV, ImageDataset):
 
     def load_modality(self, identifier):
         return self.get(identifier, 'Modality')
-
-    def load_shape(self, identifier):
-        return (*map(int, self.get(identifier, 'PixelArrayShape').split(',')), int(self.get(identifier, 'SlicesCount')))

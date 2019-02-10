@@ -107,6 +107,19 @@ def lmap(func: Callable, *iterables: Iterable) -> list:
     return list(map(func, *iterables))
 
 
+def dmap(func: Callable, dictionary: dict, *args, **kwargs):
+    """
+    Transform the ``dictionary`` by mapping ``func`` over its values.
+    ``args`` and ``kwargs`` are passed as additional arguments.
+
+    Examples
+    --------
+    >>> dmap(np.square, {'a': 1, 'b': 2})
+    {'a': 1, 'b': 4}
+    """
+    return {k: func(v, *args, **kwargs) for k, v in dictionary.items()}
+
+
 def zdict(keys: Iterable, values: Iterable) -> dict:
     """Create a `dict` from ``keys`` and ``values``."""
     return dict(zip_equal(keys, values))
@@ -189,7 +202,7 @@ def collect(func: Callable):
     >>> @collect
     >>> def squares(n):
     >>>     for i in range(n):
-    >>>         yield i
+    >>>         yield i ** 2
     >>>
     >>> squares(3)
     [1, 4, 9]
