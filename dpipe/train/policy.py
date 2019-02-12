@@ -6,8 +6,7 @@ from dpipe.dataset.base import AbstractAttribute, ABCAttributesMeta
 
 
 class EarlyStopping(StopIteration):
-    """Policy can raise this error to signal early stopping condition"""
-    pass
+    """Exception raised by policies in order to trigger early stopping."""
 
 
 class Policy:
@@ -18,7 +17,7 @@ class Policy:
         Update the policy before an epoch will start. The epochs numeration starts at zero.
         """
 
-    def epoch_finished(self, epoch: int, *, train_losses: Sequence[float] = None, metrics: dict = None):
+    def epoch_finished(self, epoch: int, *, train_losses: Sequence = None, metrics: dict = None):
         """
         Update the policy after an epoch is finished. The epochs numeration starts at zero.
 
@@ -57,7 +56,7 @@ class DecreasingOnPlateau(ValuePolicy):
     def get_margin_loss(self, loss):
         return max([loss * (1 - self.rtol), loss - self.atol])
 
-    def epoch_finished(self, epoch: int, *, train_losses: Sequence[float], **kwargs):
+    def epoch_finished(self, epoch: int, *, train_losses: Sequence, **kwargs):
         loss = np.mean(train_losses)
         if loss < self.margin_loss:
             self.margin_loss = self.get_margin_loss(loss)

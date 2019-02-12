@@ -24,11 +24,6 @@ Interfaces
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: dpipe.dataset.path
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. automodule:: dpipe.dataset.segmentation
     :members:
     :undoc-members:

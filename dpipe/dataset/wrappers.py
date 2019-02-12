@@ -43,7 +43,7 @@ def cache_methods_to_disk(instance, base_path: str, **methods: str):
     instance
     base_path
     methods
-         each keyword argument has the form `method_name=path_to_cache`, the path is relative to ``base_path``.
+         each keyword argument has the form ``method_name=path_to_cache``, the path is relative to ``base_path``.
          The methods are assumed to take a single argument of type `str`.
 
     Notes
@@ -77,8 +77,13 @@ def apply(instance, **methods: Callable):
     ----------
     instance
     methods
-        each keyword argument has the form `method_name=func_to_apply`.
-        `func_to_apply` is applied to the `method_name` method.
+        each keyword argument has the form ``method_name=func_to_apply``.
+        ``func_to_apply`` is applied to the ``method_name`` method.
+
+    Examples
+    --------
+    >>> # normalize_image will be applied to the output of load_image
+    >>> dataset = apply(base_dataset, load_image=normalize_image)
     """
 
     def decorator(method, func):
@@ -101,7 +106,7 @@ def set_attributes(instance, **attributes):
     ----------
     instance
     attributes
-        each keyword argument has the form `attr_name=attr_value`.
+        each keyword argument has the form ``attr_name=attr_value``.
     """
     proxy = type('SetAttr', (Proxy,), attributes)
     return proxy(instance)
@@ -136,13 +141,6 @@ def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = (
     attributes['ids'] = ids
     proxy = type('ChangedID', (Proxy,), attributes)
     return proxy(dataset)
-
-
-def rebind(instance, methods):
-    """Binds the ``methods`` to the last proxy."""
-    new_methods = {method: getattr(instance, method).__func__ for method in methods}
-    proxy = type('Rebound', (Proxy,), new_methods)
-    return proxy(instance)
 
 
 def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:

@@ -6,6 +6,8 @@ from pathlib import Path
 
 import torch
 
+__all__ = 'CheckpointManagerBase', 'DummyCheckpointManager', 'CheckpointManager'
+
 
 def save_pickle(o, path):
     with open(path, 'wb') as file:
@@ -43,6 +45,8 @@ class CheckpointManagerBase:
 
 
 class DummyCheckpointManager:
+    """An implementation that does nothing. `restore` always returns 0."""
+
     def save(self, iteration: int):
         pass
 
@@ -52,6 +56,18 @@ class DummyCheckpointManager:
 
 
 class CheckpointManager:
+    """
+    Saves the most recent iteration to ``base_path`` and removes the previous one.
+
+    Parameters
+    ----------
+    base_path
+    pickled_objects
+        objects that will ve save using `pickle`
+    state_dict_objects
+        objects whose ``state_dict()`` will be saved using `torch.save`.
+    """
+
     def __init__(self, base_path: str, pickled_objects: dict = None, state_dict_objects: dict = None):
         self.base_path = Path(base_path)
         self._checkpoint_prefix = 'checkpoint_'

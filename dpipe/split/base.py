@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.model_selection import KFold, ShuffleSplit, GroupShuffleSplit, BaseCrossValidator
+from sklearn.model_selection import KFold, ShuffleSplit, GroupShuffleSplit
 
 from dpipe.medim.utils import name_changed
 

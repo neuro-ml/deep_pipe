@@ -55,6 +55,6 @@ def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike =
 
 @returns_box
 def get_random_box(shape: AxesLike, box_shape: AxesLike, axes: AxesLike = None):
-    """Get a random box of corresponding shape that fits in the `shape` along the given axes."""
+    """Get a random box of shape ``box_shape`` that fits in the ``shape`` along the given ``axes``."""
     start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
     return start, start + fill_by_indices(shape, box_shape, axes)

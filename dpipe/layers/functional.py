@@ -1,10 +1,6 @@
 from torch.nn import functional
 
 
-def flat_binary_cross_entropy_with_logits(logits, target, weight=None, size_average=True, reduce=True):
-    return functional.binary_cross_entropy_with_logits(logits.view(-1), target.view(-1), weight, size_average, reduce)
-
-
 def focal_loss_with_logits(logits, target, gamma=2, weight=None, size_average=True, reduce=True):
     """
     Function that measures Focal Loss between target and output logits.

@@ -40,14 +40,6 @@ Grid splitters
     :undoc-members:
     :show-inheritance:
 
-Checks
-------
-
-.. automodule:: dpipe.medim.checks
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 DICOM utils
 -----------
 
@@ -60,7 +52,6 @@ Crawling
 ^^^^^^^^
 .. automodule:: dpipe.medim.dicom.crawler
     :members:
-    :undoc-members:
     :show-inheritance:
 
 Aggregation

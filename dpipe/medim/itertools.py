@@ -122,7 +122,7 @@ def dmap(func: Callable, dictionary: dict, *args, **kwargs):
 
 
 def zdict(keys: Iterable, values: Iterable) -> dict:
-    """Create a `dict` from ``keys`` and ``values``."""
+    """Create a dictionary from ``keys`` and ``values``."""
     return dict(zip_equal(keys, values))
 
 
@@ -146,7 +146,6 @@ def flatten(iterable: Iterable, iterable_types: Union[tuple, type] = None) -> li
     >>> flatten([1, (2, 3), [[4]]], iterable_types=(list, tuple))
     [1, 2, 3, 4]
     """
-
     if iterable_types is None:
         iterable_types = type(iterable)
     if not isinstance(iterable, iterable_types):

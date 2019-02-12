@@ -57,7 +57,7 @@ def describe_connected_components(mask: np.ndarray, background: int = 0, drop_ba
         the label of the background. The pixels with this label will be marked as the background component
         (even if it is not connected).
     drop_background:
-        whether to exclude the background from the returned components descriptions.
+        whether to exclude the background from the returned components' descriptions.
 
     Returns
     -------

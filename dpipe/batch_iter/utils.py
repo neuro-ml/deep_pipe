@@ -14,8 +14,10 @@ def pad_batch_equal(batch, padding_values=0):
 
 def multiply(func: Callable, *args, **kwargs):
     """
-    Returns a functions that takes an iterable and maps ``func`` over it.
+    Returns a function that takes an iterable and maps ``func`` over it.
     Useful when multiple batches require the same function.
+
+    ``args`` and ``kwargs`` are passed to ``func`` as additional arguments.
     """
 
     def wrapped(xs: Iterable) -> tuple:

@@ -16,7 +16,8 @@ def aggregate_images(metadata: pd.DataFrame) -> pd.DataFrame:
     """
     Groups DICOM ``metadata`` into images (series).
 
-    Required columns: PatientID, SeriesInstanceUID, StudyInstanceUID,
+    Required columns:
+        PatientID, SeriesInstanceUID, StudyInstanceUID,
         SequenceName, PixelArrayShape. PathToFolder, FileName
 
     Notes

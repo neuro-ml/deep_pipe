@@ -3,6 +3,9 @@ from typing import Union, Callable
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn import functional
+
+from dpipe.medim.axes import AxesLike, expand_axes
 
 
 class PyramidPooling(nn.Module):
@@ -36,6 +39,8 @@ class PyramidPooling(nn.Module):
 
 
 class Lambda(nn.Module):
+    """Applies ``func`` to the input of `forward`."""
+
     def __init__(self, func):
         super().__init__()
         self.func = func
@@ -62,3 +67,26 @@ class Reshape(nn.Module):
     def forward(self, x: torch.Tensor):
         shape = [x.shape[int(i)] if isinstance(i, str) else i for i in self.shape]
         return x.reshape(*shape)
+
+
+class UpsampleToInput(nn.Module):
+    """
+    Upsamples the result of ``path`` to the original shape along the ``axes``.
+    If ``axes`` is None - the result is upsampled along all the axes.
+    """
+
+    def __init__(self, path: nn.Module, mode='nearest', axes: AxesLike = None):
+        super().__init__()
+        self.axes = axes
+        self.path = path
+        self.mode = mode
+
+    def forward(self, x):
+        old_shape = x.shape[2:]
+        x = self.path(x)
+        axes = expand_axes(self.axes, old_shape)
+        new_shape = list(x.shape[2:])
+        for i in axes:
+            new_shape[i] = old_shape[i]
+
+        return functional.upsample(x, size=new_shape, mode=self.mode)

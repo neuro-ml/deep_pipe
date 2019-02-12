@@ -42,8 +42,17 @@ def extract_dims(array, ndim=1):
     return array
 
 
-# TODO: doc
 def build_slices(start: Sequence[int], stop: Sequence[int] = None) -> Tuple[slice, ...]:
+    """
+    Returns a tuple of slices built from ``start`` and ``stop``.
+
+    Examples
+    --------
+    >>> build_slices([1, 2, 3], [4, 5, 6])
+    (slice(1, 4), slice(2, 5), slice(3, 6))
+    >>> build_slices([10, 11])
+    (slice(10), slice(11))
+    """
     if stop is not None:
         check_len(start, stop)
         return tuple(map(slice, start, stop))

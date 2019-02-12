@@ -2,12 +2,12 @@ import numpy as np
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 from dpipe.medim.itertools import extract
-from .base import split_train, kfold_split, indices_to_subj_ids
+from .base import split_train, kfold_split, indices_to_ids
 
 
 def split(ids, *, n_splits, random_state=42):
     split_indices = kfold_split(ids, n_splits, random_state=random_state)
-    return indices_to_subj_ids(split_indices, ids)
+    return indices_to_ids(split_indices, ids)
 
 
 def leave_group_out(ids, groups, *, val_size=None, random_state=42):
@@ -16,7 +16,7 @@ def leave_group_out(ids, groups, *, val_size=None, random_state=42):
     splits = kfold_split(ids, n_splits, groups=groups)
     if val_size is not None:
         splits = split_train(splits, val_size, random_state=random_state)
-    return indices_to_subj_ids(splits, ids)
+    return indices_to_ids(splits, ids)
 
 
 def train_val_test_split(ids, *, val_size, n_splits, random_state=42):
@@ -42,7 +42,7 @@ def train_val_test_split(ids, *, val_size, n_splits, random_state=42):
     """
     split_indices = kfold_split(subj_ids=ids, n_splits=n_splits, random_state=random_state)
     split_indices = split_train(splits=split_indices, val_size=val_size, random_state=random_state)
-    return indices_to_subj_ids(splits=split_indices, subj_ids=ids)
+    return indices_to_ids(split_indices, ids)
 
 
 def group_train_val_test_split(ids, groups: np.array, *, val_size, n_splits, random_state=42):
@@ -68,7 +68,7 @@ def group_train_val_test_split(ids, groups: np.array, *, val_size, n_splits, ran
     """
     split_indices = kfold_split(ids, n_splits, groups=groups, random_state=random_state)
     split_indices = split_train(split_indices, val_size, groups=groups, random_state=random_state)
-    return indices_to_subj_ids(split_indices, ids)
+    return indices_to_ids(split_indices, ids)
 
 
 def stratified_train_val_test_split(ids, labels, *, val_size, n_splits, random_state=42):

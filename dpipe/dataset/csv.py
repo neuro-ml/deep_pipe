@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from dpipe.medim import load_image
+from dpipe.medim.io import PathLike
 from .base import Dataset
 
 
@@ -14,7 +15,7 @@ def multiple_columns(method, index, columns):
 class CSV(Dataset):
     """A small wrapper for csv files."""
 
-    def __init__(self, path: str, filename: str = 'meta.csv', index_col: str = 'id'):
+    def __init__(self, path: PathLike, filename: str = 'meta.csv', index_col: str = 'id'):
         self.path = path
         self.filename = filename
 

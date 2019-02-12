@@ -22,35 +22,10 @@ Pipeline
     :undoc-members:
     :show-inheritance:
 
-dpipe.batch\_iter.base module
--------------------------------
-
-.. automodule:: dpipe.batch_iter.base
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-dpipe.batch\_iter.blocks module
--------------------------------
-
-.. automodule:: dpipe.batch_iter.blocks
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 dpipe.batch\_iter.patch\_3d module
 ----------------------------------
 
 .. automodule:: dpipe.batch_iter.patch_3d
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-dpipe.batch\_iter.simple module
--------------------------------
-
-.. automodule:: dpipe.batch_iter.simple
     :members:
     :undoc-members:
     :show-inheritance:

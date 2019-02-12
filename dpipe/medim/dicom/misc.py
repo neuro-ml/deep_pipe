@@ -31,6 +31,8 @@ def get_orientation_axis(row: pd.Series):
 
 def restore_orientation_matrix(metadata: Union[pd.Series, pd.DataFrame]):
     """
+    Fills nan values (if possible) in ``metadata``'s ImageOrientationPatient* rows.
+
     Required columns: ImageOrientationPatient[0-5]
 
     Notes
@@ -123,10 +125,8 @@ def get_structure(images: pd.DataFrame, patient_cols: Sequence[str], study_cols:
     @collect
     def get_cols(row, cols):
         for col in cols:
-            if col in row:
-                value = row[col]
-                if pd.notnull(value):
-                    yield col + ':' + value
+            if col in row and pd.notnull(row[col]):
+                yield f'{col}: {row[col]}'
 
     def describe_series(row):
         series_id = row.SeriesInstanceUID.split('.')[-1]
