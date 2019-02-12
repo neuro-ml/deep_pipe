@@ -29,11 +29,3 @@ Cross-validation splitters
     :members:
     :undoc-members:
     :show-inheritance:
-
-dpipe.split.monte\_carlo module
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: dpipe.split.monte_carlo
-    :members:
-    :undoc-members:
-    :show-inheritance:

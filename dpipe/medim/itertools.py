@@ -35,7 +35,8 @@ def zip_equal(*args: Union[Sized, Iterable]) -> Iterable[Tuple]:
     --------
     >>> zip_equal([1, 2, 3], [4, 5, 6]) # ok
     >>> zip_equal([1, 2, 3], [4, 5, 6, 7]) # raises ValueError
-    # ValueError is raised if the lengths are not known
+    # ValueError is raised even if the lengths are not known
+    >>> zip_equal([1, 2, 3], map(np.sqrt, [4, 5, 6])) # ok
     >>> zip_equal([1, 2, 3], map(np.sqrt, [4, 5, 6, 7])) # raises ValueError
     """
     if not args:

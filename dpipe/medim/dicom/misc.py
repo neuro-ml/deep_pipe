@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 from pydicom import read_file
 
-from ..utils import extract_dims, lmap
-from ..itertools import zip_equal
+from ..utils import extract_dims, lmap, composition
+from ..itertools import zip_equal, collect
 
 ORIENTATION = [f'ImageOrientationPatient{i}' for i in range(6)]
 
@@ -91,7 +91,62 @@ def load_series(row: pd.Series) -> np.ndarray:
     return x.transpose(*transpose)
 
 
-# TODO: this surely can be simplified
+@composition('\n'.join)
+def get_structure(images: pd.DataFrame, patient_cols: Sequence[str], study_cols: Sequence[str],
+                  series_cols: Sequence[str]):
+    """
+    Get a tree-like structure containing information from the given columns.
+
+    Required columns: PatientID, StudyInstanceUID, SeriesInstanceUID, SeriesDescription.
+    """
+
+    @composition('\n'.join)
+    def move_right(header, strings):
+        yield header
+
+        for i, value in enumerate(strings):
+            if i == len(strings) - 1:
+                start = '└── '
+                middle = '    '
+            else:
+                start = '├── '
+                middle = '│   '
+
+            for j, line in enumerate(value.splitlines()):
+                if j == 0:
+                    line = start + line
+                else:
+                    line = middle + line
+
+                yield line
+
+    @collect
+    def get_cols(row, cols):
+        for col in cols:
+            if col in row:
+                value = row[col]
+                if pd.notnull(value):
+                    yield col + ':' + value
+
+    def describe_series(row):
+        series_id = row.SeriesInstanceUID.split('.')[-1]
+        series_description = row.SeriesDescription or '<no description>'
+        return move_right(f'Series: {series_description} (id={series_id})', get_cols(row, series_cols))
+
+    def describe_study(all_series):
+        header = 'Study: ' + all_series.iloc[0].StudyInstanceUID
+        attrs = get_cols(all_series.iloc[0], study_cols)
+        if attrs:
+            attrs[-1] += '\n '
+        series = [describe_series(row) for _, row in all_series.iterrows()]
+        return move_right(header, attrs + series)
+
+    for patient, studies_groups in images.groupby('PatientID'):
+        studies = [describe_study(all_series) for _, all_series in studies_groups.groupby('StudyInstanceUID')]
+        yield move_right('Patient: ' + patient, get_cols(studies_groups.iloc[0], patient_cols) + studies)
+        yield ''
+
+
 def print_structure(images: pd.DataFrame, patient_cols: Sequence[str], study_cols: Sequence[str],
                     series_cols: Sequence[str]):
     """
@@ -99,54 +154,4 @@ def print_structure(images: pd.DataFrame, patient_cols: Sequence[str], study_col
 
     Required columns: PatientID, StudyInstanceUID, SeriesInstanceUID, SeriesDescription.
     """
-
-    def print_indent(*messages, levels):
-        prefix = '  '
-        for j, last in enumerate(levels):
-            if is_last(j, levels):
-                if last:
-                    prefix += '└──'
-                else:
-                    prefix += '├──'
-            else:
-                if last:
-                    prefix += '    '
-                else:
-                    prefix += '│   '
-
-        print(prefix, *messages)
-
-    def is_last(index, array):
-        return index == len(array) - 1
-
-    def print_cols(row, cols, levels, last):
-        cols = [c for c in cols if pd.notnull(row[c])]
-        for i, col in enumerate(cols):
-            value = row[col]
-            print_indent(col + ':', value, levels=levels + [last and is_last(i, cols)])
-
-    patients = list(images.groupby('PatientID'))
-    for i, (patient, studies) in enumerate(patients):
-        print('Patient:', patient)
-        print_cols(studies.iloc[0], patient_cols, [], False)
-        studies = list(studies.groupby('StudyInstanceUID'))
-
-        for ii, (study, all_series) in enumerate(studies):
-            study_levels = [is_last(ii, studies)]
-            print_indent('Study:', study, levels=study_levels)
-            print_cols(all_series.iloc[0], study_cols, study_levels, False)
-
-            all_series = list(all_series.iterrows())
-
-            for iii, (_, row) in enumerate(all_series):
-                series_levels = study_levels + [is_last(iii, all_series)]
-                print('      │')
-                series_id = row.SeriesInstanceUID.split('.')[-1]
-                series_description = row.SeriesDescription or '<no description>'
-                print_indent(series_description, f'(id={series_id})', levels=series_levels)
-                print_cols(row, series_cols, series_levels, True)
-        print()
-
-
-load_by_meta = np.deprecate(load_series, old_name='load_by_meta', new_name='load_series')
-load_image = np.deprecate(load_series, old_name='load_image', new_name='load_series')
+    print(get_structure(images, patient_cols, study_cols, series_cols))

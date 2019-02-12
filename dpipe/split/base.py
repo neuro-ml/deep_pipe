@@ -1,5 +1,7 @@
 import numpy as np
-from sklearn.model_selection import KFold, ShuffleSplit, GroupShuffleSplit
+from sklearn.model_selection import KFold, ShuffleSplit, GroupShuffleSplit, BaseCrossValidator
+
+from dpipe.medim.utils import name_changed
 
 
 class ShuffleGroupKFold(KFold):
@@ -40,12 +42,9 @@ def split_train(splits, val_size, groups=None, **kwargs):
     return new_splits
 
 
-def indices_to_subj_ids(splits, subj_ids):
+def indices_to_ids(splits, ids):
     """Converts split indices to subject IDs"""
-    return [list(map(lambda ids: [subj_ids[i] for i in ids], split)) for split in splits]
+    return [[[ids[i] for i in ids_group] for ids_group in split] for split in splits]
 
 
-# Deprecated
-
-from .cv import leave_group_out as get_loo_cv, split as get_cv_11, train_val_test_split as get_cv_111, \
-    group_train_val_test_split as get_group_cv_111
+indices_to_subj_ids = name_changed(indices_to_ids, 'indices_to_subj_ids', '12.02.2019')

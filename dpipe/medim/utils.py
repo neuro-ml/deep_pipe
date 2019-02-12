@@ -42,6 +42,7 @@ def extract_dims(array, ndim=1):
     return array
 
 
+# TODO: doc
 def build_slices(start: Sequence[int], stop: Sequence[int] = None) -> Tuple[slice, ...]:
     if stop is not None:
         check_len(start, stop)
@@ -55,10 +56,12 @@ def scale(x):
     return (x - x_min) / (x_max - x_min)
 
 
+# TODO: doc
 def bytescale(x):
     return np.uint8(np.round(255 * scale(x)))
 
 
+# TODO: doc
 def makedirs_top(path, mode=0o777, exist_ok=False):
     """Creates a parent folder if any. See `os.makedirs` for details."""
     folder = os.path.dirname(path)

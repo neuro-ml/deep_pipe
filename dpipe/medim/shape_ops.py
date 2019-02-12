@@ -73,7 +73,7 @@ def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = 
 
 def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0) -> np.ndarray:
     """
-    Pad ``x`` according to ``padding`` the ``axes``.
+    Pad ``x`` according to ``padding`` along the ``axes``.
 
     Parameters
     ----------

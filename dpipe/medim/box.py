@@ -108,10 +108,3 @@ def mask2bounding_box(mask: np.ndarray):
 
 def box2slices(box: Box):
     return build_slices(*box)
-
-
-# Deprecated
-# ----------
-
-
-get_box_volume = name_changed(get_volume, 'get_box_volume', '~01.11.2018')

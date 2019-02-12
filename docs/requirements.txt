@@ -1,3 +1,4 @@
+scikit-image
 numpy
 scipy
 pandas
