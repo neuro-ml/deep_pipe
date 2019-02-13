@@ -26,9 +26,9 @@ class Proxy:
         return list(set(super().__dir__()) | set(dir(self._shadowed)))
 
 
-def cache_methods(instance, methods: Iterable[str]):
+def cache_methods(instance, methods: Iterable[str], maxsize: int = None):
     """Cache the ``instamce``'s ``methods``."""
-    cache = functools.lru_cache(None)
+    cache = functools.lru_cache(maxsize)
     new_methods = {method: staticmethod(cache(getattr(instance, method))) for method in methods}
     proxy = type('Cached', (Proxy,), new_methods)
     return proxy(instance)
