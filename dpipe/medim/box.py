@@ -70,6 +70,12 @@ def get_box_padding(box: Box, limit):
     check_len(*box, limit)
     return np.maximum([-box[0], box[1] - limit], 0).T
 
+@returns_box
+def get_union_box(*boxes):
+    start = np.min([box[0] for box in boxes], axis=0)
+    stop = np.max([box[1] for box in boxes], axis=0)
+    return start, stop
+
 
 @returns_box
 def add_margin(box: Box, margin):
