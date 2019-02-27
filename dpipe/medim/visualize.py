@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Callable
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -14,6 +14,35 @@ from .axes import AxesParams
 def _get_rows_cols(max_cols, data):
     columns = min(len(data), max_cols or len(data))
     return (len(data) - 1) // columns + 1, columns
+
+
+def _slice_base(data: [np.ndarray], axis: int = -1, scale: int = 5, max_columns: int = None, colorbar: bool = False,
+                show_axes: bool = False, cmap: Union[Colormap, str] = 'gray', vlim: AxesParams = None,
+                callback: Callable = None, sliders: dict = None):
+    from ipywidgets import interact, IntSlider
+    check_shape_along_axis(*data, axis=axis)
+    vlim = np.broadcast_to(vlim, [len(data), 2]).tolist()
+    rows, columns = _get_rows_cols(max_columns, data)
+    sliders = sliders or {}
+    if 'idx' in sliders:
+        raise ValueError(f'Overriding "idx" is not allowed.')
+
+    def update(idx, **kwargs):
+        fig, axes = plt.subplots(rows, columns, figsize=(scale * columns, scale * rows))
+        for ax, x, (vmin, vmax) in zip(np.array(axes).flatten(), data, vlim):
+            im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vmin, vmax=vmax)
+            if colorbar:
+                fig.colorbar(im, ax=ax, orientation='horizontal')
+            if not show_axes:
+                ax.set_axis_off()
+
+        if callback is not None:
+            callback(axes, idx=idx, **kwargs)
+
+        plt.tight_layout()
+        plt.show()
+
+    interact(update, idx=IntSlider(min=0, max=data[0].shape[axis] - 1, continuous_update=False), **sliders)
 
 
 def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int = None, colorbar: bool = False,
@@ -38,23 +67,7 @@ def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int 
         used to normalize luminance data. If None - the limits are determined automatically.
         Must be broadcastable to (len(data), 2). See `matplotlib.pyplot.imshow` (vmin and vmax) for details.
     """
-    from ipywidgets import interact, IntSlider
-    check_shape_along_axis(*data, axis=axis)
-    vlim = np.broadcast_to(vlim, [len(data), 2]).tolist()
-    rows, columns = _get_rows_cols(max_columns, data)
-
-    def update(idx):
-        fig, axes = plt.subplots(rows, columns, figsize=(scale * columns, scale * rows))
-        for ax, x, (vmin, vmax) in zip(np.array(axes).flatten(), data, vlim):
-            im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vmin, vmax=vmax)
-            if colorbar:
-                fig.colorbar(im, ax=ax, orientation='horizontal')
-            if not show_axes:
-                ax.set_axis_off()
-        plt.tight_layout()
-        plt.show()
-
-    interact(update, idx=IntSlider(min=0, max=data[0].shape[axis] - 1, continuous_update=False))
+    _slice_base(data, axis, scale, max_columns, colorbar, show_axes, cmap, vlim)
 
 
 def animate3d(*data: np.ndarray, output_path: str, axis: int = -1, scale: int = 5, max_columns: int = None,

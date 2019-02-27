@@ -22,8 +22,8 @@ Splitters
     :undoc-members:
     :show-inheritance:
 
-Cross-validation splitters
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Train-val-test
+^^^^^^^^^^^^^^
 
 .. automodule:: dpipe.split.cv
     :members:

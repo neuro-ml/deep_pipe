@@ -42,5 +42,4 @@ class TestGrid(unittest.TestCase):
             shape = np.random.randint(40, 50, size=3)
             with self.subTest(shape=shape):
                 x = np.random.randn(1, *shape)
-                np.testing.assert_array_almost_equal(
-                    x, combine(divide(x, patch_size, stride), shape, stride))
+                np.testing.assert_array_almost_equal(x, combine(divide(x, patch_size, stride), shape, stride))

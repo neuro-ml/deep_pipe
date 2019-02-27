@@ -61,7 +61,7 @@ def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike
 
 # TODO: better doc
 def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike = None,
-            axes: AxesLike = None) -> np.ndarray:
+            axes: AxesLike = None, valid: bool = False) -> np.ndarray:
     """
     Build a tensor of shape ``output_shape`` from ``patches`` obtained in a convolution-like approach
     with corresponding parameters. The overlapping parts are averaged.
@@ -81,7 +81,7 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     result = np.zeros(output_shape, patch.dtype)
     counts = np.zeros(output_shape, int)
     for box, patch in zip_equal(
-            get_boxes(output_shape, extract(patch.shape, axes), stride, axes, valid=False), patches):
+            get_boxes(output_shape, extract(patch.shape, axes), stride, axes, valid), patches):
         slc = build_slices(*box)
         result[slc] += patch
         counts[slc] += 1

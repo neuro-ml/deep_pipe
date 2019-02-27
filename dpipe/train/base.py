@@ -1,9 +1,9 @@
 from typing import Callable, Iterable
 
-from dpipe.batch_iter import BatchIter
-from .checkpoint import CheckpointManager, DummyCheckpointManager
+from ..batch_iter import BatchIter
+from .checkpoint import CheckpointManager
 from .policy import Policy, ValuePolicy, EarlyStopping
-from .logging import Logger, DummyLogger
+from .logging import Logger
 
 
 def one_epoch(epoch: int, do_train_step: Callable, batch_iter: Iterable, logger: Logger, validate: Callable = None,
@@ -30,6 +30,23 @@ def one_epoch(epoch: int, do_train_step: Callable, batch_iter: Iterable, logger:
         policy.epoch_finished(epoch, train_losses=train_losses, metrics=metrics)
 
 
+class _DummyCheckpointManager:
+    def save(self, iteration: int):
+        pass
+
+    @staticmethod
+    def restore():
+        return 0
+
+
+class _DummyLogger(Logger):
+    def train(self, train_losses, step):
+        pass
+
+    def value(self, name, value, step):
+        pass
+
+
 def train(do_train_step: Callable, batch_iter: BatchIter, logger: Logger = None,
           checkpoint_manager: CheckpointManager = None, validate: Callable = None, **policies: Policy):
     """
@@ -50,9 +67,9 @@ def train(do_train_step: Callable, batch_iter: BatchIter, logger: Logger = None,
         The rest can be used for early stopping.
     """
     if checkpoint_manager is None:
-        checkpoint_manager = DummyCheckpointManager()
+        checkpoint_manager = _DummyCheckpointManager()
     if logger is None:
-        logger = DummyLogger()
+        logger = _DummyLogger()
 
     epoch = checkpoint_manager.restore()
 

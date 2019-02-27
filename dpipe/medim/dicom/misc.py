@@ -86,11 +86,10 @@ def load_series(row: pd.Series) -> np.ndarray:
     m = get_orientation_matrix(row)
     assert not np.isnan(m).any()
 
-    transpose = np.abs(m).argmax(axis=0)
-    for i, j in enumerate(transpose):
+    for i, j in enumerate(np.abs(m).argmax(axis=1)):
         if m[i, j] < 0:
             x = np.flip(x, axis=i)
-    return x.transpose(*transpose)
+    return x.transpose(*np.abs(m).argmax(axis=0))
 
 
 @composition('\n'.join)
