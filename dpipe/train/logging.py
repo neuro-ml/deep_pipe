@@ -3,11 +3,11 @@ from typing import Sequence
 import tensorboard_easy
 import numpy as np
 
+from dpipe.medim.io import PathLike
 from dpipe.medim.utils import zip_equal
 
 
 def log_vector(logger: tensorboard_easy.Logger, tag: str, vector, step: int):
-    """Adds a vector values to log."""
     for i, value in enumerate(vector):
         logger.log_scalar(tag=tag + f'/{i}', value=value, step=step)
 
@@ -49,15 +49,9 @@ class Logger:
         self._dict('val/metrics', metrics, step)
 
 
-class DummyLogger(Logger):
-    def train(self, train_losses, step):
-        pass
-
-    def value(self, name, value, step):
-        pass
-
-
 class ConsoleLogger(Logger):
+    """Log ``train losses`` and ``metrics`` to stdout."""
+
     def value(self, name, value, step):
         pass
 
@@ -70,7 +64,9 @@ class ConsoleLogger(Logger):
 
 
 class TBLogger(Logger):
-    def __init__(self, log_path):
+    """A logger that writes to a tensorboard log file located at ``log_path``."""
+
+    def __init__(self, log_path: PathLike):
         self.logger = tensorboard_easy.Logger(log_path)
 
     def train(self, train_losses, step):
@@ -84,7 +80,13 @@ class TBLogger(Logger):
 
 
 class NamedTBLogger(TBLogger):
-    def __init__(self, log_path, loss_names: Sequence[str]):
+    """
+    A logger that writes multiple train losses to a tensorbaord log file located at ``log_path``.
+
+    Each loss is assigned a corresponding tag name from ``loss_names``.
+    """
+
+    def __init__(self, log_path: PathLike, loss_names: Sequence[str]):
         super().__init__(log_path)
         self.loss_names = loss_names
 

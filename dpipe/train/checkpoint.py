@@ -1,12 +1,11 @@
 import os
 import shutil
 import pickle
-from abc import abstractmethod
 from pathlib import Path
 
 import torch
 
-__all__ = 'CheckpointManagerBase', 'DummyCheckpointManager', 'CheckpointManager'
+__all__ = 'CheckpointManager',
 
 
 def save_pickle(o, path):
@@ -29,30 +28,6 @@ def save_torch(o, path):
 # TODO: no CPU - GPU interchange for now
 def load_torch(o, path):
     o.load_state_dict(torch.load(path))
-
-
-class CheckpointManagerBase:
-    @abstractmethod
-    def save(self, iteration: int):
-        """Save the states of all tracked objects."""
-
-    @abstractmethod
-    def restore(self) -> int:
-        """
-        Restore the most recent states of all tracked objects and return
-        the corresponding iteration.
-        """
-
-
-class DummyCheckpointManager:
-    """An implementation that does nothing. `restore` always returns 0."""
-
-    def save(self, iteration: int):
-        pass
-
-    @staticmethod
-    def restore():
-        return 0
 
 
 class CheckpointManager:
@@ -86,6 +61,7 @@ class CheckpointManager:
         shutil.rmtree(self._get_previous_folder(iteration))
 
     def save(self, iteration: int):
+        """Save the states of all tracked objects."""
         current_folder = self._get_current_folder(iteration)
         os.makedirs(current_folder)
 
@@ -100,6 +76,10 @@ class CheckpointManager:
             self._clear_previous(iteration)
 
     def restore(self):
+        """
+        Restore the most recent states of all tracked objects and return
+        the corresponding iteration.
+        """
         if not self.base_path.exists():
             return 0
 

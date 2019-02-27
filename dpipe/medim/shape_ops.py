@@ -86,7 +86,9 @@ def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None, padding_values:
     axes
         axes along which ``x`` will be padded. If None - the last `len(padding)` axes are used.
     """
-    padding = fill_by_indices(np.zeros((x.ndim, 2), dtype=int), np.atleast_2d(padding), axes)
+    padding = np.asarray(fill_by_indices(np.zeros((x.ndim, 2), dtype=int), np.atleast_2d(padding), axes))
+    if (padding < 0).any():
+        raise ValueError(f'Padding must be non-negative: {padding.tolist()}.')
     return pad_(x, padding, padding_values)
 
 
@@ -150,7 +152,7 @@ def crop_to_box(x: np.ndarray, box: Box, axes: AxesLike = None) -> np.ndarray:
     return x[build_slices(start, stop)]
 
 
-def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesParams = 0):
+def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesParams = 0) -> np.ndarray:
     """
     Pad ``x`` to match ``shape``. The left padding is taken equal to ``box``'s start.
     """

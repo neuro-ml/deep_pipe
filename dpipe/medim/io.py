@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 from typing import Union
 
-import numpy
 import numpy as np
 
 PathLike = Union[Path, str]
@@ -71,7 +70,7 @@ def load_json(path: PathLike):
 
 
 class NumpyEncoder(json.JSONEncoder):
-    """A json encoder for numpy arrays and scalars."""
+    """A json encoder with support for numpy arrays and scalars."""
 
     def default(self, o):
         if isinstance(o, (np.generic, np.ndarray)):
@@ -87,22 +86,21 @@ def dump_json(value, path: PathLike, *, indent: int = None):
         return value
 
 
-CONSOLE_ARGUMENT = re.compile(r'^--[^\d\W]\w*$')
-
-
 class ConsoleArguments:
     """A class that simplifies access to console arguments."""
+
+    _argument_pattern = re.compile(r'^--[^\d\W]\w*$')
 
     def __init__(self):
         parser = argparse.ArgumentParser()
         args = parser.parse_known_args()[1]
         # allow for positional arguments:
-        while args and not CONSOLE_ARGUMENT.match(args[0]):
+        while args and not self._argument_pattern.match(args[0]):
             args = args[1:]
 
         self._args = {}
         for arg, value in zip(args[::2], args[1::2]):
-            if not CONSOLE_ARGUMENT.match(arg):
+            if not self._argument_pattern.match(arg):
                 raise ValueError(f'Invalid console argument: {arg}')
             self._args[arg[2:]] = value
 
