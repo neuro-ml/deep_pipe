@@ -70,8 +70,8 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     ----------
     `divide` `get_boxes`
     """
-    patch, patches = peek(patches)
     axes = expand_axes(axes, output_shape)
+    patch, patches = peek(patches)
     if stride is None:
         stride = extract(patch.shape, axes)
     else:
