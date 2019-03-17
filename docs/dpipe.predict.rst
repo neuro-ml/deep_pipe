@@ -7,6 +7,15 @@ Prediction
     :show-inheritance:
 
 
+Shape operations
+----------------
+
+.. automodule:: dpipe.predict.shape
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 functional
 ----------
 

@@ -7,6 +7,21 @@ Imaging utils
     :undoc-members:
     :show-inheritance:
 
+Preprocessing
+-------------
+
+.. automodule:: dpipe.medim.preprocessing
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Shape operations
+----------------
+
+.. automodule:: dpipe.medim.shape_ops
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Data augmentation
 -----------------
@@ -16,10 +31,10 @@ Data augmentation
     :undoc-members:
     :show-inheritance:
 
-Axes inference
---------------
+Metrics
+-------
 
-.. automodule:: dpipe.medim.axes
+.. automodule:: dpipe.medim.metrics
     :members:
     :undoc-members:
     :show-inheritance:
@@ -36,6 +51,14 @@ Grid splitters
 --------------
 
 .. automodule:: dpipe.medim.grid
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Patch
+-----
+
+.. automodule:: dpipe.medim.patch
     :members:
     :undoc-members:
     :show-inheritance:
@@ -68,14 +91,6 @@ Miscellaneous
     :undoc-members:
     :show-inheritance:
 
-Color space conversion
-----------------------
-
-.. automodule:: dpipe.medim.hsv
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Input/Output
 ------------
 
@@ -83,47 +98,7 @@ Input/Output
     :members:
     :undoc-members:
     :show-inheritance:
-
-Itertools
----------
-
-.. automodule:: dpipe.medim.itertools
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Metrics
--------
-
-.. automodule:: dpipe.medim.metrics
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Patch
------
-
-.. automodule:: dpipe.medim.patch
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Preprocessing
--------------
-
-.. automodule:: dpipe.medim.preprocessing
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Shape operations
-----------------
-
-.. automodule:: dpipe.medim.shape_ops
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+    :exclude-members: NumpyEncoder
 
 Brain images registration
 -------------------------
@@ -133,16 +108,8 @@ Brain images registration
     :undoc-members:
     :show-inheritance:
 
-Shape utils
------------
-
-.. automodule:: dpipe.medim.shape_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Slices
-------
+Slicing
+-------
 
 .. automodule:: dpipe.medim.slices
     :members:
@@ -157,10 +124,34 @@ Images visualization
     :undoc-members:
     :show-inheritance:
 
+Color space conversion
+----------------------
+
+.. automodule:: dpipe.medim.hsv
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Itertools
+---------
+
+.. automodule:: dpipe.medim.itertools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Various utils
 -------------
 
 .. automodule:: dpipe.medim.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Shape utils
+-----------
+
+.. automodule:: dpipe.medim.shape_utils
     :members:
     :undoc-members:
     :show-inheritance:

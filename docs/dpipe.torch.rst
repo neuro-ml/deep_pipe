@@ -17,6 +17,11 @@ Model wrapper
 Utils
 -----
 
+.. automodule:: dpipe.torch.train
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: dpipe.torch.utils
     :members:
     :undoc-members:

@@ -22,14 +22,6 @@ Pipeline
     :undoc-members:
     :show-inheritance:
 
-dpipe.batch\_iter.patch\_3d module
-----------------------------------
-
-.. automodule:: dpipe.batch_iter.patch_3d
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Utils
 -----
 
