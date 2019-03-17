@@ -11,6 +11,7 @@ def decode_segmentation(x, segm_decoding_matrix) -> np.array:
     return np.rollaxis(segm_decoding_matrix[x], -1)
 
 
+# TODO: weaken the restriction to same ndim
 def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
     """
     Apply ``func`` to slices from ``x`` taken along ``axes``.

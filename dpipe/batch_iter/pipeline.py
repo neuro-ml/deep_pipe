@@ -4,15 +4,37 @@ from typing import Iterable, Callable, Union
 import pdp
 import numpy as np
 
-__all__ = 'combine_batches', 'combine_to_arrays', 'make_infinite_batch_iter'
+from ..medim.axes import AxesParams
+from .base import BatchIter
+from .utils import pad_batch_equal
+
+__all__ = 'combine_batches', 'combine_to_arrays', 'combine_pad', 'make_infinite_batch_iter'
 
 
 def combine_batches(inputs):
+    """
+    Combines tuples from ``inputs`` into batches: [(x, y), (x, y)] -> [(x, x), (y, y)]
+    """
     return tuple(zip(*inputs))
 
 
 def combine_to_arrays(inputs):
+    """
+    Combines tuples from ``inputs`` into batches of numpy arrays.
+    """
     return tuple(map(np.array, combine_batches(inputs)))
+
+
+def combine_pad(inputs, padding_values: AxesParams = 0, ratio: AxesParams = 0):
+    """
+    Combines tuples from ``inputs`` into batches and pads each batch in order to obtain
+    a correctly shaped numpy array.
+
+    See Also
+    --------
+    `pad_to_shape`
+    """
+    return tuple(pad_batch_equal(x, padding_values, ratio) for x in combine_batches(inputs))
 
 
 def make_infinite_batch_iter(
@@ -56,7 +78,7 @@ def make_infinite_batch_iter(
     pipeline = pdp.Pipeline(source, *map(wrap, transformers), pdp.Many2One(chunk_size=batch_size, buffer_size=3),
                             pdp.One2One(combiner, buffer_size=buffer_size))
 
-    class Pipeline:
+    class Pipeline(BatchIter):
         """Wrapper for `pdp.Pipeline`."""
 
         def close(self):

@@ -5,7 +5,8 @@ import torch
 import torch.nn as nn
 from torch.nn import functional
 
-from dpipe.medim.axes import AxesLike, expand_axes
+from dpipe.medim.axes import AxesLike, expand_axes, fill_by_indices
+from dpipe.medim.utils import name_changed
 
 
 class PyramidPooling(nn.Module):
@@ -69,9 +70,9 @@ class Reshape(nn.Module):
         return x.reshape(*shape)
 
 
-class UpsampleToInput(nn.Module):
+class InterpolateToInput(nn.Module):
     """
-    Upsamples the result of ``path`` to the original shape along the ``axes``.
+    Interpolates the result of ``path`` to the original shape along the ``axes``.
     If ``axes`` is None - the result is upsampled along all the axes.
     """
 
@@ -89,4 +90,9 @@ class UpsampleToInput(nn.Module):
         for i in axes:
             new_shape[i] = old_shape[i]
 
-        return functional.upsample(x, size=new_shape, mode=self.mode)
+        if np.not_equal(x.shape[2:], new_shape).any():
+            x = functional.upsample(x, size=new_shape, mode=self.mode)
+        return x
+
+
+UpsampleToInput = name_changed(InterpolateToInput, 'UpsampleToInput', '16.03.2019')

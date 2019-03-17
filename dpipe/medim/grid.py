@@ -2,7 +2,7 @@ from typing import Iterable
 
 import numpy as np
 
-from .axes import expand_axes, broadcast_to_axes, fill_by_indices, AxesLike
+from .axes import broadcast_to_axes, fill_by_indices, AxesLike
 from .box import make_box_, Box
 from .itertools import zip_equal, extract, peek
 from .shape_utils import shape_after_full_convolution
@@ -60,7 +60,7 @@ def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike
 
 
 # TODO: better doc
-def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike = None,
+def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike,
             axes: AxesLike = None, valid: bool = False) -> np.ndarray:
     """
     Build a tensor of shape ``output_shape`` from ``patches`` obtained in a convolution-like approach
@@ -70,13 +70,10 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     ----------
     `divide` `get_boxes`
     """
-    axes = expand_axes(axes, output_shape)
+    axes, stride = broadcast_to_axes(axes, stride)
     patch, patches = peek(patches)
-    if stride is None:
-        stride = extract(patch.shape, axes)
-    else:
-        _, stride = broadcast_to_axes(axes, stride)
-    output_shape = fill_by_indices(patch.shape, output_shape, axes)
+    if len(output_shape) != patch.ndim:
+        output_shape = fill_by_indices(patch.shape, output_shape, axes)
 
     result = np.zeros(output_shape, patch.dtype)
     counts = np.zeros(output_shape, int)

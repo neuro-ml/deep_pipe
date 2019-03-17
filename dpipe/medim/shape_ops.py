@@ -92,7 +92,8 @@ def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None, padding_values:
     return pad_(x, padding, padding_values)
 
 
-def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0) -> np.ndarray:
+def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0,
+                 ratio: AxesParams = 0.5) -> np.ndarray:
     """
     Pad ``x`` to match ``shape`` along the ``axes``.
 
@@ -105,18 +106,21 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
         values to pad with.
     axes
         axes along which ``x`` will be padded. If None - the last `len(shape)` axes are used.
+    ratio
+        the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """
     old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axes))
     if (old_shape > new_shape).any():
         raise ValueError(f'The resulting shape cannot be smaller than the original: {old_shape} vs {new_shape}')
 
     delta = new_shape - old_shape
-    padding = np.array((delta // 2, (delta + 1) // 2)).T.astype(int)
+    start = (delta * ratio).astype(int)
+    padding = np.array((start, delta - start)).T.astype(int)
 
     return pad(x, padding, padding_values=padding_values)
 
 
-def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None) -> np.ndarray:
+def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
     """
     Crop ``x`` to match ``shape`` along ``axes``.
 
@@ -127,12 +131,14 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None) -> np.n
         final shape.
     axes
         axes along which ``x`` will be padded. If None - the last `len(shape)` axes are used.
+    ratio
+        the fraction of the crop that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """
     old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axes))
     if (old_shape < new_shape).any():
         raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}')
 
-    start = ((old_shape - new_shape) // 2).astype(int)
+    start = ((old_shape - new_shape) * ratio).astype(int)
     return x[build_slices(start, start + new_shape)]
 
 
