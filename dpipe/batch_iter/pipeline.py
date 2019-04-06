@@ -25,7 +25,7 @@ def combine_to_arrays(inputs):
     return tuple(map(np.array, combine_batches(inputs)))
 
 
-def combine_pad(inputs, padding_values: AxesParams = 0, ratio: AxesParams = 0):
+def combine_pad(inputs, padding_values: AxesParams = 0, ratio: AxesParams = 0.5):
     """
     Combines tuples from ``inputs`` into batches and pads each batch in order to obtain
     a correctly shaped numpy array.

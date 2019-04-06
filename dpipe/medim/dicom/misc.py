@@ -1,3 +1,4 @@
+import os
 from operator import itemgetter
 from os.path import join as jp
 from typing import Sequence, Union
@@ -6,6 +7,7 @@ import numpy as np
 import pandas as pd
 from pydicom import read_file
 
+from ..io import PathLike
 from ..utils import extract_dims, lmap, composition
 from ..itertools import zip_equal, collect
 
@@ -64,13 +66,17 @@ def _contains_info(row, *cols):
     return all(col in row and pd.notnull(row[col]) for col in cols)
 
 
-def load_series(row: pd.Series) -> np.ndarray:
+def load_series(row: pd.Series, base_path: PathLike = None) -> np.ndarray:
     """
     Loads an image based on its ``row`` in the metadata dataframe.
+
+    If ``base_path`` is not None, PathToFolder is assumed to be relative to it.
 
     Required columns: PathToFolder, FileNames.
     """
     folder, files = row.PathToFolder, row.FileNames.split('/')
+    if base_path is not None:
+        folder = os.path.join(base_path, folder)
     if _contains_info(row, 'InstanceNumbers'):
         files = map(itemgetter(1), sorted(zip_equal(map(int, row.InstanceNumbers.split(',')), files)))
 

@@ -7,7 +7,7 @@ from typing import Callable, Iterable
 import numpy as np
 from tqdm import tqdm
 
-from dpipe.io import dump_json
+from dpipe.io import save_json
 
 
 def np_filename2id(filename):
@@ -68,7 +68,7 @@ def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, re
         targets.append(load_y_true(identifier))
 
     for name, metric in metrics.items():
-        dump_json(metric(targets, predictions), os.path.join(results_path, name + '.json'), indent=0)
+        save_json(metric(targets, predictions), os.path.join(results_path, name + '.json'), indent=0)
 
 
 def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False):
@@ -83,4 +83,4 @@ def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, re
             results[metric_name][identifier] = metric(target, prediction)
 
     for metric_name, result in results.items():
-        dump_json(result, os.path.join(results_path, metric_name + '.json'), indent=0)
+        save_json(result, os.path.join(results_path, metric_name + '.json'), indent=0)

@@ -1,4 +1,5 @@
 scikit-image
+imageio
 numpy
 scipy
 pandas

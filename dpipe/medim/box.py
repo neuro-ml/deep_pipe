@@ -70,6 +70,7 @@ def get_box_padding(box: Box, limit):
     check_len(*box, limit)
     return np.maximum([-box[0], box[1] - limit], 0).T
 
+
 @returns_box
 def get_union_box(*boxes):
     start = np.min([box[0] for box in boxes], axis=0)
@@ -98,7 +99,8 @@ def get_centered_box(center: np.ndarray, box_size: np.ndarray):
 def mask2bounding_box(mask: np.ndarray):
     """Find the smallest box that contains all true values of the mask, so that if
      you use them in slice() you will extract box with all true values."""
-    assert mask.any(), "Mask have no True values."
+    if not mask.any():
+        raise ValueError('The mask is empty.')
 
     start, stop = [], []
     for ax in itertools.combinations(range(mask.ndim), mask.ndim - 1):

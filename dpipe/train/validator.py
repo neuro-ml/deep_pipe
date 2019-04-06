@@ -1,7 +1,5 @@
 from typing import Sequence, Callable, Iterable
 
-from dpipe.medim.utils import load_by_ids
-
 
 def evaluate(y_true: Sequence, y_pred: Sequence, metrics: dict) -> dict:
     """

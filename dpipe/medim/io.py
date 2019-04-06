@@ -8,6 +8,8 @@ from typing import Union
 
 import numpy as np
 
+from dpipe.medim.utils import name_changed
+
 PathLike = Union[Path, str]
 
 
@@ -78,7 +80,7 @@ class NumpyEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-def dump_json(value, path: PathLike, *, indent: int = None):
+def save_json(value, path: PathLike, *, indent: int = None):
     """Dump a json-serializable object to a json file."""
     # TODO: probably should add makedirs here
     with open(path, 'w') as f:
@@ -130,3 +132,6 @@ class ConsoleArguments:
             raise ValueError(f'This method takes exactly one argument, but {len(kwargs)} were passed.')
         name, value = list(kwargs.items())[0]
         return self._args.get(name, value)
+
+
+dump_json = name_changed(save_json, 'dump_json', '04.04.2019')
