@@ -2,6 +2,7 @@
 import functools
 from os.path import join as jp
 from itertools import chain
+from types import MethodType
 from typing import Sequence, Callable, Iterable
 from collections import ChainMap, namedtuple
 from warnings import warn
@@ -183,7 +184,7 @@ def normalized(dataset: Dataset, mean: bool = True, std: bool = True, drop_perce
                                                        drop_percentile=drop_percentile))
 
 
-def merge(*datasets: Dataset, methods: Sequence[str] = (), attributes: Sequence[str] = ()) -> Dataset:
+def merge(*datasets: Dataset, methods: Sequence[str] = None, attributes: Sequence[str] = ()) -> Dataset:
     """
     Merge several ``datasets`` into one by preserving the provided ``methods`` and ``attributes``.
 
@@ -191,10 +192,21 @@ def merge(*datasets: Dataset, methods: Sequence[str] = (), attributes: Sequence[
     ----------
     datasets
     methods
-        the list of methods to be preserved. Each method must take a single argument - the identifier.
+        the list of methods to be preserved. Each method must have the identifier as its first argument.
+        If None all the common methods will be preserved.
     attributes
         the list of attributes to be preserved. For each dataset their values must coincide.
     """
+    if methods is None:
+        def get_methods(o):
+            for attr in dir(o):
+                if not attr.startswith('_') and isinstance(getattr(o, attr), MethodType):
+                    yield attr
+
+        methods = set(get_methods(datasets[0]))
+        for dataset in datasets:
+            methods = methods & set(get_methods(dataset))
+
     clash = set(methods) & set(attributes)
     if clash:
         raise ValueError(f'Method names clash with attribute names: {join(clash)}.')
@@ -210,8 +222,8 @@ def merge(*datasets: Dataset, methods: Sequence[str] = (), attributes: Sequence[
             raise ValueError(f'Datasets have different values of attribute "{attribute}".')
 
     def decorator(method_name):
-        def wrapper(identifier):
-            return getattr(id_to_dataset[identifier], method_name)(identifier)
+        def wrapper(identifier, *args, **kwargs):
+            return getattr(id_to_dataset[identifier], method_name)(identifier, *args, **kwargs)
 
         return wrapper
 

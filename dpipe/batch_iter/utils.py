@@ -35,7 +35,7 @@ def multiply(func: Callable, *args, **kwargs):
     return wrapped
 
 
-def apply_at(func: Callable, index: AxesLike, *args, **kwargs):
+def apply_at(index: AxesLike, func: Callable, *args, **kwargs):
     """
     Returns a function that takes an iterable and applies ``func`` to the values at the corresponding ``index``.
 
@@ -43,8 +43,8 @@ def apply_at(func: Callable, index: AxesLike, *args, **kwargs):
 
     Examples
     --------
-    >>> first_sqrt = apply_at(np.sqrt, 1)
-    >>> first_sqrt([3, 2, 1])
+    >>> first_sqr = apply_at(0, np.square)
+    >>> first_sqr([3, 2, 1])
     >>> (9, 2, 1)
     """
     index = set(np.atleast_1d(index).tolist())
@@ -55,7 +55,7 @@ def apply_at(func: Callable, index: AxesLike, *args, **kwargs):
     return wrapped
 
 
-def random_apply(func: Callable, p: float, *args, **kwargs):
+def random_apply(p: float, func: Callable, *args, **kwargs):
     """
     Returns a function that applies ``func`` with a given probability ``p``.
 

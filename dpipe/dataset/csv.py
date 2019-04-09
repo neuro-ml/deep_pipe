@@ -19,7 +19,7 @@ class CSV(Dataset):
         self.path = path
         self.filename = filename
 
-        df = pd.read_csv(os.path.join(path, filename))
+        df = pd.read_csv(os.path.join(path, filename), encoding='utf-8')
         if index_col is not None:
             df[index_col] = df[index_col].astype(str)
             df = df.set_index(index_col).sort_index()
