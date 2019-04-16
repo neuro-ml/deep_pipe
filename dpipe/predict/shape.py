@@ -4,9 +4,26 @@ from dpipe.medim.axes import broadcast_to_axes, AxesLike, AxesParams
 from dpipe.medim.grid import divide, combine
 from dpipe.medim.itertools import extract
 from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape
+from dpipe.medim.utils import extract_dims
+from dpipe.predict.utils import add_dims
 
 
-def patches_grid(patch_size: AxesParams, stride: AxesParams, axes: AxesLike = None, padding_values: AxesParams = 0,
+def add_extract_dims(n_add: int = 1, n_extract: int = None):
+    if n_extract is None:
+        n_extract = n_add
+
+    def decorator(predict):
+        def wrapper(x):
+            x = add_dims(x, ndims=n_add)[0]
+            x = predict(x)
+            return extract_dims(x, n_extract)
+
+        return wrapper
+
+    return decorator
+
+
+def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0,
                  ratio: AxesParams = 0.5):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine them

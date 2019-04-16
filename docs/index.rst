@@ -19,3 +19,5 @@ Subpackages
     dpipe.torch
     dpipe.commands
     dpipe.model
+
+    dpipe.tutorials
