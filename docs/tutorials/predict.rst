@@ -16,7 +16,7 @@ work with images larger than 256x256 pixels.
 Before feeding a given ``image`` into the network you may want to pad
 it:
 
-.. code:: python3
+.. code-block:: python3
 
     from dpipe.medim.shape_ops import pad_to_shape
     
@@ -26,7 +26,7 @@ it:
 Now you need to remove the padding in order to make the ``mask`` of same
 shape as ``image``:
 
-.. code:: python3
+.. code-block:: python3
 
     from dpipe.medim.shape_ops import crop_to_shape
     
@@ -34,7 +34,7 @@ shape as ``image``:
 
 Let’s make a function that implements the whole pipeline:
 
-.. code:: python3
+.. code-block:: python3
 
     import numpy as np
     from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape
@@ -56,7 +56,7 @@ Scale
 Now let’s write a function that downsamples the input by a factor of 2
 and then zooms the output by 2.
 
-.. code:: python3
+.. code-block:: python3
 
     import numpy as np
     from dpipe.medim.shape_ops import zoom, zoom_to_shape
@@ -76,7 +76,7 @@ Combining
 Now suppose we want to combine zooming and padding. We could do
 something like:
 
-.. code:: python3
+.. code-block:: python3
 
     import numpy as np
     from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape
@@ -109,7 +109,7 @@ replaced by the body of ``predict_pad``.
 Basically, it means that we can pass ``predict_pad`` as the ``network``
 argument and reuse the functions we defined above:
 
-.. code:: python3
+.. code-block:: python3
 
     def predict(image, network, min_shape, scale_factor):
         def network_(x):
@@ -127,7 +127,7 @@ This sounds just like a decorator (a very good explanation can be found
 If we implement ``predict_pad`` and ``predict_zoom`` as decorators we
 can more easily reuse them:
 
-.. code:: python3
+.. code-block:: python3
 
     def predict_pad(min_shape):
         def decorator(network):
@@ -159,7 +159,7 @@ can more easily reuse them:
 
 Then the same ``predict`` can be defined like so:
 
-.. code:: python3
+.. code-block:: python3
 
     @predict_zoom(0.5)
     @predict_pad((256, 256))
@@ -173,7 +173,7 @@ image.
 If you don’t like the decorator approach you can use a handy function
 for that:
 
-.. code:: python3
+.. code-block:: python3
 
     from dpipe.predict.functional import chain_decorators
     
