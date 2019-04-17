@@ -1,11 +1,10 @@
-"""Wrappers change the dataset's behaviour."""
+"""Wrappers change the dataset's behaviour. See the :doc:`tutorials/wrappers` tutorial for more details."""
 import functools
 from os.path import join as jp
 from itertools import chain
 from types import MethodType
 from typing import Sequence, Callable, Iterable
 from collections import ChainMap, namedtuple
-from warnings import warn
 
 import numpy as np
 

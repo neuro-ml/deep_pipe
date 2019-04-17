@@ -6,18 +6,18 @@ Batch iterators
     :undoc-members:
     :show-inheritance:
 
-Sources
--------
-
-.. automodule:: dpipe.batch_iter.sources
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Pipeline
 --------
 
 .. automodule:: dpipe.batch_iter.pipeline
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Sources
+-------
+
+.. automodule:: dpipe.batch_iter.sources
     :members:
     :undoc-members:
     :show-inheritance:

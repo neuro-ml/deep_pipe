@@ -1,3 +1,5 @@
+from typing import Callable, Union
+
 import numpy as np
 from scipy import ndimage
 
@@ -71,7 +73,8 @@ def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = 
     return pad_to_shape(zoom(x, scale_factor, axes, order), shape, axes, padding_values)
 
 
-def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0) -> np.ndarray:
+def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None,
+        padding_values: Union[AxesParams, Callable] = 0) -> np.ndarray:
     """
     Pad ``x`` according to ``padding`` along the ``axes``.
 
@@ -89,6 +92,8 @@ def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None, padding_values:
     padding = np.asarray(fill_by_indices(np.zeros((x.ndim, 2), dtype=int), np.atleast_2d(padding), axes))
     if (padding < 0).any():
         raise ValueError(f'Padding must be non-negative: {padding.tolist()}.')
+    if callable(padding_values):
+        padding_values = padding_values(x)
     return pad_(x, padding, padding_values)
 
 
