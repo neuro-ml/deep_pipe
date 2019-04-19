@@ -5,11 +5,22 @@ import torch
 import torch.nn as nn
 from torch.nn import functional
 
-from dpipe.medim.axes import AxesLike, expand_axes, fill_by_indices
+from dpipe.medim.axes import AxesLike, expand_axes
 from dpipe.medim.utils import name_changed
 
 
 class PyramidPooling(nn.Module):
+    """
+    Implements the pyramid pooling operation.
+
+    Parameters
+    ----------
+    pooling
+        the pooling to be applied, e.g. `torch.nn.functional.max_pool2d`.
+    levels
+        the number of pyramid levels, default is 1 which is the global pooling operation.
+    """
+
     def __init__(self, pooling: Callable, levels: int = 1):
         super().__init__()
         self.levels = levels
@@ -73,7 +84,7 @@ class Reshape(nn.Module):
 class InterpolateToInput(nn.Module):
     """
     Interpolates the result of ``path`` to the original shape along the ``axes``.
-    If ``axes`` is None - the result is upsampled along all the axes.
+    If ``axes`` is None - the result is interpolated along all the axes.
     """
 
     def __init__(self, path: nn.Module, mode='nearest', axes: AxesLike = None):

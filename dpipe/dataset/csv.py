@@ -13,7 +13,18 @@ def multiple_columns(method, index, columns):
 
 
 class CSV(Dataset):
-    """A small wrapper for csv files."""
+    """
+    A small wrapper for dataframes that contain paths to data.
+
+    Parameters
+    ----------
+    path
+        the path relative to which the data is located.
+    filename
+        the relative path to the csv dataframe.
+    index_col
+        the column that will be used as index. Must contain unique values.
+    """
 
     def __init__(self, path: PathLike, filename: str = 'meta.csv', index_col: str = 'id'):
         self.path = path
@@ -34,11 +45,18 @@ class CSV(Dataset):
 
     def get_global_path(self, index: str, col: str) -> str:
         """
-        Join the slice's result with the data frame's ``path``.
+        Get the global path at ``index`` and ``col``.
         Often data frames contain path to data, this is a convenient way to obtain
         the global path.
         """
         return os.path.join(self.path, self.get(index, col))
 
     def load(self, index: str, col: str, loader=load_image):
+        """Load the value that is located at the path at corresponding ``index`` and ``col``."""
         return loader(self.get_global_path(index, col))
+
+    def __getattr__(self, item):
+        return getattr(self.df, item)
+
+    def __getitem__(self, item):
+        return self.df[item]

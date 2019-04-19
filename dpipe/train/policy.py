@@ -5,10 +5,6 @@ import numpy as np
 from dpipe.dataset.base import AbstractAttribute, ABCAttributesMeta
 
 
-class EarlyStopping(StopIteration):
-    """Exception raised by policies in order to trigger early stopping."""
-
-
 class Policy:
     """Interface for various policies."""
 
@@ -26,6 +22,7 @@ class Policy:
 
 
 class ValuePolicy(Policy, metaclass=ABCAttributesMeta):
+    """Interface for policies that have a ``value`` which changes over time."""
     value = AbstractAttribute('The current value')
 
     def __init__(self, initial):
@@ -116,6 +113,10 @@ class LambdaEpoch(ValuePolicy):
 
     def epoch_finished(self, epoch, **kwargs):
         self.value = self.func(epoch + 1)
+
+
+class EarlyStopping(StopIteration):
+    """Exception raised by policies in order to trigger early stopping."""
 
 
 class LossStop(Policy):

@@ -1,6 +1,13 @@
 NN Layers
 =========
 
+Layers
+------
+
+.. automodule:: dpipe.layers.layer
+    :members:
+    :show-inheritance:
+
 ConvBlocks
 ----------
 
@@ -13,14 +20,6 @@ Functions
 ---------
 
 .. automodule:: dpipe.layers.functional
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Layers
-------
-
-.. automodule:: dpipe.layers.layer
     :members:
     :undoc-members:
     :show-inheritance:

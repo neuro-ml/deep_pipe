@@ -1,18 +1,20 @@
 Dataset
 =======
 
-Interfaces
-----------
-
 .. automodule:: dpipe.dataset
     :members:
     :undoc-members:
     :show-inheritance:
 
+Interfaces
+----------
+
 .. automodule:: dpipe.dataset.base
     :members:
-    :undoc-members:
     :show-inheritance:
+
+Helpers
+-------
 
 .. automodule:: dpipe.dataset.csv
     :members:
@@ -20,11 +22,6 @@ Interfaces
     :show-inheritance:
 
 .. automodule:: dpipe.dataset.dicom
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: dpipe.dataset.segmentation
     :members:
     :undoc-members:
     :show-inheritance:

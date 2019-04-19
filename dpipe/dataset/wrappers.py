@@ -1,4 +1,7 @@
-"""Wrappers change the dataset's behaviour. See the :doc:`tutorials/wrappers` tutorial for more details."""
+"""
+Wrappers change the dataset's behaviour.
+See the :doc:`tutorials/wrappers` tutorial for more details.
+"""
 import functools
 from os.path import join as jp
 from itertools import chain
@@ -16,6 +19,8 @@ from .base import Dataset, SegmentationDataset
 
 
 class Proxy:
+    """Base class for all wrappers."""
+
     def __init__(self, shadowed):
         self._shadowed = shadowed
 

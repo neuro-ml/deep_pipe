@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 
 from .model import TorchModel
 from ..batch_iter import BatchIter
@@ -8,8 +8,8 @@ from ..train.logging import TBLogger
 from ..train import train
 
 
-def train_model(model: TorchModel, batch_iter: BatchIter, n_epochs: int, lr: float, log_path: str = None,
-                checkpoints_path: str = None, validate: Callable = None, **policies: Policy):
+def train_model(model: TorchModel, batch_iter: BatchIter, n_epochs: int, lr: Union[float, ValuePolicy],
+                log_path: str = None, checkpoints_path: str = None, validate: Callable = None, **policies: Policy):
     """
     Train a given ``model``.
 

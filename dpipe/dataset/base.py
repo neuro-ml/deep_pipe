@@ -39,49 +39,34 @@ class ABCAttributesMeta(ABCMeta):
 
 
 class Dataset(metaclass=ABCAttributesMeta):
-    """Interface for datasets."""
+    """
+    Interface for datasets.
 
+    Its subclasses must define the `ids` attribute - a tuple of identifiers,
+    one for each dataset entry, as well as methods for loading an entry by its identifier.
+
+    References
+    ----------
+    `ImageDataset`, `SegmentationDataset`, `ClassificationDataset`
+    """
     ids: Tuple[str] = AbstractAttribute
 
 
 class ImageDataset(Dataset):
+    """Abstract class that describes a dataset containing images."""
     n_chans_image: int = AbstractAttribute
 
     @abstractmethod
     def load_image(self, identifier: str) -> np.ndarray:
-        """
-        Loads a dataset entry given its identifier
-
-        Parameters
-        ----------
-        identifier: str
-            object's identifier
-
-        Returns
-        -------
-        object:
-            The entry corresponding to the identifier
-        """
+        """Loads a dataset entry given its ``identifier``."""
 
 
 class SegmentationDataset(ImageDataset):
-    """Abstract class that describes a dataset for medical image segmentation with labels for pixel."""
+    """Abstract class that describes a dataset for image segmentation."""
 
     @abstractmethod
     def load_segm(self, identifier: str) -> np.ndarray:
-        """
-        Load the ground truth segmentation.
-
-        Parameters
-        ----------
-        identifier: str
-            the object's identifier
-
-        Returns
-        -------
-        segmentation: tensor
-            the ground truth segmentation.
-        """
+        """Load the ground truth segmentation for ``identifier``."""
 
 
 class ClassificationDataset(ImageDataset):
@@ -91,16 +76,4 @@ class ClassificationDataset(ImageDataset):
 
     @abstractmethod
     def load_label(self, identifier: str) -> int:
-        """
-        Loads a dataset entry's label given its identifier
-
-        Parameters
-        ----------
-        identifier: str
-            object's identifier
-
-        Returns
-        -------
-        label: int
-            The entry's label corresponding to the identifier
-        """
+        """Loads a dataset entry's label given its ``identifier``"""

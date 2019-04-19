@@ -10,6 +10,14 @@ from dpipe.medim.io import PathLike
 
 
 class DICOMDataset(CSV, ImageDataset):
+    """
+    A loader for DICOM series.
+    All the metadata is stored at ``filename`` and the DICOM files are located relative to ``path``.
+
+    References
+    ----------
+    `aggregate_images`, `CSV`
+    """
     n_chans_image = 1
 
     def __init__(self, path: PathLike, filename: str = None, index_col='PatientID'):
@@ -21,5 +29,5 @@ class DICOMDataset(CSV, ImageDataset):
     def load_image(self, identifier) -> np.ndarray:
         return load_series(self.df.loc[identifier], self.path)
 
-    def load_modality(self, identifier):
+    def load_modality(self, identifier) -> str:
         return self.get(identifier, 'Modality')

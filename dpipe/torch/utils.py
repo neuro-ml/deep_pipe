@@ -64,7 +64,7 @@ def to_var(x: np.ndarray, cuda: bool = None, requires_grad: bool = False) -> tor
     return to_cuda(x, cuda)
 
 
-def to_cuda(x, cuda: bool = None):
+def to_cuda(x, cuda: Union[torch.nn.Module, torch.Tensor, bool] = None):
     """
     Move ``x`` to cuda if specified.
 
@@ -74,6 +74,8 @@ def to_cuda(x, cuda: bool = None):
     cuda
         whether to move to cuda. If None, torch.cuda.is_available() is used to determine that.
     """
+    if isinstance(cuda, (torch.nn.Module, torch.Tensor)):
+        cuda = is_on_cuda(cuda)
     if cuda or (cuda is None and torch.cuda.is_available()):
         x = x.cuda()
     return x

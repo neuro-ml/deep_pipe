@@ -41,10 +41,6 @@ class Logger:
     def policies(self, policies: dict, step: int):
         self._dict('policies', policies, step)
 
-    @np.deprecate
-    def lr(self, lr, step):
-        self.value('lr', lr, step)
-
     def metrics(self, metrics, step):
         self._dict('val/metrics', metrics, step)
 
