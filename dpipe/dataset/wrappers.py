@@ -32,7 +32,7 @@ class Proxy:
 
 
 def cache_methods(instance, methods: Iterable[str], maxsize: int = None):
-    """Cache the ``instamce``'s ``methods``."""
+    """Cache the ``instance``'s ``methods``."""
     cache = functools.lru_cache(maxsize)
     new_methods = {method: staticmethod(cache(getattr(instance, method))) for method in methods}
     proxy = type('Cached', (Proxy,), new_methods)
@@ -41,7 +41,7 @@ def cache_methods(instance, methods: Iterable[str], maxsize: int = None):
 
 def cache_methods_to_disk(instance, base_path: str, **methods: str):
     """
-    Cache the ``instamce``'s ``methods`` to disk.
+    Cache the ``instance``'s ``methods`` to disk.
 
     Parameters
     ----------

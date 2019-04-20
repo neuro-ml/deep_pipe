@@ -19,8 +19,8 @@ def load_pred(identifier, predictions_path):
 
     Parameters
     ----------
-    identifier: int
-        id to load
+    identifier: str, int
+        id to load, could be either the file name ends with ``.npy``
     predictions_path: str
         path where to load prediction from
 
@@ -28,7 +28,17 @@ def load_pred(identifier, predictions_path):
     -------
     prediction: numpy.float32
     """
-    return np.float32(np.load(os.path.join(predictions_path, f'{identifier}.npy')))
+    if isinstance(identifier, int):
+        _id = str(identifier) + '.npy'
+    elif isinstance(identifier, str):
+        if identifier.endswith('.npy'):
+            _id = identifier
+        else:
+            _id = identifier + '.npy'
+    else:
+        raise TypeError(f'`identifier` should be either `int` or `str`, {type(identifier)} given')
+
+    return np.float32(np.load(os.path.join(predictions_path, _id)))
 
 
 def load_experiment_test_pred(identifier, experiment_path):
