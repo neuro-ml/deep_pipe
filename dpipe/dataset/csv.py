@@ -55,8 +55,10 @@ class CSV(Dataset):
         """Load the value that is located at the path at corresponding ``index`` and ``col``."""
         return loader(self.get_global_path(index, col))
 
-    def __getattr__(self, item):
-        return getattr(self.df, item)
+    def __getattr__(self, item: str):
+        if not item.startswith('_'):
+            return getattr(self.df, item)
+        raise AttributeError(item)
 
     def __getitem__(self, item):
         return self.df[item]

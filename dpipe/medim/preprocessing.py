@@ -6,10 +6,9 @@ from .utils import apply_along_axes, scale as _scale
 
 # TODO: deprecated 14.01.2019
 from .shape_ops import *
-from .shape_ops import slice_to_shape, scale_to_shape, scale, proportional_scale_to_shape
 
 
-def normalize_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None):
+def normalize_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None) -> np.ndarray:
     """
     Normalize an ``image`` to make mean and std equal to 0 and 1 respectively (if required).
     Supports robust estimation with drop_percentile.
@@ -41,7 +40,7 @@ def normalize_multichannel_image(image: np.ndarray, mean: bool = True, std: bool
     return np.array([normalize_image(channel, mean, std, drop_percentile) for channel in image], np.float32)
 
 
-def min_max_scale(x: np.ndarray, axes: AxesLike = None):
+def min_max_scale(x: np.ndarray, axes: AxesLike = None) -> np.ndarray:
     """Scale ``x``'s values so that its minimum and maximum along ``axes`` become 0 and 1 respectively."""
     return apply_along_axes(_scale, x, expand_axes(axes, x.shape))
 
@@ -79,7 +78,7 @@ def describe_connected_components(mask: np.ndarray, background: int = 0, drop_ba
     return label_map, labels, volumes
 
 
-def get_greatest_component(mask: np.ndarray, background: int = 0, drop_background: bool = True):
+def get_greatest_component(mask: np.ndarray, background: int = 0, drop_background: bool = True) -> np.ndarray:
     """Get the greatest connected component from ``mask``. See `describe_connected_components` for details."""
     label_map, labels, volumes = describe_connected_components(mask, background, drop_background)
     return label_map == labels[0]

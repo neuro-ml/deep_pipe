@@ -31,8 +31,17 @@ class Proxy:
         return list(set(super().__dir__()) | set(dir(self._shadowed)))
 
 
-def cache_methods(instance, methods: Iterable[str], maxsize: int = None):
-    """Cache the ``instance``'s ``methods``."""
+def _get_public_methods(instance):
+    for attr in dir(instance):
+        if not attr.startswith('_') and isinstance(getattr(instance, attr), MethodType):
+            yield attr
+
+
+def cache_methods(instance, methods: Iterable[str] = None, maxsize: int = None):
+    """Cache the ``instance``'s ``methods``. If ``methods`` is None - all public methods will be cached."""
+    if methods is None:
+        methods = _get_public_methods(instance)
+
     cache = functools.lru_cache(maxsize)
     new_methods = {method: staticmethod(cache(getattr(instance, method))) for method in methods}
     proxy = type('Cached', (Proxy,), new_methods)
@@ -202,14 +211,9 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None, attributes: Sequenc
         the list of attributes to be preserved. For each dataset their values must coincide.
     """
     if methods is None:
-        def get_methods(o):
-            for attr in dir(o):
-                if not attr.startswith('_') and isinstance(getattr(o, attr), MethodType):
-                    yield attr
-
-        methods = set(get_methods(datasets[0]))
+        methods = set(_get_public_methods(datasets[0]))
         for dataset in datasets:
-            methods = methods & set(get_methods(dataset))
+            methods = methods & set(_get_public_methods(dataset))
 
     clash = set(methods) & set(attributes)
     if clash:

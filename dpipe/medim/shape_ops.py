@@ -51,8 +51,8 @@ def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: 
     return ndimage.zoom(x, new_shape / old_shape, order=order)
 
 
-def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0,
-                               order: int = 1) -> np.ndarray:
+def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None,
+                               padding_values: Union[AxesParams, Callable] = 0, order: int = 1) -> np.ndarray:
     """
     Proportionally rescale ``x`` to fit ``shape`` along ``axes`` then pad it to that shape.
 
@@ -85,7 +85,7 @@ def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None,
     padding
         padding in a format compatible with `numpy.pad`
     padding_values
-        values to pad with.
+        values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
     axes
         axes along which ``x`` will be padded. If None - the last `len(padding)` axes are used.
     """
@@ -97,7 +97,7 @@ def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None,
     return pad_(x, padding, padding_values)
 
 
-def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0,
+def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_values: Union[AxesParams, Callable] = 0,
                  ratio: AxesParams = 0.5) -> np.ndarray:
     """
     Pad ``x`` to match ``shape`` along the ``axes``.
@@ -108,7 +108,7 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
     shape
         final shape.
     padding_values
-        values to pad with.
+        values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
     axes
         axes along which ``x`` will be padded. If None - the last `len(shape)` axes are used.
     ratio
@@ -176,9 +176,3 @@ def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesP
 
     padding = np.array([start, shape - stop], dtype=int).T
     return pad(x, padding, padding_values=padding_values)
-
-
-slice_to_shape = name_changed(crop_to_shape, 'slice_to_shape', '14.01.2019')
-scale_to_shape = name_changed(zoom_to_shape, 'scale_to_shape', '14.01.2019')
-proportional_scale_to_shape = name_changed(proportional_zoom_to_shape, 'scale', '14.01.2019')
-scale = name_changed(zoom, 'scale', '14.01.2019')

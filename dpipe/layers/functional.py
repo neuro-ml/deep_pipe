@@ -1,27 +1,25 @@
+from typing import Union, Callable
+
+import torch
 from torch.nn import functional
 
 
-def focal_loss_with_logits(logits, target, gamma=2, weight=None, size_average=True, reduce=True):
+def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: float = 2, weight: torch.Tensor = None,
+                           reduce: Union[Callable, None] = torch.mean):
     """
     Function that measures Focal Loss between target and output logits.
 
     Parameters
     ----------
-    logits: Variable of arbitrary shape
-    target: Variable of the same shape as input
+    logits: tensor of arbitrary shape.
+    target: tensor of the same shape as ``logits``.
     gamma: float
-        The power of focal loss factor
-    weight: Variable, optional
-        a manual rescaling weight. If provided it's repeated to match input tensor shape
-    size_average: bool, optional
-        By default, the losses are averaged over observations for each minibatch. However, if the field
-        :attr:`size_average` is set to ``False``, the losses are instead summed
-        for each minibatch. Default: ``True``
-    reduce: bool, optional
-        By default, the losses are averaged or summed over
-        observations for each minibatch depending on :attr:`size_average`. When :attr:`reduce`
-        is ``False``, returns a loss per logits/target element instead and ignores
-        :attr:`size_average`. Default: ``True``
+        the power of focal loss factor.
+    weight
+        a manual rescaling weight. Must be broadcastable to ``logits``.
+    reduce
+        the reduction operation to be applied to the final loss. Defaults to `torch.mean`.
+        If None - no reduction will be performed.
     """
     if not (target.size() == logits.size()):
         raise ValueError("Target size ({}) must be the same as logits size ({})".format(target.size(), logits.size()))
@@ -36,16 +34,29 @@ def focal_loss_with_logits(logits, target, gamma=2, weight=None, size_average=Tr
 
     if weight is not None:
         loss = loss * weight
-
-    if not reduce:
-        return loss
-    elif size_average:
-        return loss.mean()
-    else:
-        return loss.sum()
+    if reduce is not None:
+        loss = reduce(loss)
+    return loss
 
 
-def linear_focal_loss_with_logits(logits, target, gamma, beta, weight=None, size_average=True, reduce=True):
-    return functional.binary_cross_entropy_with_logits(
-        gamma * logits + beta, target, weight, size_average, reduce
-    ) / gamma
+def linear_focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: float, beta: float,
+                                  weight: torch.Tensor = None, reduce: Union[Callable, None] = torch.mean):
+    """
+    Function that measures Linear Focal Loss between target and output logits.
+
+    Parameters
+    ----------
+    logits: tensor of arbitrary shape.
+    target: tensor of the same shape as ``logits``.
+    gamma, beta: float
+        focal loss parameters.
+    weight
+        a manual rescaling weight. Must be broadcastable to ``logits``.
+    reduce
+        the reduction operation to be applied to the final loss. Defaults to `torch.mean`.
+        If None - no reduction will be performed.
+    """
+    loss = functional.binary_cross_entropy_with_logits(gamma * logits + beta, target, weight, reduction='none') / gamma
+    if reduce is not None:
+        loss = reduce(loss)
+    return loss

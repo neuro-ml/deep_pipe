@@ -6,43 +6,24 @@ Prediction
     :undoc-members:
     :show-inheritance:
 
+Predictors
+----------
 
-Shape operations
-----------------
+Ready-to-use predictors.
 
 .. automodule:: dpipe.predict.shape
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-functional
-----------
+Functions
+---------
 
 .. automodule:: dpipe.predict.functional
     :members:
-    :undoc-members:
     :show-inheritance:
 
-
-pipe
-----
-
-.. automodule:: dpipe.predict.pipe
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-predict
--------
-
-.. automodule:: dpipe.predict.predict
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-utils
+Utils
 -----
 
 .. automodule:: dpipe.predict.utils

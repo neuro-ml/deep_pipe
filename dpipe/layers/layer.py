@@ -51,7 +51,7 @@ class PyramidPooling(nn.Module):
 
 
 class Lambda(nn.Module):
-    """Applies ``func`` to the input of `forward`."""
+    """Applies ``func`` to the incoming tensor."""
 
     def __init__(self, func):
         super().__init__()

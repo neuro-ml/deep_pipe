@@ -1,3 +1,5 @@
+from typing import Union, Callable
+
 import numpy as np
 
 from dpipe.medim.axes import broadcast_to_axes, AxesLike, AxesParams
@@ -6,51 +8,6 @@ from dpipe.medim.itertools import extract
 from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape
 from dpipe.medim.utils import extract_dims
 from dpipe.predict.utils import add_dims
-from dpipe.predict.functional import trim_spatial_size, pad_to_dividable
-
-
-def preprocess(func, *args, **kwargs):
-    """
-    Applies function ``func`` with given parameters before making a prediction.
-
-    Examples
-    --------
-        >>> from dpipe.medim.shape_ops import pad
-        >>> from dpipe.predict.shape import preprocess
-        >>>
-        >>> @preprocess(pad, padding=[[24] * 2] * 3, padding_values=np.min)
-        >>> def predict(x):
-        >>>     return model.do_inf_step(x)
-        performs spatial padding before prediction.
-    """
-    def decorator(predict):
-        def wrapper(x):
-            x = func(x, *args, **kwargs)
-            x = predict(x)
-            return x
-
-        return wrapper
-
-    return decorator
-
-
-def postprocess(func, *args, **kwargs):
-    """
-    Applies function ``func`` with given parameters after making a prediction.
-
-    See Also
-    --------
-    `preprocess`
-    """
-    def decorator(predict):
-        def wrapper(x):
-            x = predict(x)
-            x = func(x, *args, **kwargs)
-            return x
-
-        return wrapper
-
-    return decorator
 
 
 def add_extract_dims(n_add: int = 1, n_extract: int = None):
@@ -78,23 +35,33 @@ def add_extract_dims(n_add: int = 1, n_extract: int = None):
     return decorator
 
 
-def dividable_shape(divisor, ndim: int = 3):
+def divisible_shape(divisor: AxesLike, axes: AxesLike = None, padding_values: Union[AxesParams, Callable] = 0,
+                    ratio: AxesParams = 0.5):
     """
-    Pads an incoming array to be dividable by ``divisor`` in last ``ndim`` dimensions. Afterwards the padding is
-    removed.
+    Pads an incoming array to be divisible by ``divisor`` along the ``axes``. Afterwards the padding is removed.
 
     Parameters
     ----------
-    divisor: int
-        a value an incoming array should be divided by.
-    ndim: int
-        a number of last array dimensions which will be padded.
+    divisor
+        a value an incoming array should be divisible by.
+    axes
+        axes along which the array will be padded. If None - the last `len(divisor)` axes are used.
+    padding_values
+        values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
+    ratio
+        the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
+
+    References
+    ----------
+    `pad_to_shape`
     """
+    axes, divisor, padding_values, ratio = broadcast_to_axes(axes, divisor, padding_values, ratio)
+
     def decorator(predict):
         def wrapper(x):
-            x_padded = pad_to_dividable(x, divisor, ndim=ndim)
-            y = predict(x_padded)
-            return trim_spatial_size(y, spatial_size=np.array(x.shape[-ndim:]))
+            shape = np.array(x.shape)[list(axes)]
+            result = predict(pad_to_shape(x, shape + (divisor - shape) % divisor, axes, padding_values, ratio))
+            return crop_to_shape(result, shape, axes, ratio)
 
         return wrapper
 
@@ -110,8 +77,8 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None, 
     If ``padding_values`` is not None, the array will be padded to an appropriate shape to make a valid division.
     Afterwards the padding is removed.
 
-    See Also
-    --------
+    References
+    ----------
     `grid.divide` `grid.combine` `pad_to_shape`
     """
     axes, path_size, stride = broadcast_to_axes(axes, patch_size, stride)
