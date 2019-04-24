@@ -10,6 +10,8 @@ from pydicom import valuerep, errors, read_file
 
 from ..io import PathLike
 
+__all__ = 'get_file_meta', 'join_dicom_tree'
+
 serial = {'ImagePositionPatient', 'ImageOrientationPatient', 'PixelSpacing'}
 person_class = (valuerep.PersonName3, valuerep.PersonNameBase)
 

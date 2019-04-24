@@ -1,5 +1,9 @@
 """Tools for grouping DICOM metadata into images."""
+from typing import Callable
+
 import pandas as pd
+
+__all__ = 'aggregate_images', 'normalize_identifiers', 'select'
 
 
 def _remove_dots(x):
@@ -12,7 +16,7 @@ def _remove_dots(x):
 REQUIRED_FIELDS = {'PatientID', 'SeriesInstanceUID', 'StudyInstanceUID', 'PathToFolder', 'PixelArrayShape'}
 
 
-def aggregate_images(metadata: pd.DataFrame) -> pd.DataFrame:
+def aggregate_images(metadata: pd.DataFrame, process_series: Callable = None) -> pd.DataFrame:
     """
     Groups DICOM ``metadata`` into images (series).
 
@@ -36,13 +40,14 @@ def aggregate_images(metadata: pd.DataFrame) -> pd.DataFrame:
         return [col for col in df.columns if len(df[col].dropna().unique()) == 1]
 
     def process_group(entry):
+        if process_series is not None:
+            entry = process_series(entry)
+
+        # entries sometimes have no `InstanceNumber`
         # TODO: should check that some typical cols are unique, e.g. ImageOrientationPatient*
         res = entry.iloc[[0]][get_unique_cols(entry)]
         res['FileNames'] = '/'.join(entry.FileName)
         res['SlicesCount'] = len(entry)
-        # entries sometimes have no `InstanceNumber`
-        # TODO: probably partially sorted slices will also do
-        # TODO: detect duplicates
         try:
             res['InstanceNumbers'] = ','.join(map(_remove_dots, entry.InstanceNumber))
         except (ValueError, TypeError):
