@@ -1,4 +1,4 @@
-from typing import Callable, Iterable
+from typing import Callable
 
 from ..batch_iter import BatchIter
 from .checkpoint import CheckpointManager
@@ -6,7 +6,7 @@ from .policy import Policy, ValuePolicy, EarlyStopping
 from .logging import Logger
 
 
-def one_epoch(epoch: int, do_train_step: Callable, batch_iter: Iterable, logger: Logger, validate: Callable = None,
+def one_epoch(epoch: int, do_train_step: Callable, batch_iter: Callable, logger: Logger, validate: Callable = None,
               **policies: Policy):
     def get_values():
         return {name: policy_.value for name, policy_ in policies.items() if isinstance(policy_, ValuePolicy)}
@@ -16,7 +16,7 @@ def one_epoch(epoch: int, do_train_step: Callable, batch_iter: Iterable, logger:
 
     metrics = None
     train_losses = []
-    for inputs in batch_iter:
+    for inputs in batch_iter():
         train_losses.append(do_train_step(*inputs, **get_values()))
 
     logger.train(train_losses, epoch)

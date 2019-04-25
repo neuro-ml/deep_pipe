@@ -27,13 +27,13 @@ class BatchIter(ABC):
     >>> batch_iter : BatchIter = None
     >>> with batch_iter:
     >>>     for epoch in range(10):
-    >>>         for x, y in batch_iter:
+    >>>         for x, y in batch_iter():
     >>>             pass
 
     """
 
     @abstractmethod
-    def __iter__(self):
+    def __call__(self):
         pass
 
     def __enter__(self):
@@ -49,7 +49,7 @@ class BatchIterRepeater(BatchIter):
         self.get_batch_iter = get_batch_iter
         self.batch_iter = None
 
-    def __iter__(self):
+    def __call__(self):
         assert self.batch_iter is None, 'Iterator has already been open'
         self.batch_iter = maybe_build_contextmanager(self.get_batch_iter())
         with self.batch_iter:
@@ -73,7 +73,7 @@ class BatchIterSlicer(BatchIter):
         self.infinite_batch_iter = maybe_build_contextmanager(get_batch_iter())
         self.n_iters_per_epoch = n_iters_per_epoch
 
-    def __iter__(self):
+    def __call__(self):
         yield from islice(self.infinite_batch_iter, self.n_iters_per_epoch)
 
     def __enter__(self):
