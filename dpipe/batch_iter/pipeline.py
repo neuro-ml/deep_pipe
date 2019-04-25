@@ -29,8 +29,8 @@ def combine_pad(inputs, padding_values: AxesParams = 0, ratio: AxesParams = 0.5)
     Combines tuples from ``inputs`` into batches and pads each batch in order to obtain
     a correctly shaped numpy array.
 
-    See Also
-    --------
+    References
+    ----------
     `pad_to_shape`
     """
     return tuple(pad_batch_equal(x, padding_values, ratio) for x in combine_batches(inputs))
@@ -82,6 +82,7 @@ class Infinite(BatchIter):
             pdp.One2One(combiner, buffer_size=buffer_size))
 
     def close(self):
+        """Stop all background processes."""
         self.__exit__(None, None, None)
 
     def __call__(self):

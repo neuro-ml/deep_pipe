@@ -6,7 +6,7 @@ from scipy import ndimage
 from .box import Box
 from .itertools import extract
 from .axes import fill_by_indices, expand_axes, AxesLike, AxesParams
-from .utils import build_slices, pad as pad_, name_changed
+from .utils import build_slices
 
 __all__ = [
     'zoom', 'zoom_to_shape', 'proportional_zoom_to_shape',
@@ -94,7 +94,19 @@ def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None,
         raise ValueError(f'Padding must be non-negative: {padding.tolist()}.')
     if callable(padding_values):
         padding_values = padding_values(x)
-    return pad_(x, padding, padding_values)
+
+    # TODO: possibly fallback to np if padding_values is scalar
+    # TODO it might be dangerous
+    padding = np.broadcast_to(padding, [x.ndim, 2])
+
+    new_shape = np.array(x.shape) + np.sum(padding, axis=1)
+    new_x = np.zeros(new_shape, dtype=x.dtype)
+    new_x[:] = padding_values
+
+    start = padding[:, 0]
+    end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
+    new_x[build_slices(start, end)] = x
+    return new_x
 
 
 def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_values: Union[AxesParams, Callable] = 0,

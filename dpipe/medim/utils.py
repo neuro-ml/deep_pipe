@@ -136,6 +136,7 @@ def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
         yield squeeze_first(tuple(pam(loaders, identifier)))
 
 
+@np.deprecate
 def pad(x, padding, padding_values):
     # TODO it might be dangerous
     padding = np.broadcast_to(padding, [x.ndim, 2])
@@ -154,6 +155,7 @@ def get_random_tuple(low, high, size):
     return tuple(np.random.randint(low, high, size=size, dtype=int))
 
 
+@np.deprecate(message='unpack_args was moved to `dpipe.batch_iter.utils`')
 def unpack_args(func: Callable):
     @wraps(func)
     def wrapper(argument):
