@@ -2,11 +2,13 @@ from typing import Callable, Union
 
 import numpy as np
 import torch
+from torch import nn
 
 from dpipe.medim.utils import makedirs_top
 
 
-def load_model_state(module: torch.nn.Module, path: str, modify_state_fn: Callable = None):
+def load_model_state(module: nn.Module, path: str, modify_state_fn: Callable = None):
+    """Updates the ``module``'s state dict by the one located at ``path``."""
     if is_on_cuda(module):
         map_location = None
     else:
@@ -22,13 +24,14 @@ def load_model_state(module: torch.nn.Module, path: str, modify_state_fn: Callab
     return module
 
 
-def save_model_state(module: torch.nn.Module, path: str):
+def save_model_state(module: nn.Module, path: str):
+    """Saves the ``module``'s state dict to ``path``."""
     makedirs_top(path, exist_ok=True)
     torch.save(module.state_dict(), path)
 
 
-def is_on_cuda(x: Union[torch.nn.Module, torch.Tensor]):
-    if isinstance(x, torch.nn.Module):
+def is_on_cuda(x: Union[nn.Module, torch.Tensor]):
+    if isinstance(x, nn.Module):
         x = next(x.parameters())
 
     return x.is_cuda
@@ -64,7 +67,7 @@ def to_var(x: np.ndarray, cuda: bool = None, requires_grad: bool = False) -> tor
     return to_cuda(x, cuda)
 
 
-def to_cuda(x, cuda: Union[torch.nn.Module, torch.Tensor, bool] = None):
+def to_cuda(x, cuda: Union[nn.Module, torch.Tensor, bool] = None):
     """
     Move ``x`` to cuda if specified.
 
@@ -74,7 +77,7 @@ def to_cuda(x, cuda: Union[torch.nn.Module, torch.Tensor, bool] = None):
     cuda
         whether to move to cuda. If None, torch.cuda.is_available() is used to determine that.
     """
-    if isinstance(cuda, (torch.nn.Module, torch.Tensor)):
+    if isinstance(cuda, (nn.Module, torch.Tensor)):
         cuda = is_on_cuda(cuda)
     if cuda or (cuda is None and torch.cuda.is_available()):
         x = x.cuda()

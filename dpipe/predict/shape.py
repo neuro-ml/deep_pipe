@@ -5,7 +5,7 @@ import numpy as np
 from dpipe.medim.axes import broadcast_to_axes, AxesLike, AxesParams
 from dpipe.medim.grid import divide, combine
 from dpipe.medim.itertools import extract
-from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape
+from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
 from dpipe.medim.utils import extract_dims
 from dpipe.predict.utils import add_dims
 
@@ -25,9 +25,8 @@ def add_extract_dims(n_add: int = 1, n_extract: int = None):
         n_extract = n_add
 
     def decorator(predict):
-        def wrapper(x):
-            x = add_dims(x, ndims=n_add)[0]
-            x = predict(x)
+        def wrapper(*x):
+            x = predict(*add_dims(*x, ndims=n_add))
             return extract_dims(x, n_extract)
 
         return wrapper
@@ -53,14 +52,14 @@ def divisible_shape(divisor: AxesLike, axes: AxesLike = None, padding_values: Un
 
     References
     ----------
-    `pad_to_shape`
+    `pad_to_divisible`
     """
-    axes, divisor, padding_values, ratio = broadcast_to_axes(axes, divisor, padding_values, ratio)
+    axes, divisor, ratio = broadcast_to_axes(axes, divisor, ratio)
 
     def decorator(predict):
         def wrapper(x):
             shape = np.array(x.shape)[list(axes)]
-            result = predict(pad_to_shape(x, shape + (divisor - shape) % divisor, axes, padding_values, ratio))
+            result = predict(pad_to_divisible(x, divisor, axes, padding_values, ratio))
             return crop_to_shape(result, shape, axes, ratio)
 
         return wrapper
@@ -68,8 +67,8 @@ def divisible_shape(divisor: AxesLike, axes: AxesLike = None, padding_values: Un
     return decorator
 
 
-def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None, padding_values: AxesParams = 0,
-                 ratio: AxesParams = 0.5):
+def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
+                 padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     predicted patches by averaging the overlapping regions.

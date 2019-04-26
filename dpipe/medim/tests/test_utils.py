@@ -4,8 +4,8 @@ from functools import partial
 import numpy as np
 
 from dpipe.layers import identity
-from dpipe.medim.preprocessing import normalize_multichannel_image, normalize_image
-from dpipe.medim.utils import pad, filter_mask, apply_along_axes, scale
+from dpipe.medim.preprocessing import normalize_multichannel_image, normalize_image, pad
+from dpipe.medim.utils import filter_mask, apply_along_axes, scale
 from dpipe.medim.itertools import zip_equal, flatten, extract, negate_indices, head_tail, peek
 
 
@@ -15,7 +15,7 @@ class TestPad(unittest.TestCase):
         padding = np.array(((0, 0), (1, 2), (2, 1)))
         padding_values = np.min(x, axis=(1, 2), keepdims=True)
 
-        y = pad(x, padding, padding_values)
+        y = pad(x, padding, padding_values=padding_values)
         np.testing.assert_array_equal(y, np.array([
             [
                 [0, 0, 0, 0, 0],

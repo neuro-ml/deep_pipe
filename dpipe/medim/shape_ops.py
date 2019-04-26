@@ -5,13 +5,13 @@ from scipy import ndimage
 
 from .box import Box
 from .itertools import extract
-from .axes import fill_by_indices, expand_axes, AxesLike, AxesParams
+from .axes import fill_by_indices, expand_axes, AxesLike, AxesParams, broadcast_to_axes
 from .utils import build_slices
 
 __all__ = [
     'zoom', 'zoom_to_shape', 'proportional_zoom_to_shape',
     'crop_to_shape', 'crop_to_box', 'restore_crop',
-    'pad', 'pad_to_shape',
+    'pad', 'pad_to_shape', 'pad_to_divisible',
 ]
 
 
@@ -100,8 +100,8 @@ def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None,
     padding = np.broadcast_to(padding, [x.ndim, 2])
 
     new_shape = np.array(x.shape) + np.sum(padding, axis=1)
-    new_x = np.zeros(new_shape, dtype=x.dtype)
-    new_x[:] = padding_values
+    new_x = np.array(padding_values, dtype=x.dtype)
+    new_x = np.broadcast_to(new_x, new_shape).copy()
 
     start = padding[:, 0]
     end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
@@ -126,15 +126,42 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
     ratio
         the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """
-    old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axes))
-    if (old_shape > new_shape).any():
-        raise ValueError(f'The resulting shape cannot be smaller than the original: {old_shape} vs {new_shape}')
+    axes, shape, ratio = broadcast_to_axes(axes, shape, ratio)
+    old_shape = np.array(x.shape)[list(axes)]
+    if (old_shape > shape).any():
+        shape = fill_by_indices(x.shape, shape, axes)
+        raise ValueError(f'The resulting shape cannot be smaller than the original: {x.shape} vs {shape}')
 
-    delta = new_shape - old_shape
+    delta = shape - old_shape
     start = (delta * ratio).astype(int)
     padding = np.array((start, delta - start)).T.astype(int)
+    return pad(x, padding, axes, padding_values=padding_values)
 
-    return pad(x, padding, padding_values=padding_values)
+
+def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axes: AxesLike = None,
+                     padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5):
+    """
+    Pads ``x`` to be divisible by ``divisor`` along the ``axes``.
+
+    Parameters
+    ----------
+    x
+    divisor
+        a value an incoming array should be divisible by.
+    axes
+        axes along which the array will be padded. If None - the last `len(divisor)` axes are used.
+    padding_values
+        values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
+    ratio
+        the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
+
+    References
+    ----------
+    `pad_to_shape`
+    """
+    axes, divisor, ratio = broadcast_to_axes(axes, divisor, ratio)
+    shape = np.array(x.shape)[list(axes)]
+    return pad_to_shape(x, shape + (divisor - shape) % divisor, axes, padding_values, ratio)
 
 
 def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
@@ -151,10 +178,12 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, ratio: 
     ratio
         the fraction of the crop that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """
+    axes, shape, ratio = broadcast_to_axes(axes, shape, ratio)
     old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axes))
     if (old_shape < new_shape).any():
         raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}')
 
+    ratio = fill_by_indices(np.zeros(x.ndim), ratio, axes)
     start = ((old_shape - new_shape) * ratio).astype(int)
     return x[build_slices(start, start + new_shape)]
 

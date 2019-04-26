@@ -1,4 +1,5 @@
 import os
+from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -24,11 +25,15 @@ class CSV(Dataset):
         the relative path to the csv dataframe.
     index_col
         the column that will be used as index. Must contain unique values.
+    loader
+        the function that loads a dataset entry given its path.
     """
 
-    def __init__(self, path: PathLike, filename: str = 'meta.csv', index_col: str = 'id'):
+    def __init__(self, path: PathLike, filename: str = 'meta.csv', index_col: str = 'id',
+                 loader: Callable = load_image):
         self.path = path
         self.filename = filename
+        self.loader = loader
 
         df = pd.read_csv(os.path.join(path, filename), encoding='utf-8')
         if index_col is not None:
@@ -51,8 +56,10 @@ class CSV(Dataset):
         """
         return os.path.join(self.path, self.get(index, col))
 
-    def load(self, index: str, col: str, loader=load_image):
+    def load(self, index: str, col: str, loader=None):
         """Load the value that is located at the path at corresponding ``index`` and ``col``."""
+        if loader is None:
+            loader = self.loader
         return loader(self.get_global_path(index, col))
 
     def __getattr__(self, item: str):

@@ -22,13 +22,13 @@ class TestGrid(unittest.TestCase):
         slices = tuple([slice(None)] + [slice(1, -1)] * 3)
         a1 = np.random.randn(*self.x_shape)
         a_parts = divide(a1, self.patch_size, self.stride)
-        a2 = combine([a[slices] for a in a_parts], result_shape)
+        a2 = combine([a[slices] for a in a_parts], result_shape, self.stride)
         np.testing.assert_equal(a1[slices], a2)
 
     def test_get_boxes_grid(self):
         shape = np.array((10, 15, 27, 3))
         box_size = (3, 3, 3, 3)
-        grid = np.stack(get_boxes(shape, box_size, stride=1))
+        grid = np.stack(list(get_boxes(shape, box_size, stride=1)))
         start, stop = grid[:, 0], grid[:, 1]
 
         self.assertEqual(np.prod(shape - box_size + 1), len(grid))

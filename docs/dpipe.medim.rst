@@ -145,7 +145,6 @@ Various utils
 
 .. automodule:: dpipe.medim.utils
     :members:
-    :undoc-members:
     :show-inheritance:
 
 Shape utils
@@ -153,5 +152,4 @@ Shape utils
 
 .. automodule:: dpipe.medim.shape_utils
     :members:
-    :undoc-members:
     :show-inheritance:

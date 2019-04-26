@@ -8,7 +8,7 @@ from .axes import expand_axes, fill_by_indices, AxesLike
 from .shape_utils import shape_after_full_convolution
 from .checks import check_len, check_shape_along_axis
 from .box import limit_box, get_box_padding, broadcast_box
-from .utils import build_slices, pad
+from .utils import build_slices, pad, lmap
 from .itertools import squeeze_first
 
 
@@ -56,5 +56,5 @@ def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike =
 @returns_box
 def get_random_box(shape: AxesLike, box_shape: AxesLike, axes: AxesLike = None):
     """Get a random box of shape ``box_shape`` that fits in the ``shape`` along the given ``axes``."""
-    start = np.stack(map(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
+    start = np.stack(lmap(np.random.randint, shape_after_full_convolution(shape, box_shape, axes)))
     return start, start + fill_by_indices(shape, box_shape, axes)

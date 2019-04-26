@@ -87,17 +87,18 @@ def pad_spatial_size(x, spatial_size: np.array):
     return pad(x, padding, np.min(x, axis=ndim2spatial_axes(ndim), keepdims=True))
 
 
+# deprecated: 20.04.2019
+@np.deprecate
 def trim_spatial_size(x, spatial_size):
     return x[(..., *build_slices(spatial_size))]
 
 
+@np.deprecate
 def pad_to_dividable(x, divisor, ndim=3):
-    """Pads `x`'s last `ndim` dimensions to be dividable by `divisor` and returns it."""
     spatial_shape = np.array(x.shape[-ndim:])
     return pad_spatial_size(x, spatial_size=spatial_shape + (divisor - spatial_shape) % divisor)
 
 
-# deprecated: 20.04.2019
 @np.deprecate
 def predict_input_parts(batch_iterator, *, predict):
     return map(predict, batch_iterator)

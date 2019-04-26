@@ -101,11 +101,8 @@ class Infinite(BatchIter):
         self.close()
 
 
-@np.deprecate
+@np.deprecate(message='Use `dpipe.batch_iter.Infinite` instead.')
 def make_infinite_batch_iter(source: Iterable, *transformers: Callable, batch_size: int, n_iters_per_epoch: int,
                              buffer_size: int = 3, combiner: Callable = combine_to_arrays):
-    """
-    This function is deprecated. Use `dpipe.batch_iter.Infinite` instead.
-    """
     return Infinite(source, *transformers, batch_size=batch_size, n_iters_per_epoch=n_iters_per_epoch,
                     buffer_size=buffer_size, combiner=combiner)

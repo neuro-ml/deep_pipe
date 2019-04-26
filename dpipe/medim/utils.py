@@ -31,7 +31,7 @@ def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
     begin = np.arange(len(other_axes))
 
     y = np.moveaxis(x, other_axes, begin)
-    result = np.stack(map(func, y.reshape(-1, *extract(x.shape, axes))))
+    result = np.stack(lmap(func, y.reshape(-1, *extract(x.shape, axes))))
     return np.moveaxis(result.reshape(*y.shape), begin, other_axes)
 
 

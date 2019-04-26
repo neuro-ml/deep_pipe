@@ -52,8 +52,6 @@ def multiply(func: Callable, *args, **kwargs):
     def wrapped(xs: Iterable) -> tuple:
         return tuple(func(x, *args, **kwargs) for x in xs)
 
-    name = getattr(func, '__name__', '`func`')
-    wrapped.__doc__ = f"Maps `{name}` over ``xs``."
     return wrapped
 
 
