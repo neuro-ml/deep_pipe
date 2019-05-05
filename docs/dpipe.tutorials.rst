@@ -7,3 +7,4 @@ Tutorials
     tutorials/wrappers
     tutorials/batch_iter
     tutorials/predict
+    tutorials/training

@@ -30,7 +30,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'DeepPipe'
-copyright = '2017, NeuroML Group'
+copyright = '2017-2019, NeuroML Group'
 author = 'NeuroML Group'
 # The short X.Y version.
 version = ''

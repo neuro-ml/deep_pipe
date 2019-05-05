@@ -1,3 +1,4 @@
+import warnings
 from typing import Callable, Union
 
 import numpy as np
@@ -22,13 +23,16 @@ def zoom(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: 
     Parameters
     ----------
     x
-    scale_factor:
+    scale_factor
     axes
         axes along which the tensor will be scaled. If None - the last `len(shape)` axes are used.
     order
         order of interpolation.
     """
-    return ndimage.zoom(x, fill_by_indices(np.ones(x.ndim), scale_factor, axes), order=order)
+    # remove an annoying warning
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', UserWarning)
+        return ndimage.zoom(x, fill_by_indices(np.ones(x.ndim, 'float64'), scale_factor, axes), order=order)
 
 
 def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: int = 1) -> np.ndarray:
@@ -48,7 +52,10 @@ def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: 
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(fill_by_indices(x.shape, shape, axes), 'float64')
 
-    return ndimage.zoom(x, new_shape / old_shape, order=order)
+    # remove an annoying warning
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', UserWarning)
+        return ndimage.zoom(x, new_shape / old_shape, order=order)
 
 
 def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None,

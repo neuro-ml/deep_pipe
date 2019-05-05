@@ -68,8 +68,14 @@ class Reshape(nn.Module):
     Parameters
     ----------
     shape
-        the final shape. String values denote indices in the input tensor's shape.
-        So, (1, '2', 3) will be interpreted as (1, input.shape[2], 3).
+        the resulting shape. String values denote indices in the input tensor's shape.
+
+    Examples
+    --------
+    >>> layer = Reshape('0', '1', 500, 500)
+    >>> layer(x)
+    >>> # same as
+    >>> x.reshape(x.shape[0], x.shape[1], 500, 500)
     """
 
     def __init__(self, *shape: Union[int, str]):
@@ -95,14 +101,14 @@ class InterpolateToInput(nn.Module):
 
     def forward(self, x):
         old_shape = x.shape[2:]
-        x = self.path(x)
         axes = expand_axes(self.axes, old_shape)
+        x = self.path(x)
         new_shape = list(x.shape[2:])
         for i in axes:
             new_shape[i] = old_shape[i]
 
         if np.not_equal(x.shape[2:], new_shape).any():
-            x = functional.upsample(x, size=new_shape, mode=self.mode)
+            x = functional.interpolate(x, size=new_shape, mode=self.mode)
         return x
 
 

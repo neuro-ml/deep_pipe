@@ -73,10 +73,10 @@ def train(do_train_step: Callable, batch_iter: BatchIter, logger: Logger = None,
 
     epoch = checkpoint_manager.restore()
 
-    with batch_iter:
+    with batch_iter as iterator:
         try:
             while True:
-                one_epoch(epoch, do_train_step, batch_iter, logger, validate, **policies)
+                one_epoch(epoch, do_train_step, iterator, logger, validate, **policies)
                 checkpoint_manager.save(epoch)
                 epoch += 1
 

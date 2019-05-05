@@ -34,7 +34,7 @@ def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_pa
                     exist_ok: bool = False, save: Callable = np.save):
     """
     Apply ``func`` to each id from ``ids`` and save each output to ``output_path`` using ``save``.
-    If ``exists_ok`` is True the existing files will be ignored, otherwise an exception is raised.
+    If ``exist_ok`` is True the existing files will be ignored, otherwise an exception is raised.
     """
     os.makedirs(output_path, exist_ok=exist_ok)
 
