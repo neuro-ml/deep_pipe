@@ -4,10 +4,7 @@ import numpy as np
 import torch.nn as nn
 
 from .structure import CenteredCrop
-
-
-def identity(x):
-    return x
+from dpipe.medim.utils import identity
 
 
 # TODO: This is like top notch bad

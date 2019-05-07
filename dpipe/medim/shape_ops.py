@@ -190,7 +190,8 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, ratio: 
     if (old_shape < new_shape).any():
         raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}')
 
-    ratio = fill_by_indices(np.zeros(x.ndim), ratio, axes)
+    ndim = len(x.shape)
+    ratio = fill_by_indices(np.zeros(ndim), ratio, axes)
     start = ((old_shape - new_shape) * ratio).astype(int)
     return x[build_slices(start, start + new_shape)]
 
