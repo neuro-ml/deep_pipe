@@ -46,21 +46,21 @@ class FPN(nn.Module):
 
     Parameters
     ----------
-    layer
+    layer: Callable
         the structural block of each level, e.g. ``torch.nn.Conv2d``.
-    downsample
+    downsample: nn.Module
         the downsampling layer, e.g. ``torch.nn.MaxPool2d``.
-    upsample
+    upsample: nn.Module
         the upsampling layer, e.g. ``torch.nn.Upsample``.
     merge: Callable(left, down)
         a function that merges the upsampled features map with the one coming from the left branch,
         e.g. ``torch.add``.
-    structure
+    structure: Sequence[Union[Sequence[int], nn.Module]]
         a collection of channels sequences, see Examples section for details.
-    last_level
+    last_level: bool
         If True only the result of the last level is returned (as in UNet),
         otherwise the results from all levels are returned (as in FPN).
-    args,kwargs
+    args, kwargs
         additional arguments passed to ``layer``.
 
     Examples

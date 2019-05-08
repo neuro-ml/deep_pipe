@@ -14,9 +14,9 @@ class PyramidPooling(nn.Module):
 
     Parameters
     ----------
-    pooling
+    pooling: Callable
         the pooling to be applied, e.g. ``torch.nn.functional.max_pool2d``.
-    levels
+    levels: int
         the number of pyramid levels, default is 1 which is the global pooling operation.
     """
 

@@ -2,3 +2,4 @@ __pycache__/
 *.log
 docs/_build/
 .idea/
+.ipynb_checkpoints/
