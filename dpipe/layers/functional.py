@@ -38,7 +38,7 @@ def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: fl
     weight
         a manual rescaling weight. Must be broadcastable to ``logits``.
     reduce
-        the reduction operation to be applied to the final loss. Defaults to `torch.mean`.
+        the reduction operation to be applied to the final loss. Defaults to ``torch.mean``.
         If None - no reduction will be performed.
     """
     if not (target.size() == logits.size()):
@@ -73,7 +73,7 @@ def linear_focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, ga
     weight
         a manual rescaling weight. Must be broadcastable to ``logits``.
     reduce
-        the reduction operation to be applied to the final loss. Defaults to `torch.mean`.
+        the reduction operation to be applied to the final loss. Defaults to ``torch.mean``.
         If None - no reduction will be performed.
     """
     loss = functional.binary_cross_entropy_with_logits(gamma * logits + beta, target, weight, reduction='none') / gamma

@@ -1,10 +1,8 @@
 import numpy as np
 from skimage.measure import label
 
-from .axes import expand_axes, AxesLike
-from .utils import apply_along_axes, scale as _scale
+from .axes import AxesLike
 
-# TODO: deprecated 14.01.2019
 from .shape_ops import *
 
 
@@ -42,7 +40,8 @@ def normalize_multichannel_image(image: np.ndarray, mean: bool = True, std: bool
 
 def min_max_scale(x: np.ndarray, axes: AxesLike = None) -> np.ndarray:
     """Scale ``x``'s values so that its minimum and maximum along ``axes`` become 0 and 1 respectively."""
-    return apply_along_axes(_scale, x, expand_axes(axes, x.shape))
+    x_min, x_max = x.min(axis=axes, keepdims=True), x.max(axis=axes, keepdims=True)
+    return (x - x_min) / (x_max - x_min)
 
 
 def describe_connected_components(mask: np.ndarray, background: int = 0, drop_background: bool = True):

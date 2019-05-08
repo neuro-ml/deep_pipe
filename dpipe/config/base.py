@@ -1,16 +1,16 @@
-import os
 import argparse
+from pathlib import Path
 
 from resource_manager import read_config, ResourceManager
 
-MODULES_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+MODULES_FOLDER = Path(__file__).resolve().parent
 SHORTCUTS = {
-    'dpipe_configs': os.path.join(MODULES_FOLDER, os.pardir, 'dpipe_configs'),
+    'dpipe_configs': MODULES_FOLDER.parent / 'dpipe_configs',
 }
 
 
 def get_resource_manager(source_path: str, shortcuts: dict = None, injections: dict = None) -> ResourceManager:
-    """Read and parse a config. See `resource_manager.read_config` for details."""
+    """Read and parse a config. See ``resource_manager.read_config`` for details."""
     return read_config(source_path, shortcuts={**SHORTCUTS, **(shortcuts or {})}, injections=injections)
 
 

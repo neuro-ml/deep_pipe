@@ -22,11 +22,3 @@ Functions
 .. automodule:: dpipe.predict.functional
     :members:
     :show-inheritance:
-
-Utils
------
-
-.. automodule:: dpipe.predict.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:

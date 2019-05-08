@@ -26,8 +26,3 @@ python -m dpipe build_experiment --config_path CONFIG_PATH --experiment_path EXP
 ```bash
 /path/to/deep_pipe/utils/run_experiment_seq.sh EXPERIMENT_PATH
 ```
-
-## Requirements
-
-Only Python 3.6 is supported for now.
-Other requirements are listed in `requirements.txt`.

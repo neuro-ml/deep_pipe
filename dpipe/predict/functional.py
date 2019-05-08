@@ -80,6 +80,8 @@ def postprocess(func, *args, **kwargs):
     return decorator
 
 
+# deprecated: 20.04.2019
+@np.deprecate
 def pad_spatial_size(x, spatial_size: np.array):
     ndim = len(spatial_size)
     padding = np.zeros((x.ndim, 2), dtype=int)
@@ -87,7 +89,6 @@ def pad_spatial_size(x, spatial_size: np.array):
     return pad(x, padding, np.min(x, axis=ndim2spatial_axes(ndim), keepdims=True))
 
 
-# deprecated: 20.04.2019
 @np.deprecate
 def trim_spatial_size(x, spatial_size):
     return x[(..., *build_slices(spatial_size))]

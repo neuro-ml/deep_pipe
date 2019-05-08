@@ -25,7 +25,7 @@ def zoom(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: 
     x
     scale_factor
     axes
-        axes along which the tensor will be scaled. If None - the last `len(shape)` axes are used.
+        axes along which the tensor will be scaled. If None - the last ``len(shape)`` axes are used.
     order
         order of interpolation.
     """
@@ -45,7 +45,7 @@ def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: 
     shape
         final shape.
     axes
-        axes along which the tensor will be scaled. If None - the last `len(shape)` axes are used.
+        axes along which the tensor will be scaled. If None - the last ``len(shape)`` axes are used.
     order
         order of interpolation.
     """
@@ -69,7 +69,7 @@ def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = 
     shape
         final shape.
     axes
-        axes along which ``x`` will be padded. If None - the last `len(shape)` axes are used.
+        axes along which ``x`` will be padded. If None - the last ``len(shape)`` axes are used.
     padding_values
         values to pad with.
     order
@@ -94,7 +94,7 @@ def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None,
     padding_values
         values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
     axes
-        axes along which ``x`` will be padded. If None - the last `len(padding)` axes are used.
+        axes along which ``x`` will be padded. If None - the last ``len(padding)`` axes are used.
     """
     padding = np.asarray(fill_by_indices(np.zeros((x.ndim, 2), dtype=int), np.atleast_2d(padding), axes))
     if (padding < 0).any():
@@ -129,7 +129,7 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
     padding_values
         values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
     axes
-        axes along which ``x`` will be padded. If None - the last `len(shape)` axes are used.
+        axes along which ``x`` will be padded. If None - the last ``len(shape)`` axes are used.
     ratio
         the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """
@@ -156,7 +156,7 @@ def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axes: AxesLike = None,
     divisor
         a value an incoming array should be divisible by.
     axes
-        axes along which the array will be padded. If None - the last `len(divisor)` axes are used.
+        axes along which the array will be padded. If None - the last ``len(divisor)`` axes are used.
     padding_values
         values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
     ratio
@@ -181,7 +181,7 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, ratio: 
     shape
         final shape.
     axes
-        axes along which ``x`` will be padded. If None - the last `len(shape)` axes are used.
+        axes along which ``x`` will be padded. If None - the last ``len(shape)`` axes are used.
     ratio
         the fraction of the crop that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """

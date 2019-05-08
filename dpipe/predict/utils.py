@@ -1,6 +1,7 @@
 import numpy as np
 
 
+@np.deprecate
 def add_dims(*data, ndims=1):
     """Increase the dimensionality of each entry in `data` by adding `ndim` leading singleton dimensions."""
     idx = (None,) * ndims

@@ -4,7 +4,7 @@ from .model import TorchModel
 from ..batch_iter.base import BatchIter, maybe_build_contextmanager
 from ..train.checkpoint import CheckpointManager
 from ..train.policy import Policy, ValuePolicy, NEpochs, Constant
-from ..train.logging import TBLogger
+from ..train.logging import TBLogger, Logger
 from ..train import train
 
 
@@ -31,7 +31,10 @@ def train_model(model: TorchModel, batch_iter: Union[BatchIter, Callable], n_epo
     """
     logger = checkpoint_manager = None
     if log_path is not None:
-        logger = TBLogger(log_path)
+        logger = log_path
+        if not isinstance(logger, Logger):
+            logger = TBLogger(log_path)
+
     if not isinstance(lr, ValuePolicy):
         lr = Constant(lr)
 

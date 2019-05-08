@@ -6,7 +6,6 @@ import torch.nn as nn
 from torch.nn import functional
 
 from dpipe.medim.axes import AxesLike, expand_axes
-from dpipe.medim.utils import name_changed
 
 
 class PyramidPooling(nn.Module):
@@ -16,7 +15,7 @@ class PyramidPooling(nn.Module):
     Parameters
     ----------
     pooling
-        the pooling to be applied, e.g. `torch.nn.functional.max_pool2d`.
+        the pooling to be applied, e.g. ``torch.nn.functional.max_pool2d``.
     levels
         the number of pyramid levels, default is 1 which is the global pooling operation.
     """
@@ -110,6 +109,3 @@ class InterpolateToInput(nn.Module):
         if np.not_equal(x.shape[2:], new_shape).any():
             x = functional.interpolate(x, size=new_shape, mode=self.mode)
         return x
-
-
-UpsampleToInput = name_changed(InterpolateToInput, 'UpsampleToInput', '16.03.2019')

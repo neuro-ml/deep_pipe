@@ -8,41 +8,43 @@ from dpipe.medim.shape_ops import crop_to_shape
 
 
 class PreActivation(nn.Module):
-    def __init__(self, n_chans_in, n_chans_out, *, kernel_size, stride=1, padding=0, bias=True,
-                 dilation=1, groups=1, batch_norm_module, activation_module=nn.ReLU, conv_module):
-        """
-        Performs a sequence of batch_norm, activation, and convolution.
+    """
+    Performs a sequence of batch_norm, activation, and convolution
+
         in -> (BN -> activation -> Conv) -> out
 
-        Parameters
-        ----------
-        n_chans_in: int
-            the number of incoming channels.
-        n_chans_out: int
-            the number of the ``PreActivation`` output channels.
-        kernel_size: int, tuple
-            size of the convolving kernel.
-        stride: int, tuple, optional
-            stride of the convolution. Default is 1.
-        padding: int, tuple, optional
-            zero-padding added to all spatial sides of the input. Default is 0.
-        dilation: int, tuple, optional
-            spacing between kernel elements. Default is 1.
-        groups: int, optional
-            number of blocked connections from input channels to output channels. Default is 1.
-        bias: bool
-            if ``True``, adds a learnable bias to the output. Default is ``False``
-        batch_norm_module: nn.Module
-            module to build up batch normalization layer, e.g. ``torch.nn.BatchNorm3d``.
-        activation_module: nn.Module
-            module to build up activation layer. Default is ``torch.nn.ReLU``.
-        conv_module: nn.Module
-            module to build up convolution layer with given parameters, e.g. ``torch.nn.Conv3d``.
-        """
+    Parameters
+    ----------
+    n_chans_in: int
+        the number of incoming channels.
+    n_chans_out: int
+        the number of the ``PreActivation`` output channels.
+    kernel_size: int, tuple
+        size of the convolving kernel.
+    stride: int, tuple, optional
+        stride of the convolution. Default is 1.
+    padding: int, tuple, optional
+        zero-padding added to all spatial sides of the input. Default is 0.
+    dilation: int, tuple, optional
+        spacing between kernel elements. Default is 1.
+    groups: int, optional
+        number of blocked connections from input channels to output channels. Default is 1.
+    bias: bool
+        if ``True``, adds a learnable bias to the output. Default is ``False``
+    batch_norm_module: nn.Module
+        module to build up batch normalization layer, e.g. ``torch.nn.BatchNorm3d``.
+    activation_module: nn.Module
+        module to build up activation layer. Default is ``torch.nn.ReLU``.
+    conv_module: nn.Module
+        module to build up convolution layer with given parameters, e.g. ``torch.nn.Conv3d``.
+    """
+
+    def __init__(self, n_chans_in, n_chans_out, *, kernel_size, stride=1, padding=0, bias=True,
+                 dilation=1, groups=1, batch_norm_module, activation_module=nn.ReLU, conv_module):
         super().__init__()
         self.bn = batch_norm_module(num_features=n_chans_in)
         self.activation = activation_module()
-        self.conv = conv_module(in_channels=n_chans_in, out_channels=n_chans_out, kernel_size=kernel_size,
+        self.conv = conv_module(n_chans_in, n_chans_out, kernel_size=kernel_size,
                                 stride=stride, padding=padding, dilation=dilation, bias=bias, groups=groups)
 
     def forward(self, x):
@@ -50,37 +52,39 @@ class PreActivation(nn.Module):
 
 
 class PostActivation(nn.Module):
-    def __init__(self, n_chans_in, n_chans_out, *, kernel_size, stride=1, padding=0, dilation=1, groups=1,
-                 conv_module, batch_norm_module, activation_module=nn.ReLU):
-        """
-        Performs a sequence of convolution, batch_norm and activation.
+    """
+    Performs a sequence of convolution, batch_norm and activation:
+
         in -> (Conv -> BN -> activation) -> out
 
-        Parameters
-        ----------
-        n_chans_in: int
-            the number of incoming channels.
-        n_chans_out: int
-            the number of the ``PostActivation`` output channels.
-        kernel_size: int, tuple
-            size of the convolving kernel.
-        stride: int, tuple, optional
-            stride of the convolution. Default is 1.
-        padding: int, tuple, optional
-            zero-padding added to all spatial sides of the input. Default is 0.
-        dilation: int, tuple, optional
-            spacing between kernel elements. Default is 1.
-        groups: int, optional
-            number of blocked connections from input channels to output channels. Default is 1.
-        batch_norm_module: nn.Module
-            module to build up batch normalization layer, e.g. ``torch.nn.BatchNorm3d``.
-        activation_module: nn.Module
-            module to build up activation layer. Default is ``torch.nn.ReLU``.
-        conv_module: nn.Module
-            module to build up convolution layer with given parameters, e.g. ``torch.nn.Conv3d``.
-        """
+    Parameters
+    ----------
+    n_chans_in: int
+        the number of incoming channels.
+    n_chans_out: int
+        the number of the ``PostActivation`` output channels.
+    kernel_size: int, tuple
+        size of the convolving kernel.
+    stride: int, tuple, optional
+        stride of the convolution. Default is 1.
+    padding: int, tuple, optional
+        zero-padding added to all spatial sides of the input. Default is 0.
+    dilation: int, tuple, optional
+        spacing between kernel elements. Default is 1.
+    groups: int, optional
+        number of blocked connections from input channels to output channels. Default is 1.
+    batch_norm_module: nn.Module
+        module to build up batch normalization layer, e.g. ``torch.nn.BatchNorm3d``.
+    activation_module: nn.Module
+        module to build up activation layer. Default is ``torch.nn.ReLU``.
+    conv_module: nn.Module
+        module to build up convolution layer with given parameters, e.g. ``torch.nn.Conv3d``.
+    """
+
+    def __init__(self, n_chans_in, n_chans_out, *, kernel_size, stride=1, padding=0, dilation=1, groups=1,
+                 conv_module, batch_norm_module, activation_module=nn.ReLU):
         super().__init__()
-        self.conv = conv_module(in_channels=n_chans_in, out_channels=n_chans_out, kernel_size=kernel_size,
+        self.conv = conv_module(n_chans_in, n_chans_out, kernel_size=kernel_size,
                                 stride=stride, padding=padding, dilation=dilation, bias=False, groups=groups)
         self.bn = batch_norm_module(num_features=n_chans_out)
         self.activation = activation_module()
@@ -90,41 +94,43 @@ class PostActivation(nn.Module):
 
 
 class ResBlock(nn.Module):
-    def __init__(self, n_chans_in, n_chans_out, *, kernel_size, stride=1, padding=0, dilation=1, bias=False,
-                 activation_module=nn.ReLU, conv_module, batch_norm_module):
-        """
-        Performs a sequence of two convolutions with residual connection (Residual Block).
+    """
+    Performs a sequence of two convolutions with residual connection (Residual Block).
 
+    ..
         in ---> (BN --> activation --> Conv) --> (BN --> activation --> Conv) -- + --> out
             |                                                                    ^
             |                                                                    |
              --------------------------------------------------------------------
 
-        Parameters
-        ----------
-        n_chans_in: int
-            the number of incoming channels.
-        n_chans_out: int
-            the number of the `ResBlock` output channels.
-            Note, if ``n_chans_in`` != ``n_chans_out``, then linear transform will be applied to the shortcut.
-        kernel_size: int, tuple
-            size of the convolving kernel.
-        stride: int, tuple, optional
-            stride of the convolution. Default is 1.
-            Note, if stride is greater than 1, then linear transform will be applied to the shortcut.
-        padding: int, tuple, optional
-            zero-padding added to all spatial sides of the input. Default is 0.
-        dilation: int, tuple, optional
-            spacing between kernel elements. Default is 1.
-        bias: bool
-            if ``True``, adds a learnable bias to the output. Default is ``False``.
-        activation_module: None, nn.Module, optional
-            module to build up activation layer.  Default is ``torch.nn.ReLU``.
-        conv_module: nn.Module
-            module to build up convolution layer with given parameters, e.g. ``torch.nn.Conv3d``.
-        batch_norm_module: nn.Module
-            module to build up batch normalization layer, e.g. ``torch.nn.BatchNorm3d``.
-        """
+    Parameters
+    ----------
+    n_chans_in: int
+        the number of incoming channels.
+    n_chans_out: int
+        the number of the `ResBlock` output channels.
+        Note, if ``n_chans_in`` != ``n_chans_out``, then linear transform will be applied to the shortcut.
+    kernel_size: int, tuple
+        size of the convolving kernel.
+    stride: int, tuple, optional
+        stride of the convolution. Default is 1.
+        Note, if stride is greater than 1, then linear transform will be applied to the shortcut.
+    padding: int, tuple, optional
+        zero-padding added to all spatial sides of the input. Default is 0.
+    dilation: int, tuple, optional
+        spacing between kernel elements. Default is 1.
+    bias: bool
+        if ``True``, adds a learnable bias to the output. Default is ``False``.
+    activation_module: None, nn.Module, optional
+        module to build up activation layer.  Default is ``torch.nn.ReLU``.
+    conv_module: nn.Module
+        module to build up convolution layer with given parameters, e.g. ``torch.nn.Conv3d``.
+    batch_norm_module: nn.Module
+        module to build up batch normalization layer, e.g. ``torch.nn.BatchNorm3d``.
+    """
+
+    def __init__(self, n_chans_in, n_chans_out, *, kernel_size, stride=1, padding=0, dilation=1, bias=False,
+                 activation_module=nn.ReLU, conv_module, batch_norm_module):
         super().__init__()
         # ### Features path ###
         pre_activation = partial(

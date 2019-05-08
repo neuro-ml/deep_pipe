@@ -3,7 +3,6 @@ Dataset
 
 .. automodule:: dpipe.dataset
     :members:
-    :undoc-members:
     :show-inheritance:
 
 Interfaces
@@ -18,12 +17,10 @@ Helpers
 
 .. automodule:: dpipe.dataset.csv
     :members:
-    :undoc-members:
     :show-inheritance:
 
 .. automodule:: dpipe.dataset.dicom
     :members:
-    :undoc-members:
     :show-inheritance:
 
 Wrappers
@@ -31,5 +28,4 @@ Wrappers
 
 .. automodule:: dpipe.dataset.wrappers
     :members:
-    :undoc-members:
     :show-inheritance:

@@ -1,10 +1,13 @@
 from functools import partial
+from warnings import warn
 
 import numpy as np
 import torch.nn as nn
 
 from .structure import CenteredCrop
 from dpipe.medim.utils import identity
+
+warn('This module is deprecated and will be deleted soon. Use `dpipe.layers.resblock` instead.', DeprecationWarning)
 
 
 # TODO: This is like top notch bad

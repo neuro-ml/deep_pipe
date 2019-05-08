@@ -8,12 +8,11 @@ Layers
     :members:
     :show-inheritance:
 
-ConvBlocks
-----------
+Residual Blocks
+---------------
 
-.. automodule:: dpipe.layers.block
+.. automodule:: dpipe.layers.resblock
     :members:
-    :undoc-members:
     :show-inheritance:
 
 Structure
@@ -21,7 +20,6 @@ Structure
 
 .. automodule:: dpipe.layers.structure
     :members:
-    :undoc-members:
     :show-inheritance:
 
 Functions
@@ -29,5 +27,4 @@ Functions
 
 .. automodule:: dpipe.layers.functional
     :members:
-    :undoc-members:
     :show-inheritance:

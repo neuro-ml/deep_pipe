@@ -1,8 +1,6 @@
 import numpy as np
 from sklearn.model_selection import KFold, ShuffleSplit, GroupShuffleSplit
 
-from dpipe.medim.utils import name_changed
-
 
 class ShuffleGroupKFold(KFold):
     def split(self, *, X, groups):
@@ -45,6 +43,3 @@ def split_train(splits, val_size, groups=None, **kwargs):
 def indices_to_ids(splits, ids):
     """Converts split indices to subject IDs"""
     return [[[ids[i] for i in ids_group] for ids_group in split] for split in splits]
-
-
-indices_to_subj_ids = name_changed(indices_to_ids, 'indices_to_subj_ids', '12.02.2019')

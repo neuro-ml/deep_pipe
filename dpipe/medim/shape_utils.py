@@ -32,6 +32,26 @@ def broadcast_shape(x_shape, y_shape):
     return tuple(map(max, x_shape, y_shape))
 
 
+def extract_dims(array, ndim=1):
+    """Decrease the dimensionality of ``array`` by extracting ``ndim`` leading singleton dimensions."""
+    for _ in range(ndim):
+        assert len(array) == 1
+        array = array[0]
+    return array
+
+
+def prepend_dims(array, ndim=1):
+    """Increase the dimensionality of ``array`` by adding ``ndim`` leading singleton dimensions."""
+    idx = (None,) * ndim
+    return np.asarray(array)[idx]
+
+
+def append_dims(array, ndim=1):
+    """Increase the dimensionality of ``array`` by adding ``ndim`` singleton dimensions to the end of its shape."""
+    idx = (...,) + (None,) * ndim
+    return np.asarray(array)[idx]
+
+
 def shape_after_convolution(shape: AxesLike, kernel_size: AxesLike, stride: AxesLike = 1, padding: AxesLike = 0,
                             dilation: AxesLike = 1, valid: bool = True) -> tuple:
     """Get the shape of a tensor after applying a convolution with corresponding parameters."""

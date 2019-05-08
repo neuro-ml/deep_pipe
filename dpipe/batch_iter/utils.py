@@ -30,7 +30,7 @@ def unpack_args(func: Callable, *args, **kwargs):
     >>> def add(x, y):
     >>>     return x + y
     >>>
-    >>> add_ = unpack_args(f)
+    >>> add_ = unpack_args(add)
     >>> add(1, 2) == add_([1, 2])
     >>> True
     """

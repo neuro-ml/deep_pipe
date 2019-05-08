@@ -4,6 +4,7 @@ import inspect
 from .axes import check_axes, AxesLike
 from .checks import check_len
 from .itertools import *
+from .shape_utils import *
 
 
 def identity(x):
@@ -16,16 +17,14 @@ def decode_segmentation(x, segm_decoding_matrix) -> np.array:
 
 
 # TODO: weaken the restriction to same ndim
-def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
+def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike, *args, **kwargs):
     """
     Apply ``func`` to slices from ``x`` taken along ``axes``.
+    ``args`` and ``kwargs`` are passed as additional arguments.
 
-    Parameters
-    ----------
-    func
-         function to apply. Note that both the input and output must have the same shape.
-    x
-    axes
+    Notes
+    -----
+    ``func`` must return an array of the same shape as it received.
     """
     axes = check_axes(axes)
     if len(axes) == x.ndim:
@@ -35,16 +34,8 @@ def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike):
     begin = np.arange(len(other_axes))
 
     y = np.moveaxis(x, other_axes, begin)
-    result = np.stack(lmap(func, y.reshape(-1, *extract(x.shape, axes))))
+    result = np.stack([func(patch, *args, **kwargs) for patch in y.reshape(-1, *extract(x.shape, axes))])
     return np.moveaxis(result.reshape(*y.shape), begin, other_axes)
-
-
-def extract_dims(array, ndim=1):
-    """Decrease the dimensionality of ``array`` by extracting ``ndim`` leading singleton dimensions."""
-    for _ in range(ndim):
-        assert len(array) == 1
-        array = array[0]
-    return array
 
 
 def build_slices(start: Sequence[int], stop: Sequence[int] = None) -> Tuple[slice, ...]:
@@ -65,6 +56,7 @@ def build_slices(start: Sequence[int], stop: Sequence[int] = None) -> Tuple[slic
     return tuple(map(slice, start))
 
 
+@np.deprecate
 def scale(x):
     x_min, x_max = x.min(), x.max()
     return (x - x_min) / (x_max - x_min)
@@ -77,7 +69,6 @@ def bytescale(x):
 
 # TODO: doc
 def makedirs_top(path, mode=0o777, exist_ok=False):
-    """Creates a parent folder if any. See `os.makedirs` for details."""
     folder = os.path.dirname(path)
     if folder:
         os.makedirs(folder, mode, exist_ok)

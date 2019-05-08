@@ -7,7 +7,7 @@ from dpipe.medim.grid import divide, combine
 from dpipe.medim.itertools import extract
 from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
 from dpipe.medim.utils import extract_dims
-from dpipe.predict.utils import add_dims
+from dpipe.medim.shape_utils import prepend_dims
 
 
 def add_extract_dims(n_add: int = 1, n_extract: int = None):
@@ -25,8 +25,8 @@ def add_extract_dims(n_add: int = 1, n_extract: int = None):
         n_extract = n_add
 
     def decorator(predict):
-        def wrapper(*x):
-            x = predict(*add_dims(*x, ndims=n_add))
+        def wrapper(*xs):
+            x = predict(*[prepend_dims(x, ndim=n_add) for x in xs])
             return extract_dims(x, n_extract)
 
         return wrapper
@@ -44,9 +44,9 @@ def divisible_shape(divisor: AxesLike, axes: AxesLike = None, padding_values: Un
     divisor
         a value an incoming array should be divisible by.
     axes
-        axes along which the array will be padded. If None - the last `len(divisor)` axes are used.
+        axes along which the array will be padded. If None - the last ``len(divisor)`` axes are used.
     padding_values
-        values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
+        values to pad with. If Callable (e.g. ``numpy.min``) - ``padding_values(x)`` will be used.
     ratio
         the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
 
