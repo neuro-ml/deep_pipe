@@ -1,6 +1,7 @@
 """Functions that build prediction pipeline. Each prepares input in certain way, predicts and then fixes output.
 So nearly all functions receive `predict` argument."""
 from functools import partial
+from warnings import warn
 
 import numpy as np
 
@@ -10,6 +11,9 @@ from dpipe.medim import grid
 from dpipe.medim.checks import check_len
 from .functional import trim_spatial_size, pad_to_dividable
 from .utils import add_dims
+
+# 09.05.2019
+warn('This module is deprecated and will be deleted soon.', DeprecationWarning)
 
 
 def add_remove_first_dims(*inputs, predict, ndim=1):

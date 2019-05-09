@@ -8,3 +8,4 @@ Tutorials
     tutorials/batch_iter
     tutorials/predict
     tutorials/training
+    tutorials/dicom

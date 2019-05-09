@@ -6,8 +6,7 @@ from dpipe.medim.axes import broadcast_to_axes, AxesLike, AxesParams
 from dpipe.medim.grid import divide, combine
 from dpipe.medim.itertools import extract
 from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
-from dpipe.medim.utils import extract_dims
-from dpipe.medim.shape_utils import prepend_dims
+from dpipe.medim.shape_utils import prepend_dims, extract_dims
 
 
 def add_extract_dims(n_add: int = 1, n_extract: int = None):

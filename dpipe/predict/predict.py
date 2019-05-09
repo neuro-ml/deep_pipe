@@ -1,4 +1,5 @@
 from functools import partial
+from warnings import warn
 
 import numpy as np
 
@@ -6,6 +7,9 @@ from .pipe import pad_trim_last_dims_to_dividable, add_remove_first_dims, divide
 from .functional import predict_input_parts
 
 predict_network = add_remove_first_dims
+
+# 09.05.2019
+warn('This module is deprecated and will be deleted soon.', DeprecationWarning)
 
 
 def predict_dividable(x, predict, divisor, ndim=3):

@@ -1,6 +1,9 @@
-"""Functions to work with boxes: immutable numpy arrays of shape (start, stop) that represent borders of the rectangle.
-Left is inclusive, right is non-inclusive, so this box can be used as `build_slices(box[0], box[1])`.
- All boxes are immutable."""
+"""
+Functions to work with boxes: immutable numpy arrays of shape (2, n) which represent
+the coordinates of the upper left and lower right corners of an n-dimensional rectangle.
+
+In slicing operations, as everywhere in Python, the left corner is inclusive, and the right one is non-inclusive.
+"""
 import itertools
 from functools import wraps
 from typing import Callable

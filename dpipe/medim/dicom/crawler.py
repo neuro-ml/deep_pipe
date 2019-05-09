@@ -71,30 +71,14 @@ def get_file_meta(path: PathLike) -> dict:
     return result
 
 
-def files_to_df(folder: PathLike, files: Iterable[PathLike]) -> pd.DataFrame:
-    result = []
-    for file in files:
-        entry = get_file_meta(jp(folder, file))
-        entry['PathToFolder'] = folder
-        entry['FileName'] = file
-        result.append(entry)
-
-    return pd.DataFrame(result)
-
-
-def folder_to_df(path):
-    for root, _, files in os.walk(path):
-        return files_to_df(root, files)
-
-
-def walk_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), verbose: bool = True):
+def walk_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), relative: bool = True, verbose: bool = True):
     for extension in ignore_extensions:
         if not extension.startswith('.'):
             raise ValueError(f'Each extension must start with a dot: "{extension}".')
 
     def walker():
         for root_, _, files_ in os.walk(top, onerror=_throw):
-            files_ = [file for file in files_ if not any(file.endswith(ext) for ext in ignore_extensions)]
+            files_ = [file_ for file_ in files_ if not any(file_.endswith(ext) for ext in ignore_extensions)]
             if files_:
                 yield root_, files_
 
@@ -103,13 +87,22 @@ def walk_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), verbos
         iterator = tqdm(iterator)
 
     for root, files in iterator:
-        relative = os.path.relpath(root, top)
+        rel_path = os.path.relpath(root, top)
         if verbose:
-            iterator.set_description(relative)
-        yield relative, files_to_df(root, files)
+            iterator.set_description(rel_path)
+
+        result = []
+        for file in files:
+            entry = get_file_meta(jp(root, file))
+            entry['PathToFolder'] = rel_path if relative else root
+            entry['FileName'] = file
+            result.append(entry)
+
+        yield rel_path, pd.DataFrame(result)
 
 
-def join_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), verbose: bool = True) -> pd.DataFrame:
+def join_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), relative: bool = False,
+                    verbose: bool = True) -> pd.DataFrame:
     """
     Returns a dataframe containing metadata for each file in all the subfolders of ``top``.
 
@@ -117,6 +110,8 @@ def join_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), verbos
     ----------
     top
     ignore_extensions
+    relative
+        whether the ``PathToFolder`` attribute should be relative to ``top``.
     verbose
         whether to display a `tqdm` progressbar.
 
@@ -132,4 +127,4 @@ def join_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), verbos
     For some formats the following packages might be required:
         >>> conda install -c clinicalgraphics gdcm
     """
-    return pd.concat(map(itemgetter(1), walk_dicom_tree(top, ignore_extensions, verbose)))
+    return pd.concat(map(itemgetter(1), walk_dicom_tree(top, ignore_extensions, relative, verbose))).reset_index()

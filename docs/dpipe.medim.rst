@@ -44,7 +44,6 @@ Box
 
 .. automodule:: dpipe.medim.box
     :members:
-    :undoc-members:
     :show-inheritance:
 
 Grid splitters

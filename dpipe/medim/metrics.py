@@ -7,6 +7,12 @@ from scipy.ndimage.morphology import distance_transform_edt, binary_erosion
 from .checks import add_check_bool, add_check_shapes, check_shapes, check_bool
 from .utils import zip_equal
 
+__all__ = [
+    'dice_score', 'sensitivity', 'specificity', 'precision', 'recall', 'assd', 'hausdorff_distance',
+    'cross_entropy_with_logits',
+    'convert_to_aggregated',
+]
+
 
 def fraction(numerator, denominator, empty_val: float = 1):
     assert numerator <= denominator, f'{numerator}, {denominator}'
@@ -29,6 +35,24 @@ def sensitivity(y_true, y_pred):
 @add_check_shapes
 def specificity(y_true, y_pred):
     return fraction(np.sum(y_pred & y_true), np.sum(y_pred), empty_val=0)
+
+
+@add_check_bool
+@add_check_shapes
+def recall(y_true, y_pred):
+    tp = np.count_nonzero(np.logical_and(y_pred, y_true))
+    fn = np.count_nonzero(np.logical_and(~y_pred, y_true))
+
+    return fraction(tp, tp + fn, 0)
+
+
+@add_check_bool
+@add_check_shapes
+def precision(y_true, y_pred):
+    tp = np.count_nonzero(y_pred & y_true)
+    fp = np.count_nonzero(y_pred & ~y_true)
+
+    return fraction(tp, tp + fp, 0)
 
 
 def get_area(start, stop):
@@ -64,24 +88,6 @@ def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn: Callable =
         key_prefix + key: partial(aggregate_metric, metric=metric, aggregate_fn=aggregate_fn)
         for key, metric in metrics.items()
     }
-
-
-@add_check_bool
-@add_check_shapes
-def recall(y_true, y_pred):
-    tp = np.count_nonzero(np.logical_and(y_pred, y_true))
-    fn = np.count_nonzero(np.logical_and(~y_pred, y_true))
-
-    return fraction(tp, tp + fn, 0)
-
-
-@add_check_bool
-@add_check_shapes
-def precision(y_true, y_pred):
-    tp = np.count_nonzero(y_pred & y_true)
-    fp = np.count_nonzero(y_pred & ~y_true)
-
-    return fraction(tp, tp + fp, 0)
 
 
 def surface_distances(y_true, y_pred, voxel_shape=None):

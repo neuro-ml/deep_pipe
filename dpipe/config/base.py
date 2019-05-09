@@ -3,7 +3,7 @@ from pathlib import Path
 
 from resource_manager import read_config, ResourceManager
 
-MODULES_FOLDER = Path(__file__).resolve().parent
+MODULES_FOLDER = Path(__file__).resolve().parent.parent
 SHORTCUTS = {
     'dpipe_configs': MODULES_FOLDER.parent / 'dpipe_configs',
 }

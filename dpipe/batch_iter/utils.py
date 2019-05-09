@@ -35,8 +35,8 @@ def unpack_args(func: Callable, *args, **kwargs):
     >>> True
     """
 
-    def wrapper(arguments):
-        return func(*arguments, *args, **kwargs)
+    def wrapper(xs, *args_, **kwargs_):
+        return func(*xs, *args_, *args, **kwargs_, **kwargs)
 
     return wrapper
 
@@ -49,8 +49,8 @@ def multiply(func: Callable, *args, **kwargs):
     ``args`` and ``kwargs`` are passed to ``func`` as additional arguments.
     """
 
-    def wrapped(xs: Iterable) -> tuple:
-        return tuple(func(x, *args, **kwargs) for x in xs)
+    def wrapped(xs: Iterable, *args_, **kwargs_) -> tuple:
+        return tuple(func(x, *args_, *args, **kwargs_, **kwargs) for x in xs)
 
     return wrapped
 
@@ -69,13 +69,13 @@ def apply_at(index: AxesLike, func: Callable, *args, **kwargs):
     """
     index = set(np.atleast_1d(index).tolist())
 
-    def wrapped(xs: Sequence) -> tuple:
+    def wrapped(xs: Sequence, *args_, **kwargs_) -> tuple:
         index_ = {i + len(xs) if i < 0 else i for i in index}
         for idx in index_:
             if idx < 0 or idx >= len(xs):
                 raise IndexError(f'Index {idx} out of bounds.')
 
-        return tuple(func(x, *args, **kwargs) if i in index_ else x for i, x in enumerate(xs))
+        return tuple(func(x, *args_, *args, **kwargs_, **kwargs) if i in index_ else x for i, x in enumerate(xs))
 
     return wrapped
 
@@ -87,9 +87,31 @@ def random_apply(p: float, func: Callable, *args, **kwargs):
     ``args`` and ``kwargs`` are passed to ``func`` as additional arguments.
     """
 
-    def wrapped(x):
+    def wrapped(x, *args_, **kwargs_):
         if np.random.binomial(1, p):
-            x = func(x, *args, **kwargs)
+            x = func(x, *args_, *args, **kwargs_, **kwargs)
         return x
+
+    return wrapped
+
+
+def sample_args(func: Callable, *args: Callable, **kwargs: Callable):
+    """
+    Returns a function that samples arguments for ``func`` from ``args`` and ``kwargs``.
+
+    Each argument in ``args`` and ``kwargs`` must be a callable that samples a random value.
+
+    Examples
+    --------
+    >>> from scipy.ndimage import  rotate
+    >>>
+    >>> random_rotate = sample_args(rotate, angle=np.random.normal)
+    >>> random_rotate(x)
+    >>> # same as
+    >>> rotate(x, angle=np.random.normal())
+    """
+
+    def wrapped(x, *args_, **kwargs_):
+        return func(x, *args_, *([arg() for arg in args]), **kwargs_, **{name: arg() for name, arg in kwargs.items()})
 
     return wrapped

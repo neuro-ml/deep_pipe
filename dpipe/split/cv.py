@@ -31,7 +31,7 @@ def train_val_test_split(ids, *, val_size, n_splits, random_state=42):
     ids
     val_size: float, int
         If float, should be between 0.0 and 1.0 and represents the proportion
-        of the `train set` to include in the validation set. If int, represents the
+        of the ``train set`` to include in the validation set. If int, represents the
         absolute number of validation samples.
     n_splits: int
         the number of cross-validation folds
@@ -61,7 +61,7 @@ def group_train_val_test_split(ids, groups: np.array, *, val_size, n_splits, ran
     groups: np.array[int]
     val_size: float, int
         If float, should be between 0.0 and 1.0 and represents the proportion
-        of the `train set` to include in the validation set. If int, represents the
+        of the ``train set`` to include in the validation set. If int, represents the
         absolute number of validation samples.
     n_splits: int
         the number of cross-validation folds
