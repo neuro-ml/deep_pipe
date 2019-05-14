@@ -61,7 +61,7 @@ The batch iterators are covered in a separate tutorial
     
     batch_iter = Infinite(
         load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids),
-        batch_size=100, n_iters_per_epoch=2000,
+        batch_size=100, batches_per_epoch=2000,
     )
 
 Training the model

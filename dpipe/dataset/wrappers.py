@@ -5,7 +5,7 @@ See the :doc:`tutorials/wrappers` tutorial for more details.
 import functools
 from os.path import join as jp
 from itertools import chain
-from types import MethodType
+from types import MethodType, FunctionType
 from typing import Sequence, Callable, Iterable
 from collections import ChainMap, namedtuple
 
@@ -33,7 +33,7 @@ class Proxy:
 
 def _get_public_methods(instance):
     for attr in dir(instance):
-        if not attr.startswith('_') and isinstance(getattr(instance, attr), MethodType):
+        if not attr.startswith('_') and isinstance(getattr(instance, attr), (MethodType, FunctionType)):
             yield attr
 
 

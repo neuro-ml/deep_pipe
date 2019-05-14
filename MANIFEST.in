@@ -1,2 +1,3 @@
 include *.md
 recursive-include dpipe *.py
+recursive-include dpipe_configs *

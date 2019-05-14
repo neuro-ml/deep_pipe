@@ -7,7 +7,7 @@ from dpipe.batch_iter.pipeline import Infinite
 class TestSimple(unittest.TestCase):
     @staticmethod
     def pipeline(source, iters=1, transformers=()):
-        return Infinite(source, *transformers, batch_size=1, n_iters_per_epoch=iters, buffer_size=1)
+        return Infinite(source, *transformers, batch_size=1, batches_per_epoch=iters, buffer_size=1)
 
     def test_elements(self):
         p = self.pipeline(repeat([1, 2]), 1)

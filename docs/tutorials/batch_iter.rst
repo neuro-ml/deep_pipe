@@ -28,7 +28,7 @@ dataset:
     
     batch_iter = Infinite(
         load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids),
-        batch_size=30, n_iters_per_epoch=10,
+        batch_size=30, batches_per_epoch=10,
     )
 
 ``load_by_random_id`` infinitely yields data randomly sampled from the
@@ -108,7 +108,7 @@ Or you can use it as a context manager:
 
     batch_iter = Infinite(
         load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids),
-        batch_size=30, n_iters_per_epoch=10,
+        batch_size=30, batches_per_epoch=10,
     )
 
 .. code-block:: python3
@@ -151,7 +151,7 @@ Let’s add more transformations to the data.
         load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids), # yields pairs
         zoom_image, # zoom the images by a factor of 2
         
-        batch_size=30, n_iters_per_epoch=3,
+        batch_size=30, batches_per_epoch=3,
     )
 
 .. code-block:: python3
@@ -185,14 +185,14 @@ there are a number of wrappers for transformers:
         load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids),
         unpack_args(zoom_image), # unpack the arguments before calling the function
         
-        batch_size=30, n_iters_per_epoch=3)
+        batch_size=30, batches_per_epoch=3)
     
     # or use a lambda directly
     batch_iter = Infinite(
         load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids),
         unpack_args(lambda image, label: [zoom(image, scale_factor=[2, 2]), label]),
         
-        batch_size=30, n_iters_per_epoch=3)
+        batch_size=30, batches_per_epoch=3)
 
 However, there is still redundancy: the ``label`` argument is simply
 passed through, only the ``image`` is transformed. Let’s fix that:
@@ -205,7 +205,7 @@ passed through, only the ``image`` is transformed. Let’s fix that:
         load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids),
         apply_at(0, zoom, scale_factor=[2, 2]),
         
-        batch_size=30, n_iters_per_epoch=3)
+        batch_size=30, batches_per_epoch=3)
 
 .. code-block:: python3
 
