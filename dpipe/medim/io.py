@@ -54,9 +54,9 @@ def load_experiment_test_pred(identifier, experiment_path):
         raise FileNotFoundError('No prediction found')
 
 
-def load_image(path: PathLike):
+def load_by_ext(path: PathLike) -> np.ndarray:
     """
-    Load an image located at ``path``.
+    Load a file located at ``path``.
     The following extensions are supported:
         npy, tif, hdr, img, nii, nii.gz
     """
@@ -72,7 +72,7 @@ def load_image(path: PathLike):
     if path.endswith(('.png', '.jpg')):
         from imageio import imread
         return imread(path)
-    raise ValueError(f"Couldn't read image from path: {path}. Unknown file extension.")
+    raise ValueError(f"Couldn't read file from path: {path}. Unknown file extension.")
 
 
 def load_json(path: PathLike):
@@ -145,3 +145,4 @@ class ConsoleArguments:
 
 
 dump_json = name_changed(save_json, 'dump_json', '04.04.2019')
+load_image = name_changed(load_by_ext, 'load_image', '14.05.2019')

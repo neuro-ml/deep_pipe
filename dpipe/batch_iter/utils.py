@@ -16,7 +16,10 @@ def pad_batch_equal(batch, padding_values: AxesParams = 0, ratio: AxesParams = 0
     `pad_to_shape`
     """
     max_shapes = np.max(lmap(np.shape, batch), axis=0)
-    return np.array([pad_to_shape(x, max_shapes, padding_values=padding_values, ratio=ratio) for x in batch])
+    # if not scalars
+    if max_shapes.size != 0:
+        batch = [pad_to_shape(x, max_shapes, padding_values=padding_values, ratio=ratio) for x in batch]
+    return np.array(batch)
 
 
 def unpack_args(func: Callable, *args, **kwargs):

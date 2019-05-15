@@ -4,7 +4,7 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from dpipe.medim import load_image
+from dpipe.medim import load_by_ext
 from dpipe.medim.io import PathLike
 from .base import Dataset
 
@@ -30,7 +30,7 @@ class CSV(Dataset):
     """
 
     def __init__(self, path: PathLike, filename: str = 'meta.csv', index_col: str = 'id',
-                 loader: Callable = load_image):
+                 loader: Callable = load_by_ext):
         self.path = path
         self.filename = filename
         self.loader = loader

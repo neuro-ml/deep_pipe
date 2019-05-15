@@ -6,4 +6,4 @@ from . import patch
 from . import grid
 from . import shape_utils
 from . import features
-from .io import load_image
+from .io import load_by_ext
