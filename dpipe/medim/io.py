@@ -54,22 +54,24 @@ def load_experiment_test_pred(identifier, experiment_path):
         raise FileNotFoundError('No prediction found')
 
 
-def load_by_ext(path: PathLike) -> np.ndarray:
+def load_by_ext(path: PathLike):
     """
     Load a file located at ``path``.
     The following extensions are supported:
         npy, tif, hdr, img, nii, nii.gz
     """
-    if path.endswith('.npy'):
+    name = Path(path).name
+
+    if name.endswith('.npy'):
         return np.load(path)
-    if path.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
+    if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel as nib
         return nib.load(path).get_data()
-    if path.endswith('.tif'):
+    if name.endswith('.tif'):
         from PIL import Image
         with Image.open(path) as image:
             return np.asarray(image)
-    if path.endswith(('.png', '.jpg')):
+    if name.endswith(('.png', '.jpg')):
         from imageio import imread
         return imread(path)
     raise ValueError(f"Couldn't read file from path: {path}. Unknown file extension.")
