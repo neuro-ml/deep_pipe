@@ -38,7 +38,7 @@ def _get_public_methods(instance):
 
 
 def cache_methods(instance, methods: Iterable[str] = None, maxsize: int = None):
-    """Cache the ``instance``'s ``methods``. If ``methods`` is None - all public methods will be cached."""
+    """Cache the ``instance``'s ``methods``. If ``methods`` is None, all public methods will be cached."""
     if methods is None:
         methods = _get_public_methods(instance)
 
@@ -55,10 +55,12 @@ def cache_methods_to_disk(instance, base_path: str, **methods: str):
     Parameters
     ----------
     instance
-    base_path
-    methods
-         each keyword argument has the form ``method_name=path_to_cache``, the path is relative to ``base_path``.
-         The methods are assumed to take a single argument of type `str`.
+        arbitrary object
+    base_path: str
+        the path, all other paths of ``methods`` relative to.
+    methods: str
+        each keyword argument has the form ``method_name=path_to_cache``.
+        The methods are assumed to take a single argument of type ``str``.
 
     Notes
     -----
@@ -90,7 +92,8 @@ def apply(instance, **methods: Callable):
     Parameters
     ----------
     instance
-    methods
+        arbitrary object
+    methods: Callable
         each keyword argument has the form ``method_name=func_to_apply``.
         ``func_to_apply`` is applied to the ``method_name`` method.
 
@@ -119,6 +122,7 @@ def set_attributes(instance, **attributes):
     Parameters
     ----------
     instance
+        arbitrary object
     attributes
         each keyword argument has the form ``attr_name=attr_value``.
     """
@@ -133,9 +137,11 @@ def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = (
 
     Parameters
     ----------
-    dataset
+    dataset: Dataset
+        the dataset to perform ids changing on.
     change_id: Callable(str) -> str
-    methods
+        the method which allows change ids. Output ids should be unique as well as old ids.
+    methods: Iterable[str]
         the list of methods to be adapted. Each method takes a single argument - the identifier.
     """
     assert 'ids' not in methods
@@ -203,12 +209,14 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None, attributes: Sequenc
 
     Parameters
     ----------
-    datasets
-    methods
-        the list of methods to be preserved. Each method must have the identifier as its first argument.
-        If None all the common methods will be preserved.
-    attributes
-        the list of attributes to be preserved. For each dataset their values must coincide.
+    datasets: Dataset
+        sequence of datasets.
+    methods: Sequence[str], None, optional
+        the list of methods to be preserved. Each method should take an identifier as its first argument.
+        If ``None``, all the common methods will be preserved.
+    attributes: Sequence[str]
+        the list of attributes to be preserved. For each dataset their values should be the same.
+        Default is the empty sequence ``()``.
     """
     if methods is None:
         methods = set(_get_public_methods(datasets[0]))
@@ -240,14 +248,47 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None, attributes: Sequenc
     return Merged(*chain([ids], map(decorator, methods), preserved_attributes))
 
 
-def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,
+def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = -1,
                mask_value: int = None) -> SegmentationDataset:
+    """
+    Applies the ``mask_modality_id`` modality as the binary mask to the other modalities
+    and remove the mask from sequence of modalities.
+
+    Parameters
+    ----------
+    dataset: SegmentationDataset
+        dataset which is used in the current task.
+    mask_modality_id: int
+        the index of mask in the sequence of modalities.
+        Default is ``-1``, which means the last modality will be used as the mask.
+    mask_value: int, None, optional
+        the value in the mask to filter other modalities with.
+        If ``None``, greater than zero filtering will be applied. Default is ``None``.
+
+    Examples
+    --------
+    >>> modalities = ['flair', 't1', 'brain_mask']  # we are to apply brain mask to other modalities
+    >>> target = 'target'
+    >>>
+    >>> dataset = apply_mask(
+    >>>     dataset=Wmh2017(
+    >>>         data_path=data_path,
+    >>>         modalities=modalities,
+    >>>         target=target
+    >>>     ),
+    >>>     mask_modality_id=-1,
+    >>>     mask_value=1
+    >>> )
+    """
     class MaskedDataset(Proxy):
         def load_image(self, patient_id):
             images = self._shadowed.load_image(patient_id)
             mask = images[mask_modality_id]
-            mask_bin = (mask > 0 if mask_value is None else mask == mask_value)
-            assert np.sum(mask_bin) > 0, 'The obtained mask is empty'
+
+            mask_bin = mask > 0 if mask_value is None else mask == mask_value
+            if not np.sum(mask_bin) > 0:
+                raise ValueError('The obtained mask is empty')
+
             images = [image * mask for image in images[:-1]]
             return np.array(images)
 
@@ -255,4 +296,4 @@ def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = None,
         def n_chans_image(self):
             return self._shadowed.n_chans_image - 1
 
-    return dataset if mask_modality_id is None else MaskedDataset(dataset)
+    return MaskedDataset(dataset)
