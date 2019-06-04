@@ -8,7 +8,7 @@ from ..medim.axes import AxesParams
 from .base import BatchIter
 from .utils import pad_batch_equal
 
-__all__ = 'Infinite', 'combine_batches', 'combine_to_arrays', 'combine_pad', 'make_infinite_batch_iter'
+__all__ = 'Infinite', 'combine_batches', 'combine_to_arrays', 'combine_pad'
 
 
 def combine_batches(inputs):
@@ -110,10 +110,3 @@ class Infinite(BatchIter):
 
     def __del__(self):
         self.close()
-
-
-@np.deprecate(message='Use `dpipe.batch_iter.Infinite` instead.')
-def make_infinite_batch_iter(source: Iterable, *transformers: Callable, batch_size: int, n_iters_per_epoch: int,
-                             buffer_size: int = 3, combiner: Callable = combine_to_arrays):
-    return Infinite(source, *transformers, batch_size=batch_size, batches_per_epoch=n_iters_per_epoch,
-                    buffer_size=buffer_size, combiner=combiner)
