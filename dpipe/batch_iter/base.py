@@ -84,9 +84,11 @@ class BatchIterSlicer(BatchIter):
         return self.infinite_batch_iter.__exit__(exc_type, exc_val, exc_tb)
 
 
+@np.deprecate(message='Use `dpipe.batch_iter.base.BatchIterRepeater` instead.')  # 04.06.19
 def make_batch_iter_from_finite(get_batch_iter):
     return BatchIterRepeater(get_batch_iter)
 
 
+@np.deprecate(message='Use `dpipe.batch_iter.base.BatchIterSlicer` instead.')  # 04.06.19
 def make_batch_iter_from_infinite(get_batch_iter, n_iters_per_epoch):
     return BatchIterSlicer(get_batch_iter, n_iters_per_epoch)

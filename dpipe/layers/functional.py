@@ -1,27 +1,8 @@
-from typing import Union, Callable, Sequence
+from typing import Union, Callable
 
 import torch
-from torch import nn
 from torch.nn import functional
-
-
-def make_consistent_seq(layer: Callable, channels: Sequence[int], *args, **kwargs):
-    """
-    Builds a sequence of layers that have consistent input and output channels/features.
-
-    ``args`` and ``kwargs`` are passed as additional parameters.
-
-    Examples
-    --------
-    >>> make_consistent_seq(nn.Conv2d, [16, 32, 64, 128], kernel_size=3, padding=1)
-    >>> # same as
-    >>> nn.Sequential(
-    >>>     nn.Conv2d(16, 32, kernel_size=3, padding=1),
-    >>>     nn.Conv2d(32, 64, kernel_size=3, padding=1),
-    >>>     nn.Conv2d(64, 128, kernel_size=3, padding=1),
-    >>> )
-    """
-    return nn.Sequential(*(layer(in_, out, *args, **kwargs) for in_, out in zip(channels, channels[1:])))
+from .structure import make_consistent_seq
 
 
 def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: float = 2, weight: torch.Tensor = None,
