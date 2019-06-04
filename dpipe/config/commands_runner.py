@@ -88,19 +88,5 @@ def lock_experiment_dir(filename='.lock'):
         Path(filename).touch(exist_ok=False)
         atexit.register(os.remove, filename)
     else:
-        text = f'Running experiment from {os.path.abspath("./")}, but the directory is already locked! Exit is called!'
-        text_len = len(text)
-        filler = '#' * text_len
-        message = '\n'.join([
-            '\n' * 4,
-            filler,
-            filler,
-            filler,
-            text,
-            filler,
-            filler,
-            filler,
-            '\n' * 4,
-        ])
-        print(message, flush=True)
-        raise EnvironmentError('Directory is locked.')
+        text = f'Running experiment from {os.path.abspath("./")}, but the directory is already locked. Exit is called.'
+        raise EnvironmentError(text)

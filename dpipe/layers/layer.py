@@ -66,7 +66,7 @@ class Reshape(nn.Module):
 
     Parameters
     ----------
-    shape
+    shape: Union[int, str]
         the resulting shape. String values denote indices in the input tensor's shape.
 
     Examples
@@ -88,11 +88,21 @@ class Reshape(nn.Module):
 
 class InterpolateToInput(nn.Module):
     """
-    Interpolates the result of ``path`` to the original shape along the ``axes``.
-    If ``axes`` is None - the result is interpolated along all the axes.
+    Interpolates the result of ``path`` to the original shape along the spatial ``axes``.
+
+    Parameters
+    ----------
+    path: nn.Module
+        arbitrary neural network module to calculate the result.
+    mode: str
+        algorithm used for upsampling in `functional.interpolate`.
+        Should be one of 'nearest' | 'linear' | 'bilinear' | 'trilinear' | 'area'. Default is 'nearest'.
+    axes: AxesLike, None, optional
+        spatial axes to interpolate result along.
+        If ``axes`` is ``None``, the result is interpolated along all the spatial axes.
     """
 
-    def __init__(self, path: nn.Module, mode='nearest', axes: AxesLike = None):
+    def __init__(self, path: nn.Module, mode: str = 'nearest', axes: AxesLike = None):
         super().__init__()
         self.axes = axes
         self.path = path
