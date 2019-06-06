@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Callable, Union, Sequence
 
 import numpy as np
 import torch
@@ -7,7 +7,6 @@ from torch.nn import functional
 
 from dpipe.medim.utils import build_slices, pam
 from dpipe.medim.axes import AxesLike, expand_axes
-from .fpn import FPN
 
 
 def make_consistent_seq(layer: Callable, channels: Sequence[int], *args, **kwargs):

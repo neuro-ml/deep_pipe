@@ -2,6 +2,8 @@ from abc import abstractmethod, ABC
 from itertools import islice
 from contextlib import contextmanager
 
+import numpy as np
+
 __all__ = ['BatchIter', 'make_batch_iter_from_finite', 'make_batch_iter_from_infinite']
 
 
