@@ -58,15 +58,6 @@ def make_block_sample_uniformly(box_size, spatial_dims):
     return pdp.One2One(sample, buffer_size=DEFAULT_BUFFER_SIZE)
 
 
-def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_size, y_patch_size, buffer_size=10):
-    check_len(x_patch_size, y_patch_size)
-
-    return pdp.Pipeline(*make_init_blocks(ids, load_x, load_y),
-                        make_block_sample_uniformly(y_patch_size, spatial_dims=SPATIAL_DIMS),
-                        make_block_extract_patches(x_patch_size, y_patch_size, spatial_dims=SPATIAL_DIMS),
-                        *make_batch_blocks(batch_size, buffer_size=buffer_size))
-
-
 def find_nonzero_3d(y):
     if len(y.shape) == 3:
         mask = y > 0
@@ -105,5 +96,17 @@ def make_patch_3d_strat_iter(ids, load_x, load_y, *, batch_size, x_patch_size, y
     return pdp.Pipeline(*make_init_blocks(ids, load_x, load_y),
                         make_block_find_nonzero(),
                         make_block_sample_stratified(nonzero_fraction, y_patch_size, spatial_dims=SPATIAL_DIMS),
+                        make_block_extract_patches(x_patch_size, y_patch_size, spatial_dims=SPATIAL_DIMS),
+                        *make_batch_blocks(batch_size, buffer_size=buffer_size))
+
+
+@np.deprecate(
+    message='Use `dpipe.batch_iter.patch_3d.make_patch_3d_strat_iter` with `nonzero_fraction=0` instead.'
+)  # 04.06.19
+def make_patch_3d_iter(ids, load_x, load_y, *, batch_size, x_patch_size, y_patch_size, buffer_size=10):
+    check_len(x_patch_size, y_patch_size)
+
+    return pdp.Pipeline(*make_init_blocks(ids, load_x, load_y),
+                        make_block_sample_uniformly(y_patch_size, spatial_dims=SPATIAL_DIMS),
                         make_block_extract_patches(x_patch_size, y_patch_size, spatial_dims=SPATIAL_DIMS),
                         *make_batch_blocks(batch_size, buffer_size=buffer_size))

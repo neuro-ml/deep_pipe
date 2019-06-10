@@ -10,21 +10,22 @@ def flat(split: Iterable[Sequence], config_path: PathLike, experiment_path: Path
          prefixes: Sequence[str] = ('train', 'val', 'test')):
     """
     Generates an experiment with a 'flat' structure.
-    For each entry of ``split`` a subdirectory of ``experiment_path``
-    containing the corresponding identifiers is created.
+    Creates a subdirectory of ``experiment_path`` for the each entry of ``split``.
+    The subdirectory contains corresponding structure of identifiers.
 
     Also, the config file from ``config_path`` is copied to ``experiment_path/resources.config``.
 
     Parameters
     ----------
-    split
+    split: Iterable[Sequence]
         an iterable with groups of ids.
-    config_path
+    config_path: PathLike
         the path to the config file.
-    experiment_path
+    experiment_path: PathLike
         the path where the experiment will be created.
-    prefixes
+    prefixes: Sequence[str]
         the corresponding prefixes for each identifier group of ``split``.
+        Default is ``('train', 'val', 'test')``.
 
     Examples
     --------

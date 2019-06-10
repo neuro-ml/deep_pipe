@@ -8,7 +8,7 @@ from .checks import add_check_bool, add_check_shapes, check_shapes, check_bool
 from .utils import zip_equal
 
 __all__ = [
-    'dice_score', 'sensitivity', 'specificity', 'precision', 'recall', 'assd', 'hausdorff_distance',
+    'dice_score', 'sensitivity', 'specificity', 'precision', 'recall', 'iou', 'assd', 'hausdorff_distance',
     'cross_entropy_with_logits',
     'convert_to_aggregated',
 ]
@@ -53,6 +53,12 @@ def precision(y_true, y_pred):
     fp = np.count_nonzero(y_pred & ~y_true)
 
     return fraction(tp, tp + fp, 0)
+
+
+@add_check_bool
+@add_check_shapes
+def iou(x: np.ndarray, y: np.ndarray) -> float:
+    return fraction(np.sum(x & y), np.sum(x | y))
 
 
 def get_area(start, stop):

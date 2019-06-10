@@ -19,14 +19,14 @@ class CSV(Dataset):
 
     Parameters
     ----------
-    path
-        the path relative to which the data is located.
-    filename
-        the relative path to the csv dataframe.
-    index_col
-        the column that will be used as index. Must contain unique values.
-    loader
-        the function that loads a dataset entry given its path.
+    path: PathLike
+        the path to the data.
+    filename: str
+        the relative path to the csv dataframe. Default is ``meta.csv``.
+    index_col: str, None, optional
+        the column that will be used as index. Must contain unique values. Default is ``id``.
+    loader: Callable
+        the function to load an object by the path located in a corresponding dataset entry. Default is `load_by_ext`.
     """
 
     def __init__(self, path: PathLike, filename: str = 'meta.csv', index_col: str = 'id',
@@ -46,18 +46,18 @@ class CSV(Dataset):
         self.ids = tuple(self.df.index)
 
     def get(self, index, col):
+        """Returns dataframe element from ``index`` and ``col``."""
         return self.df.loc[index, col]
 
     def get_global_path(self, index: str, col: str) -> str:
         """
         Get the global path at ``index`` and ``col``.
-        Often data frames contain path to data, this is a convenient way to obtain
-        the global path.
+        Often data frames contain path to data, this is a convenient way to obtain the global path.
         """
         return os.path.join(self.path, self.get(index, col))
 
     def load(self, index: str, col: str, loader=None):
-        """Load the value that is located at the path at corresponding ``index`` and ``col``."""
+        """Loads the object from the path located in ``index`` and ``col`` positions in dataframe."""
         if loader is None:
             loader = self.loader
         return loader(self.get_global_path(index, col))
