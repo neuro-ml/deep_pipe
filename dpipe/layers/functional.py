@@ -1,8 +1,12 @@
+from warnings import warn
 from typing import Union, Callable
 
 import torch
 from torch.nn import functional
 from .structure import make_consistent_seq
+
+
+warn('This module will be moved to `dpipe.torch.functional` soon.', DeprecationWarning)  # 11.06.19
 
 
 def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: float = 2, weight: torch.Tensor = None,
@@ -13,7 +17,7 @@ def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: fl
     Parameters
     ----------
     logits: torch.Tensor
-        tensor of arbitrary shape.
+        tensor of an arbitrary shape.
     target: torch.Tensor
         tensor of the same shape as ``logits``.
     gamma: float
@@ -23,6 +27,10 @@ def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: fl
     reduce: Callable, None, optional
         the reduction operation to be applied to the final loss. Defaults to ``torch.mean``.
         If ``None`` - no reduction will be performed.
+
+    References
+    ----------
+    https://arxiv.org/abs/1708.02002
     """
     if not (target.size() == logits.size()):
         raise ValueError("Target size ({}) must be the same as logits size ({})".format(target.size(), logits.size()))
@@ -51,20 +59,86 @@ def linear_focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, ga
     Parameters
     ----------
     logits: torch.Tensor
-        tensor of arbitrary shape.
+        tensor of an arbitrary shape.
     target: torch.Tensor
         tensor of the same shape as ``logits``.
     gamma: float
         multiplication coefficient for ``logits`` tensor.
     beta: float
         coefficient to be added to all the elements in ``logits`` tensor.
-    weight
+    weight: torch.Tensor
         a manual rescaling weight. Must be broadcastable to ``logits``.
-    reduce
+    reduce: Callable, None, optional
         the reduction operation to be applied to the final loss. Defaults to ``torch.mean``.
         If None - no reduction will be performed.
+
+    References
+    ----------
+        https://arxiv.org/abs/1708.02002
     """
     loss = functional.binary_cross_entropy_with_logits(gamma * logits + beta, target, weight, reduction='none') / gamma
     if reduce is not None:
         loss = reduce(loss)
     return loss
+
+
+def bce_with_logits(logit, target, weight=None, alpha=1., ad_pos_weight=False,
+                    reduce: Union[Callable, None] = torch.mean):
+    """
+    Function that measures Binary Cross Entropy between target and output logits.
+    This version of BCE has additional options of constant or adaptive weighting of positive examples.
+
+    Parameters
+    ----------
+    logit: torch.Tensor
+        tensor of an arbitrary shape.
+    target: torch.Tensor
+        tensor of the same shape as ``logits``.
+    weight: torch.Tensor
+        a manual rescaling weight. Must be broadcastable to ``logits``.
+    alpha: float, optional
+        a weight for the positive class examples.
+    ad_pos_weight: bool, optional
+        If ``True``, uses adaptive weight ``[N - sum(p_i)] / sum(p_i)`` for a positive class examples.
+    reduce: Callable, None, optional
+        the reduction operation to be applied to the final loss. Defaults to ``torch.mean``.
+        If None - no reduction will be performed.
+
+    References
+    ----------
+        WCE - https://arxiv.org/abs/1707.03237
+    """
+    if not (target.size() == logit.size()):
+        raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))
+
+    if ad_pos_weight:
+        pos_weight = alpha * (logit.numel() - (torch.sigmoid(logit)).sum()) / (torch.sigmoid(logit)).sum()
+    else:
+        pos_weight = alpha
+
+    max_val = - logit.clamp(min=0)
+    loss = - pos_weight * target * (logit + max_val - (max_val.exp() + (logit + max_val).exp()).log()) \
+           + (1 - target) * (-max_val + (max_val.exp() + (logit + max_val).exp()).log())
+
+    if weight is not None:
+        loss = loss * weight
+    if reduce is not None:
+        loss = reduce(loss)
+    return loss
+
+
+def dice_loss_with_logits(logit, target):
+    """The function of Dice Loss given in https://arxiv.org/abs/1606.04797"""
+    if not (target.size() == logit.size()):
+        raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))
+
+    preds = torch.sigmoid(logit)
+
+    sum_dims = [-i for i in range(logit.dim() - 1, 0, -1)]
+
+    dice = 2 * torch.sum(preds * target, dim=sum_dims) \
+           / (torch.sum(preds ** 2, dim=sum_dims) + torch.sum(target ** 2, dim=sum_dims))
+
+    loss = 1 - dice
+
+    return loss.mean()

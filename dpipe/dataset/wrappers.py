@@ -82,9 +82,6 @@ def cache_methods_to_disk(instance, base_path: str, **methods: str):
     return proxy(instance)
 
 
-cache_segmentation_dataset = functools.partial(cache_methods, methods=['load_image', 'load_segm'])
-
-
 def apply(instance, **methods: Callable):
     """
     Applies a given function to the output of a given method.
