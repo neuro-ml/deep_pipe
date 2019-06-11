@@ -1,12 +1,11 @@
 import numpy as np
 
 from dpipe.dataset import CSV
-from dpipe.dataset.base import ImageDataset
 from dpipe.medim.dicom import load_series
 from dpipe.medim.io import PathLike
 
 
-class DICOMDataset(CSV, ImageDataset):
+class DICOMDataset(CSV):
     """
     A loader for DICOM series.
     All the metadata is stored at ``filename`` and the DICOM files are located relative to ``path``.
@@ -24,7 +23,6 @@ class DICOMDataset(CSV, ImageDataset):
     ----------
     `aggregate_images`, `CSV`
     """
-
     def __init__(self, path: PathLike, filename: str, index_col: str = 'PatientID'):
         super().__init__(path, filename, index_col)
 

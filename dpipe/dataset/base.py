@@ -1,8 +1,6 @@
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta
 from functools import wraps
 from typing import Tuple
-
-import numpy as np
 
 
 class AbstractAttribute:
@@ -52,28 +50,4 @@ class Dataset(metaclass=ABCAttributesMeta):
     ids: Tuple[str] = AbstractAttribute
 
 
-class ImageDataset(Dataset):
-    """Abstract class that describes a dataset containing images."""
-    n_chans_image: int = AbstractAttribute
-
-    @abstractmethod
-    def load_image(self, identifier: str) -> np.ndarray:
-        """Loads a dataset entry given its ``identifier``."""
-
-
-class SegmentationDataset(ImageDataset):
-    """Abstract class that describes a dataset for image segmentation."""
-
-    @abstractmethod
-    def load_segm(self, identifier: str) -> np.ndarray:
-        """Load the ground truth segmentation for ``identifier``."""
-
-
-class ClassificationDataset(ImageDataset):
-    """Abstract class that describes a dataset for classification."""
-
-    n_classes: int = AbstractAttribute
-
-    @abstractmethod
-    def load_label(self, identifier: str) -> int:
-        """Loads a dataset entry's label given its ``identifier``"""
+ClassificationDataset = SegmentationDataset = ImageDataset = Dataset

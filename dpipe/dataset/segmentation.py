@@ -1,10 +1,10 @@
 import numpy as np
 
 from .csv import CSV, multiple_columns
-from .base import SegmentationDataset
+from .base import Dataset
 
 
-class MultichannelSegmentationFromCSV(CSV, SegmentationDataset):
+class MultichannelSegmentationFromCSV(CSV, Dataset):
     def __init__(self, data_path, modalities, targets, metadata_rpath, index_col='id'):
         super().__init__(data_path, metadata_rpath, index_col)
         self.modality_cols = modalities

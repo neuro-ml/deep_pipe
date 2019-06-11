@@ -77,7 +77,7 @@ def box_iou(a_start_stop, b_start_stop):
 @np.deprecate
 def multichannel_dice_score(a, b) -> [float]:
     """
-    Channelwise dice score between two binary masks.
+    Channel-wise dice score between two binary masks.
     The first dimension of the tensors is assumed to be the channels.
     """
     assert len(a) == len(b), f'number of channels is different: {len(a)} != {len(b)}'
