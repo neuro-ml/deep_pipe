@@ -52,8 +52,10 @@ def aggregate_images(metadata: pd.DataFrame, process_series: Callable = None) ->
             res['InstanceNumbers'] = ','.join(map(_remove_dots, entry.InstanceNumber))
         except (ValueError, TypeError):
             res['InstanceNumbers'] = None
+        if 'SliceLocation' in entry:
+            res['SliceLocations'] = ','.join(entry.SliceLocation.astype(str))
 
-        return res.drop(['InstanceNumber', 'FileName'], 1, errors='ignore')
+        return res.drop(['InstanceNumber', 'FileName', 'SliceLocation'], 1, errors='ignore')
 
     group_by = list(REQUIRED_FIELDS)
     group_by.extend(set(metadata) & {'SequenceName'})

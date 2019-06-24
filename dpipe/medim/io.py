@@ -58,7 +58,7 @@ def load_by_ext(path: PathLike):
     """
     Load a file located at ``path``.
     The following extensions are supported:
-        npy, tif, hdr, img, nii, nii.gz
+        npy, tif, hdr, img, nii, nii.gz, json
     """
     name = Path(path).name
 
@@ -74,6 +74,9 @@ def load_by_ext(path: PathLike):
     if name.endswith(('.png', '.jpg')):
         from imageio import imread
         return imread(path)
+    if name.endswith('.json'):
+        return load_json(path)
+
     raise ValueError(f"Couldn't read file from path: {path}. Unknown file extension.")
 
 

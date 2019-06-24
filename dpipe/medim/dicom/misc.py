@@ -25,10 +25,15 @@ def get_orientation_matrix(metadata: Union[pd.Series, pd.DataFrame]):
     return result
 
 
-def get_orientation_axis(row: pd.Series):
-    m = get_orientation_matrix(row)
-    assert not np.isnan(m).any()
-    return np.abs(m).argmax(axis=0)[2]
+def get_orientation_axis(metadata: Union[pd.Series, pd.DataFrame]):
+    """Required columns: ImageOrientationPatient[0-5]"""
+    m = get_orientation_matrix(metadata)
+    matrix = np.atleast_3d(m)
+    result = np.array([np.nan if np.isnan(row).any() else np.abs(row).argmax(axis=0)[2] for row in matrix])
+
+    if m.ndim == 2:
+        result = extract_dims(result)
+    return result
 
 
 def restore_orientation_matrix(metadata: Union[pd.Series, pd.DataFrame]):
