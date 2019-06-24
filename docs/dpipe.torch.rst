@@ -13,6 +13,14 @@ Model wrapper
     :members:
     :show-inheritance:
 
+
+Loss functions
+--------------
+
+.. automodule:: dpipe.torch.functional
+    :members:
+    :show-inheritance:
+
 Utils
 -----
 

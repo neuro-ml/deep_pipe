@@ -1,17 +1,17 @@
 NN Layers
 =========
 
-Layers
-------
-
-.. automodule:: dpipe.layers.layer
-    :members:
-    :show-inheritance:
-
 Residual Blocks
 ---------------
 
 .. automodule:: dpipe.layers.resblock
+    :members:
+    :show-inheritance:
+
+FPN
+---
+
+.. automodule:: dpipe.layers.fpn
     :members:
     :show-inheritance:
 
@@ -22,9 +22,15 @@ Structure
     :members:
     :show-inheritance:
 
-Functions
----------
 
-.. automodule:: dpipe.layers.functional
+.. automodule:: dpipe.layers.conv
+    :members:
+    :show-inheritance:
+
+
+Shape Operations
+----------------
+
+.. automodule:: dpipe.layers.shape
     :members:
     :show-inheritance:

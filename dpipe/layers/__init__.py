@@ -1,5 +1,8 @@
-from .resblock import *
+# basic operations
 from .structure import *
-from .layer import *
-from .functional import *
+from .shape import *
+from .conv import *
+
+# complex stuff
+from .resblock import *
 from .fpn import *

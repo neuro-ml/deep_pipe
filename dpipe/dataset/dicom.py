@@ -23,6 +23,7 @@ class DICOMDataset(CSV):
     ----------
     `aggregate_images`, `CSV`
     """
+
     def __init__(self, path: PathLike, filename: str, index_col: str = 'PatientID'):
         super().__init__(path, filename, index_col)
 

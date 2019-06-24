@@ -3,7 +3,7 @@ from typing import Callable, Iterable, Sequence
 import numpy as np
 
 from dpipe.medim.axes import AxesLike, AxesParams
-from dpipe.medim.itertools import lmap
+from dpipe.medim.itertools import lmap, squeeze_first
 from dpipe.medim.preprocessing import pad_to_shape
 
 
@@ -90,10 +90,10 @@ def random_apply(p: float, func: Callable, *args, **kwargs):
     ``args`` and ``kwargs`` are passed to ``func`` as additional arguments.
     """
 
-    def wrapped(x, *args_, **kwargs_):
+    def wrapped(*args_, **kwargs_):
         if np.random.binomial(1, p):
-            x = func(x, *args_, *args, **kwargs_, **kwargs)
-        return x
+            return func(*args_, *args, **kwargs_, **kwargs)
+        return squeeze_first(args_)
 
     return wrapped
 
@@ -114,7 +114,7 @@ def sample_args(func: Callable, *args: Callable, **kwargs: Callable):
     >>> rotate(x, angle=np.random.normal())
     """
 
-    def wrapped(x, *args_, **kwargs_):
-        return func(x, *args_, *([arg() for arg in args]), **kwargs_, **{name: arg() for name, arg in kwargs.items()})
+    def wrapped(*args_, **kwargs_):
+        return func(*args_, *([arg() for arg in args]), **kwargs_, **{name: arg() for name, arg in kwargs.items()})
 
     return wrapped

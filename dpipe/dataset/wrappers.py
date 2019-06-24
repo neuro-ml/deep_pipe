@@ -15,7 +15,7 @@ import dpipe.medim as medim
 from dpipe.medim.checks import join
 from dpipe.medim.itertools import zdict
 from dpipe.medim.utils import cache_to_disk
-from .base import Dataset, SegmentationDataset
+from .base import Dataset
 
 
 class Proxy:
@@ -160,7 +160,8 @@ def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = (
     return proxy(dataset)
 
 
-def bbox_extraction(dataset: SegmentationDataset) -> SegmentationDataset:
+# TODO: this needs refactoring
+def bbox_extraction(dataset: Dataset) -> Dataset:
     # Use this small cache to speed up data loading when calculating the mask
     load_image = functools.lru_cache(1)(dataset.load_image)
 
@@ -245,15 +246,14 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None, attributes: Sequenc
     return Merged(*chain([ids], map(decorator, methods), preserved_attributes))
 
 
-def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = -1,
-               mask_value: int = None) -> SegmentationDataset:
+def apply_mask(dataset: Dataset, mask_modality_id: int = -1, mask_value: int = None) -> Dataset:
     """
     Applies the ``mask_modality_id`` modality as the binary mask to the other modalities
     and remove the mask from sequence of modalities.
 
     Parameters
     ----------
-    dataset: SegmentationDataset
+    dataset: Dataset
         dataset which is used in the current task.
     mask_modality_id: int
         the index of mask in the sequence of modalities.
@@ -277,6 +277,7 @@ def apply_mask(dataset: SegmentationDataset, mask_modality_id: int = -1,
     >>>     mask_value=1
     >>> )
     """
+
     class MaskedDataset(Proxy):
         def load_image(self, patient_id):
             images = self._shadowed.load_image(patient_id)
