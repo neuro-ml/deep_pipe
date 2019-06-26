@@ -77,9 +77,9 @@ def linear_focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, ga
     return loss
 
 
-# TODO: better name and interface
-def bce_with_logits(logit, target, weight=None, alpha=1., ad_pos_weight=False,
-                    reduce: Union[Callable, None] = torch.mean):
+def weighted_cross_entropy_with_logits(logit: torch.Tensor, target: torch.Tensor, weight: torch.Tensor = None,
+                                       alpha: float = 1, adaptive: bool = False,
+                                       reduce: Union[Callable, None] = torch.mean):
     """
     Function that measures Binary Cross Entropy between target and output logits.
     This version of BCE has additional options of constant or adaptive weighting of positive examples.
@@ -94,7 +94,7 @@ def bce_with_logits(logit, target, weight=None, alpha=1., ad_pos_weight=False,
         a manual rescaling weight. Must be broadcastable to ``logits``.
     alpha: float, optional
         a weight for the positive class examples.
-    ad_pos_weight: bool, optional
+    adaptive: bool, optional
         If ``True``, uses adaptive weight ``[N - sum(p_i)] / sum(p_i)`` for a positive class examples.
     reduce: Callable, None, optional
         the reduction operation to be applied to the final loss. Defaults to ``torch.mean``.
@@ -107,7 +107,7 @@ def bce_with_logits(logit, target, weight=None, alpha=1., ad_pos_weight=False,
     if not (target.size() == logit.size()):
         raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))
 
-    if ad_pos_weight:
+    if adaptive:
         pos_weight = alpha * (logit.numel() - (torch.sigmoid(logit)).sum()) / (torch.sigmoid(logit)).sum()
     else:
         pos_weight = alpha
@@ -123,8 +123,7 @@ def bce_with_logits(logit, target, weight=None, alpha=1., ad_pos_weight=False,
     return loss
 
 
-# TODO: match interface of loss functions
-def dice_loss_with_logits(logit, target):
+def dice_loss_with_logits(logit: torch.Tensor, target: torch.Tensor, weight: torch.Tensor = None):
     """The function of Dice Loss given in https://arxiv.org/abs/1606.04797"""
     if not (target.size() == logit.size()):
         raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))

@@ -1,6 +1,5 @@
 from itertools import islice
 from typing import Iterable, Callable
-from warnings import warn
 
 import numpy as np
 
@@ -63,10 +62,7 @@ class Infinite(BatchIter):
     """
 
     def __init__(self, source: Iterable, *transformers: Callable, batch_size: int, batches_per_epoch: int = None,
-                 buffer_size: int = 3, combiner: Callable = combine_to_arrays, n_iters_per_epoch: int = None):
-        if n_iters_per_epoch is not None:
-            batches_per_epoch = n_iters_per_epoch
-            warn('n_iters_per_epoch is deprecated, use batches_per_epoch instead.', DeprecationWarning)  # 12.05.2019
+                 buffer_size: int = 3, combiner: Callable = combine_to_arrays):
 
         if batches_per_epoch <= 0:
             raise ValueError(f'Expected a positive amount of batches per epoch, but got {batches_per_epoch}')
@@ -87,7 +83,7 @@ class Infinite(BatchIter):
         if not isinstance(source, source_class):
             source = pdp.Source(source, buffer_size=buffer_size)
 
-        self.n_iters_per_epoch = batches_per_epoch
+        self.batches_per_epoch = batches_per_epoch
         self.pipeline = pdp.Pipeline(
             source, *map(wrap, transformers), pdp.Many2One(chunk_size=batch_size, buffer_size=3),
             pdp.One2One(combiner, buffer_size=buffer_size))
@@ -99,7 +95,7 @@ class Infinite(BatchIter):
     def __call__(self):
         if not self.pipeline.pipeline_active:
             self.__enter__()
-        return islice(self.pipeline, self.n_iters_per_epoch)
+        return islice(self.pipeline, self.batches_per_epoch)
 
     def __enter__(self):
         self.pipeline.__enter__()
