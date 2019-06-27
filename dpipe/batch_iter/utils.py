@@ -83,6 +83,25 @@ def apply_at(index: AxesLike, func: Callable, *args, **kwargs):
     return wrapped
 
 
+def zip_apply(*functions: Callable, **kwargs):
+    """
+    Returns a function that takes an iterable and zips ``functions`` over it.
+
+    ``kwargs`` are passed to each function as additional arguments.
+
+    Examples
+    --------
+    >>> zipper = zip_apply(np.square, np.sqrt)
+    >>> zipper([4, 9])
+    >>> (16, 3)
+    """
+
+    def wrapped(xs: Sequence, *args, **kwargs_) -> tuple:
+        return tuple(func(x, *args, **kwargs_, **kwargs) for func, x in zip(functions, xs))
+
+    return wrapped
+
+
 def random_apply(p: float, func: Callable, *args, **kwargs):
     """
     Returns a function that applies ``func`` with a given probability ``p``.

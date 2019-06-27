@@ -5,11 +5,10 @@ It implements the loading/saving of a neural to disk, as well as training and in
 This implementation is a wrapper for the PyTorch framework.
 """
 from typing import Sequence
-from functools import partial
 
 from torch.nn import Module
 
-from ..model import Model, FrozenModel
+from ..model import Model
 from .utils import *
 
 
@@ -118,6 +117,8 @@ def do_train_step_multiloss(*inputs, lr, inputs2logits, optimizer, seq_logits2lo
     return losses
 
 
+# TODO: need a more generalized model class
+# TODO: who uses this?
 class TorchModelMultiloss(TorchModel):
     def __init__(self, model_core: torch.nn.Module, logits2pred: Callable, seq_logits2loss: Sequence[Callable],
                  optimize: torch.optim.Optimizer, cuda: bool = None):
@@ -126,22 +127,3 @@ class TorchModelMultiloss(TorchModel):
     def do_train_step(self, *inputs, lr):
         return do_train_step_multiloss(*inputs, lr=lr, inputs2logits=self.model_core, optimizer=self.optimizer,
                                        seq_logits2loss=self.logits2loss)
-
-
-def make_do_inf_step(inputs2logits, logits2pred, saved_model_path, cuda, modify_state_fn=None):
-    inputs2logits = load_model_state(to_cuda(inputs2logits, cuda), path=saved_model_path,
-                                     modify_state_fn=modify_state_fn)
-    return partial(do_inf_step, inputs2logits=inputs2logits, logits2pred=logits2pred)
-
-
-class TorchFrozenModel(FrozenModel):
-    def __init__(self, model_core: torch.nn.Module, logits2pred: callable, restore_model_path: str,
-                 cuda: bool = None, modify_state_fn: callable = None):
-        self.model_core = to_cuda(model_core, cuda)
-        self.logits2pred = logits2pred
-        self.cuda = cuda
-        self.f = make_do_inf_step(model_core, logits2pred=logits2pred, cuda=cuda, modify_state_fn=modify_state_fn,
-                                  saved_model_path=restore_model_path)
-
-    def do_inf_step(self, *inputs):
-        return self.f(*inputs)

@@ -1,19 +1,13 @@
 import os
 import inspect
 
-from .axes import check_axes, AxesLike
-from .checks import check_len
+from .axes import check_axes
 from .itertools import *
 from .shape_utils import *
 
 
 def identity(x):
     return x
-
-
-def decode_segmentation(x, segm_decoding_matrix) -> np.array:
-    assert np.issubdtype(x.dtype, np.integer), f'Segmentation dtype must be int, but {x.dtype} provided'
-    return np.rollaxis(segm_decoding_matrix[x], -1)
 
 
 # TODO: weaken the restriction to same ndim
@@ -56,24 +50,6 @@ def build_slices(start: Sequence[int], stop: Sequence[int] = None) -> Tuple[slic
     return tuple(map(slice, start))
 
 
-@np.deprecate
-def scale(x):
-    x_min, x_max = x.min(), x.max()
-    return (x - x_min) / (x_max - x_min)
-
-
-# TODO: doc
-def bytescale(x):
-    return np.uint8(np.round(255 * scale(x)))
-
-
-# TODO: doc
-def makedirs_top(path, mode=0o777, exist_ok=False):
-    folder = os.path.dirname(path)
-    if folder:
-        os.makedirs(folder, mode, exist_ok)
-
-
 def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> Callable:
     """
     Cache a function to disk.
@@ -112,51 +88,8 @@ def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> 
     return wrapper
 
 
-# 07.02.2019
-@np.deprecate
-def load_by_ids(*loaders: Callable, ids: Sequence, shuffle: bool = False):
-    """
-    Yields tuples of objects given their ``loaders`` and ``ids``.
-
-    Parameters
-    ----------
-    loaders: Callable(id)
-    ids
-    shuffle
-        whether to shuffle the ids before yielding.
-    """
-    if shuffle:
-        ids = np.random.permutation(ids)
-    for identifier in ids:
-        yield squeeze_first(tuple(pam(loaders, identifier)))
-
-
-@np.deprecate
-def pad(x, padding, padding_values):
-    # TODO it might be dangerous
-    padding = np.broadcast_to(padding, [x.ndim, 2])
-
-    new_shape = np.array(x.shape) + np.sum(padding, axis=1)
-    new_x = np.zeros(new_shape, dtype=x.dtype)
-    new_x[:] = padding_values
-
-    start = padding[:, 0]
-    end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
-    new_x[build_slices(start, end)] = x
-    return new_x
-
-
 def get_random_tuple(low, high, size):
     return tuple(np.random.randint(low, high, size=size, dtype=int))
-
-
-@np.deprecate(message='unpack_args was moved to `dpipe.batch_iter.utils`')
-def unpack_args(func: Callable):
-    @wraps(func)
-    def wrapper(argument):
-        return func(*argument)
-
-    return wrapper
 
 
 def composition(func: Callable, *args, **kwargs):
@@ -177,3 +110,9 @@ def composition(func: Callable, *args, **kwargs):
 
 def name_changed(func: Callable, old_name: str, date: str):
     return np.deprecate(func, old_name=old_name, new_name=func.__name__)
+
+
+@np.deprecate(message='This function is moved to `dpipe.medim.preprocessing`')
+def bytescale(x):
+    from dpipe.medim.preprocessing import bytescale
+    return bytescale(x)

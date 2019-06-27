@@ -1,10 +1,11 @@
+from pathlib import Path
 from typing import Callable, Union
 
 import numpy as np
 import torch
 from torch import nn
 
-from dpipe.medim.utils import makedirs_top
+from dpipe.medim.io import PathLike
 
 
 def load_model_state(module: nn.Module, path: str, modify_state_fn: Callable = None):
@@ -24,9 +25,10 @@ def load_model_state(module: nn.Module, path: str, modify_state_fn: Callable = N
     return module
 
 
-def save_model_state(module: nn.Module, path: str):
+def save_model_state(module: nn.Module, path: PathLike):
     """Saves the ``module``'s state dict to ``path``."""
-    makedirs_top(path, exist_ok=True)
+    path = Path(path)
+    path.parent.mkdir(exist_ok=True, parents=True)
     torch.save(module.state_dict(), path)
 
 
@@ -67,6 +69,7 @@ def to_var(x: np.ndarray, cuda: bool = None, requires_grad: bool = False) -> tor
     return to_cuda(x, cuda)
 
 
+# TODO: need "to_device" support
 def to_cuda(x, cuda: Union[nn.Module, torch.Tensor, bool] = None):
     """
     Move ``x`` to cuda if specified.

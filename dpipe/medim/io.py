@@ -8,8 +8,6 @@ from typing import Union
 
 import numpy as np
 
-from dpipe.medim.utils import name_changed
-
 PathLike = Union[Path, str]
 
 
@@ -147,7 +145,3 @@ class ConsoleArguments:
             raise ValueError(f'This method takes exactly one argument, but {len(kwargs)} were passed.')
         name, value = list(kwargs.items())[0]
         return self._args.get(name, value)
-
-
-dump_json = name_changed(save_json, 'dump_json', '04.04.2019')
-load_image = name_changed(load_by_ext, 'load_image', '14.05.2019')

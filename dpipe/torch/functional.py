@@ -25,7 +25,7 @@ def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: fl
 
     References
     ----------
-    https://arxiv.org/abs/1708.02002
+    `Focal Loss <https://arxiv.org/abs/1708.02002>`_
     """
     if not (target.size() == logits.size()):
         raise ValueError("Target size ({}) must be the same as logits size ({})".format(target.size(), logits.size()))
@@ -69,7 +69,7 @@ def linear_focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, ga
 
     References
     ----------
-        https://arxiv.org/abs/1708.02002
+    `Focal Loss <https://arxiv.org/abs/1708.02002>`_
     """
     loss = functional.binary_cross_entropy_with_logits(gamma * logits + beta, target, weight, reduction='none') / gamma
     if reduce is not None:
@@ -102,7 +102,7 @@ def weighted_cross_entropy_with_logits(logit: torch.Tensor, target: torch.Tensor
 
     References
     ----------
-        WCE - https://arxiv.org/abs/1707.03237
+    `WCE <https://arxiv.org/abs/1707.03237>`_
     """
     if not (target.size() == logit.size()):
         raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))
@@ -123,8 +123,13 @@ def weighted_cross_entropy_with_logits(logit: torch.Tensor, target: torch.Tensor
     return loss
 
 
+# TODO: this function looks too hardcoded
 def dice_loss_with_logits(logit: torch.Tensor, target: torch.Tensor, weight: torch.Tensor = None):
-    """The function of Dice Loss given in https://arxiv.org/abs/1606.04797"""
+    """
+    References
+    ----------
+    `Dice Loss <https://arxiv.org/abs/1606.04797>`_
+    """
     if not (target.size() == logit.size()):
         raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))
 

@@ -1,14 +1,14 @@
 from typing import Callable, Union
 
 from .model import TorchModel
-from ..batch_iter.base import BatchIter, maybe_build_contextmanager
+from ..batch_iter.base import BatchIter
 from ..train.checkpoint import CheckpointManager
 from ..train.policy import Policy, ValuePolicy, NEpochs, Constant
 from ..train.logging import TBLogger, Logger
 from ..train import train
 
 
-def train_model(model: TorchModel, batch_iter: Union[BatchIter, Callable], n_epochs: int, lr: Union[float, ValuePolicy],
+def train_model(model: TorchModel, batch_iter: BatchIter, n_epochs: int, lr: Union[float, ValuePolicy],
                 log_path: str = None, checkpoints_path: str = None, validate: Callable = None, **policies: Policy):
     """
     Train a given ``model``.
@@ -45,5 +45,5 @@ def train_model(model: TorchModel, batch_iter: Union[BatchIter, Callable], n_epo
             'optimizer': model.optimizer
         })
 
-    return train(model.do_train_step, maybe_build_contextmanager(batch_iter), logger, checkpoint_manager, validate,
+    return train(model.do_train_step, batch_iter, logger, checkpoint_manager, validate,
                  n_epochs=NEpochs(n_epochs), **policies)

@@ -8,6 +8,7 @@ import numpy as np
 from tqdm import tqdm
 
 from dpipe.io import save_json
+from dpipe.medim.itertools import collect
 
 
 def np_filename2id(filename):
@@ -23,6 +24,7 @@ def transform(input_path, output_path, transform_fn):
         np.save(os.path.join(output_path, f), transform_fn(np.load(os.path.join(input_path, f))))
 
 
+@collect
 def load_from_folder(path: str):
     """Yields (id, object) pairs loaded from ``path``."""
     # TODO: generalize with a loader

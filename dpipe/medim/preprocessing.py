@@ -1,47 +1,55 @@
 import numpy as np
 from skimage.measure import label
 
-from .axes import AxesLike
+from .itertools import negate_indices
+from .axes import AxesLike, check_axes
 
 from .shape_ops import *
 
 
-def normalize_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None) -> np.ndarray:
+# TODO: docstring
+def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: AxesLike = None,
+              axes: AxesLike = None) -> np.ndarray:
     """
-    Normalize an ``image`` to make mean and std equal to 0 and 1 respectively (if required).
-    Supports robust estimation with drop_percentile.
+    Normalize ``x``'s values to make mean and std independently along ``axes`` equal to 0 and 1 respectively
+    (if specified).
     """
-    if drop_percentile is not None:
-        bottom = np.percentile(image, drop_percentile)
-        top = np.percentile(image, 100 - drop_percentile)
+    if axes is not None:
+        axes = tuple(negate_indices(check_axes(axes), x.ndim))
 
-        mask = (image > bottom) & (image < top)
-        vals = image[mask]
-    else:
-        vals = image.flatten()
+    robust_values = x
+    if percentiles is not None:
+        if np.size(percentiles) == 1:
+            percentiles = [percentiles, 100 - percentiles]
 
-    assert vals.ndim == 1
+        bottom, top = np.percentile(x, percentiles, axes, keepdims=True)
+        mask = (x < bottom) | (x >= top)
+        robust_values = np.ma.masked_array(x, mask=mask)
 
     if mean:
-        image = image - vals.mean()
+        x = x - robust_values.mean(axes, keepdims=True)
     if std:
-        image = image / vals.std()
+        x = x / robust_values.std(axes, keepdims=True)
 
-    return image
-
-
-def normalize_multichannel_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None):
-    """
-    Normalize an ``image`` to make mean and std equal to 0 and 1 respectively (if required)
-    for each channel separately. Supports robust estimation with drop_percentile.
-    """
-    return np.array([normalize_image(channel, mean, std, drop_percentile) for channel in image], np.float32)
+    return x
 
 
 def min_max_scale(x: np.ndarray, axes: AxesLike = None) -> np.ndarray:
-    """Scale ``x``'s values so that its minimum and maximum along ``axes`` become 0 and 1 respectively."""
+    """Scale ``x``'s values so that its minimum and maximum become 0 and 1 respectively
+    independently along ``axes``."""
+    if axes is not None:
+        axes = tuple(negate_indices(check_axes(axes), x.ndim))
+
     x_min, x_max = x.min(axis=axes, keepdims=True), x.max(axis=axes, keepdims=True)
     return (x - x_min) / (x_max - x_min)
+
+
+def bytescale(x: np.ndarray) -> np.ndarray:
+    """
+    Scales ``x``'s values so that its minimum and maximum become 0 and 255 respectively.
+    Afterwards converts it to ``uint8``.
+    """
+    return np.uint8(np.round(255 * min_max_scale(x)))
 
 
 def describe_connected_components(mask: np.ndarray, background: int = 0, drop_background: bool = True):
@@ -81,3 +89,14 @@ def get_greatest_component(mask: np.ndarray, background: int = 0, drop_backgroun
     """Get the greatest connected component from ``mask``. See `describe_connected_components` for details."""
     label_map, labels, volumes = describe_connected_components(mask, background, drop_background)
     return label_map == labels[0]
+
+
+# 27.07.2019
+@np.deprecate(new_name='normalize')
+def normalize_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None) -> np.ndarray:
+    return normalize(image, mean, std, drop_percentile)
+
+
+@np.deprecate(new_name='normalize')
+def normalize_multichannel_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None):
+    return normalize(image, mean, std, drop_percentile, 0)

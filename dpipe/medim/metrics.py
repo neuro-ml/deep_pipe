@@ -73,17 +73,6 @@ def box_iou(a_start_stop, b_start_stop):
     return fraction(i, u)
 
 
-# TODO: replace by a more general function
-@np.deprecate
-def multichannel_dice_score(a, b) -> [float]:
-    """
-    Channel-wise dice score between two binary masks.
-    The first dimension of the tensors is assumed to be the channels.
-    """
-    assert len(a) == len(b), f'number of channels is different: {len(a)} != {len(b)}'
-    return list(map(dice_score, a, b))
-
-
 def aggregate_metric(xs, ys, metric, aggregate_fn=np.mean):
     """Aggregate a `metric` computed on pairs from `xs` and `ys`"""
     return aggregate_fn([metric(x, y) for x, y in zip_equal(xs, ys)])

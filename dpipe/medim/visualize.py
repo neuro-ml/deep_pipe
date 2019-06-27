@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Union, Callable
 
 import numpy as np
@@ -5,9 +6,9 @@ from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.colors import Colormap
 
+from dpipe.medim.io import PathLike
 from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmentation_probabilities
 from .checks import check_shape_along_axis
-from .utils import makedirs_top
 from .axes import AxesParams
 
 
@@ -70,7 +71,7 @@ def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int 
     _slice_base(data, axis, scale, max_columns, colorbar, show_axes, cmap, vlim)
 
 
-def animate3d(*data: np.ndarray, output_path: str, axis: int = -1, scale: int = 5, max_columns: int = None,
+def animate3d(*data: np.ndarray, output_path: PathLike, axis: int = -1, scale: int = 5, max_columns: int = None,
               colorbar: bool = False, show_axes: bool = False, cmap: str = 'gray', vlim=(None, None), fps: int = 30,
               writer: str = 'imagemagick', repeat: bool = True):
     """
@@ -97,6 +98,7 @@ def animate3d(*data: np.ndarray, output_path: str, axis: int = -1, scale: int = 
     repeat: bool
         whether the animation should repeat when the sequence of frames is completed.
     """
+    output_path = Path(output_path)
     check_shape_along_axis(*data, axis=axis)
     rows, columns = _get_rows_cols(max_columns, data)
     fig, axes = plt.subplots(rows, columns, figsize=(scale * columns, scale * rows))
@@ -120,6 +122,6 @@ def animate3d(*data: np.ndarray, output_path: str, axis: int = -1, scale: int = 
         return images
 
     plt.tight_layout()
-    makedirs_top(output_path, exist_ok=True)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     FuncAnimation(fig, func=update, frames=data[0].shape[axis], blit=True, repeat=repeat).save(
         output_path, writer=writer, fps=fps)

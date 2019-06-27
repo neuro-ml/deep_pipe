@@ -61,25 +61,3 @@ class Model(ABC):
             from the path. This function should modify states as needed and return the final state to load. This
             function can be handy if you want to transfer weights from similar but not completely equal architecture.
         """
-
-
-class FrozenModel(ABC):
-    """
-    Interface for a trained neural network used for inference
-    """
-
-    @abstractmethod
-    def do_inf_step(self, *inputs):
-        """
-        Perform an inference step
-
-        Parameters
-        ----------
-        inputs: Sequence
-            a sequence of batches that will be fed into the network
-
-        Returns
-        -------
-        prediction: batch
-            the prediction for the input batch
-        """
