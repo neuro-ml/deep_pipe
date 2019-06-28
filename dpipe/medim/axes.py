@@ -17,7 +17,6 @@ def fill_by_indices(target, values, indices):
     return tuple(target)
 
 
-# TODO: better doc
 def broadcast_to_axes(axes: Union[AxesLike, None], *arrays: AxesParams):
     """Broadcast ``arrays`` to the length of ``axes``. Axes are inferred from the arrays if necessary."""
     if not arrays:

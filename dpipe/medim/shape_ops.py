@@ -1,5 +1,5 @@
 import warnings
-from typing import Callable, Union
+from typing import Callable, Union, Sequence
 
 import numpy as np
 from scipy import ndimage
@@ -16,7 +16,8 @@ __all__ = [
 ]
 
 
-def zoom(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: int = 1) -> np.ndarray:
+def zoom(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: int = 1,
+         fill_value: Union[float, Callable] = 0) -> np.ndarray:
     """
     Rescale ``x`` according to ``scale_factor`` along the ``axes``.
 
@@ -28,11 +29,17 @@ def zoom(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: 
         axes along which the tensor will be scaled. If None - the last ``len(shape)`` axes are used.
     order
         order of interpolation.
+    fill_value
+        value to fill past edges. If Callable (e.g. `numpy.min`) - ``fill_value(x)`` will be used.
     """
+    scale_factor = fill_by_indices(np.ones(x.ndim, 'float64'), scale_factor, axes)
+    if callable(fill_value):
+        fill_value = fill_value(x)
+
     # remove an annoying warning
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', UserWarning)
-        return ndimage.zoom(x, fill_by_indices(np.ones(x.ndim, 'float64'), scale_factor, axes), order=order)
+        return ndimage.zoom(x, scale_factor, order=order, cval=fill_value)
 
 
 def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: int = 1) -> np.ndarray:
@@ -51,11 +58,7 @@ def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: 
     """
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(fill_by_indices(x.shape, shape, axes), 'float64')
-
-    # remove an annoying warning
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore', UserWarning)
-        return ndimage.zoom(x, new_shape / old_shape, order=order)
+    return zoom(x, new_shape / old_shape, order=order)
 
 
 def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None,
@@ -80,7 +83,7 @@ def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = 
     return pad_to_shape(zoom(x, scale_factor, axes, order), shape, axes, padding_values)
 
 
-def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None,
+def pad(x: np.ndarray, padding: Union[AxesLike, Sequence[Sequence[int]]], axes: AxesLike = None,
         padding_values: Union[AxesParams, Callable] = 0) -> np.ndarray:
     """
     Pad ``x`` according to ``padding`` along the ``axes``.
@@ -90,21 +93,24 @@ def pad(x: np.ndarray, padding: AxesLike, axes: AxesLike = None,
     x
         tensor to pad.
     padding
-        padding in a format compatible with `numpy.pad`
+        if 2D array [[start_1, stop_1], ..., [start_n, stop_n]] - specifies individual padding
+        for each axis from ``axes``. The length of the array must either be equal to 1 or match the length of ``axes``.
+        If 1D array [val_1, ..., val_n] - same as [[val_1, val_1], ..., [val_n, val_n]].
+        If scalar (val) - same as [[val, val]].
     padding_values
-        values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
+        values to pad with, must be broadcastable to the resulting array.
+        If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
     axes
         axes along which ``x`` will be padded. If None - the last ``len(padding)`` axes are used.
     """
+    padding = np.asarray(padding)
+    if padding.ndim < 2:
+        padding = padding.reshape(-1, 1)
     padding = np.asarray(fill_by_indices(np.zeros((x.ndim, 2), dtype=int), np.atleast_2d(padding), axes))
     if (padding < 0).any():
         raise ValueError(f'Padding must be non-negative: {padding.tolist()}.')
     if callable(padding_values):
         padding_values = padding_values(x)
-
-    # TODO: possibly fallback to np if padding_values is scalar
-    # TODO it might be dangerous
-    padding = np.broadcast_to(padding, [x.ndim, 2])
 
     new_shape = np.array(x.shape) + np.sum(padding, axis=1)
     new_x = np.array(padding_values, dtype=x.dtype)

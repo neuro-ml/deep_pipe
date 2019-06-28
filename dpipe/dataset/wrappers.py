@@ -160,42 +160,7 @@ def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = (
     return proxy(dataset)
 
 
-# TODO: this needs refactoring
-def bbox_extraction(dataset: Dataset) -> Dataset:
-    # Use this small cache to speed up data loading when calculating the mask
-    load_image = functools.lru_cache(1)(dataset.load_image)
-
-    class BBoxedDataset(Proxy):
-        def __init__(self, shadowed):
-            super().__init__(shadowed)
-            self._start_stop = {}
-            self._shapes = {}
-
-        def load_image(self, identifier):
-            return self._extract(identifier, load_image(identifier))
-
-        def load_segm(self, identifier):
-            return self._extract(identifier, dataset.load_segm(identifier))
-
-        def get_start_stop(self, identifier):
-            if identifier not in self._start_stop:
-                img = load_image(identifier)
-                mask = np.any(img > img.min(axis=tuple(range(1, img.ndim)), keepdims=True), axis=0)
-                self._start_stop[identifier] = tuple(medim.box.mask2bounding_box(mask))
-                self._shapes[identifier] = img.shape
-            return self._start_stop[identifier]
-
-        def get_original_padding(self, identifier):
-            start, stop = self.get_start_stop(identifier)
-            return tuple(zip(start, self._shapes[identifier] - stop))
-
-        def _extract(self, identifier, tensor):
-            start, stop = self.get_start_stop(identifier)
-            return tensor[(..., *medim.utils.build_slices(start, stop))]
-
-    return BBoxedDataset(dataset)
-
-
+@np.deprecate  # 28.06.2019
 def normalized(dataset: Dataset, mean: bool = True, std: bool = True, drop_percentile: int = None) -> Dataset:
     return apply(dataset, load_image=functools.partial(medim.prep.normalize_multichannel_image, mean=mean, std=std,
                                                        drop_percentile=drop_percentile))

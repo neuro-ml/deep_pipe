@@ -24,7 +24,7 @@ def extract_patch(x: np.ndarray, *, box: np.array, padding_values=None) -> np.ar
         np.testing.assert_array_equal(padding, 0, "Box is outside of the x and no padding_values.")
         patch = np.array(x_slice)
     else:
-        patch = pad(x_slice, padding, padding_values)
+        patch = pad(x_slice, padding, padding_values=padding_values)
 
     return patch
 

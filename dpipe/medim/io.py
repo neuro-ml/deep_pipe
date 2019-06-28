@@ -95,7 +95,6 @@ class NumpyEncoder(json.JSONEncoder):
 
 def save_json(value, path: PathLike, *, indent: int = None):
     """Dump a json-serializable object to a json file."""
-    # TODO: probably should add makedirs here
     with open(path, 'w') as f:
         json.dump(value, f, indent=indent, cls=NumpyEncoder)
         return value

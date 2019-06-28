@@ -5,10 +5,13 @@ import unittest
 from pathlib import Path
 from urllib.request import urlretrieve
 
+import pytest
+
 from dpipe.config import get_resource_manager
 from dpipe.medim.io import load_json
 
 
+@pytest.mark.integration
 class TestMNIST(unittest.TestCase):
     sortTestMethodsUsing = None
 
