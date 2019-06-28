@@ -1,5 +1,4 @@
-from distutils.core import setup
-from setuptools import find_packages
+from setuptools import setup, find_packages
 
 from dpipe import __version__
 
@@ -14,7 +13,7 @@ with open('requirements.txt', encoding='utf-8') as file:
 
 setup(
     name='deep_pipe',
-    packages=find_packages(include=('deep_pipe',)),
+    packages=find_packages(include=('dpipe', 'dpipe_configs')),
     include_package_data=True,
     version=__version__,
     long_description=long_description,
