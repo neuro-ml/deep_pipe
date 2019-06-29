@@ -7,11 +7,17 @@ def evaluate(y_true: Sequence, y_pred: Sequence, metrics: dict) -> dict:
 
     Parameters
     ----------
-    y_true
-    y_pred
-    metrics
-        a dict, where the key is the metric's name and the value is a
-        callable with the standard sklearn signature: (y_true, y_pred) -> metric
+    y_true: Sequence
+        sequence of ground truth objects.
+    y_pred: Sequence
+        sequence of predicted object.
+    metrics: dict
+        ``dict`` metric names as keys and
+        ``callable`` as values with the standard sklearn signature: (y_true, y_pred) -> metric
+
+    Returns
+    -------
+    calculated_metrics: dict
     """
     return {name: metric(y_true, y_pred) for name, metric in metrics.items()}
 
@@ -23,11 +29,15 @@ def evaluate_predict(predict: Callable, xs: Iterable, ys_true: Sequence, metrics
     Parameters
     ----------
     predict: Callable(x) -> prediction
-    xs
-    ys_true
-    metrics
-        a dict, where the key is the metric's name and the value is a
-        callable with the standard sklearn signature: (y_true, y_pred) -> metric_value
+        function to return prediction from the input element.
+    xs: Iterable
+        iterator to return input elements for ``predict``.
+    ys_true: Sequence
+        sequence of ground truth objects, corresponding to ``xs`` input elements.
+        Should be the same size with ``xs``.
+    metrics: dict
+        ``dict`` metric names as keys and
+        ``callable`` as values with the standard sklearn signature: (y_true, y_pred) -> metric
 
     Returns
     -------

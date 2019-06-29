@@ -54,14 +54,15 @@ def train(do_train_step: Callable, batch_iter: BatchIter, logger: Logger = None,
 
     Parameters
     ----------
-    do_train_step
-    batch_iter
-        batch iterator
-    logger
-    checkpoint_manager
-    validate
-        a function that calculates metrics on the validation set
-    policies:
+    do_train_step: Callable
+        a function to perform train step.
+    batch_iter: BatchIter
+        batch iterator.
+    logger: Logger, None, optional
+    checkpoint_manager: CheckpointManager, None, optional
+    validate: Callable, None, optional
+        a function to calculate metrics on the validation set.
+    policies: Policy
         a collection of policies to run before and after epoch.
         Policies, inherited from `ValuePolicy` will be passed to ``do_train_step``.
         The rest can be used for early stopping.

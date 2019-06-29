@@ -46,7 +46,7 @@ class Logger:
 
 
 class ConsoleLogger(Logger):
-    """Log ``train losses`` and ``metrics`` to stdout."""
+    """Log ``train_losses`` and ``metrics`` to stdout."""
 
     def value(self, name, value, step):
         pass
@@ -77,7 +77,7 @@ class TBLogger(Logger):
 
 class NamedTBLogger(TBLogger):
     """
-    A logger that writes multiple train losses to a tensorbaord log file located at ``log_path``.
+    A logger that writes multiple train losses to a tensorboard log file located at ``log_path``.
 
     Each loss is assigned a corresponding tag name from ``loss_names``.
     """

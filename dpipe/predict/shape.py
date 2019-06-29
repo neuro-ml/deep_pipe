@@ -77,7 +77,7 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
 
     References
     ----------
-    `grid.divide` `grid.combine` `pad_to_shape`
+    `grid.divide`, `grid.combine`, `pad_to_shape`
     """
     axes, path_size, stride = broadcast_to_axes(axes, patch_size, stride)
     valid = padding_values is not None

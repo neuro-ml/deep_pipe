@@ -36,10 +36,11 @@ class CheckpointManager:
 
     Parameters
     ----------
-    base_path
-    pickled_objects
+    base_path: str
+        path to save/restore checkpoint object in/from.
+    pickled_objects: dict, None, optional
         objects that will be saved using `pickle`
-    state_dict_objects
+    state_dict_objects: dict, None, optional
         objects whose ``state_dict()`` will be saved using `torch.save`.
     """
 
@@ -74,10 +75,7 @@ class CheckpointManager:
             self._clear_previous(iteration)
 
     def restore(self) -> int:
-        """
-        Restore the most recent states of all tracked objects and return
-        the corresponding iteration.
-        """
+        """Restore the most recent states of all tracked objects and return the corresponding iteration."""
         if not self.base_path.exists():
             return 0
 
