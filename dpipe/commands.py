@@ -7,7 +7,7 @@ from typing import Callable, Iterable
 import numpy as np
 from tqdm import tqdm
 
-from dpipe.io import save_json
+from dpipe.medim.io import save_json
 from dpipe.medim.itertools import collect
 
 
