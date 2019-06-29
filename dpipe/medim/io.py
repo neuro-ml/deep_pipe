@@ -45,8 +45,7 @@ def load_experiment_test_pred(identifier, experiment_path):
         if os.path.isdir(ep / f):
             try:
                 return load_pred(identifier, ep / f / 'test_predictions')
-            except FileNotFoundError as e:
-                print(e)
+            except FileNotFoundError:
                 pass
     else:
         raise FileNotFoundError('No prediction found')
@@ -55,8 +54,9 @@ def load_experiment_test_pred(identifier, experiment_path):
 def load_by_ext(path: PathLike):
     """
     Load a file located at ``path``.
+
     The following extensions are supported:
-        npy, tif, hdr, img, nii, nii.gz, json
+        npy, tif, hdr, img, nii, nii.gz, json, mhd
     """
     name = Path(path).name
 
@@ -74,6 +74,9 @@ def load_by_ext(path: PathLike):
         return imread(path)
     if name.endswith('.json'):
         return load_json(path)
+    if name.endswith('.mhd'):
+        from SimpleITK import ReadImage
+        return ReadImage(name)
 
     raise ValueError(f"Couldn't read file from path: {path}. Unknown file extension.")
 

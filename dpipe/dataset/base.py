@@ -44,7 +44,3 @@ class Dataset(metaclass=ABCAttributesMeta):
     one for each dataset entry, as well as methods for loading an entry by its identifier.
     """
     ids: Tuple[str] = AbstractAttribute
-
-
-# deprecated: 11.06.2019
-ClassificationDataset = SegmentationDataset = ImageDataset = Dataset

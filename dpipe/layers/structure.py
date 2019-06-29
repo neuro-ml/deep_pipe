@@ -161,30 +161,6 @@ class Lambda(nn.Module):
         return self.func(*args, **kwargs, **self.kwargs)
 
 
-@np.deprecate(message='Use `dpipe.batch_iter.functional.make_consistent_seq` instead.')  # 04.06.19
-def make_pipeline(structure, make_transformer):
-    assert all(isinstance(s, int) for s in structure), f'{structure}'
-    return nn.Sequential(*[
-        make_transformer(n_chans_in, n_chans_out) for n_chans_in, n_chans_out in zip(structure[:-1], structure[1:])
-    ])
-
-
-@np.deprecate(message='Use `dpipe.batch_iter.structure.FPN` instead.')  # 04.06.19
-def build_fpn(structure, make_block, make_up, make_down, split_merge):
-    line, *down_structure = structure
-    if len(down_structure) == 0:
-        assert len(line) == 1, 'f{line}'
-        return make_pipeline(line[0], make_block)
-    else:
-        assert len(line) == 3, f'{line}'
-        inner_path = line[1] if isinstance(line[1], nn.Module) else make_pipeline(line[1], make_block)
-        down_path = nn.Sequential(make_down(), *build_fpn(down_structure, make_block, make_up, make_down, split_merge),
-                                  make_up())
-        return nn.Sequential(*make_pipeline(line[0], make_block),
-                             split_merge(down_path, inner_path),
-                             *make_pipeline(line[2], make_block))
-
-
 @np.deprecate  # 19.06.2019
 def make_blocks_with_splitters(structure, make_block, make_splitter):
     if len(structure) == 1:
