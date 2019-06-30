@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 from dpipe import __version__
 
-classifiers = '''Development Status :: 3 - Alpha
+classifiers = '''Development Status :: 4 - Beta
 Programming Language :: Python :: 3.6'''
 
 with open('README.md', encoding='utf-8') as file:
@@ -16,7 +16,9 @@ setup(
     packages=find_packages(include=('dpipe', 'dpipe_configs')),
     include_package_data=True,
     version=__version__,
+    descriprion='A collection of tools for deep learning experiments',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     license='MIT',
     url='https://github.com/neuro-ml/deep_pipe',
     download_url='https://github.com/neuro-ml/deep_pipe/v%s.tar.gz' % __version__,

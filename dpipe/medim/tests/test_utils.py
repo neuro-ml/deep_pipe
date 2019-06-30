@@ -4,7 +4,7 @@ from functools import partial
 import numpy as np
 
 from dpipe.layers import identity
-from dpipe.medim.preprocessing import normalize_multichannel_image, normalize_image, pad, min_max_scale
+from dpipe.medim.preprocessing import pad, min_max_scale, normalize
 from dpipe.medim.utils import filter_mask, apply_along_axes
 from dpipe.medim.itertools import zip_equal, flatten, extract, negate_indices, head_tail, peek
 
@@ -106,8 +106,8 @@ class TestApplyAlongAxes(unittest.TestCase):
     def test_apply(self):
         x = np.random.rand(3, 10, 10) * 2 + 3
         np.testing.assert_array_almost_equal(
-            apply_along_axes(partial(normalize_image, drop_percentile=20), x, (1, 2)),
-            normalize_multichannel_image(x, drop_percentile=20)
+            apply_along_axes(normalize, x, axes=(1, 2), percentiles=20),
+            normalize(x, percentiles=20, axes=0)
         )
 
         axes = (0, 2)

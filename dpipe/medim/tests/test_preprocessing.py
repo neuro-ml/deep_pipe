@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 from dpipe.medim import prep
+from dpipe.medim.preprocessing import *
 
 
 class TestPrep(unittest.TestCase):
@@ -30,21 +31,25 @@ class TestPrep(unittest.TestCase):
         self.assertTupleEqual(prep.zoom(self.x, (4, 3)).shape, (3, 40, 30))
 
     def test_normalize_image(self):
-        x = prep.normalize_image(self.x)
+        x = normalize(self.x)
         np.testing.assert_almost_equal(0, x.mean())
         np.testing.assert_almost_equal(1, x.std())
 
-        x = prep.normalize_image(self.x, mean=False)
+        x = normalize(self.x, mean=False)
         np.testing.assert_almost_equal(1, x.std())
 
-        x = prep.normalize_image(self.x, std=False)
+        x = normalize(self.x, std=False)
         np.testing.assert_almost_equal(0, x.mean())
 
         y = np.array([-100, 1, 2, 1000])
-        x = prep.normalize_image(y, drop_percentile=25)
+        x = normalize(y, percentiles=25)
         np.testing.assert_equal(x, (y - 1.5) * 2)
+        np.testing.assert_equal(
+            normalize(y, percentiles=25),
+            normalize(y, percentiles=[25, 25]),
+        )
 
     def test_normalize_multichannel_image(self):
-        x = prep.normalize_multichannel_image(self.x)
+        x = normalize(self.x, axes=0)
         np.testing.assert_almost_equal(0, x.mean(axis=(1, 2)))
         np.testing.assert_almost_equal(1, x.std(axis=(1, 2)))
