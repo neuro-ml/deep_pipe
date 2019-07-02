@@ -4,8 +4,8 @@ import torch
 from torch.nn import functional
 
 
-def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: float = 2, weight: torch.Tensor = None,
-                           reduce: Union[Callable, None] = torch.mean):
+def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: float = 2, alpha: float = None,
+                           weight: torch.Tensor = None, reduce: Union[Callable, None] = torch.mean):
     """
     Function that measures Focal Loss between target and output logits.
 
@@ -17,11 +17,13 @@ def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: fl
         tensor of the same shape as ``logits``.
     gamma: float
         the power of focal loss factor.
+    alpha: float, None, optional
+        weighting factor of the focal loss. If ``None``, no weighting will be performed. Defaults to ``None``.
     weight: torch.Tensor, None, optional
         a manual rescaling weight. Must be broadcastable to ``logits``.
     reduce: Callable, None, optional
         the reduction operation to be applied to the final loss. Defaults to ``torch.mean``.
-        If ``None`` - no reduction will be performed.
+        If ``None``, no reduction will be performed.
 
     References
     ----------
@@ -30,12 +32,19 @@ def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: fl
     if not (target.size() == logits.size()):
         raise ValueError("Target size ({}) must be the same as logits size ({})".format(target.size(), logits.size()))
 
+    if alpha is not None:
+        if not (0 <= alpha <= 1):
+            raise ValueError(f'`alpha` should be between 0 and 1, {alpha} was given')
+        rescale_w = (2 * alpha - 1) * target + 1 - alpha
+    else:
+        rescale_w = 1
+
     min_val = - logits.clamp(min=0)
     max_val = (-logits).clamp(min=0)
 
     prob = (min_val + logits).exp() / (min_val.exp() + (min_val + logits).exp())
 
-    loss = ((1 - 2 * prob) * target + prob) ** gamma * (
+    loss = rescale_w * ((1 - 2 * prob) * target + prob) ** gamma * (
             logits - logits * target + max_val + ((-max_val).exp() + (-logits - max_val).exp()).log())
 
     if weight is not None:
