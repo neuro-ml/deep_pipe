@@ -31,7 +31,7 @@ def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: A
     if std:
         x = x / robust_values.std(axes, keepdims=True)
 
-    return x
+    return np.ma.filled(x, np.nan)
 
 
 def min_max_scale(x: np.ndarray, axes: AxesLike = None) -> np.ndarray:

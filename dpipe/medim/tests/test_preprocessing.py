@@ -1,6 +1,5 @@
 import unittest
 
-import numpy as np
 from dpipe.medim import prep
 from dpipe.medim.preprocessing import *
 
@@ -46,7 +45,7 @@ class TestPrep(unittest.TestCase):
         np.testing.assert_equal(x, (y - 1.5) * 2)
         np.testing.assert_equal(
             normalize(y, percentiles=25),
-            normalize(y, percentiles=[25, 25]),
+            normalize(y, percentiles=[25, 75]),
         )
 
     def test_normalize_multichannel_image(self):
