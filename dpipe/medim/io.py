@@ -1,12 +1,20 @@
 """Input/Output operations."""
 import argparse
 import json
+import pickle
 import re
 import os
 from pathlib import Path
 from typing import Union
 
 import numpy as np
+
+__all__ = [
+    'PathLike', 'ConsoleArguments', 'load_by_ext',
+    'load_json', 'save_json',
+    'load_pickle', 'save_pickle',
+    'save_numpy',
+]
 
 PathLike = Union[Path, str]
 
@@ -100,7 +108,23 @@ def save_json(value, path: PathLike, *, indent: int = None):
     """Dump a json-serializable object to a json file."""
     with open(path, 'w') as f:
         json.dump(value, f, indent=indent, cls=NumpyEncoder)
-        return value
+
+
+def save_numpy(value, path: PathLike, *, allow_pickle=True, fix_imports=True):
+    """A wrapper around ``np.save`` that matches the interface ``save(what, where)``."""
+    np.save(path, value, allow_pickle=allow_pickle, fix_imports=fix_imports)
+
+
+def save_pickle(value, path: PathLike):
+    """Pickle a ``value`` to ``path``."""
+    with open(path, 'wb') as file:
+        pickle.dump(value, file)
+
+
+def load_pickle(path: PathLike):
+    """Load a pickled value from ``path``."""
+    with open(path, 'rb') as file:
+        return pickle.load(file)
 
 
 class ConsoleArguments:

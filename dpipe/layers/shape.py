@@ -43,7 +43,7 @@ class InterpolateToInput(nn.Module):
             new_shape[i] = old_shape[i]
 
         if np.not_equal(x.shape[2:], new_shape).any():
-            x = functional.interpolate(x, size=new_shape, mode=self.mode)
+            x = functional.interpolate(x, size=new_shape, mode=self.mode, align_corners=False)
         return x
 
 

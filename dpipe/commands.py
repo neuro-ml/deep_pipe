@@ -1,5 +1,4 @@
 """Contains a few more sophisticated commands that are usually accessed directly inside configs."""
-
 import os
 from collections import defaultdict
 from typing import Callable, Iterable
@@ -7,7 +6,7 @@ from typing import Callable, Iterable
 import numpy as np
 from tqdm import tqdm
 
-from dpipe.medim.io import save_json
+from dpipe.medim.io import save_json, save_numpy
 from dpipe.medim.itertools import collect
 
 
@@ -33,7 +32,7 @@ def load_from_folder(path: str):
 
 
 def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_path: str,
-                    exist_ok: bool = False, save: Callable = np.save):
+                    exist_ok: bool = False, save: Callable = save_numpy):
     """
     Apply ``func`` to each id from ``ids`` and save each output to ``output_path`` using ``save``.
     If ``exist_ok`` is True the existing files will be ignored, otherwise an exception is raised.
@@ -51,12 +50,12 @@ def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_pa
         if isinstance(value, np.ndarray) and np.issubdtype(value.dtype, np.floating):
             value = value.astype(np.float16)
 
-        save(output, value)
+        save(value, output)
         # saving some memory
         del value
 
 
-def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save=np.save):
+def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save=save_numpy):
     map_ids_to_disk(lambda identifier: predict_fn(load_x(identifier)), tqdm(ids), output_path, exist_ok, save)
 
 

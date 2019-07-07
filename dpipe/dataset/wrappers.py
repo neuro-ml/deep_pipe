@@ -13,6 +13,7 @@ import numpy as np
 
 import dpipe.medim as medim
 from dpipe.medim.checks import join
+from dpipe.medim.io import save_numpy
 from dpipe.medim.itertools import zdict
 from dpipe.medim.utils import cache_to_disk
 from .base import Dataset
@@ -48,7 +49,8 @@ def cache_methods(instance, methods: Iterable[str] = None, maxsize: int = None):
     return proxy(instance)
 
 
-def cache_methods_to_disk(instance, base_path: str, **methods: str):
+def cache_methods_to_disk(instance, base_path: str, loader: Callable = np.load, saver: Callable = save_numpy,
+                          **methods: str):
     """
     Cache the ``instance``'s ``methods`` to disk.
 
@@ -61,20 +63,20 @@ def cache_methods_to_disk(instance, base_path: str, **methods: str):
     methods: str
         each keyword argument has the form ``method_name=path_to_cache``.
         The methods are assumed to take a single argument of type ``str``.
-
-    Notes
-    -----
-    The values are cached and loaded using `np.save` and `np.load` respectively.
+    loader
+        loads a single object given its path.
+    saver: Callable(value, path)
+        saves a single object to the given path.
     """
 
     def path_by_id(path, identifier):
         return jp(path, f'{identifier}.npy')
 
     def load(path, identifier):
-        return np.load(path_by_id(path, identifier))
+        return loader(path_by_id(path, identifier))
 
     def save(value, path, identifier):
-        np.save(path_by_id(path, identifier), value)
+        saver(value, path_by_id(path, identifier))
 
     new_methods = {method: staticmethod(cache_to_disk(getattr(instance, method), jp(base_path, path), load, save))
                    for method, path in methods.items()}

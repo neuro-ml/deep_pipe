@@ -85,7 +85,7 @@ def load_series(row: pd.Series, base_path: PathLike = None) -> np.ndarray:
     if _contains_info(row, 'InstanceNumbers'):
         files = map(itemgetter(1), sorted(zip_equal(map(int, row.InstanceNumbers.split(',')), files)))
 
-    x = np.stack((read_file(jp(folder, file)).pixel_array for file in files), axis=-1)
+    x = np.stack([read_file(jp(folder, file)).pixel_array for file in files], axis=-1)
     if _contains_info(row, 'RescaleSlope'):
         x = x * row.RescaleSlope
     if _contains_info(row, 'RescaleIntercept'):
