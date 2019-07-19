@@ -9,7 +9,7 @@ from .shape_ops import *
 
 # TODO: docstring
 def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: AxesLike = None,
-              axes: AxesLike = None) -> np.ndarray:
+              axes: AxesLike = None, dtype=None) -> np.ndarray:
     """
     Normalize ``x``'s values to make mean and std independently along ``axes`` equal to 0 and 1 respectively
     (if specified).
@@ -31,7 +31,10 @@ def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: A
     if std:
         x = x / robust_values.std(axes, keepdims=True)
 
-    return np.ma.filled(x, np.nan)
+    x = np.ma.filled(x, np.nan)
+    if dtype is not None:
+        x = x.astype(dtype)
+    return x
 
 
 def min_max_scale(x: np.ndarray, axes: AxesLike = None) -> np.ndarray:

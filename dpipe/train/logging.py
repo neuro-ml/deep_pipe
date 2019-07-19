@@ -52,7 +52,7 @@ class ConsoleLogger(Logger):
         pass
 
     def train(self, train_losses, step):
-        print(f'{step:>05}: train loss: {np.mean(train_losses)}', flush=True)
+        print(f'{step:>05}: train loss: {np.mean(train_losses, axis=0)}', flush=True)
 
     def metrics(self, metrics, step):
         for name, value in metrics.items():
