@@ -71,7 +71,7 @@ def _contains_info(row, *cols):
     return all(col in row and pd.notnull(row[col]) for col in cols)
 
 
-def load_series(row: pd.Series, base_path: PathLike = None) -> np.ndarray:
+def load_series(row: pd.Series, base_path: PathLike = None, orientation: bool = True) -> np.ndarray:
     """
     Loads an image based on its ``row`` in the metadata dataframe.
 
@@ -91,7 +91,7 @@ def load_series(row: pd.Series, base_path: PathLike = None) -> np.ndarray:
     if _contains_info(row, 'RescaleIntercept'):
         x = x + row.RescaleIntercept
 
-    if not _contains_info(row, *ORIENTATION):
+    if not orientation or not _contains_info(row, *ORIENTATION):
         return x
 
     m = get_orientation_matrix(row)

@@ -202,20 +202,28 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, ratio: 
     return x[build_slices(start, start + new_shape)]
 
 
-def crop_to_box(x: np.ndarray, box: Box, axes: AxesLike = None) -> np.ndarray:
+def crop_to_box(x: np.ndarray, box: Box, axes: AxesLike = None, padding_values: AxesParams = None) -> np.ndarray:
     """
     Crop ``x`` according to ``box`` along ``axes``.
 
     If axes is None - the last ``box.shape[-1]`` axes are used.
     """
     start, stop = box
-    if (stop > x.shape).any():
-        raise ValueError(f"The box's stop {stop} is bigger than the input shape {x.shape}.")
+    axes = expand_axes(axes, start)
 
-    start = fill_by_indices(np.zeros(x.ndim, int), start, axes)
-    stop = fill_by_indices(x.shape, stop, axes)
+    slice_start = np.maximum(start, 0)
+    slice_stop = np.minimum(stop, extract(x.shape, axes))
+    padding = np.array([slice_start - start, stop - slice_stop], dtype=int).T
+    if padding_values is None and padding.any():
+        raise ValueError(f"The box {box} exceeds the input's limits {x.shape}.")
 
-    return x[build_slices(start, stop)]
+    slice_start = fill_by_indices(np.zeros(x.ndim, int), start, axes)
+    slice_stop = fill_by_indices(x.shape, stop, axes)
+    x = x[build_slices(slice_start, slice_stop)]
+
+    if padding_values is not None and padding.any():
+        x = pad(x, padding, axes, padding_values)
+    return x
 
 
 def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesParams = 0) -> np.ndarray:

@@ -35,7 +35,7 @@ def broadcast_shape(x_shape, y_shape):
 def extract_dims(array, ndim=1):
     """Decrease the dimensionality of ``array`` by extracting ``ndim`` leading singleton dimensions."""
     for _ in range(ndim):
-        assert len(array) == 1
+        assert len(array) == 1, len(array)
         array = array[0]
     return array
 

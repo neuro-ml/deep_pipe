@@ -1,14 +1,17 @@
 """
 Various functions that can be used to build predictors.
 """
+from functools import partial
 from typing import Callable
 
 import numpy as np
 
 
-def chain_decorators(*decorators: Callable, predict: Callable):
+def chain_decorators(*decorators: Callable, predict: Callable, **kwargs):
     """
     Wraps ``predict`` into a series of ``decorators``.
+
+    ``kwargs`` are passed as additional arguments to ``predict``.
 
     Examples
     --------
@@ -22,6 +25,8 @@ def chain_decorators(*decorators: Callable, predict: Callable):
     >>>
     >>> f = chain_decorators(decorator1, decorator2, predict=f)
     """
+    predict = partial(predict, **kwargs)
+
     for decorator in reversed(decorators):
         predict = decorator(predict)
     return predict

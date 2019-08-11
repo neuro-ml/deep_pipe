@@ -32,7 +32,7 @@ def get_file_meta(path: PathLike) -> dict:
         | PixelArrayShape: (if HasPixelArray is True) the shape of the pixel array.
 
     For some formats the following packages might be required:
-        >>> conda install -c clinicalgraphics gdcm
+        >>> conda install -c glueviz gdcm
     """
     result = {}
 
@@ -125,6 +125,6 @@ def join_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), relati
         | FileName
 
     For some formats the following packages might be required:
-        >>> conda install -c clinicalgraphics gdcm
+        >>> conda install -c glueviz gdcm
     """
     return pd.concat(map(itemgetter(1), walk_dicom_tree(top, ignore_extensions, relative, verbose))).reset_index()

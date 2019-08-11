@@ -6,28 +6,60 @@ This implementation is a wrapper for the PyTorch framework.
 """
 from torch.nn import Module
 
+from dpipe.medim.utils import identity
 from ..model import Model
 from .utils import *
 
 
-def do_train_step(*inputs, lr, inputs2logits, optimizer, logits2loss):
-    inputs2logits.train()
-    *inputs, target = sequence_to_var(*inputs, cuda=is_on_cuda(inputs2logits))
-
-    logits = inputs2logits(*inputs)
-    loss = logits2loss(logits, target)
-
-    set_lr(optimizer, lr)
+def optimizer_step(optimizer, loss):
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
+    return loss
+
+
+def train_step(*inputs, architecture, criterion, optimizer, lr=None, n_targets=1):
+    """
+    Performs a forward-backward pass, as well as the gradient step, according to the given ``inputs``.
+
+    Notes
+    -----
+    Note that both input and output are **not** of type `torch.Tensor` - the conversion
+    to torch.Tensor is made inside this function.
+    """
+    architecture.train()
+    # TODO: add `device` support
+    inputs = sequence_to_var(*inputs, cuda=is_on_cuda(architecture))
+    inputs, targets = inputs[:-n_targets], inputs[-n_targets:]
+
+    loss = criterion(architecture(*inputs), *targets)
+
+    if lr is not None:
+        set_lr(optimizer, lr)
+    optimizer_step(optimizer, loss)
     return to_np(loss)
 
 
-def do_inf_step(*inputs, inputs2logits, logits2pred):
-    inputs2logits.eval()
+def inference_step(*inputs, architecture, activation=identity):
+    """
+    Returns the prediction for the given ``inputs``.
+
+    Notes
+    -----
+    Note that both input and output are **not** of type `torch.Tensor` - the conversion
+    to torch.Tensor is made inside this function.
+    """
+    architecture.eval()
     with torch.no_grad():
-        return to_np(logits2pred(inputs2logits(*sequence_to_var(*inputs, cuda=is_on_cuda(inputs2logits)))))
+        return to_np(activation(architecture(*sequence_to_var(*inputs, cuda=is_on_cuda(architecture)))))
+
+
+def do_train_step(*inputs, lr, inputs2logits, optimizer, logits2loss):
+    return train_step(*inputs, lr=lr, architecture=inputs2logits, criterion=logits2loss, optimizer=optimizer)
+
+
+def do_inf_step(*inputs, inputs2logits, logits2pred):
+    return inference_step(*inputs, architecture=inputs2logits, activation=logits2pred)
 
 
 class TorchModel(Model):

@@ -8,7 +8,7 @@ from torch import nn
 from dpipe.medim.io import PathLike
 
 
-def load_model_state(module: nn.Module, path: str, modify_state_fn: Callable = None):
+def load_model_state(module: nn.Module, path: PathLike, modify_state_fn: Callable = None):
     """Updates the ``module``'s state dict by the one located at ``path``."""
     if is_on_cuda(module):
         map_location = None

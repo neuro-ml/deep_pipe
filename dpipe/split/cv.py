@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import numpy as np
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
@@ -45,7 +47,7 @@ def train_val_test_split(ids, *, val_size, n_splits, random_state=42):
     return indices_to_ids(split_indices, ids)
 
 
-def group_train_val_test_split(ids, groups: np.array, *, val_size, n_splits, random_state=42):
+def group_train_val_test_split(ids: Sequence, groups: np.ndarray, *, val_size, n_splits, random_state=42):
     """
     Splits the dataset's ids into triplets (train, validation, test) keeping all the objects
     from a group in the same set (either train, validation or test).
@@ -58,7 +60,7 @@ def group_train_val_test_split(ids, groups: np.array, *, val_size, n_splits, ran
     Parameters
     ----------
     ids
-    groups: np.array[int]
+    groups: np.ndarray[int]
     val_size: float, int
         If ``float``, should be between 0.0 and 1.0 and represents the proportion
         of the train set to include in the validation set. If ``int``, represents the

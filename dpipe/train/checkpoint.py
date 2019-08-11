@@ -1,16 +1,18 @@
-import os
 import shutil
 import pickle
+import warnings
 from pathlib import Path
+from typing import Dict, Any
 
 import torch
+
+from dpipe.medim.io import PathLike
 
 __all__ = 'CheckpointManager',
 
 
 def save_pickle(o, path):
     with open(path, 'wb') as file:
-        # TODO: in case of policies __dict__ is an overkill
         pickle.dump(o.__dict__, file)
 
 
@@ -25,7 +27,6 @@ def save_torch(o, path):
     torch.save(o.state_dict(), path)
 
 
-# TODO: no CPU - GPU interchange for now
 def load_torch(o, path):
     o.load_state_dict(torch.load(path))
 
@@ -38,21 +39,34 @@ class CheckpointManager:
     ----------
     base_path: str
         path to save/restore checkpoint object in/from.
-    pickled_objects: dict, None, optional
-        objects that will be saved using `pickle`
-    state_dict_objects: dict, None, optional
-        objects whose ``state_dict()`` will be saved using `torch.save`.
+    objects: Dict[PathLike, Any]
+        objects to save. Each key-value pair represents
+        the path relative to ``base_path`` and the corresponding object.
+
+    pickled_objects
+        deprecated argument
+    state_dict_objects
+        deprecated argument
     """
 
-    def __init__(self, base_path: str, pickled_objects: dict = None, state_dict_objects: dict = None):
-        self.base_path = Path(base_path)
+    def __init__(self, base_path: PathLike, objects: Dict[PathLike, Any], pickled_objects=None,
+                 state_dict_objects=None):
+        self.base_path: Path = Path(base_path)
         self._checkpoint_prefix = 'checkpoint_'
-        pickled_objects = pickled_objects or {}
+        objects = objects or {}
         state_dict_objects = state_dict_objects or {}
-        assert not (set(state_dict_objects) & set(pickled_objects))
+        pickled_objects = pickled_objects or {}
 
-        self.objects = [(load_pickle, save_pickle, path, o) for path, o in pickled_objects.items()]
-        self.objects.extend((load_torch, save_torch, path, o) for path, o in state_dict_objects.items())
+        self.objects = {}
+        self.objects.update(objects)
+
+        # TODO: deprecated 10.08.2019
+        if pickled_objects or state_dict_objects:
+            warnings.warn('`pickled_objects` and `state_dict_objects` arguments are deprecated. Use `objects` instead.',
+                          DeprecationWarning)
+            assert not (set(state_dict_objects) & set(pickled_objects) & set(objects))
+            self.objects.update(state_dict_objects)
+            self.objects.update(pickled_objects)
 
     def _get_previous_folder(self, iteration):
         return self.base_path / f'{self._checkpoint_prefix}{iteration - 1}'
@@ -63,13 +77,26 @@ class CheckpointManager:
     def _clear_previous(self, iteration):
         shutil.rmtree(self._get_previous_folder(iteration))
 
+    @staticmethod
+    def _dispatch_saver(o):
+        if isinstance(o, (torch.nn.Module, torch.optim.Optimizer)):
+            return save_torch
+        return save_pickle
+
+    @staticmethod
+    def _dispatch_loader(o):
+        if isinstance(o, (torch.nn.Module, torch.optim.Optimizer)):
+            return load_torch
+        return load_pickle
+
     def save(self, iteration: int):
         """Save the states of all tracked objects."""
         current_folder = self._get_current_folder(iteration)
-        os.makedirs(current_folder)
+        current_folder.mkdir()
 
-        for _, save, relative_path, o in self.objects:
-            save(o, current_folder / relative_path)
+        for path, o in self.objects.items():
+            save = self._dispatch_saver(o)
+            save(o, current_folder / path)
 
         if iteration:
             self._clear_previous(iteration)
@@ -80,7 +107,8 @@ class CheckpointManager:
             return 0
 
         max_iteration = -1
-        for file in os.listdir(self.base_path):
+        for file in self.base_path.iterdir():
+            file = file.name
             if file.startswith(self._checkpoint_prefix):
                 max_iteration = max(max_iteration, int(file[len(self._checkpoint_prefix):]))
 
@@ -91,7 +119,8 @@ class CheckpointManager:
         iteration = max_iteration + 1
         last_folder = self._get_previous_folder(iteration)
 
-        for load, _, relative_path, o in self.objects:
-            load(o, last_folder / relative_path)
+        for path, o in self.objects:
+            load = self._dispatch_loader(o)
+            load(o, last_folder / path)
 
         return iteration

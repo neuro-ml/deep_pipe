@@ -1,15 +1,19 @@
 from typing import Callable
 
+import numpy as np
+
 from ..batch_iter import BatchIter
 from .checkpoint import CheckpointManager
 from .policy import Policy, ValuePolicy, EarlyStopping
 from .logging import Logger
 
 
-def one_epoch(epoch: int, do_train_step: Callable, batch_iter: Callable, logger: Logger, validate: Callable = None,
-              **policies: Policy):
+def one_epoch(epoch: int, train_step: Callable, batch_iter: Callable, logger: Logger, validate: Callable, **kwargs):
     def get_values():
         return {name: policy_.value for name, policy_ in policies.items() if isinstance(policy_, ValuePolicy)}
+
+    policies = {name: value for name, value in kwargs.items() if isinstance(value, Policy)}
+    values = {name: value for name, value in kwargs.items() if not isinstance(value, Policy)}
 
     for policy in policies.values():
         policy.epoch_started(epoch)
@@ -17,7 +21,7 @@ def one_epoch(epoch: int, do_train_step: Callable, batch_iter: Callable, logger:
     metrics = None
     train_losses = []
     for inputs in batch_iter():
-        train_losses.append(do_train_step(*inputs, **get_values()))
+        train_losses.append(train_step(*inputs, **values, **get_values()))
 
     logger.train(train_losses, epoch)
     logger.policies(get_values(), epoch)
@@ -47,25 +51,29 @@ class _DummyLogger(Logger):
         pass
 
 
-def train(do_train_step: Callable, batch_iter: BatchIter, logger: Logger = None,
-          checkpoint_manager: CheckpointManager = None, validate: Callable = None, **policies: Policy):
+# TODO: better doc the kwargs
+# TODO: update the tutorials
+def train(train_step: Callable, batch_iter: BatchIter, n_epochs: int = np.inf, logger: Logger = None,
+          checkpoint_manager: CheckpointManager = None, validate: Callable = None, **kwargs):
     """
-    Train a given model.
+    Performs a series of train and validation steps.
 
     Parameters
     ----------
-    do_train_step: Callable
+    train_step: Callable
         a function to perform train step.
     batch_iter: BatchIter
         batch iterator.
+    n_epochs: int
+        maximal number of training epochs
     logger: Logger, None, optional
     checkpoint_manager: CheckpointManager, None, optional
     validate: Callable, None, optional
         a function to calculate metrics on the validation set.
-    policies: Policy
-        a collection of policies to run before and after epoch.
-        Policies, inherited from `ValuePolicy` will be passed to ``do_train_step``.
-        The rest can be used for early stopping.
+    kwargs
+        additional keyword arguments passed to ``train_step``.
+        For instances of `ValuePolicy` their `value` attribute is passed.
+        Other policies are used for early stopping.
     """
     if checkpoint_manager is None:
         checkpoint_manager = _DummyCheckpointManager()
@@ -76,8 +84,8 @@ def train(do_train_step: Callable, batch_iter: BatchIter, logger: Logger = None,
 
     with batch_iter as iterator:
         try:
-            while True:
-                one_epoch(epoch, do_train_step, iterator, logger, validate, **policies)
+            while epoch < n_epochs:
+                one_epoch(epoch, train_step, iterator, logger, validate, **kwargs)
                 checkpoint_manager.save(epoch)
                 epoch += 1
 

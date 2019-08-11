@@ -1,5 +1,7 @@
 from abc import abstractmethod, ABC
 
+__all__ = 'BatchIter',
+
 
 class BatchIter(ABC):
     """
