@@ -92,7 +92,7 @@ class CheckpointManager:
     def save(self, iteration: int):
         """Save the states of all tracked objects."""
         current_folder = self._get_current_folder(iteration)
-        current_folder.mkdir()
+        current_folder.mkdir(parents=True)
 
         for path, o in self.objects.items():
             save = self._dispatch_saver(o)

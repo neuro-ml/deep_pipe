@@ -14,7 +14,7 @@ libraries, which add support for various medical imaging formats:
 
 .. code:: bash
 
-   conda install -c clinicalgraphics gdcm
+   conda install -c glueviz gdcm
 
 We’ll be working with a subset of the ``CT Lymph Nodes`` dataset which
 can be downloaded
