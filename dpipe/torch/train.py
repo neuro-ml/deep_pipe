@@ -5,7 +5,7 @@ import numpy as np
 from .model import TorchModel
 from ..batch_iter.base import BatchIter
 from ..train.checkpoint import CheckpointManager
-from ..train.policy import Policy, ValuePolicy, NEpochs, Constant
+from ..train.policy import Policy, ValuePolicy, Constant
 from ..train.logging import TBLogger, Logger
 from ..train import train
 
@@ -49,5 +49,4 @@ def train_model(model: TorchModel, batch_iter: BatchIter, n_epochs: int, lr: Uni
             'optimizer': model.optimizer
         })
 
-    return train(model.do_train_step, batch_iter, logger, checkpoint_manager, validate,
-                 n_epochs=NEpochs(n_epochs), **policies)
+    return train(model.do_train_step, batch_iter, n_epochs, logger, checkpoint_manager, validate, **policies)

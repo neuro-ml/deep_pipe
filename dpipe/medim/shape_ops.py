@@ -217,8 +217,8 @@ def crop_to_box(x: np.ndarray, box: Box, axes: AxesLike = None, padding_values: 
     if padding_values is None and padding.any():
         raise ValueError(f"The box {box} exceeds the input's limits {x.shape}.")
 
-    slice_start = fill_by_indices(np.zeros(x.ndim, int), start, axes)
-    slice_stop = fill_by_indices(x.shape, stop, axes)
+    slice_start = fill_by_indices(np.zeros(x.ndim, int), slice_start, axes)
+    slice_stop = fill_by_indices(x.shape, slice_stop, axes)
     x = x[build_slices(slice_start, slice_stop)]
 
     if padding_values is not None and padding.any():

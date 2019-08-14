@@ -3,29 +3,47 @@ Training
 ========
 
 ``deep_pipe`` has a unified interface for training models. We will show
-an example for a model written in PyTorch:
+an example for a model written in PyTorch.
 
 .. code-block:: python3
 
-    from dpipe.torch import train_model
+    from dpipe.train import train
 
-this is the main function; it requires a `TorchModel`, a `BatchIter` ,
-the learning rate and the number of epochs.
+this is the main function; it requires a batch iterator (`BatchIter`),
+and a ``train_step`` function, that performs a forward-backward pass for
+a given batch.
 
 Let’s build all the required components.
 
-Model
-~~~~~
+Batch iterator
+~~~~~~~~~~~~~~
 
-The model encapsulates all the logic necessary for training and
-inference with a given architecture:
+The batch iterators are covered in a separate tutorial
+(:doc:`batch_iter`), we’ll reuse the code from it:
 
 .. code-block:: python3
 
-    from dpipe.torch import TorchModel
-    from dpipe import layers
+    from dpipe.tests.mnist.resources import MNIST
+    from dpipe.batch_iter import Infinite, load_by_random_id
+    
+    dataset = MNIST('PATH TO DATA')
+    
+    batch_iter = Infinite(
+        load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids),
+        batch_size=100, batches_per_epoch=50,
+    )
+
+Train Step
+~~~~~~~~~~
+
+Next, we will implement the function that performs a train_step. But
+first we need an architecture:
+
+.. code-block:: python3
+
     import torch
     from torch import nn
+    from dpipe import layers
     
     
     architecture = nn.Sequential(
@@ -35,60 +53,109 @@ inference with a given architecture:
         nn.ReLU(),
         nn.Conv2d(64, 128, kernel_size=3),
         
-        layers.PyramidPooling(nn.functional.max_pool2d), # global pooling
+        nn.AdaptiveMaxPool2d((1, 1)),
+        layers.Reshape('0', -1),
+        
         nn.ReLU(),
         nn.Linear(128, 10),
     )
-    
-    model = TorchModel(architecture, nn.Softmax(-1), nn.CrossEntropyLoss(), torch.optim.Adam)
-
-It requires the architecture itself, as well as the loss function, the
-activation layer, and the optimizer class.
-
-Batch iterator
-~~~~~~~~~~~~~~
-
-The batch iterators are covered in a separate tutorial
-(:doc:`tutorials/batch_iter`), we’ll reuse the code from it:
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(architecture.parameters(), lr=1e-3)
 
 .. code-block:: python3
 
-    from dpipe.batch_iter import Infinite
-    from dpipe.tests.mnist.resources import MNIST
-    from dpipe.batch_iter import load_by_random_id
+    from dpipe.torch import to_var, to_np
     
-    dataset = MNIST('PATH TO DATA')
-    
-    batch_iter = Infinite(
-        load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids),
-        batch_size=100, batches_per_epoch=2000,
-    )
+    def cls_train_step(images, labels):
+        # images and labels are both of type `np.ndarray`
+        images, labels = torch.from_numpy(images), torch.from_numpy(labels)
+        architecture.train()
+        
+        logits = architecture(images)
+        loss = criterion(logits, labels)
+        
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        # `train_step` must return the loss which will be later user for logging
+        return loss.data.numpy()
 
 Training the model
 ~~~~~~~~~~~~~~~~~~
 
-Next, we just run the function ``train_model``:
+Next, we just run the ``train`` function:
 
 .. code-block:: python3
 
-    train_model(model, batch_iter, n_epochs=10, lr=1e-3)
+    train(cls_train_step, batch_iter, n_epochs=10)
 
-Logging and Checkpoints
-~~~~~~~~~~~~~~~~~~~~~~~
-
-After the calling ``train_model`` the interpreter just “hangs” until the
-training is over. In order to log various information about the training
-process, you can pass the ``log_path`` argument. The logs will be
-written in a format, readable by tensorboard.
-
-Also, it is often useful to keep checkpoints (or snapshots) of you model
-and optimizer in case you may want to resotore them. To do that, pass
-the ``checkpoints_path`` argument:
+A more general version of the function ``cls_train_step`` is already
+available in dpipe:
 
 .. code-block:: python3
 
-    train_model(model, batch_iter, n_epochs=10, lr=1e-3,
-                log_path='~/my_new_model/logs', checkpoints_path='~/my_new_model/checkpoints')
+    from dpipe.torch import train_step
+
+Apart from the input batches it requires the following arguments:
+``architecture``, ``optimizer``, ``criterion``. We can pass these
+arguments directly to ``train``, so the previous call is equivalent to:
+
+.. code-block:: python3
+
+    train(
+        train_step, batch_iter, n_epochs=10, 
+        architecture=architecture, optimizer=optimizer, criterion=criterion
+    )
+
+Logging
+~~~~~~~
+
+After calling ``train`` the interpreter just “hangs” until the training
+is over. In order to log various information about the training process,
+you can pass a logger:
+
+.. code-block:: python3
+
+    from dpipe.train import ConsoleLogger
+    
+    train(
+        train_step, batch_iter, n_epochs=3, logger=ConsoleLogger(),
+        architecture=architecture, optimizer=optimizer, criterion=criterion
+    )
+
+
+.. parsed-literal::
+
+    00000: train loss: 0.29427966475486755
+    00001: train loss: 0.26119616627693176
+    00002: train loss: 0.2186189591884613
+
+
+There are various logger implementations, e.g. one that writes in a
+format, readable by tensorboard - `TBLogger`.
+
+Checkpoints
+~~~~~~~~~~~
+
+It is often useful to keep checkpoints (or snapshots) of you model and
+optimizer in case you may want to resotore them. To do that, pass the
+``checkpoint_manager`` argument:
+
+.. code-block:: python3
+
+    from dpipe.train import CheckpointManager
+    
+    
+    checkpoints = CheckpointManager(
+        'PATH/TO/CHECKPOINTS/FOLDER', 
+        {'model.pth': architecture, 'optimizer.pth': optimizer}
+    )
+    
+    train(
+        train_step, batch_iter, n_epochs=3, checkpoint_manager=checkpoints,
+        architecture=architecture, optimizer=optimizer, criterion=criterion
+    )
 
 The cool part is that if the training is prematurely stopped, e.g. by an
 exception, you can resume the training from the same point instead of
@@ -96,87 +163,39 @@ starting over:
 
 .. code-block:: python3
 
-    train_model(model, batch_iter, n_epochs=10, lr=1e-3,
-                log_path='~/my_new_model/logs', checkpoints_path='~/my_new_model/checkpoints')
+    train(
+        train_step, batch_iter, n_epochs=3, checkpoint_manager=checkpoints,
+        architecture=architecture, optimizer=optimizer, criterion=criterion
+    )
     # ... something bad happened, e.g. KeyboardInterrupt
     
     # start from where you left off
-    train_model(model, batch_iter, n_epochs=10, lr=1e-3,
-                log_path='~/my_new_model/logs', checkpoints_path='~/my_new_model/checkpoints')
+    train(
+        train_step, batch_iter, n_epochs=3, checkpoint_manager=checkpoints,
+        architecture=architecture, optimizer=optimizer, criterion=criterion
+    )
 
-Policies
-~~~~~~~~
+Value Policies
+~~~~~~~~~~~~~~
 
 You can further customize the training process by passing addtitional
-policies.
+values to ``train_step`` that change in time.
 
-The `Policy` interface has two methods:
+For example, ``train_step`` takes an optional argument ``lr`` - used to
+update the ``optimizer``\ ’s learning rate.
 
-.. code-block:: python3
-
-    class Policy:
-        def epoch_started(self, epoch: int):
-            # ...
-    
-        def epoch_finished(self, epoch: int, *, train_losses: Sequence = None, metrics: dict = None):
-            # ...
-
-which are called at the start and end (respectively) of each epoch. The
-simplest setting in which they can be used is early stopping:
+We can change this value after each trainig epoch using the
+`ValuePolicy` interface. Let’s use an exponential learning rate:
 
 .. code-block:: python3
 
-    import numpy as np
-    from dpipe.train.policy import EarlyStopping, Policy
+    from dpipe.train import Exponential
     
-    class TrainLossStop(Policy):
-        def epoch_finished(self, epoch: int, *, train_losses, metrics: dict = None):
-            if np.mean(train_losses) < 1e-5:
-                raise EarlyStopping
-
-this policy raises a specific exception - `EarlyStopping`, in order to
-trigger early stopping if the train loss becomes smaller than 1e-5.
-
-Policies with values
-^^^^^^^^^^^^^^^^^^^^
-
-Another useful kind of policies are the ones that carry a value which
-changes over time. For example - `Exponential`, which implements an
-exponentially changing policy.
-
-Their ``value`` attribute is passed to the model’s `do_train_step`
-method as a keyword argument.
-
-Let’s write a dummy model in order to demonstrate this.
-
-.. code-block:: python3
-
-    from dpipe.train.policy import Exponential
-    
-    
-    class WeightedModel(TorchModel):
-        def do_train_step(self, *inputs, lr, weights):
-            print('I received these weights:', weights)
-            # do something with the weights ...
-            # perform a train step ...
-            loss = super().do_train_step(*inputs, lr=lr)
-            return loss
-        
-    
-    model = WeightedModel(architecture, nn.Softmax(-1), nn.CrossEntropyLoss(), torch.optim.Adam)
-    
-    train_model(model, batch_iter, n_epochs=10, lr=1e-3, weights=Exponential(initial=10, multiplier=0.5))
-
-.. code-block:: python3
-
-    I received these weights: 10.0
-    I received these weights: 10.0
-    ...
-    I received these weights: 5.0
-    I received these weights: 5.0
-    ...
-    I received these weights: 2.5
-    ...
+    train(
+        train_step, batch_iter, n_epochs=10, 
+        architecture=architecture, optimizer=optimizer, criterion=criterion,
+        lr=Exponential(initial=1e-3, multiplier=0.5, step_length=3) # decrease by a factor of 2 every 3 epochs
+    )
 
 Validation
 ~~~~~~~~~~
@@ -195,3 +214,10 @@ metrics, e.g.:
         }
 
 this is a dummy function, of course.
+
+.. code-block:: python3
+
+    train(
+        train_step, batch_iter, n_epochs=10, validate=validate,
+        architecture=architecture, optimizer=optimizer, criterion=criterion,
+    )

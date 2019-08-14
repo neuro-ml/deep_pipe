@@ -6,8 +6,8 @@ PyTorch Wrappers
     :undoc-members:
     :show-inheritance:
 
-Model wrapper
--------------
+Training and inference
+----------------------
 
 .. automodule:: dpipe.torch.model
     :members:

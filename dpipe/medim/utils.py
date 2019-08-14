@@ -110,9 +110,3 @@ def composition(func: Callable, *args, **kwargs):
 
 def name_changed(func: Callable, old_name: str, date: str):
     return np.deprecate(func, old_name=old_name, new_name=func.__name__)
-
-
-@np.deprecate(message='This function is moved to `dpipe.medim.preprocessing`')
-def bytescale(x):
-    from dpipe.medim.preprocessing import bytescale
-    return bytescale(x)

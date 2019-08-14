@@ -2,8 +2,9 @@ import unittest
 
 import numpy as np
 
-from dpipe.medim.patch import sample_box_center_uniformly, extract_patch, get_random_patch, get_random_box
+from dpipe.medim.patch import sample_box_center_uniformly, get_random_patch, get_random_box
 from dpipe.medim.box import make_box_, get_centered_box
+from dpipe.medim.shape_ops import crop_to_box
 from dpipe.medim.utils import get_random_tuple
 
 
@@ -14,8 +15,8 @@ class TestPatch(unittest.TestCase):
                            [2, 3, 5, 2],
                            [4, 2, 2, 5]])
 
-    def test_extract_patch_no_padding(self):
-        x = extract_patch(self.x, box=make_box_(((0, 1), (4, 4))))
+    def test_crop_to_box_no_padding(self):
+        x = crop_to_box(self.x, box=make_box_(((0, 1), (4, 4))))
         np.testing.assert_array_equal(x, np.array([
             [2, 2, 3],
             [3, 3, 2],
@@ -24,7 +25,7 @@ class TestPatch(unittest.TestCase):
         ]))
 
     def test_extract_padding(self):
-        x = extract_patch(self.x, box=make_box_(((0, 2), (4, 5))), padding_values=[[1], [2], [3], [4]])
+        x = crop_to_box(self.x, box=make_box_(((0, 2), (4, 5))), padding_values=[[1], [2], [3], [4]])
         np.testing.assert_array_equal(x, np.array([
             [2, 3, 1],
             [3, 2, 2],
@@ -72,4 +73,3 @@ class TestRandomPatch(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             get_random_box([3], [4])
-

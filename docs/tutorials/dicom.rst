@@ -14,7 +14,8 @@ libraries, which add support for various medical imaging formats:
 
 .. code:: bash
 
-   conda install -c glueviz gdcm
+   conda install -c glueviz gdcm # Python 3.5 and 3.6
+   conda install -c conda-forge gdcm # Python 3.7
 
 We’ll be working with a subset of the ``CT Lymph Nodes`` dataset which
 can be downloaded

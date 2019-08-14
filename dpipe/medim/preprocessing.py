@@ -94,7 +94,7 @@ def get_greatest_component(mask: np.ndarray, background: int = 0, drop_backgroun
     return label_map == labels[0]
 
 
-# 27.07.2019
+# 27.06.2019
 @np.deprecate(new_name='normalize')
 def normalize_image(image: np.ndarray, mean: bool = True, std: bool = True, drop_percentile: int = None) -> np.ndarray:
     return normalize(image, mean, std, drop_percentile)

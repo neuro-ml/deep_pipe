@@ -51,8 +51,6 @@ class _DummyLogger(Logger):
         pass
 
 
-# TODO: better doc the kwargs
-# TODO: update the tutorials
 def train(train_step: Callable, batch_iter: BatchIter, n_epochs: int = np.inf, logger: Logger = None,
           checkpoint_manager: CheckpointManager = None, validate: Callable = None, **kwargs):
     """

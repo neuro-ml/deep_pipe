@@ -119,7 +119,7 @@ class CheckpointManager:
         iteration = max_iteration + 1
         last_folder = self._get_previous_folder(iteration)
 
-        for path, o in self.objects:
+        for path, o in self.objects.items():
             load = self._dispatch_loader(o)
             load(o, last_folder / path)
 

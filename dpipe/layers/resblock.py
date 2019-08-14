@@ -62,9 +62,8 @@ class ResBlock(nn.Module):
         spatial_difference = np.floor(
             np.asarray(dilation) * (np.asarray(kernel_size) - 1) - 2 * np.asarray(padding)
         ).astype(int)
-        # TODO: better error message
         if not (spatial_difference >= 0).all():
-            raise ValueError(f'`spatial_difference` should be greater than zero, {spatial_difference} given')
+            raise ValueError(f"The output's shape cannot be greater than the input's shape. ({spatial_difference})")
 
         if in_channels != out_channels or stride != 1:
             self.adjust_to_stride = conv_module(in_channels, out_channels, kernel_size=1, stride=stride, bias=bias)

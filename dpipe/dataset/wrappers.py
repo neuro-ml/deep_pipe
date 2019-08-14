@@ -11,10 +11,10 @@ from collections import ChainMap, namedtuple
 
 import numpy as np
 
-import dpipe.medim as medim
 from dpipe.medim.checks import join
 from dpipe.medim.io import save_numpy
 from dpipe.medim.itertools import zdict
+from dpipe.medim.preprocessing import normalize
 from dpipe.medim.utils import cache_to_disk
 from .base import Dataset
 
@@ -163,9 +163,10 @@ def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = (
 
 
 @np.deprecate  # 28.06.2019
-def normalized(dataset: Dataset, mean: bool = True, std: bool = True, drop_percentile: int = None) -> Dataset:
-    return apply(dataset, load_image=functools.partial(medim.prep.normalize_multichannel_image, mean=mean, std=std,
-                                                       drop_percentile=drop_percentile))
+def normalized(dataset: Dataset, mean: bool = True, std: bool = True, drop_percentile: int = None,
+               dtype=None) -> Dataset:
+    return apply(dataset, load_image=functools.partial(
+        normalize, mean=mean, std=std, drop_percentile=drop_percentile, axes=0, dtype=dtype))
 
 
 def merge(*datasets: Dataset, methods: Sequence[str] = None, attributes: Sequence[str] = ()) -> Dataset:

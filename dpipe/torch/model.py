@@ -1,57 +1,74 @@
-"""
-`Model` is an interface that lets us decouple the DL framework we use from the rest of the library.
-
-It implements the loading/saving of a neural to disk, as well as training and inference.
-This implementation is a wrapper for the PyTorch framework.
-"""
 from torch.nn import Module
+from torch.optim import Optimizer
 
-from dpipe.medim.utils import identity
+from ..medim.utils import identity
 from ..model import Model
 from .utils import *
 
 
-def optimizer_step(optimizer, loss):
+def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, lr: float = None):
+    """
+    Performs the backward pass with respect to ``loss``, as well as a gradient step.
+
+    If ``loss`` is not None - the ``optimizer``'s learning rate will be changed to this value.
+    """
+    if lr is not None:
+        set_lr(optimizer, lr)
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
     return loss
 
 
-def train_step(*inputs, architecture, criterion, optimizer, lr=None, n_targets=1):
+def train_step(*inputs: np.ndarray, architecture: nn.Module, criterion: Callable, optimizer: Optimizer,
+               lr: float = None, n_targets: int = 1):
     """
     Performs a forward-backward pass, as well as the gradient step, according to the given ``inputs``.
 
+    Parameters
+    ----------
+    inputs
+        inputs batches. The last ``n_targets`` batches are passed to ``criterion``.
+        The remaining batches are fed into the ``architecture``.
+    architecture
+        the neural network architecture.
+    criterion
+        the loss function.
+    optimizer
+    lr
+        if not None - the ``optimizer``'s learning rate will be changed to this value.
+        Useful for non-constant learning rate policies.
+    n_targets
+        how many values from ``inputs`` to be considered as targets.
+
     Notes
     -----
-    Note that both input and output are **not** of type `torch.Tensor` - the conversion
-    to torch.Tensor is made inside this function.
+    Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
+    to and from ``torch.Tensor`` is made inside this function.
     """
     architecture.train()
-    # TODO: add `device` support
-    inputs = sequence_to_var(*inputs, cuda=is_on_cuda(architecture))
+
+    inputs = sequence_to_var(*inputs, device=architecture)
     inputs, targets = inputs[:-n_targets], inputs[-n_targets:]
 
     loss = criterion(architecture(*inputs), *targets)
 
-    if lr is not None:
-        set_lr(optimizer, lr)
-    optimizer_step(optimizer, loss)
+    optimizer_step(optimizer, loss, lr)
     return to_np(loss)
 
 
-def inference_step(*inputs, architecture, activation=identity):
+def inference_step(*inputs: np.ndarray, architecture: nn.Module, activation: Callable = identity):
     """
     Returns the prediction for the given ``inputs``.
 
     Notes
     -----
-    Note that both input and output are **not** of type `torch.Tensor` - the conversion
-    to torch.Tensor is made inside this function.
+    Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
+    to and from ``torch.Tensor`` is made inside this function.
     """
     architecture.eval()
     with torch.no_grad():
-        return to_np(activation(architecture(*sequence_to_var(*inputs, cuda=is_on_cuda(architecture)))))
+        return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
 
 
 def do_train_step(*inputs, lr, inputs2logits, optimizer, logits2loss):
@@ -78,10 +95,17 @@ class TorchModel(Model):
         the optimizer
     cuda: bool, optional
         whether to move the model's parameters to CUDA
+
+    Warnings
+    --------
+    The `Model` interface is deprecated. Use `train_step` and `inference_step` instead.
     """
 
     def __init__(self, model_core: torch.nn.Module, logits2pred: Callable, logits2loss: Callable,
                  optimize: torch.optim.Optimizer, cuda: bool = None):
+        warnings.warn('The `Model` interface is deprecated. Use `train_step` and `inference_step` instead.',
+                      DeprecationWarning)
+
         if isinstance(logits2loss, Module):
             to_cuda(logits2loss, cuda)
 

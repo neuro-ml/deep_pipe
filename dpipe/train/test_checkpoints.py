@@ -25,7 +25,7 @@ class TestCheckpoints(unittest.TestCase):
                 'lr': DecreasingOnPlateau(initial=1, multiplier=.1, patience=4, rtol=.02, atol=.02),
                 'scheduled': Schedule.constant_multiplier(1, .1, [3, 5, 10])
             }
-            manager = CheckpointManager(tempdir, pickled_objects=policies)
+            manager = CheckpointManager(tempdir, policies)
 
             for epoch in range(10):
                 self.advance_policies(policies.values(), 4)

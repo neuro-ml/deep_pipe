@@ -159,13 +159,3 @@ class Lambda(nn.Module):
 
     def forward(self, *args, **kwargs):
         return self.func(*args, **kwargs, **self.kwargs)
-
-
-@np.deprecate  # 19.06.2019
-def make_blocks_with_splitters(structure, make_block, make_splitter):
-    if len(structure) == 1:
-        return make_block(structure)
-    else:
-        return nn.Sequential(make_block(structure[0]),
-                             make_splitter(),
-                             make_blocks_with_splitters(structure[1:], make_block, make_splitter))
