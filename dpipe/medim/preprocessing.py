@@ -55,7 +55,7 @@ def bytescale(x: np.ndarray) -> np.ndarray:
     return np.uint8(np.round(255 * min_max_scale(x)))
 
 
-def describe_connected_components(mask: np.ndarray, background: int = 0):
+def describe_connected_components(mask: np.ndarray, background: int = 0, drop_background: bool = True):
     """
     Get the connected components of ``mask`` as well as their labels and volumes.
 
@@ -65,6 +65,8 @@ def describe_connected_components(mask: np.ndarray, background: int = 0):
     background
         the label of the background. The pixels with this label will be marked as the background component
         (even if it is not connected).
+    drop_background:
+        whether to exclude the background from the returned components' descriptions.
 
     Returns
     -------
@@ -80,13 +82,19 @@ def describe_connected_components(mask: np.ndarray, background: int = 0):
     labels, volumes = np.unique(label_map, return_counts=True)
     idx = volumes.argsort()[::-1]
     labels, volumes = labels[idx], volumes[idx]
+    if drop_background:
+        foreground = labels != background
+        labels, volumes = labels[foreground], volumes[foreground]
     return label_map, labels, volumes
 
 
-def get_greatest_component(mask: np.ndarray, background: int = 0) -> np.ndarray:
+def get_greatest_component(mask: np.ndarray, background: int = 0, drop_background: bool = True) -> np.ndarray:
     """Get the greatest connected component from ``mask``. See `describe_connected_components` for details."""
-    label_map, labels, _ = describe_connected_components(mask, background)
-    return label_map == labels[labels != background][0] if np.any(mask) else mask
+    label_map, labels, volumes = describe_connected_components(mask, background, drop_background)
+    if len(labels):
+        return label_map == labels[0]
+    else:
+        raise ValueError(f'argument ``mask`` should contain non-zero elements if ``drop_background`` is True')
 
 
 # 27.06.2019
