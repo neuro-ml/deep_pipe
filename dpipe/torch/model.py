@@ -6,7 +6,7 @@ from ..model import Model
 from .utils import *
 
 
-def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, lr: float = None):
+def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, lr: float = None) -> torch.Tensor:
     """
     Performs the backward pass with respect to ``loss``, as well as a gradient step.
 
@@ -21,7 +21,7 @@ def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, lr: float = None):
 
 
 def train_step(*inputs: np.ndarray, architecture: nn.Module, criterion: Callable, optimizer: Optimizer,
-               lr: float = None, n_targets: int = 1):
+               lr: float = None, n_targets: int = 1) -> np.ndarray:
     """
     Performs a forward-backward pass, as well as the gradient step, according to the given ``inputs``.
 
@@ -57,7 +57,7 @@ def train_step(*inputs: np.ndarray, architecture: nn.Module, criterion: Callable
     return to_np(loss)
 
 
-def inference_step(*inputs: np.ndarray, architecture: nn.Module, activation: Callable = identity):
+def inference_step(*inputs: np.ndarray, architecture: nn.Module, activation: Callable = identity) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 

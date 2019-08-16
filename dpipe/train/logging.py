@@ -29,35 +29,43 @@ def make_log_vector(logger, tag: str, first_step: int = 0) -> callable:
 
 
 class Logger:
+    """Interface for logging during training."""
+
     def _dict(self, prefix, d, step):
         for name, value in d.items():
-            self.value(f'{prefix}/{name}', value, step)
+            self.value(f'{prefix}{name}', value, step)
 
-    def train(self, train_losses, step):
+    def train(self, train_losses: Sequence, step: int):
+        """Log the ``train_losses`` at current ``step``."""
         raise NotImplementedError
 
-    def value(self, name, value, step):
+    def value(self, name: str, value, step: int):
+        """Log a single ``value``."""
         raise NotImplementedError
 
     def policies(self, policies: dict, step: int):
-        self._dict('policies', policies, step)
+        """Log values coming from ``ValuePolicy`` objects."""
+        self._dict('policies/', policies, step)
 
-    def metrics(self, metrics, step):
-        self._dict('val/metrics', metrics, step)
+    def metrics(self, metrics: dict, step: int):
+        """Log the metrics returned by the validation function during training."""
+        self._dict('val/metrics/', metrics, step)
 
 
 class ConsoleLogger(Logger):
-    """Log ``train_losses`` and ``metrics`` to stdout."""
+    """A logger that writes to to stdout."""
 
     def value(self, name, value, step):
-        pass
+        print(f'{step:>05}: {name}: {value}', flush=True)
 
     def train(self, train_losses, step):
-        print(f'{step:>05}: train loss: {np.mean(train_losses, axis=0)}', flush=True)
+        self.value('Train loss', np.mean(train_losses, axis=0), step)
 
-    def metrics(self, metrics, step):
-        for name, value in metrics.items():
-            print(f'{step:>05}: {name} = {value}', flush=True)
+    def policies(self, policies: dict, step: int):
+        self._dict('Policies: ', policies, step)
+
+    def metrics(self, metrics: dict, step: int):
+        self._dict('Metrics: ', metrics, step)
 
 
 class TBLogger(Logger):
@@ -68,7 +76,7 @@ class TBLogger(Logger):
         self.logger = tensorboard_easy.Logger(log_path)
 
     def train(self, train_losses, step):
-        log_scalar_or_vector(self.logger, 'train/loss', np.mean(train_losses, axis=0), step)
+        self.value('train/loss', np.mean(train_losses, axis=0), step)
 
     def value(self, name, value, step):
         log_scalar_or_vector(self.logger, name, value, step)

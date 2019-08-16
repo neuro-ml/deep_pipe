@@ -11,7 +11,7 @@ from dpipe.medim.io import PathLike
 Device = Union[torch.device, nn.Module, torch.Tensor, str]
 
 
-def load_model_state(module: nn.Module, path: PathLike, modify_state_fn: Callable = None):
+def load_model_state(module: nn.Module, path: PathLike, modify_state_fn: Callable = None) -> nn.Module:
     """
     Updates the ``module``'s state dict by the one located at ``path``.
 

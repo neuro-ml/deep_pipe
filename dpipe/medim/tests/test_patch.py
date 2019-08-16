@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+import pytest
 
 from dpipe.medim.patch import sample_box_center_uniformly, get_random_patch, get_random_box
 from dpipe.medim.box import make_box_, get_centered_box
@@ -52,12 +53,26 @@ class TestRandomPatch(unittest.TestCase):
     def test_no_spatial_dims(self):
         x = np.empty((3, 4, 10))
         patch = get_random_patch(x, patch_size=[2, 2])
-        self.assertEqual(patch.shape, (3, 2, 2))
+        assert patch.shape == (3, 2, 2)
+
+    def test_multiple(self):
+        arrays = np.empty((3, 4, 10)), np.empty((20, 3, 4, 10)), np.empty((4, 10))
+        expected_shapes = [(3, 2, 2), (20, 3, 2, 2), (2, 2)]
+
+        shapes = [x.shape for x in get_random_patch(*arrays, patch_size=[2, 2])]
+        assert expected_shapes == shapes
+
+        shapes = [x.shape for x in get_random_patch(*arrays[::-1], patch_size=[2, 2])[::-1]]
+        assert expected_shapes == shapes
+
+    def test_raises(self):
+        with pytest.raises(ValueError):
+            get_random_patch(patch_size=1)
 
     def test_spatial_dims(self):
         x = np.empty((3, 4, 10))
         patch = get_random_patch(x, patch_size=[2, 2], axes=[0, 2])
-        self.assertEqual(patch.shape, (2, 4, 2))
+        assert patch.shape == (2, 4, 2)
 
     def test_get_random_box(self):
         for _ in range(100):
@@ -71,5 +86,5 @@ class TestRandomPatch(unittest.TestCase):
                 np.testing.assert_array_compare(np.less_equal, start, stop)
                 np.testing.assert_array_compare(np.less_equal, stop, shape)
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             get_random_box([3], [4])

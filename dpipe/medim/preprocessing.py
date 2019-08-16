@@ -83,7 +83,8 @@ def describe_connected_components(mask: np.ndarray, background: int = 0, drop_ba
     idx = volumes.argsort()[::-1]
     labels, volumes = labels[idx], volumes[idx]
     if drop_background:
-        foreground = labels != background
+        # background's label is always 0
+        foreground = labels != 0
         labels, volumes = labels[foreground], volumes[foreground]
     return label_map, labels, volumes
 
@@ -91,10 +92,10 @@ def describe_connected_components(mask: np.ndarray, background: int = 0, drop_ba
 def get_greatest_component(mask: np.ndarray, background: int = 0, drop_background: bool = True) -> np.ndarray:
     """Get the greatest connected component from ``mask``. See `describe_connected_components` for details."""
     label_map, labels, volumes = describe_connected_components(mask, background, drop_background)
-    if len(labels):
-        return label_map == labels[0]
-    else:
-        raise ValueError(f'argument ``mask`` should contain non-zero elements if ``drop_background`` is True')
+    if not len(labels):
+        raise ValueError('Argument ``mask`` should contain non-background values if ``drop_background`` is True.')
+
+    return label_map == labels[0]
 
 
 # 27.06.2019
