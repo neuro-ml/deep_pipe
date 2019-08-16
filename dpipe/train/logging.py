@@ -44,7 +44,7 @@ class Logger:
         raise NotImplementedError
 
     def policies(self, policies: dict, step: int):
-        """Log values coming from ``ValuePolicy`` objects."""
+        """Log values coming from `ValuePolicy` objects."""
         self._dict('policies/', policies, step)
 
     def metrics(self, metrics: dict, step: int):

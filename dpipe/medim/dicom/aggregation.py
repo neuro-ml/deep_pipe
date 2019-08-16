@@ -43,8 +43,6 @@ def aggregate_images(metadata: pd.DataFrame, process_series: Callable = None) ->
         if process_series is not None:
             entry = process_series(entry)
 
-        # entries sometimes have no `InstanceNumber`
-        # TODO: should check that some typical cols are unique, e.g. ImageOrientationPatient*
         res = entry.iloc[[0]][get_unique_cols(entry)]
         res['FileNames'] = '/'.join(entry.FileName)
         res['SlicesCount'] = len(entry)

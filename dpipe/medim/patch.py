@@ -37,7 +37,7 @@ def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike =
     check_shape_along_axis(*arrays, axis=axes)
 
     shape = extract(arrays[0].shape, axes)
-    start = np.array(lmap(np.random.randint, shape_after_convolution(shape, patch_size, axes)))
+    start = np.array(lmap(np.random.randint, shape_after_convolution(shape, patch_size)))
     box = np.array([start, start + patch_size])
 
     return squeeze_first(tuple(crop_to_box(arr, box, axes) for arr in arrays))
