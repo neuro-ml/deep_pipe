@@ -25,7 +25,8 @@ def sample(sequence: Sequence, weights: Sequence[float] = None):
         weights = weights / weights.sum()
 
     while True:
-        yield np.random.choice(sequence, p=weights)
+        index = np.random.choice(len(sequence), p=weights)
+        yield sequence[index]
 
 
 def load_by_random_id(*loaders: Callable, ids: Sequence, weights: Sequence[float] = None):

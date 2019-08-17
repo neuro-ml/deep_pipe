@@ -8,6 +8,8 @@ from dpipe.medim.itertools import extract
 from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
 from dpipe.medim.shape_utils import prepend_dims, extract_dims
 
+__all__ = 'add_extract_dims', 'divisible_shape', 'patches_grid'
+
 
 def add_extract_dims(n_add: int = 1, n_extract: int = None):
     """

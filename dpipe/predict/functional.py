@@ -6,6 +6,8 @@ from typing import Callable
 
 import numpy as np
 
+__all__ = 'chain_decorators', 'preprocess', 'postprocess'
+
 
 def chain_decorators(*decorators: Callable, predict: Callable, **kwargs):
     """

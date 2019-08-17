@@ -47,9 +47,10 @@ def train_step(*inputs: np.ndarray, architecture: nn.Module, criterion: Callable
     to and from ``torch.Tensor`` is made inside this function.
     """
     architecture.train()
+    n_inputs = len(inputs) - n_targets  # in case n_targets == 0
 
     inputs = sequence_to_var(*inputs, device=architecture)
-    inputs, targets = inputs[:-n_targets], inputs[-n_targets:]
+    inputs, targets = inputs[:n_inputs], inputs[n_inputs:]
 
     loss = criterion(architecture(*inputs), *targets)
 
