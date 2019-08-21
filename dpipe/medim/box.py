@@ -19,8 +19,10 @@ Box = np.ndarray
 
 
 def make_box_(iterable) -> Box:
-    """Returns `box`, generated inplace from the `iterable`. If `iterable` was a numpy array, will make it
-    immutable and return."""
+    """
+    Returns a box, generated inplace from the ``iterable``. If ``iterable`` was a numpy array, will make it
+    immutable and return.
+    """
     box = np.asarray(iterable)
     box.setflags(write=False)
 
@@ -47,29 +49,35 @@ def returns_box(func: Callable) -> Callable:
 
 @returns_box
 def get_containing_box(shape: tuple):
-    """Returns box that contains complete array of shape `shape`."""
+    """Returns box that contains complete array of shape ``shape``."""
     return [0] * len(shape), shape
 
 
 @returns_box
 def broadcast_box(box: Box, shape: tuple, dims: tuple):
-    """Returns box, such that it contains `box` across ``dims`` and whole array
-    with shape `shape` across other dimensions."""
+    """
+    Returns box, such that it contains ``box`` across ``dims`` and whole array
+    with shape ``shape`` across other dimensions.
+    """
     return (compute_shape_from_spatial([0] * len(shape), box[0], dims),
             compute_shape_from_spatial(shape, box[1], dims))
 
 
 @returns_box
 def limit_box(box, limit):
-    """Returns `box`, maximum subset of the input `box` so that start would be non-negative and
-    stop would be limited by the `limit`."""
+    """
+    Returns a box, maximum subset of the input ``box`` so that start would be non-negative and
+    stop would be limited by the ``limit``.
+    """
     check_len(*box, limit)
     return np.maximum(box[0], 0), np.minimum(box[1], limit)
 
 
 def get_box_padding(box: Box, limit):
-    """Returns padding that is necessary to get `box` from array of shape `limit`.
-     Returns padding in numpy form, so it can be given to `numpy.pad`."""
+    """
+    Returns padding that is necessary to get ``box`` from array of shape ``limit``.
+     Returns padding in numpy form, so it can be given to `numpy.pad`.
+     """
     check_len(*box, limit)
     return np.maximum([-box[0], box[1] - limit], 0).T
 
@@ -83,16 +91,20 @@ def get_union_box(*boxes):
 
 @returns_box
 def add_margin(box: Box, margin):
-    """Returns `box` with size increased by the `margin` (need to be broadcastable to the box)
-    compared to the input `box`."""
+    """
+    Returns a box with size increased by the ``margin`` (need to be broadcastable to the box)
+    compared to the input ``box``.
+    """
     margin = np.broadcast_to(margin, box.shape)
     return box[0] - margin[0], box[1] + margin[1]
 
 
 @returns_box
 def get_centered_box(center: np.ndarray, box_size: np.ndarray):
-    """Get box of size `box_size`, centered in the `center`.
-    If `box_size` is odd, `center` will be closer to the right."""
+    """
+    Get box of size ``box_size``, centered in the ``center``.
+    If ``box_size`` is odd, ``center`` will be closer to the right.
+    """
     start = center - box_size // 2
     stop = center + box_size // 2 + box_size % 2
     return start, stop
@@ -100,8 +112,9 @@ def get_centered_box(center: np.ndarray, box_size: np.ndarray):
 
 @returns_box
 def mask2bounding_box(mask: np.ndarray):
-    """Find the smallest box that contains all true values of the mask, so that if
-     you use them in slice() you will extract box with all true values."""
+    """
+    Find the smallest box that contains all true values of the ``mask``.
+    """
     if not mask.any():
         raise ValueError('The mask is empty.')
 

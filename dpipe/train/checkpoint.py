@@ -102,7 +102,7 @@ class CheckpointManager:
             self._clear_previous(iteration)
 
     def restore(self) -> int:
-        """Restore the most recent states of all tracked objects and return the corresponding iteration."""
+        """Restore the most recent states of all tracked objects and return next iteration's index."""
         if not self.base_path.exists():
             return 0
 

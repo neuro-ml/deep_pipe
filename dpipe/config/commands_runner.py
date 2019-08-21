@@ -4,7 +4,9 @@ import atexit
 from pathlib import Path
 from typing import Callable
 
-from ..medim.checks import join
+from dpipe.medim.io import PathLike
+from dpipe.medim.utils import name_changed
+from dpipe.medim.checks import join
 
 
 def _path_based_call(exists, missing, exists_message, missing_message, paths, keyword_paths, verbose):
@@ -51,30 +53,6 @@ def if_missing(func: Callable, *paths: str, verbose: bool = True, **keyword_path
     )
 
 
-def load_or_create(load: Callable, create: Callable, *paths: str, verbose: bool = False, **keyword_paths: str):
-    """
-    Call ``load`` if at least some of the ``paths`` or ``keyword_paths`` do not exist, otherwise call ``create``.
-
-    Parameters
-    ----------
-    load: Callable(*paths, **keyword_paths)
-        loads an object based on arguments.
-    create: Callable(*paths, **keyword_paths)
-        saves an object based on arguments and returns it.
-    paths,keyword_paths: str
-    verbose: bool, optional
-
-    Returns
-    -------
-    The result of ``load`` or ``create``.
-    """
-    return _path_based_call(
-        load, create,
-        'Running `load` - all paths exist', 'Running `create` with the arguments',
-        paths, keyword_paths, verbose
-    )
-
-
 def run(*args):
     """Returns the last argument. Useful in config files."""
     if not args:
@@ -82,11 +60,22 @@ def run(*args):
     return args[-1]
 
 
-def lock_experiment_dir(filename='.lock'):
-    """Lock current dir by generating special file, close everything if dir is already locked."""
-    if not os.path.exists(filename):
-        Path(filename).touch(exist_ok=False)
-        atexit.register(os.remove, filename)
+def lock_dir(folder: PathLike = '.', lock: str = '.lock'):
+    """
+    Lock the given ``folder`` by generating a special lock file - ``lock``.
+
+    Raises
+    ------
+    FileExistsError: if ``lock_filename`` already exists, i.e. the folder is already locked.
+    """
+    lock = Path(folder) / lock
+
+    if not lock.exists():
+        lock.touch(exist_ok=False)
+        atexit.register(os.remove, lock)
     else:
-        text = f'Running experiment from {os.path.abspath("./")}, but the directory is already locked. Exit is called.'
-        raise EnvironmentError(text)
+        text = f'Running experiment from {lock.resolve()}, but the directory is already locked. Exit is called.'
+        raise FileExistsError(text)
+
+
+lock_experiment_dir = name_changed(lock_dir, 'lock_experiment_dir', '19.08.2019')

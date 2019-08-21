@@ -2,7 +2,8 @@ import os
 from pathlib import Path
 from typing import Iterable, Sequence
 
-from ..config import get_resource_manager
+from resource_manager import read_config
+
 from ..medim.io import PathLike, save_json
 
 
@@ -59,4 +60,4 @@ def flat(split: Iterable[Sequence], config_path: PathLike, experiment_path: Path
             save_json(val, local / f'{prefix}_ids.json', indent=0)
 
     # resource manager is needed here, because there may be inheritance
-    get_resource_manager(config_path).save_config(experiment_path / 'resources.config')
+    read_config(config_path).save_config(experiment_path / 'resources.config')

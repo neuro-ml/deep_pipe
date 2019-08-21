@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Dict, Callable, Union
+from typing import Dict, Callable, Union, Sequence
 
 import numpy as np
 from scipy.ndimage.morphology import distance_transform_edt, binary_erosion
@@ -10,8 +10,27 @@ from .utils import zip_equal
 __all__ = [
     'dice_score', 'sensitivity', 'specificity', 'precision', 'recall', 'iou', 'assd', 'hausdorff_distance',
     'cross_entropy_with_logits',
-    'convert_to_aggregated',
+    'convert_to_aggregated', 'to_aggregated',
 ]
+
+
+def to_aggregated(metric: Callable, aggregate: Callable = np.mean, *args, **kwargs):
+    """
+    Concerts a ``metric`` that receives two values to a metric
+    that receives two sequences and returns an aggregated value.
+
+    ``args`` and ``kwargs`` are passed as additional arguments ot ``aggregate``.
+
+    Examples
+    --------
+    >>> mean_dice = to_aggregated(dice_score)
+    >>> worst_dice = to_aggregated(dice_score, aggregate=np.min)
+    """
+
+    def wrapper(xs: Sequence, ys: Sequence, *args_, **kwargs_):
+        return aggregate([metric(x, y, *args_, **kwargs_) for x, y in zip(xs, ys)], *args, **kwargs)
+
+    return wrapper
 
 
 def fraction(numerator, denominator, empty_val: float = 1):
@@ -78,9 +97,10 @@ def aggregate_metric(xs, ys, metric, aggregate_fn=np.mean):
     return aggregate_fn([metric(x, y) for x, y in zip_equal(xs, ys)])
 
 
-def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn: Callable = np.mean, key_prefix: str = ''):
+def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn: Callable = np.mean,
+                          key_prefix: str = '', *args, **kwargs):
     return {
-        key_prefix + key: partial(aggregate_metric, metric=metric, aggregate_fn=aggregate_fn)
+        key_prefix + key: to_aggregated(metric, aggregate_fn, *args, **kwargs)
         for key, metric in metrics.items()
     }
 

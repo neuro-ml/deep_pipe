@@ -42,5 +42,9 @@ class Dataset(metaclass=ABCAttributesMeta):
 
     Its subclasses must define the `ids` attribute - a tuple of identifiers,
     one for each dataset entry, as well as methods for loading an entry by its identifier.
+
+    Attributes
+    ----------
+    ids: a tuple of identifiers, one for each dataset entry.
     """
     ids: Tuple[str] = AbstractAttribute

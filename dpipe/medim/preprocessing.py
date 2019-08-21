@@ -7,12 +7,28 @@ from .axes import AxesLike, check_axes
 from .shape_ops import *
 
 
-# TODO: docstring
 def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: AxesLike = None,
               axes: AxesLike = None, dtype=None) -> np.ndarray:
     """
     Normalize ``x``'s values to make mean and std independently along ``axes`` equal to 0 and 1 respectively
     (if specified).
+
+    Parameters
+    ----------
+    x
+    mean
+        whether to make mean == zero
+    std
+        whether to make std == 1
+    percentiles
+        if pair (a, b) - the percentiles between which mean and/or std will be estimated
+        if scalar (s) - same as (s, 100 - s)
+        if None - same as (0, 100).
+    axes
+        axes along which mean and/or std will be estimated independently.
+        If None - the statistics will be estimated globally.
+    dtype
+        the dtype of the output.
     """
     if axes is not None:
         axes = tuple(negate_indices(check_axes(axes), x.ndim))
@@ -23,7 +39,7 @@ def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: A
             percentiles = [percentiles, 100 - percentiles]
 
         bottom, top = np.percentile(x, percentiles, axes, keepdims=True)
-        mask = (x < bottom) | (x >= top)
+        mask = (x < bottom) | (x > top)
         robust_values = np.ma.masked_array(x, mask=mask)
 
     if mean:
@@ -38,8 +54,10 @@ def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: A
 
 
 def min_max_scale(x: np.ndarray, axes: AxesLike = None) -> np.ndarray:
-    """Scale ``x``'s values so that its minimum and maximum become 0 and 1 respectively
-    independently along ``axes``."""
+    """
+    Scale ``x``'s values so that its minimum and maximum become 0 and 1 respectively
+    independently along ``axes``.
+    """
     if axes is not None:
         axes = tuple(negate_indices(check_axes(axes), x.ndim))
 

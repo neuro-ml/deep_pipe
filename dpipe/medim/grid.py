@@ -2,6 +2,7 @@ from typing import Iterable
 
 import numpy as np
 
+from .shape_ops import crop_to_box
 from .axes import broadcast_to_axes, fill_by_indices, AxesLike
 from .box import make_box_, Box
 from .itertools import zip_equal, extract, peek
@@ -56,7 +57,7 @@ def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike
         whether patches of size smaller than ``patch_size`` should be left out.
     """
     for box in get_boxes(x.shape, patch_size, stride, axes, valid=valid):
-        yield x[build_slices(*box)]
+        yield crop_to_box(x, box)
 
 
 # TODO: better doc

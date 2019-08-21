@@ -6,8 +6,8 @@ from pathlib import Path
 from urllib.request import urlretrieve
 
 import pytest
+from resource_manager import read_config
 
-from dpipe.config import get_resource_manager
 from dpipe.medim.io import load_json
 
 
@@ -16,7 +16,7 @@ class TestMNIST(unittest.TestCase):
     sortTestMethodsUsing = None
 
     base_path = Path('~/tests/MNIST').expanduser()
-    base_rm = get_resource_manager('dpipe/tests/mnist/setup.config')
+    base_rm = read_config('dpipe/tests/mnist/setup.config')
     experiment_path = base_rm.experiment_path
 
     @classmethod
@@ -59,7 +59,7 @@ class TestMNIST(unittest.TestCase):
             self.assertFalse(first & second)
 
     def test_score(self):
-        rm = get_resource_manager(self.experiment_path / 'resources.config')
+        rm = read_config(self.experiment_path / 'resources.config')
         os.chdir(self.experiment_path / 'experiment_0')
         rm.run_experiment
         self.assertGreater(.97, load_json('test_metrics/accuracy.json'))

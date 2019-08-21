@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 
 from dpipe.medim.utils import identity
 from dpipe.predict.shape import *

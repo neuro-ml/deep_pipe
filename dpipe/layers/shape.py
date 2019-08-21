@@ -17,7 +17,7 @@ class InterpolateToInput(nn.Module):
     path: nn.Module
         arbitrary neural network module to calculate the result.
     mode: str
-        algorithm used for upsampling in `functional.interpolate`.
+        algorithm used for upsampling.
         Should be one of 'nearest' | 'linear' | 'bilinear' | 'trilinear' | 'area'. Default is 'nearest'.
     axes: AxesLike, None, optional
         spatial axes to interpolate result along.

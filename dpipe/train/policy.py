@@ -22,7 +22,13 @@ class Policy:
 
 
 class ValuePolicy(Policy, metaclass=ABCAttributesMeta):
-    """Interface for policies that have a ``value`` which changes over time."""
+    """
+    Interface for policies that have a `value` which changes over time.
+
+    Attributes
+    ----------
+    value: the current value carried by the policy.
+    """
     value = AbstractAttribute('The current value')
 
     def __init__(self, initial):

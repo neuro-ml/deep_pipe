@@ -7,6 +7,6 @@ scikit-learn>=0.19
 tqdm
 nibabel
 pydicom
-pdp>=0.3<0.4
+pdp==0.3.*
 tensorboard-easy
-resource-manager>=0.9.2<0.10
+resource-manager==0.10.*
