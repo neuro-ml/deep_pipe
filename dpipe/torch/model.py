@@ -6,14 +6,24 @@ from ..model import Model
 from .utils import *
 
 
-def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, lr: float = None) -> torch.Tensor:
+def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, **params) -> torch.Tensor:
     """
     Performs the backward pass with respect to ``loss``, as well as a gradient step.
 
-    If ``loss`` is not None - the ``optimizer``'s learning rate will be changed to this value.
+    ``params`` is used to change the optimizer's parameters.
+
+    Examples
+    --------
+    >>> optimizer = Adam(model.parameters(), lr=1)
+    >>> optimizer_step(optimizer, loss) # perform a gradient step
+    >>> optimizer_step(optimizer, loss, lr=1e-3) # set lr to 1e-3 and perform a gradient step
+    >>> optimizer_step(optimizer, loss, betas=(0, 0)) # set betas to 0 and perform a gradient step
+
+    Notes
+    -----
+    The incoming ``optimizer``'s parameters are not restored to their original values.
     """
-    if lr is not None:
-        set_lr(optimizer, lr)
+    set_params(optimizer, **params)
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
@@ -21,9 +31,9 @@ def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, lr: float = None) -
 
 
 def train_step(*inputs: np.ndarray, architecture: nn.Module, criterion: Callable, optimizer: Optimizer,
-               lr: float = None, n_targets: int = 1) -> np.ndarray:
+               n_targets: int = 1, **optimizer_params) -> np.ndarray:
     """
-    Performs a forward-backward pass, as well as the gradient step, according to the given ``inputs``.
+    Performs a forward-backward pass, and make a gradient step, according to the given ``inputs``.
 
     Parameters
     ----------
@@ -35,16 +45,19 @@ def train_step(*inputs: np.ndarray, architecture: nn.Module, criterion: Callable
     criterion
         the loss function.
     optimizer
-    lr
-        if not None - the ``optimizer``'s learning rate will be changed to this value.
-        Useful for non-constant learning rate policies.
     n_targets
         how many values from ``inputs`` to be considered as targets.
+    optimizer_params
+        additional parameters that will override the optimizer's current parameters (e.g. lr).
 
     Notes
     -----
     Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
     to and from ``torch.Tensor`` is made inside this function.
+
+    References
+    ----------
+    `optimizer_step`
     """
     architecture.train()
     n_inputs = len(inputs) - n_targets  # in case n_targets == 0
@@ -54,7 +67,7 @@ def train_step(*inputs: np.ndarray, architecture: nn.Module, criterion: Callable
 
     loss = criterion(architecture(*inputs), *targets)
 
-    optimizer_step(optimizer, loss, lr)
+    optimizer_step(optimizer, loss, **optimizer_params)
     return to_np(loss)
 
 

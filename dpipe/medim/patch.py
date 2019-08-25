@@ -1,6 +1,8 @@
 """
 Tools for patch extraction and generation.
 """
+from typing import Callable
+
 import numpy as np
 
 from .shape_ops import crop_to_box
@@ -25,10 +27,19 @@ def sample_box_center_uniformly(shape, box_size: np.array):
     return get_random_box(shape, box_size)[0] + box_size // 2
 
 
-def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike = None):
+def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike = None,
+                     distribution: Callable = np.random.randint):
     """
     Get a random patch of size ``path_size`` along the ``axes`` for each of the ``arrays``.
-    The patch position is equal for all the arrays.
+    The patch position is equal for all the ``arrays``.
+
+    Parameters
+    ----------
+    arrays
+    patch_size
+    axes
+    distribution: Callable(n)
+        function that samples a random number in the range ``[0, n)``. Defaults to `numpy.random.randint`.
     """
     if not arrays:
         raise ValueError('No arrays given.')
@@ -37,7 +48,7 @@ def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike =
     check_shape_along_axis(*arrays, axis=axes)
 
     shape = extract(arrays[0].shape, axes)
-    start = np.array(lmap(np.random.randint, shape_after_convolution(shape, patch_size)))
+    start = np.array(lmap(distribution, shape_after_convolution(shape, patch_size)))
     box = np.array([start, start + patch_size])
 
     return squeeze_first(tuple(crop_to_box(arr, box, axes) for arr in arrays))

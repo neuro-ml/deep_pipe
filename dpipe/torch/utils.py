@@ -5,6 +5,7 @@ from typing import Callable, Union
 import numpy as np
 import torch
 from torch import nn
+from torch.optim import Optimizer
 
 from dpipe.medim.io import PathLike
 
@@ -149,8 +150,14 @@ def to_cuda(x, cuda: Union[nn.Module, torch.Tensor, bool] = None):
     return x
 
 
-def set_lr(optimizer: torch.optim.Optimizer, lr: float) -> torch.optim.Optimizer:
+def set_lr(optimizer: Optimizer, lr: float) -> Optimizer:
     """Change an ``optimizer``'s learning rate to ``lr``."""
+    return set_params(optimizer, lr=lr)
+
+
+def set_params(optimizer: Optimizer, **params) -> Optimizer:
+    """Change an ``optimizer``'s parameters by the ones passed in ``params``."""
     for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
+        for name, value in params.items():
+            param_group[name] = value
     return optimizer
