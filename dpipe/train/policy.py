@@ -1,4 +1,4 @@
-from typing import Sequence, Callable, Dict
+from typing import Sequence, Callable, Dict, Any
 
 import numpy as np
 
@@ -108,6 +108,21 @@ class Schedule(ValuePolicy):
     @staticmethod
     def constant_multiplier(initial: float, multiplier: float, epochs: Sequence[int]):
         return Schedule(initial=initial, epoch2value_multiplier=dict(zip(epochs, [multiplier] * len(epochs))))
+
+
+class Switch(ValuePolicy):
+    """
+    Changes the `value` at specific epochs to the values given in `epoch_to_value`.
+    """
+
+    def __init__(self, initial: float, epoch_to_value: Dict[int, Any]):
+        super().__init__(initial)
+        self.epoch_to_value = sorted(epoch_to_value.items())
+
+    def epoch_finished(self, epoch, **kwargs):
+        for idx, value in self.epoch_to_value:
+            if idx <= epoch:
+                self.value = value
 
 
 class LambdaEpoch(ValuePolicy):

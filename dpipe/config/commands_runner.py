@@ -66,7 +66,7 @@ def lock_dir(folder: PathLike = '.', lock: str = '.lock'):
 
     Raises
     ------
-    FileExistsError: if ``lock_filename`` already exists, i.e. the folder is already locked.
+    FileExistsError: if ``lock`` already exists, i.e. the folder is already locked.
     """
     lock = Path(folder) / lock
 

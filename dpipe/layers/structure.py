@@ -127,8 +127,8 @@ class SplitReduce(nn.Module):
 
 
 class SplitCat(SplitReduce):
-    def __init__(self, *paths):
-        super().__init__(lambda x: torch.cat(tuple(x), dim=1), *paths)
+    def __init__(self, *paths, axis=1):
+        super().__init__(lambda x: torch.cat(tuple(x), dim=axis), *paths)
 
 
 class SplitAdd(nn.Module):

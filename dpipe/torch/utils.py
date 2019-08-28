@@ -1,6 +1,6 @@
 import warnings
 from pathlib import Path
-from typing import Callable, Union
+from typing import Callable, Union, Iterable
 
 import numpy as np
 import torch
@@ -52,18 +52,24 @@ def get_device(x: Device = None) -> torch.device:
     """
     Determines the correct device based on the input.
 
-    If ``x`` is None ``torch.cuda.is_available()`` is used to determine whether the device will be CPU or CUDA.
+    Parameters
+    ----------
+    x: torch.device, torch.nn.Module, torch.Tensor, str, None
+        if `torch.Tensor` - returns the device on which it is located
+        if `torch.nn.Module` - returns the device on its parameters are located
+        if `str` or `torch.device` - returns `torch.device(x)`
+        if `None` - same as 'cuda' if CUDA is available, 'cpu' otherwise.
     """
     if isinstance(x, nn.Module):
-        return next(x.parameters()).device
+        try:
+            return next(x.parameters()).device
+        except StopIteration:
+            raise ValueError('The device could not be determined as the passed model has no parameters.')
     if isinstance(x, torch.Tensor):
         return x.device
 
     if x is None:
-        if torch.cuda.is_available():
-            x = 'cuda'
-        else:
-            x = 'cpu'
+        x = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     return torch.device(x)
 
@@ -75,7 +81,8 @@ def is_on_cuda(x: Union[nn.Module, torch.Tensor]):
     return x.is_cuda
 
 
-def to_var(x: np.ndarray, device: Device = None, requires_grad: bool = False, cuda: bool = None) -> torch.Tensor:
+def to_var(x: Union[np.ndarray, Iterable, int, float], device: Device = None, requires_grad: bool = False,
+           cuda: bool = None) -> torch.Tensor:
     """
     Convert a numpy array to a torch Tensor
 
