@@ -61,7 +61,7 @@ class Infinite(BatchIter):
     See the :doc:`tutorials/batch_iter` tutorial for more details.
     """
 
-    def __init__(self, source: Iterable, *transformers: Callable, batch_size: int, batches_per_epoch: int = None,
+    def __init__(self, source: Iterable, *transformers: Callable, batch_size: int, batches_per_epoch: int,
                  buffer_size: int = 3, combiner: Callable = combine_to_arrays):
 
         if batches_per_epoch <= 0:

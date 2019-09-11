@@ -5,15 +5,15 @@ import pickle
 import re
 import os
 from pathlib import Path
-from typing import Union
+from typing import Union, Callable
 
 import numpy as np
 
 __all__ = [
-    'PathLike', 'ConsoleArguments', 'load_by_ext',
+    'PathLike', 'ConsoleArguments', 'load_by_ext', 'load_or_create',
     'load_json', 'save_json',
     'load_pickle', 'save_pickle',
-    'save_numpy',
+    'load_numpy', 'save_numpy',
 ]
 
 PathLike = Union[Path, str]
@@ -115,6 +115,11 @@ def save_numpy(value, path: PathLike, *, allow_pickle=True, fix_imports=True):
     np.save(path, value, allow_pickle=allow_pickle, fix_imports=fix_imports)
 
 
+def load_numpy(path: PathLike, *, allow_pickle=True, fix_imports=True):
+    """A wrapper around ``np.load`` with ``allow_pickle`` set to True by default."""
+    return np.load(path, allow_pickle=allow_pickle, fix_imports=fix_imports)
+
+
 def save_pickle(value, path: PathLike):
     """Pickle a ``value`` to ``path``."""
     with open(path, 'wb') as file:
@@ -125,6 +130,24 @@ def load_pickle(path: PathLike):
     """Load a pickled value from ``path``."""
     with open(path, 'rb') as file:
         return pickle.load(file)
+
+
+def load_or_create(path: PathLike, create: Callable, *args,
+                   save: Callable = save_numpy, load: Callable = load_numpy, **kwargs):
+    """
+    ``load`` a file from ``path`` if it exists.
+    Otherwise ``create`` the value, ``save`` it to ``path``, and return it.
+
+    ``args`` and ``kwargs`` are passed as additional arguments.
+    """
+    try:
+        return load(path)
+    except FileNotFoundError:
+        pass
+
+    value = create(*args, **kwargs)
+    save(value, path)
+    return value
 
 
 class ConsoleArguments:

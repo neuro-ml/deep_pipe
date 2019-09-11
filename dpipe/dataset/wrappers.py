@@ -3,19 +3,18 @@ Wrappers change the dataset's behaviour.
 See the :doc:`tutorials/wrappers` tutorial for more details.
 """
 import functools
-from os.path import join as jp
 from itertools import chain
 from types import MethodType, FunctionType
 from typing import Sequence, Callable, Iterable
 from collections import ChainMap, namedtuple
+from pathlib import Path
 
 import numpy as np
 
 from dpipe.medim.checks import join
-from dpipe.medim.io import save_numpy
+from dpipe.medim.io import save_numpy, PathLike, load_or_create, load_numpy
 from dpipe.medim.itertools import zdict
 from dpipe.medim.preprocessing import normalize
-from dpipe.medim.utils import cache_to_disk
 from .base import Dataset
 
 
@@ -49,7 +48,7 @@ def cache_methods(instance, methods: Iterable[str] = None, maxsize: int = None):
     return proxy(instance)
 
 
-def cache_methods_to_disk(instance, base_path: str, loader: Callable = np.load, saver: Callable = save_numpy,
+def cache_methods_to_disk(instance, base_path: PathLike, loader: Callable = load_numpy, saver: Callable = save_numpy,
                           **methods: str):
     """
     Cache the ``instance``'s ``methods`` to disk.
@@ -68,18 +67,21 @@ def cache_methods_to_disk(instance, base_path: str, loader: Callable = np.load, 
     saver: Callable(value, path)
         saves a single object to the given path.
     """
+    base_path = Path(base_path)
 
-    def path_by_id(path, identifier):
-        return jp(path, f'{identifier}.npy')
+    def decorator(method, folder):
+        method = getattr(instance, method)
+        path = base_path / folder
+        path.mkdir(parents=True, exist_ok=True)
 
-    def load(path, identifier):
-        return loader(path_by_id(path, identifier))
+        @functools.wraps(method)
+        def wrapper(identifier, *args, **kwargs):
+            return load_or_create(
+                path / f'{identifier}.npy', method, identifier, *args, **kwargs, save=saver, load=loader)
 
-    def save(value, path, identifier):
-        saver(value, path_by_id(path, identifier))
+        return staticmethod(wrapper)
 
-    new_methods = {method: staticmethod(cache_to_disk(getattr(instance, method), jp(base_path, path), load, save))
-                   for method, path in methods.items()}
+    new_methods = {method: decorator(method, folder) for method, folder in methods.items()}
     proxy = type('CachedToDisk', (Proxy,), new_methods)
     return proxy(instance)
 
@@ -98,8 +100,8 @@ def apply(instance, **methods: Callable):
 
     Examples
     --------
-    >>> # normalize_image will be applied to the output of load_image
-    >>> dataset = apply(base_dataset, load_image=normalize_image)
+    >>> # normalize will be applied to the output of load_image
+    >>> dataset = apply(base_dataset, load_image=normalize)
     """
 
     def decorator(method, func):

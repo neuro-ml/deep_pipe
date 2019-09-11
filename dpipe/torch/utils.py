@@ -56,7 +56,7 @@ def get_device(x: Device = None) -> torch.device:
     ----------
     x: torch.device, torch.nn.Module, torch.Tensor, str, None
         if `torch.Tensor` - returns the device on which it is located
-        if `torch.nn.Module` - returns the device on its parameters are located
+        if `torch.nn.Module` - returns the device on which its parameters are located
         if `str` or `torch.device` - returns `torch.device(x)`
         if `None` - same as 'cuda' if CUDA is available, 'cpu' otherwise.
     """
@@ -164,7 +164,7 @@ def set_lr(optimizer: Optimizer, lr: float) -> Optimizer:
 
 def set_params(optimizer: Optimizer, **params) -> Optimizer:
     """Change an ``optimizer``'s parameters by the ones passed in ``params``."""
-    for param_group in optimizer.param_groups:
-        for name, value in params.items():
+    for name, value in params.items():
+        for param_group in optimizer.param_groups:
             param_group[name] = value
     return optimizer
