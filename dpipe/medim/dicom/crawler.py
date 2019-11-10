@@ -40,7 +40,7 @@ def get_file_meta(path: PathLike) -> dict:
     try:
         dc = read_file(path)
         result['NoError'] = True
-    except (errors.InvalidDicomError, OSError, NotImplementedError):
+    except (errors.InvalidDicomError, OSError, NotImplementedError, AttributeError):
         result['NoError'] = False
         return result
 

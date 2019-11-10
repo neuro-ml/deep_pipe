@@ -84,4 +84,6 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
         result[slc] += patch
         counts[slc] += 1
 
-    return result / np.maximum(1, counts)
+    counts[counts == 0] = 1
+    result /= counts
+    return result

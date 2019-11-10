@@ -124,4 +124,4 @@ def animate3d(*data: np.ndarray, output_path: PathLike, axis: int = -1, scale: i
     plt.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     FuncAnimation(fig, func=update, frames=data[0].shape[axis], blit=True, repeat=repeat).save(
-        output_path, writer=writer, fps=fps)
+        str(output_path), writer=writer, fps=fps)

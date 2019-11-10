@@ -8,12 +8,19 @@ from pathlib import Path
 from typing import Union, Callable
 
 import numpy as np
+import pandas as pd
+
+from dpipe.medim.utils import name_changed
 
 __all__ = [
-    'PathLike', 'ConsoleArguments', 'load_by_ext', 'load_or_create',
+    'PathLike', 'ConsoleArguments', 'load_or_create',
+    'load', 'save',
     'load_json', 'save_json',
     'load_pickle', 'save_pickle',
     'load_numpy', 'save_numpy',
+
+    # deprecated
+    'load_by_ext',
 ]
 
 PathLike = Union[Path, str]
@@ -59,34 +66,57 @@ def load_experiment_test_pred(identifier, experiment_path):
         raise FileNotFoundError('No prediction found')
 
 
-def load_by_ext(path: PathLike):
+def load(path: PathLike, **kwargs):
     """
     Load a file located at ``path``.
+    ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, tif, hdr, img, nii, nii.gz, json, mhd
+        npy, tif, hdr, img, nii, nii.gz, json, mhd, csv
     """
     name = Path(path).name
 
     if name.endswith('.npy'):
-        return np.load(path)
+        return load_numpy(path, **kwargs)
     if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel as nib
-        return nib.load(path).get_data()
-    if name.endswith('.tif'):
-        from PIL import Image
-        with Image.open(path) as image:
-            return np.asarray(image)
-    if name.endswith(('.png', '.jpg')):
+        return nib.load(path, **kwargs).get_data()
+    if name.endswith(('.png', '.jpg', '.tif')):
         from imageio import imread
-        return imread(path)
+        return imread(path, **kwargs)
     if name.endswith('.json'):
-        return load_json(path)
+        return load_json(path, **kwargs)
+    if name.endswith('.csv'):
+        return pd.read_csv(path, **kwargs)
     if name.endswith('.mhd'):
         from SimpleITK import ReadImage
-        return ReadImage(name)
+        return ReadImage(name, **kwargs)
 
-    raise ValueError(f"Couldn't read file from path: {path}. Unknown file extension.")
+    raise ValueError(f"Couldn't read file {path}. Unknown extension.")
+
+
+def save(value, path: PathLike, **kwargs):
+    """
+    Save ``value`` to a file located at ``path``.
+    ``kwargs`` are format-specific keyword arguments.
+
+    The following extensions are supported:
+        npy, tif, hdr, img, nii, nii.gz, json
+    """
+    name = Path(path).name
+
+    if name.endswith('.npy'):
+        save_numpy(value, path, **kwargs)
+    if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
+        import nibabel as nib
+        nib.save(value, path, **kwargs)
+    if name.endswith(('.png', '.jpg', '.tif')):
+        from imageio import imsave
+        imsave(path, value, **kwargs)
+    if name.endswith('.json'):
+        save_json(value, path, **kwargs)
+
+    raise ValueError(f"Couldn't write to file {path}. Unknown extension.")
 
 
 def load_json(path: PathLike):
@@ -110,12 +140,12 @@ def save_json(value, path: PathLike, *, indent: int = None):
         json.dump(value, f, indent=indent, cls=NumpyEncoder)
 
 
-def save_numpy(value, path: PathLike, *, allow_pickle=True, fix_imports=True):
+def save_numpy(value, path: PathLike, *, allow_pickle: bool = True, fix_imports: bool = True):
     """A wrapper around ``np.save`` that matches the interface ``save(what, where)``."""
     np.save(path, value, allow_pickle=allow_pickle, fix_imports=fix_imports)
 
 
-def load_numpy(path: PathLike, *, allow_pickle=True, fix_imports=True):
+def load_numpy(path: PathLike, *, allow_pickle: bool = True, fix_imports: bool = True):
     """A wrapper around ``np.load`` with ``allow_pickle`` set to True by default."""
     return np.load(path, allow_pickle=allow_pickle, fix_imports=fix_imports)
 
@@ -194,3 +224,6 @@ class ConsoleArguments:
             raise ValueError(f'This method takes exactly one argument, but {len(kwargs)} were passed.')
         name, value = list(kwargs.items())[0]
         return self._args.get(name, value)
+
+
+load_by_ext = name_changed(load, 'load_by_ext', '10.11.2019')

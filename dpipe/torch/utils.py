@@ -26,14 +26,7 @@ def load_model_state(module: nn.Module, path: PathLike, modify_state_fn: Callabl
         This function should modify states as needed and return the final state to load.
         For example, it could help you to transfer weights from similar but not completely equal architecture.
     """
-    if is_on_cuda(module):
-        map_location = None
-    else:
-        # load models that were trained on GPU, but now run on CPU
-        def map_location(storage, location):
-            return storage
-
-    state_to_load = torch.load(path, map_location=map_location)
+    state_to_load = torch.load(path, map_location=get_device(module))
     if modify_state_fn is not None:
         current_state = module.state_dict()
         state_to_load = modify_state_fn(current_state, state_to_load)
