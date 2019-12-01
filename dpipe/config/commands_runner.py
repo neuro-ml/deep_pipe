@@ -74,8 +74,7 @@ def lock_dir(folder: PathLike = '.', lock: str = '.lock'):
         lock.touch(exist_ok=False)
         atexit.register(os.remove, lock)
     else:
-        text = f'Running experiment from {lock.resolve()}, but the directory is already locked. Exit is called.'
-        raise FileExistsError(text)
+        raise FileExistsError(f'Trying to lock directory {lock.resolve()}, but it is already locked.')
 
 
 lock_experiment_dir = name_changed(lock_dir, 'lock_experiment_dir', '19.08.2019')

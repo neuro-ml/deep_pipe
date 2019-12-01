@@ -73,17 +73,20 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     """
     axes, stride = broadcast_to_axes(axes, stride)
     patch, patches = peek(patches)
+    patch_size = np.array(extract(patch.shape, axes))
     if len(output_shape) != patch.ndim:
         output_shape = fill_by_indices(patch.shape, output_shape, axes)
 
-    result = np.zeros(output_shape, patch.dtype)
+    dtype = patch.dtype
+    if not np.issubdtype(dtype, np.floating):
+        dtype = float
+
+    result = np.zeros(output_shape, dtype)
     counts = np.zeros(output_shape, int)
-    for box, patch in zip_equal(
-            get_boxes(output_shape, extract(patch.shape, axes), stride, axes, valid), patches):
+    for box, patch in zip_equal(get_boxes(output_shape, patch_size, stride, axes, valid), patches):
         slc = build_slices(*box)
         result[slc] += patch
         counts[slc] += 1
 
-    counts[counts == 0] = 1
-    result /= counts
+    np.true_divide(result, counts, out=result, where=counts > 0)
     return result

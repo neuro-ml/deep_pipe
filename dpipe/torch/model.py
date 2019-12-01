@@ -2,7 +2,6 @@ from torch.nn import Module
 from torch.optim import Optimizer
 
 from ..medim.utils import identity
-from ..model import Model
 from .utils import *
 
 
@@ -93,7 +92,7 @@ def do_inf_step(*inputs, inputs2logits, logits2pred):
     return inference_step(*inputs, architecture=inputs2logits, activation=logits2pred)
 
 
-class TorchModel(Model):
+class TorchModel:
     """
     `Model` interface implementation for the PyTorch framework.
 

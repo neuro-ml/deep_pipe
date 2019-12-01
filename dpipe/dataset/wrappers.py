@@ -200,10 +200,17 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None, attributes: Sequenc
 
     preserved_attributes = []
     for attribute in attributes:
-        values = {getattr(dataset, attribute) for dataset in datasets}
-        preserved_attributes.append(list(values)[0])
+        # can't use a set here, because not all attributes can be hashed
+        values = []
+        for dataset in datasets:
+            value = getattr(dataset, attribute)
+            if value not in values:
+                values.append(value)
+
         if len(values) != 1:
             raise ValueError(f'Datasets have different values of attribute "{attribute}".')
+
+        preserved_attributes.append(values[0])
 
     def decorator(method_name):
         def wrapper(identifier, *args, **kwargs):

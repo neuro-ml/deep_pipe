@@ -1,8 +1,8 @@
+import contextlib
 from typing import Callable
 
 import numpy as np
 
-from ..batch_iter import BatchIter
 from .checkpoint import CheckpointManager
 from .policy import Policy, ValuePolicy, EarlyStopping
 from .logging import Logger
@@ -51,7 +51,12 @@ class _DummyLogger(Logger):
         pass
 
 
-def train(train_step: Callable, batch_iter: BatchIter, n_epochs: int = np.inf, logger: Logger = None,
+@contextlib.contextmanager
+def _build_context_manager(o):
+    yield o
+
+
+def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, logger: Logger = None,
           checkpoint_manager: CheckpointManager = None, validate: Callable = None, **kwargs):
     """
     Performs a series of train and validation steps.
@@ -60,7 +65,7 @@ def train(train_step: Callable, batch_iter: BatchIter, n_epochs: int = np.inf, l
     ----------
     train_step: Callable
         a function to perform train step.
-    batch_iter: BatchIter
+    batch_iter: Callable
         batch iterator.
     n_epochs: int
         maximal number of training epochs
@@ -72,11 +77,17 @@ def train(train_step: Callable, batch_iter: BatchIter, n_epochs: int = np.inf, l
         additional keyword arguments passed to ``train_step``.
         For instances of `ValuePolicy` their `value` attribute is passed.
         Other policies are used for early stopping.
+
+    References
+    ----------
+    See the :doc:`tutorials/training` tutorial for more details.
     """
     if checkpoint_manager is None:
         checkpoint_manager = _DummyCheckpointManager()
     if logger is None:
         logger = _DummyLogger()
+    if not hasattr(batch_iter, '__enter__'):
+        batch_iter = _build_context_manager(batch_iter)
 
     epoch = checkpoint_manager.restore()
 

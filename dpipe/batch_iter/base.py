@@ -1,4 +1,8 @@
 from abc import abstractmethod, ABC
+from warnings import warn
+
+# 01.12.2019
+warn('This module is deprecated.', DeprecationWarning)
 
 __all__ = 'BatchIter',
 

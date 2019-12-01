@@ -92,7 +92,7 @@ def load(path: PathLike, **kwargs):
         from SimpleITK import ReadImage
         return ReadImage(name, **kwargs)
 
-    raise ValueError(f"Couldn't read file {path}. Unknown extension.")
+    raise ValueError(f'Couldn\'t read file "{path}". Unknown extension.')
 
 
 def save(value, path: PathLike, **kwargs):
@@ -107,16 +107,17 @@ def save(value, path: PathLike, **kwargs):
 
     if name.endswith('.npy'):
         save_numpy(value, path, **kwargs)
-    if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
+    elif name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel as nib
         nib.save(value, path, **kwargs)
-    if name.endswith(('.png', '.jpg', '.tif')):
+    elif name.endswith(('.png', '.jpg', '.tif')):
         from imageio import imsave
         imsave(path, value, **kwargs)
-    if name.endswith('.json'):
+    elif name.endswith('.json'):
         save_json(value, path, **kwargs)
 
-    raise ValueError(f"Couldn't write to file {path}. Unknown extension.")
+    else:
+        raise ValueError(f'Couldn\'t write to file "{path}". Unknown extension.')
 
 
 def load_json(path: PathLike):

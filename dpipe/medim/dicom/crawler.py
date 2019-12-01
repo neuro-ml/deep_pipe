@@ -2,7 +2,7 @@
 import os
 from operator import itemgetter
 from os.path import join as jp
-from typing import Sequence, Iterable
+from typing import Sequence
 
 import pandas as pd
 from tqdm import tqdm
@@ -78,7 +78,7 @@ def walk_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), relati
             raise ValueError(f'Each extension must start with a dot: "{extension}".')
 
     def walker():
-        for root_, _, files_ in os.walk(top, onerror=_throw):
+        for root_, _, files_ in os.walk(top, onerror=_throw, followlinks=True):
             files_ = [file_ for file_ in files_ if not any(file_.endswith(ext) for ext in ignore_extensions)]
             if files_:
                 yield root_, files_
@@ -115,6 +115,10 @@ def join_dicom_tree(top: PathLike, ignore_extensions: Sequence[str] = (), relati
         whether the ``PathToFolder`` attribute should be relative to ``top``.
     verbose
         whether to display a `tqdm` progressbar.
+
+    References
+    ----------
+    See the :doc:`tutorials/dicom` tutorial for more details.
 
     Notes
     -----

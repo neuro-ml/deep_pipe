@@ -1,106 +1,49 @@
 import os
 from operator import itemgetter
 from os.path import join as jp
-from typing import Sequence, Union
+from typing import Sequence
 
 import numpy as np
-import pandas as pd
 from pydicom import read_file
 
 from ..io import PathLike
-from ..utils import extract_dims, lmap, composition
+from ..utils import composition
 from ..itertools import zip_equal, collect
+from .spatial import *
+from .utils import *
 
-ORIENTATION = [f'ImageOrientationPatient{i}' for i in range(6)]
-
-
-def get_orientation_matrix(metadata: Union[pd.Series, pd.DataFrame]):
-    """Required columns: ImageOrientationPatient[0-5]"""
-    orientation = metadata[ORIENTATION].astype(float).values.reshape(-1, 2, 3)
-    cross = np.cross(orientation[:, 0], orientation[:, 1], axis=1)
-    result = np.concatenate([orientation, cross[:, None]], axis=1)
-
-    if metadata.ndim == 1:
-        result = extract_dims(result)
-    return result
+__all__ = 'load_series', 'get_structure', 'print_structure'
 
 
-def get_orientation_axis(metadata: Union[pd.Series, pd.DataFrame]):
-    """Required columns: ImageOrientationPatient[0-5]"""
-    m = get_orientation_matrix(metadata)
-    matrix = np.atleast_3d(m)
-    result = np.array([np.nan if np.isnan(row).any() else np.abs(row).argmax(axis=0)[2] for row in matrix])
-
-    if m.ndim == 2:
-        result = extract_dims(result)
-    return result
-
-
-def restore_orientation_matrix(metadata: Union[pd.Series, pd.DataFrame]):
-    """
-    Fills nan values (if possible) in ``metadata``'s ImageOrientationPatient* rows.
-
-    Required columns: ImageOrientationPatient[0-5]
-
-    Notes
-    -----
-    The input dataframe will be mutated.
-    """
-
-    def restore(vector):
-        null = pd.isnull(vector)
-        if null.any() and not null.all():
-            length = 1 - (vector[~null] ** 2).sum()
-            vector = vector.copy()
-            vector[null] = length / np.sqrt(null.sum())
-
-        return vector
-
-    x, y = np.moveaxis(metadata[ORIENTATION].astype(float).values.reshape(-1, 2, 3), 1, 0)
-
-    result = np.concatenate([lmap(restore, x), lmap(restore, y)], axis=1)
-
-    if metadata.ndim == 1:
-        result = extract_dims(result)
-
-    metadata[ORIENTATION] = result
-    return metadata
-
-
-def _contains_info(row, *cols):
-    return all(col in row and pd.notnull(row[col]) for col in cols)
-
-
-def load_series(row: pd.Series, base_path: PathLike = None, orientation: bool = True) -> np.ndarray:
+def load_series(row: pd.Series, base_path: PathLike = None, orientation: bool = None) -> np.ndarray:
     """
     Loads an image based on its ``row`` in the metadata dataframe.
 
     If ``base_path`` is not None, PathToFolder is assumed to be relative to it.
+
+    If ``orientation`` is True, the loaded image will be transposed and flipped
+    to standard (Coronal, Sagittal, Axial) orientation.
 
     Required columns: PathToFolder, FileNames.
     """
     folder, files = row.PathToFolder, row.FileNames.split('/')
     if base_path is not None:
         folder = os.path.join(base_path, folder)
-    if _contains_info(row, 'InstanceNumbers'):
+    if contains_info(row, 'InstanceNumbers'):
         files = map(itemgetter(1), sorted(zip_equal(map(int, row.InstanceNumbers.split(',')), files)))
 
     x = np.stack([read_file(jp(folder, file)).pixel_array for file in files], axis=-1)
-    if _contains_info(row, 'RescaleSlope'):
+    if contains_info(row, 'RescaleSlope'):
         x = x * row.RescaleSlope
-    if _contains_info(row, 'RescaleIntercept'):
+    if contains_info(row, 'RescaleIntercept'):
         x = x + row.RescaleIntercept
 
-    if not orientation or not _contains_info(row, *ORIENTATION):
+    if orientation is None:
+        orientation = contains_info(row, *ORIENTATION)
+    if not orientation:
         return x
 
-    m = get_orientation_matrix(row)
-    assert not np.isnan(m).any()
-
-    for i, j in enumerate(np.abs(m).argmax(axis=1)):
-        if m[i, j] < 0:
-            x = np.flip(x, axis=i)
-    return x.transpose(*np.abs(m).argmax(axis=0))
+    return normalize_orientation(x, row)
 
 
 @composition('\n'.join)

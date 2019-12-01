@@ -1,5 +1,5 @@
 """Tools for grouping DICOM metadata into images."""
-from typing import Callable
+from typing import Callable, Sequence
 
 import pandas as pd
 
@@ -13,16 +13,31 @@ def _remove_dots(x):
         return x
 
 
-REQUIRED_FIELDS = {'PatientID', 'SeriesInstanceUID', 'StudyInstanceUID', 'PathToFolder', 'PixelArrayShape'}
+AGGREGATE_BY = (
+    'PatientID', 'SeriesInstanceUID', 'StudyInstanceUID',
+    'PathToFolder', 'PixelArrayShape', 'SequenceName'
+)
 
 
-def aggregate_images(metadata: pd.DataFrame, process_series: Callable = None) -> pd.DataFrame:
+def aggregate_images(metadata: pd.DataFrame, by: Sequence[str] = AGGREGATE_BY,
+                     process_series: Callable = None) -> pd.DataFrame:
     """
     Groups DICOM ``metadata`` into images (series).
 
-    Required columns:
-        PatientID, SeriesInstanceUID, StudyInstanceUID,
-        SequenceName, PixelArrayShape. PathToFolder, FileName
+    Parameters
+    ----------
+    metadata
+        a dataframe with metadata returned by `join_dicom_tree`.
+    by
+        a list of column names by which the grouping will be performed.
+        Default columns are: PatientID, SeriesInstanceUID, StudyInstanceUID,
+        PathToFolder, PixelArrayShape, SequenceName.
+    process_series
+        a function that processes an aggregated series before it will be joined into a single entry
+
+    References
+    ----------
+    See the :doc:`tutorials/dicom` tutorial for more details.
 
     Notes
     -----
@@ -55,16 +70,13 @@ def aggregate_images(metadata: pd.DataFrame, process_series: Callable = None) ->
 
         return res.drop(['InstanceNumber', 'FileName', 'SliceLocation'], 1, errors='ignore')
 
-    group_by = list(REQUIRED_FIELDS)
-    group_by.extend(set(metadata) & {'SequenceName'})
-
-    not_string = metadata[group_by].applymap(lambda x: not isinstance(x, str)).any()
+    not_string = metadata[by].applymap(lambda x: not isinstance(x, str)).any()
     if not_string.any():
         not_strings = ', '.join(not_string.index[not_string])
         raise ValueError(f'The following columns do not contain only strings: {not_strings}. '
                          'You should probably check for NaN values.')
 
-    return metadata.groupby(group_by).apply(process_group).reset_index(drop=True)
+    return metadata.groupby(by).apply(process_group).reset_index(drop=True)
 
 
 def normalize_identifiers(metadata: pd.DataFrame) -> pd.DataFrame:

@@ -3,7 +3,6 @@ from typing import Callable, Union
 import numpy as np
 
 from .model import TorchModel
-from ..batch_iter.base import BatchIter
 from ..train.checkpoint import CheckpointManager
 from ..train.policy import Policy, ValuePolicy, Constant
 from ..train.logging import TBLogger, Logger
@@ -12,7 +11,7 @@ from ..train import train
 
 # 10.08.2019
 @np.deprecate
-def train_model(model: TorchModel, batch_iter: BatchIter, n_epochs: int, lr: Union[float, ValuePolicy],
+def train_model(model: TorchModel, batch_iter, n_epochs: int, lr: Union[float, ValuePolicy],
                 log_path: str = None, checkpoints_path: str = None, validate: Callable = None, **policies: Policy):
     """
     Train a given ``model``.

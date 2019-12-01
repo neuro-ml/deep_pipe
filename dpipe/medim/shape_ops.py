@@ -42,7 +42,8 @@ def zoom(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: 
         return ndimage.zoom(x, scale_factor, order=order, cval=fill_value)
 
 
-def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: int = 1) -> np.ndarray:
+def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: int = 1,
+                  fill_value: Union[float, Callable] = 0) -> np.ndarray:
     """
     Rescale ``x`` to match ``shape`` along the ``axes``.
 
@@ -55,10 +56,12 @@ def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: 
         axes along which the tensor will be scaled. If None - the last ``len(shape)`` axes are used.
     order
         order of interpolation.
+    fill_value
+        value to fill past edges. If Callable (e.g. `numpy.min`) - ``fill_value(x)`` will be used.
     """
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(fill_by_indices(x.shape, shape, axes), 'float64')
-    return zoom(x, new_shape / old_shape, order=order)
+    return zoom(x, new_shape / old_shape, order=order, fill_value=fill_value)
 
 
 def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None,

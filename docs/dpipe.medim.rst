@@ -83,6 +83,13 @@ Aggregation
     :undoc-members:
     :show-inheritance:
 
+Spatial localization
+^^^^^^^^^^^^^^^^^^^^
+.. automodule:: dpipe.medim.dicom.spatial
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Miscellaneous
 ^^^^^^^^^^^^^
 .. automodule:: dpipe.medim.dicom.misc

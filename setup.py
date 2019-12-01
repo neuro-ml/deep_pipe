@@ -25,6 +25,7 @@ setup(
     keywords=[],
     classifiers=classifiers.splitlines(),
     install_requires=requirements,
+    python_requires='>=3.6',
     entry_points={
         'console_scripts': [
             'dpipe = dpipe.config.base:render_config_resource',

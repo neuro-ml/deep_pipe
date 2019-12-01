@@ -36,6 +36,14 @@ class TestGrid(unittest.TestCase):
         self.assertTrue((stop <= shape).all())
         self.assertTrue((start + box_size == stop).all())
 
+    def test_combine_int(self):
+        patch_size = np.array([20] * 3, int)
+        stride = patch_size // 2
+        shape = [45, 43, 48]
+
+        x = np.random.randint(0, 100, size=(1, *shape))
+        np.testing.assert_array_almost_equal(x, combine(divide(x, patch_size, stride), shape, stride))
+
     def test_combine_grid_patches(self):
         stride = patch_size = [20] * 3
         for _ in range(20):

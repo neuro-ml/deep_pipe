@@ -4,7 +4,6 @@ from typing import Iterable, Callable
 import numpy as np
 
 from ..medim.axes import AxesParams
-from .base import BatchIter
 from .utils import pad_batch_equal
 
 __all__ = 'Infinite', 'combine_batches', 'combine_to_arrays', 'combine_pad'
@@ -36,7 +35,7 @@ def combine_pad(inputs, padding_values: AxesParams = 0, ratio: AxesParams = 0.5)
     return tuple(pad_batch_equal(x, padding_values, ratio) for x in combine_batches(inputs))
 
 
-class Infinite(BatchIter):
+class Infinite:
     """
     Combine ``source`` and ``transformers`` into a batch iterator that yields batches of size ``batch_size``.
 
