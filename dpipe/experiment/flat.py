@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import Iterable, Sequence
 
@@ -54,7 +53,7 @@ def flat(split: Iterable[Sequence], config_path: PathLike, experiment_path: Path
                              f"does not match the number of prefixes ({len(prefixes)})")
 
         local = experiment_path / f'experiment_{i}'
-        os.makedirs(local)
+        local.mkdir(parents=True)
 
         for val, prefix in zip(ids, prefixes):
             save_json(val, local / f'{prefix}_ids.json', indent=0)

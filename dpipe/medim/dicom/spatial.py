@@ -8,7 +8,7 @@ from .utils import *
 
 __all__ = [
     'get_orientation_matrix', 'get_orientation_axis', 'restore_orientation_matrix',
-    'should_flip', 'normalize_orientation',
+    'should_flip', 'normalize_orientation', 'get_slice_spacing',
 ]
 
 
@@ -72,7 +72,7 @@ def order_slice_locations(dicom_metadata):
     ))).T
 
 
-def should_flip(dicom_metadata):
+def should_flip(dicom_metadata: pd.Series):
     """
     Returns True if the whole series' should be flipped
     in order to account for 'HFS' patient position.
@@ -83,7 +83,24 @@ def should_flip(dicom_metadata):
     return flip != direction
 
 
-def normalize_orientation(image, row):
+def get_slice_spacing(dicom_metadata: pd.Series, check: bool = True):
+    """
+    Computes the spacing between slices for a dicom series.
+    """
+    instances, locations = order_slice_locations(dicom_metadata)
+    dx, dy = np.diff([instances, locations], axis=1)
+    spacing = dy / dx
+
+    if spacing.max() - spacing.min() > 0.01:
+        if check:
+            raise ValueError(f'Seems like this series has an inconsistent slice spacing: {spacing}.')
+
+        return np.nan
+
+    return spacing.mean()
+
+
+def normalize_orientation(image: np.ndarray, row: pd.Series):
     """
     Transposes and flips the ``image`` to standard (Coronal, Sagittal, Axial) orientation.
     """
