@@ -72,7 +72,7 @@ def load(path: PathLike, **kwargs):
     ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, tif, hdr, img, nii, nii.gz, json, mhd, csv
+        npy, tif, hdr, img, nii, nii.gz, json, mhd, csv, txt, pickle, pkl
     """
     name = Path(path).name
 
@@ -88,6 +88,11 @@ def load(path: PathLike, **kwargs):
         return load_json(path, **kwargs)
     if name.endswith('.csv'):
         return pd.read_csv(path, **kwargs)
+    if name.endswith(('.pkl', '.pickle')):
+        return load_pickle(path, **kwargs)
+    if name.endswith('.txt'):
+        with open(path, mode='r', **kwargs) as file:
+            return file.read()
     if name.endswith('.mhd'):
         from SimpleITK import ReadImage
         return ReadImage(name, **kwargs)
@@ -101,7 +106,7 @@ def save(value, path: PathLike, **kwargs):
     ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, tif, hdr, img, nii, nii.gz, json
+        npy, tif, hdr, img, nii, nii.gz, json, txt, pickle, pkl
     """
     name = Path(path).name
 
@@ -115,6 +120,11 @@ def save(value, path: PathLike, **kwargs):
         imsave(path, value, **kwargs)
     elif name.endswith('.json'):
         save_json(value, path, **kwargs)
+    elif name.endswith(('.pkl', '.pickle')):
+        save_pickle(value, path, **kwargs)
+    elif name.endswith('.txt'):
+        with open(path, mode='r', **kwargs) as file:
+            file.write(value)
 
     else:
         raise ValueError(f'Couldn\'t write to file "{path}". Unknown extension.')
@@ -164,7 +174,7 @@ def load_pickle(path: PathLike):
 
 
 def load_or_create(path: PathLike, create: Callable, *args,
-                   save: Callable = save_numpy, load: Callable = load_numpy, **kwargs):
+                   save: Callable = save, load: Callable = load, **kwargs):
     """
     ``load`` a file from ``path`` if it exists.
     Otherwise ``create`` the value, ``save`` it to ``path``, and return it.

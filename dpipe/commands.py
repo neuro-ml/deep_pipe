@@ -6,7 +6,7 @@ from typing import Callable, Iterable
 import numpy as np
 from tqdm import tqdm
 
-from dpipe.medim.io import save_json, save_numpy
+from dpipe.medim.io import save_json, save_numpy, load
 from dpipe.medim.itertools import collect
 
 
@@ -24,11 +24,10 @@ def transform(input_path, output_path, transform_fn):
 
 
 @collect
-def load_from_folder(path: str):
+def load_from_folder(path: str, loader=load):
     """Yields (id, object) pairs loaded from ``path``."""
-    # TODO: generalize with a loader
     for filename in sorted(os.listdir(path)):
-        yield np_filename2id(filename), np.load(os.path.join(path, filename))
+        yield np_filename2id(filename), loader(os.path.join(path, filename))
 
 
 def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_path: str,
