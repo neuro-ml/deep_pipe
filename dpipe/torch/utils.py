@@ -9,6 +9,13 @@ from torch.optim import Optimizer
 
 from dpipe.medim.io import PathLike
 
+__all__ = [
+    'load_model_state', 'save_model_state',
+    'get_device', 'to_device', 'is_on_cuda', 'to_cuda',
+    'to_var', 'sequence_to_var', 'to_np', 'sequence_to_np',
+    'set_params', 'set_lr',
+]
+
 Device = Union[torch.device, nn.Module, torch.Tensor, str]
 
 

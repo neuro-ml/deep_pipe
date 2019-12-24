@@ -214,3 +214,23 @@ def collect(func: Callable):
 
     wrapper.__annotations__['return'] = list
     return wrapper
+
+
+# TODO: example
+def stack(axis: int = 0, dtype: np.dtype = None):
+    """
+    Stack the values yielded by a generator function.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            value = np.stack(list(func(*args, **kwargs)), axis=axis)
+            if dtype is not None:
+                value = value.astype(dtype)
+            return value
+
+        wrapper.__annotations__['return'] = np.ndarray
+        return wrapper
+
+    return decorator

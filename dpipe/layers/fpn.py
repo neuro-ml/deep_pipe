@@ -2,6 +2,8 @@ from typing import Callable, Sequence, Union
 
 import torch
 import torch.nn as nn
+from torch.nn import functional
+import numpy as np
 
 from dpipe.medim.itertools import zip_equal, lmap
 from dpipe.medim.utils import identity
@@ -55,8 +57,9 @@ class FPN(nn.Module):
     `make_consistent_seq` `FPN <https://arxiv.org/pdf/1612.03144.pdf>`_ `UNet <https://arxiv.org/pdf/1505.04597.pdf>`_
     """
 
-    def __init__(self, layer: Callable, downsample: nn.Module, upsample: nn.Module, merge: Callable,
-                 structure: Sequence[Union[Sequence[int], nn.Module]], last_level: bool = True, *args, **kwargs):
+    def __init__(self, layer: Callable, downsample: Union[nn.Module, Callable], upsample: Union[nn.Module, Callable],
+                 merge: Callable, structure: Sequence[Union[Sequence[int], nn.Module]], last_level: bool = True,
+                 *args, **kwargs):
         super().__init__()
 
         def build_level(path):
@@ -64,11 +67,16 @@ class FPN(nn.Module):
                 path = make_consistent_seq(layer, path, *args, **kwargs)
             return path
 
+        def make_up_down(o):
+            if not isinstance(o, nn.Module):
+                o = o()
+            return o
+
         self.bridge = build_level(structure[-1])
         self.merge = merge
         self.last_level = last_level
-        self.downsample = nn.ModuleList([downsample() for _ in structure[:-1]])
-        self.upsample = nn.ModuleList([upsample() for _ in structure[:-1]])
+        self.downsample = nn.ModuleList([make_up_down(downsample) for _ in structure[:-1]])
+        self.upsample = nn.ModuleList([make_up_down(upsample) for _ in structure[:-1]])
 
         # group branches
         branches = []
@@ -103,3 +111,9 @@ class FPN(nn.Module):
             return x
 
         return results
+
+
+def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, mode: str = 'nearest'):
+    if np.not_equal(left.shape, down.shape).any():
+        down = functional.interpolate(down, size=left.shape[2:], mode=mode, align_corners=False)
+    return left, down

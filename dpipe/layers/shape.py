@@ -6,6 +6,7 @@ import torch.nn as nn
 from torch.nn import functional
 
 from dpipe.medim.axes import AxesLike, expand_axes, check_axes
+from dpipe.torch.functional import moveaxis, softmax
 
 
 class InterpolateToInput(nn.Module):
@@ -71,6 +72,28 @@ class Reshape(nn.Module):
     def forward(self, x: torch.Tensor):
         shape = [x.shape[int(i)] if isinstance(i, str) else i for i in self.shape]
         return x.reshape(*shape)
+
+
+class MoveAxis(nn.Module):
+    def __init__(self, source: AxesLike, destination: AxesLike):
+        super().__init__()
+        self.source, self.destination = source, destination
+
+    def forward(self, x):
+        return moveaxis(x, self.source, self.destination)
+
+
+class Softmax(nn.Module):
+    """
+    A multidimensional version of softmax.
+    """
+
+    def __init__(self, axes):
+        super().__init__()
+        self.axes = axes
+
+    def forward(self, x):
+        return softmax(x, self.axes)
 
 
 class PyramidPooling(nn.Module):

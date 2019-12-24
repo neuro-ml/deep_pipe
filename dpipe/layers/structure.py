@@ -126,6 +126,11 @@ class SplitReduce(nn.Module):
         return self.reduce(pam(self.paths, x))
 
 
+class Split(SplitReduce):
+    def __init__(self, *paths):
+        super().__init__(tuple, *paths)
+
+
 class SplitCat(SplitReduce):
     def __init__(self, *paths, axis=1):
         super().__init__(lambda x: torch.cat(tuple(x), dim=axis), *paths)

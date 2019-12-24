@@ -1,7 +1,15 @@
 from typing import Union, Callable
 
+import numpy as np
 import torch
 from torch.nn import functional
+
+from dpipe.medim.axes import AxesLike, check_axes
+
+__all__ = [
+    'focal_loss_with_logits', 'linear_focal_loss_with_logits', 'weighted_cross_entropy_with_logits',
+    'moveaxis', 'softmax',
+]
 
 
 def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: float = 2, alpha: float = None,
@@ -153,3 +161,35 @@ def dice_loss_with_logits(logit: torch.Tensor, target: torch.Tensor, weight: tor
     loss = 1 - dice
 
     return loss.mean()
+
+
+# simply copied from np.moveaxis
+def moveaxis(x: torch.Tensor, source: AxesLike, destination: AxesLike):
+    source = np.core.numeric.normalize_axis_tuple(source, x.ndim, 'source')
+    destination = np.core.numeric.normalize_axis_tuple(destination, x.ndim, 'destination')
+    if len(source) != len(destination):
+        raise ValueError('`source` and `destination` arguments must have '
+                         'the same number of elements')
+
+    order = [n for n in range(x.ndim) if n not in source]
+    for dest, src in sorted(zip(destination, source)):
+        order.insert(dest, src)
+
+    return x.permute(*order)
+
+
+def softmax(x: torch.Tensor, axes: AxesLike):
+    """
+    A multidimensional version of softmax.
+    """
+    source = check_axes(axes)
+    dim = len(source)
+    destination = range(-dim, 0)
+
+    x = moveaxis(x, source, destination)
+    shape = x.shape
+
+    x = x.reshape(*shape[:-dim], -1)
+    x = functional.softmax(x, -1).reshape(*shape)
+    x = moveaxis(x, destination, source)
+    return x

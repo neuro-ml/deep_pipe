@@ -1,8 +1,15 @@
+import warnings
+from typing import Callable
+
+import numpy as np
+import torch
 from torch.nn import Module
 from torch.optim import Optimizer
 
 from ..medim.utils import identity
 from .utils import *
+
+__all__ = 'optimizer_step', 'train_step', 'inference_step'
 
 
 def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, **params) -> torch.Tensor:
@@ -29,7 +36,7 @@ def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, **params) -> torch.
     return loss
 
 
-def train_step(*inputs: np.ndarray, architecture: nn.Module, criterion: Callable, optimizer: Optimizer,
+def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, optimizer: Optimizer,
                n_targets: int = 1, **optimizer_params) -> np.ndarray:
     """
     Performs a forward-backward pass, and make a gradient step, according to the given ``inputs``.
@@ -70,7 +77,7 @@ def train_step(*inputs: np.ndarray, architecture: nn.Module, criterion: Callable
     return to_np(loss)
 
 
-def inference_step(*inputs: np.ndarray, architecture: nn.Module, activation: Callable = identity) -> np.ndarray:
+def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -114,8 +121,8 @@ class TorchModel:
     The `Model` interface is deprecated. Use `train_step` and `inference_step` instead.
     """
 
-    def __init__(self, model_core: torch.nn.Module, logits2pred: Callable, logits2loss: Callable,
-                 optimize: torch.optim.Optimizer, cuda: bool = None):
+    def __init__(self, model_core: Module, logits2pred: Callable, logits2loss: Callable,
+                 optimize: Optimizer, cuda: bool = None):
         warnings.warn('The `Model` interface is deprecated. Use `train_step` and `inference_step` instead.',
                       DeprecationWarning)
 
