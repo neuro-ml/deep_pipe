@@ -216,10 +216,21 @@ def collect(func: Callable):
     return wrapper
 
 
-# TODO: example
 def stack(axis: int = 0, dtype: np.dtype = None):
     """
-    Stack the values yielded by a generator function.
+    Stack the values yielded by a generator function along a given ``axis``.
+    ``dtype`` (if any) determines the data type of the resulting array.
+
+    Examples
+    --------
+    >>> @stack(1)
+    >>> def consecutive(n):
+    >>>     for i in range(n):
+    >>>         yield i, i+1
+    >>>
+    >>> consecutive(3)
+    array([[0, 1, 2],
+           [1, 2, 3]])
     """
 
     def decorator(func):

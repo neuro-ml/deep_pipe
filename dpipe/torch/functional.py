@@ -165,6 +165,10 @@ def dice_loss_with_logits(logit: torch.Tensor, target: torch.Tensor, weight: tor
 
 # simply copied from np.moveaxis
 def moveaxis(x: torch.Tensor, source: AxesLike, destination: AxesLike):
+    """
+    Move axes of a torch.Tensor to new positions.
+    Other axes remain in their original order.
+    """
     source = np.core.numeric.normalize_axis_tuple(source, x.ndim, 'source')
     destination = np.core.numeric.normalize_axis_tuple(destination, x.ndim, 'destination')
     if len(source) != len(destination):

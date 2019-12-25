@@ -1,6 +1,5 @@
 import shutil
 import pickle
-import warnings
 from pathlib import Path
 from typing import Dict, Any
 
@@ -42,31 +41,12 @@ class CheckpointManager:
     objects: Dict[PathLike, Any]
         objects to save. Each key-value pair represents
         the path relative to ``base_path`` and the corresponding object.
-
-    pickled_objects
-        deprecated argument
-    state_dict_objects
-        deprecated argument
     """
 
-    def __init__(self, base_path: PathLike, objects: Dict[PathLike, Any], pickled_objects=None,
-                 state_dict_objects=None):
+    def __init__(self, base_path: PathLike, objects: Dict[PathLike, Any]):
         self.base_path: Path = Path(base_path)
         self._checkpoint_prefix = 'checkpoint_'
-        objects = objects or {}
-        state_dict_objects = state_dict_objects or {}
-        pickled_objects = pickled_objects or {}
-
-        self.objects = {}
-        self.objects.update(objects)
-
-        # TODO: deprecated 10.08.2019
-        if pickled_objects or state_dict_objects:
-            warnings.warn('`pickled_objects` and `state_dict_objects` arguments are deprecated. Use `objects` instead.',
-                          DeprecationWarning)
-            assert not (set(state_dict_objects) & set(pickled_objects) & set(objects))
-            self.objects.update(state_dict_objects)
-            self.objects.update(pickled_objects)
+        self.objects = objects or {}
 
     def _get_previous_folder(self, iteration):
         return self.base_path / f'{self._checkpoint_prefix}{iteration - 1}'

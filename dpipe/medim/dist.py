@@ -8,6 +8,8 @@ from .axes import fill_by_indices, AxesLike
 from .itertools import zip_equal, collect
 from ..torch import to_var
 
+__all__ = 'weighted_sum', 'expectation', 'conditional_expectation', 'polynomial'
+
 Tensor = Union[np.ndarray, torch.Tensor]
 
 
@@ -26,14 +28,36 @@ def weighted_sum(weights: Tensor, axes: AxesLike, values_range: Callable) -> Ten
 
 
 def polynomial(n: int, order=1) -> np.ndarray:
+    """
+    The definite integral for a polynomial function of a given ``order`` from 0 to ``n - 1``.
+
+    Examples
+    --------
+    >>> polynomial(10, 1) # x ** 2 / 2 from 0 to 9
+    array([ 0. ,  0.5,  2. ,  4.5,  8. , 12.5, 18. , 24.5, 32. , 40.5])
+    """
     power = order + 1
     return np.arange(n) ** power / power
 
 
 def expectation(distribution: Tensor, axis: int, integral: Callable = polynomial, *args, **kwargs) -> Tensor:
     """
-    Calculates the expectation of a given function ``f``.
-    integral: Callable(x) -> int_0^x f(t)dt
+    Calculates the expectation of a function ``f`` given its ``integral`` and ``distribution``.
+
+    Parameters
+    ----------
+    distribution:
+        the distribution by which the expectation will be calculated.
+        Must sum to 1 along the ``axis``.
+    axis:
+        the axis along which the expectation is calculated.
+    integral:
+        the definite integral of the function ``f``.
+        See `polynomial` for an example.
+
+    References
+    ----------
+    `polynomial`
     """
 
     def integral_delta(n):
@@ -43,9 +67,11 @@ def expectation(distribution: Tensor, axis: int, integral: Callable = polynomial
     return weighted_sum(distribution, axis, integral_delta)
 
 
-# TODO: add tests
 @collect
-def conditional_expectation(distribution: Tensor, integrals: Union[Callable, Sequence[Callable]], axes: AxesLike):
+def conditional_expectation(distribution: Tensor, axes: AxesLike, integrals: Union[Callable, Sequence[Callable]]):
+    """
+    Computes expectations along the ``axes`` according to ``integrals`` independently.
+    """
     axes = np.core.numeric.normalize_axis_tuple(axes, distribution.ndim, 'axes')
     if callable(integrals):
         integrals = [integrals]
