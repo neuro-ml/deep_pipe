@@ -70,6 +70,7 @@ def aggregate_images(metadata: pd.DataFrame, by: Sequence[str] = AGGREGATE_BY,
 
         return res.drop(['InstanceNumber', 'FileName', 'SliceLocation'], 1, errors='ignore')
 
+    by = list(by)
     not_string = metadata[by].applymap(lambda x: not isinstance(x, str)).any()
     if not_string.any():
         not_strings = ', '.join(not_string.index[not_string])
