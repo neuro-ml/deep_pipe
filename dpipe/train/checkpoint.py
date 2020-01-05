@@ -3,6 +3,7 @@ import pickle
 from pathlib import Path
 from typing import Dict, Any
 
+import numpy as np
 import torch
 
 from dpipe.medim.io import PathLike
@@ -41,21 +42,23 @@ class CheckpointManager:
     objects: Dict[PathLike, Any]
         objects to save. Each key-value pair represents
         the path relative to ``base_path`` and the corresponding object.
+    frequency: int
+        the frequency with which the objects are stored.
+        By default only the latest checkpoint is saved.
     """
 
-    def __init__(self, base_path: PathLike, objects: Dict[PathLike, Any]):
+    def __init__(self, base_path: PathLike, objects: Dict[PathLike, Any], frequency: int = np.inf):
         self.base_path: Path = Path(base_path)
         self._checkpoint_prefix = 'checkpoint_'
         self.objects = objects or {}
+        self.frequency = frequency
 
-    def _get_previous_folder(self, iteration):
-        return self.base_path / f'{self._checkpoint_prefix}{iteration - 1}'
-
-    def _get_current_folder(self, iteration):
+    def _get_checkpoint_folder(self, iteration):
         return self.base_path / f'{self._checkpoint_prefix}{iteration}'
 
-    def _clear_previous(self, iteration):
-        shutil.rmtree(self._get_previous_folder(iteration))
+    def _clear_checkpoint(self, iteration):
+        if iteration % self.frequency != 0:
+            shutil.rmtree(self._get_checkpoint_folder(iteration))
 
     @staticmethod
     def _dispatch_saver(o):
@@ -71,7 +74,7 @@ class CheckpointManager:
 
     def save(self, iteration: int):
         """Save the states of all tracked objects."""
-        current_folder = self._get_current_folder(iteration)
+        current_folder = self._get_checkpoint_folder(iteration)
         current_folder.mkdir(parents=True)
 
         for path, o in self.objects.items():
@@ -79,7 +82,7 @@ class CheckpointManager:
             save(o, current_folder / path)
 
         if iteration:
-            self._clear_previous(iteration)
+            self._clear_checkpoint(iteration - 1)
 
     def restore(self) -> int:
         """Restore the most recent states of all tracked objects and return next iteration's index."""
@@ -97,7 +100,7 @@ class CheckpointManager:
             return 0
 
         iteration = max_iteration + 1
-        last_folder = self._get_previous_folder(iteration)
+        last_folder = self._get_checkpoint_folder(iteration - 1)
 
         for path, o in self.objects.items():
             load = self._dispatch_loader(o)
