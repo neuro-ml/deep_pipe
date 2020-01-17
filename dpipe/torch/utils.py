@@ -1,4 +1,3 @@
-import warnings
 from pathlib import Path
 from typing import Callable, Union, Iterable
 
@@ -8,6 +7,7 @@ from torch import nn
 from torch.optim import Optimizer
 
 from dpipe.medim.io import PathLike
+from dpipe.medim.itertools import squeeze_first, collect
 
 __all__ = [
     'load_model_state', 'save_model_state',
@@ -17,6 +17,7 @@ __all__ = [
 ]
 
 Device = Union[torch.device, nn.Module, torch.Tensor, str]
+ArrayLike = Union[np.ndarray, Iterable, int, float]
 
 
 def load_model_state(module: nn.Module, path: PathLike, modify_state_fn: Callable = None) -> nn.Module:
@@ -64,7 +65,7 @@ def get_device(x: Device = None) -> torch.device:
         try:
             return next(x.parameters()).device
         except StopIteration:
-            raise ValueError('The device could not be determined as the passed model has no parameters.')
+            raise ValueError('The device could not be determined as the passed model has no parameters.') from None
     if isinstance(x, torch.Tensor):
         return x.device
 
@@ -81,49 +82,61 @@ def is_on_cuda(x: Union[nn.Module, torch.Tensor]):
     return x.is_cuda
 
 
-def to_var(x: Union[np.ndarray, Iterable, int, float], device: Device = None, requires_grad: bool = False,
-           cuda: bool = None) -> torch.Tensor:
+def to_var(*arrays: ArrayLike, device: Device = None, requires_grad: bool = False):
     """
-    Convert a numpy array to a torch Tensor
+    Convert numpy arrays to torch Tensors.
 
     Parameters
     ----------
-    x
+    arrays: array-like
+        objects, that will be converted to torch Tensors.
     device
-        the device on which to move ``x``. If None - ``torch.cuda.is_available()`` is used
-        to determine whether the device will be CPU or CUDA.
-    requires_grad: bool, optional
-    cuda
-        whether to move tensor to cuda. If None, torch.cuda.is_available() is used to determine that.
-        This argument is deprecated.
+        the device on which to move ``x``. See `get_device` for details.
+    requires_grad
+        whether the tensors require grad.
+
+    Notes
+    -----
+    If ``arrays`` contains a single argument the result will not be contained in a tuple:
+    >>> x = to_var(x)
+    >>> x, y = to_var(x, y)
+
+    If this is not the desired behaviour, use `sequence_to_var`, which always returns a tuple of tensors.
     """
-    # TODO: legacy support for `cuda` argument. 13.08.2019
-    if device is not None and cuda is not None:
-        raise ValueError('Cannot pass both `device` and `cuda`.')
-    if cuda is not None:
-        warnings.warn('`cuda` is deprecated. Use `device` instead.', DeprecationWarning)
-        device = cuda
-    if isinstance(device, bool):
-        warnings.warn('`device` cannot be of type `bool`.', DeprecationWarning)
-        device = 'cuda' if device else 'cpu'
-
-    x = torch.from_numpy(np.asarray(x))
-    if requires_grad:
-        x.requires_grad_()
-    return to_device(x, device)
+    return squeeze_first(tuple(sequence_to_var(*arrays, device=device, requires_grad=requires_grad)))
 
 
-def to_np(x: torch.Tensor) -> np.ndarray:
-    """Convert a torch.Tensor to a numpy array."""
-    return x.data.cpu().numpy()
+def to_np(*tensors: torch.Tensor):
+    """
+    Convert torch Tensors to numpy arrays.
+
+    Notes
+    -----
+    If ``tensors`` contains a single argument the result will not be contained in a tuple:
+    >>> x = to_np(x)
+    >>> x, y = to_np(x, y)
+
+    If this is not the desired behaviour, use `sequence_to_np`, which always returns a tuple of arrays.
+    """
+    return squeeze_first(tuple(sequence_to_np(*tensors)))
 
 
-def sequence_to_var(*data, device: Device = None, requires_grad: bool = False, cuda: bool = None):
-    return tuple(to_var(x, cuda=cuda, requires_grad=requires_grad, device=device) for x in data)
+@collect
+def sequence_to_var(*arrays: ArrayLike, device: Device = None, requires_grad: bool = False):
+    for x in arrays:
+        x = torch.from_numpy(np.asarray(x))
+        if requires_grad:
+            x.requires_grad_()
+        yield to_device(x, device)
 
 
-def sequence_to_np(*data):
-    return tuple(to_np(x) if isinstance(x, torch.Tensor) else x for x in data)
+@collect
+def sequence_to_np(*tensors: torch.Tensor):
+    for x in tensors:
+        # TODO: raise if not tensor?
+        if isinstance(x, torch.Tensor):
+            x = x.data.cpu().numpy()
+        yield x
 
 
 def to_device(x: Union[nn.Module, torch.Tensor], device: Device = None):
@@ -134,8 +147,7 @@ def to_device(x: Union[nn.Module, torch.Tensor], device: Device = None):
     ----------
     x
     device
-        the device on which to move ``x``. If None  -``torch.cuda.is_available()`` is used
-        to determine whether the device will be CPU or CUDA.
+        the device on which to move ``x``. See `get_device` for details.
     """
     return x.to(device=get_device(device))
 
