@@ -63,9 +63,13 @@ class FPN(nn.Module):
         super().__init__()
 
         def build_level(path):
-            if not isinstance(path, nn.Module):
-                path = make_consistent_seq(layer, path, *args, **kwargs)
-            return path
+            if isinstance(path, nn.Module):
+                return path
+
+            elif not isinstance(path, Sequence):
+                raise ValueError('The passed `structure` is not valid.')
+
+            return make_consistent_seq(layer, path, *args, **kwargs)
 
         def make_up_down(o):
             if not isinstance(o, nn.Module):
