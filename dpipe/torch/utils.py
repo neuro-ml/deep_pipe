@@ -56,10 +56,10 @@ def get_device(x: Device = None) -> torch.device:
     Parameters
     ----------
     x: torch.device, torch.nn.Module, torch.Tensor, str, None
-        | if `torch.Tensor` - returns the device on which it is located
-        | if `torch.nn.Module` - returns the device on which its parameters are located
-        | if `str` or `torch.device` - returns `torch.device(x)`
-        | if `None` - same as 'cuda' if CUDA is available, 'cpu' otherwise.
+        | if ``torch.Tensor`` - returns the device on which it is located
+        | if ``torch.nn.Module`` - returns the device on which its parameters are located
+        | if ``str`` or ``torch.device`` - returns `torch.device(x)`
+        | if ``None`` - same as 'cuda' if CUDA is available, 'cpu' otherwise.
     """
     if isinstance(x, nn.Module):
         try:

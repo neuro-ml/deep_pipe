@@ -62,6 +62,15 @@ Patch
     :undoc-members:
     :show-inheritance:
 
+Distributions
+-------------
+
+.. automodule:: dpipe.medim.dist
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 DICOM utils
 -----------
 

@@ -1,3 +1,6 @@
+"""
+Module for calculation of various statistics given a discrete or piecewise-linear distribution.
+"""
 from collections import Callable
 from typing import Union, Sequence
 
@@ -8,14 +11,25 @@ from .axes import fill_by_indices, AxesLike
 from .itertools import zip_equal, collect
 from ..torch import to_var
 
-__all__ = 'weighted_sum', 'expectation', 'conditional_expectation', 'polynomial'
+__all__ = 'weighted_sum', 'expectation', 'marginal_expectation', 'polynomial'
 
 Tensor = Union[np.ndarray, torch.Tensor]
 
 
 def weighted_sum(weights: Tensor, axes: AxesLike, values_range: Callable) -> Tensor:
+    """
+    Calculates a weighted sum of values returned by ``values_range`` with the corresponding
+    ``weights`` along a given ``axis``.
+
+    Parameters
+    ----------
+    weights
+    axes
+    values_range
+        takes ``n`` as input and returns an array of ``n`` values where ``n = weights.shape[axes]``.
+    """
     if not isinstance(axes, int):
-        axes = tuple(axes)
+        axes = list(axes)
 
     values = values_range(np.array(weights.shape)[axes])
 
@@ -41,8 +55,10 @@ def polynomial(n: int, order=1) -> np.ndarray:
 
 
 def expectation(distribution: Tensor, axis: int, integral: Callable = polynomial, *args, **kwargs) -> Tensor:
-    """
-    Calculates the expectation of a function ``f`` given its ``integral`` and ``distribution``.
+    r"""
+    Calculates the expectation of a function ``h`` given its ``integral`` and a ``distribution``.
+
+    ``args`` and ``kwargs`` are passed to ``integral`` as  additional arguments.
 
     Parameters
     ----------
@@ -52,8 +68,20 @@ def expectation(distribution: Tensor, axis: int, integral: Callable = polynomial
     axis:
         the axis along which the expectation is calculated.
     integral:
-        the definite integral of the function ``f``.
+        the definite integral of the function ``h``.
         See `polynomial` for an example.
+
+    Notes
+    -----
+    This function calculates the expectation by a piecewise-linear distribution in the range :math:`[0, N]`
+    where ``N = distribution.shape[axis]``:
+
+    .. math::
+        \mathbb{E}_F[h] = \int\limits_0^N h(x) dF(x) = \sum\limits_0^{N-1} \int\limits_i^{i+1} h(x) dF(x) =
+        \sum\limits_0^{N-1} p_i \int\limits_i^{i+1} h(x) dx,
+
+    where :math:`p_i` are given by ``distribution`` along ``axis``, :math:`\int\limits_i^{i+1} h(x) dx` are
+    returned by ``polynomial``.
 
     References
     ----------
@@ -68,9 +96,12 @@ def expectation(distribution: Tensor, axis: int, integral: Callable = polynomial
 
 
 @collect
-def conditional_expectation(distribution: Tensor, axes: AxesLike, integrals: Union[Callable, Sequence[Callable]]):
+def marginal_expectation(distribution: Tensor, axes: AxesLike, integrals: Union[Callable, Sequence[Callable]],
+                         *args, **kwargs):
     """
     Computes expectations along the ``axes`` according to ``integrals`` independently.
+
+    ``args`` and ``kwargs`` are passed to ``integral`` as  additional arguments.
     """
     axes = np.core.numeric.normalize_axis_tuple(axes, distribution.ndim, 'axes')
     if callable(integrals):
@@ -85,4 +116,4 @@ def conditional_expectation(distribution: Tensor, axes: AxesLike, integrals: Uni
         other_axes = np.array(other_axes)
         other_axes[other_axes > axis] -= 1
 
-        yield expectation(distribution, axis, integral).sum(tuple(other_axes))
+        yield expectation(distribution, axis, integral, *args, **kwargs).sum(tuple(other_axes))
