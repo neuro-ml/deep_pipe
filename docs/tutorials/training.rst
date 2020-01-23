@@ -1,4 +1,3 @@
-
 Training
 ========
 
@@ -9,9 +8,9 @@ an example for a model written in PyTorch.
 
     from dpipe.train import train
 
-this is the main function; it requires a batch iterator (`BatchIter`),
-and a ``train_step`` function, that performs a forward-backward pass for
-a given batch.
+this is the main function; it requires a batch iterator, and a
+``train_step`` function, that performs a forward-backward pass for a
+given batch.
 
 Let’s build all the required components.
 

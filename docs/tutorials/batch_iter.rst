@@ -1,4 +1,3 @@
-
 Batch iterators
 ===============
 
