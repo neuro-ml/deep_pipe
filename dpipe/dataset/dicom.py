@@ -2,7 +2,7 @@ import numpy as np
 
 from dpipe.dataset import CSV
 from dpipe.medim.dicom import load_series
-from dpipe.medim.io import PathLike
+from dpipe.io import PathLike
 
 
 class DICOMDataset(CSV):

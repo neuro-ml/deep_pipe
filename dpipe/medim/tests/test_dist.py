@@ -24,4 +24,4 @@ def test_conditional():
     dist /= dist.sum((0, 1), keepdims=True)
     centers = np.full((2, 40), 15)
 
-    eq(np.stack(conditional_expectation(dist, (0, 1), polynomial)), centers)
+    eq(np.stack(marginal_expectation(dist, (0, 1), polynomial)), centers)

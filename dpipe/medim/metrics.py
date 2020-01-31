@@ -15,7 +15,7 @@ __all__ = [
 
 def to_aggregated(metric: Callable, aggregate: Callable = np.mean, *args, **kwargs):
     """
-    Concerts a ``metric`` that receives two values to a metric
+    Converts a ``metric`` that receives two values to a metric
     that receives two sequences and returns an aggregated value.
 
     ``args`` and ``kwargs`` are passed as additional arguments ot ``aggregate``.
@@ -159,9 +159,7 @@ def cross_entropy_with_logits(target: np.ndarray, logits: np.ndarray, axis: int 
     max_ = np.maximum(0, logits.max(axis, keepdims=True))
 
     loss = -main + max_ + np.log(np.exp(logits - max_).sum(axis, keepdims=True))
-
-    assert loss.shape[axis] == 1, loss.shape
-    loss = np.take(loss, 0, axis)
+    loss = loss.squeeze(axis)
 
     if reduce is not None:
         loss = reduce(loss)

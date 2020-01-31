@@ -77,6 +77,7 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
     return to_np(loss)
 
 
+@torch.no_grad()
 def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
@@ -87,83 +88,14 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     to and from ``torch.Tensor`` is made inside this function.
     """
     architecture.eval()
-    with torch.no_grad():
-        return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
+    return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
 
 
+@np.deprecate
 def do_train_step(*inputs, lr, inputs2logits, optimizer, logits2loss):
     return train_step(*inputs, lr=lr, architecture=inputs2logits, criterion=logits2loss, optimizer=optimizer)
 
 
+@np.deprecate
 def do_inf_step(*inputs, inputs2logits, logits2pred):
     return inference_step(*inputs, architecture=inputs2logits, activation=logits2pred)
-
-
-class TorchModel:
-    """
-    `Model` interface implementation for the PyTorch framework.
-
-    Parameters
-    ----------
-    model_core
-        the model architecture
-    logits2pred: callable(logits) -> prediction
-        last layer nonlinearity that maps logits to predictions
-    logits2loss: callable(logits) -> loss
-        the loss function
-    optimize: torch.optim.Optimizer
-        the optimizer
-    cuda: bool, optional
-        whether to move the model's parameters to CUDA
-
-    Warnings
-    --------
-    The `Model` interface is deprecated. Use `train_step` and `inference_step` instead.
-    """
-
-    def __init__(self, model_core: Module, logits2pred: Callable, logits2loss: Callable,
-                 optimize: Optimizer, cuda: bool = None):
-        warnings.warn('The `Model` interface is deprecated. Use `train_step` and `inference_step` instead.',
-                      DeprecationWarning)
-
-        if isinstance(logits2loss, Module):
-            to_cuda(logits2loss, cuda)
-
-        self.cuda = cuda
-        self.model_core = to_cuda(model_core, cuda)
-        self.logits2pred = logits2pred
-        self.logits2loss = logits2loss
-        self.optimizer = optimize(model_core.parameters())
-
-    def do_train_step(self, *inputs: np.ndarray, lr):
-        """
-        Performs a forward-backward pass, as well as the gradient step, according to the given ``inputs``.
-
-        Notes
-        -----
-        Note that both input and output are **not** of type `torch.Tensor` - the conversion
-        to torch.Tensor is made inside this function.
-        """
-        return do_train_step(*inputs, lr=lr, inputs2logits=self.model_core,
-                             logits2loss=self.logits2loss, optimizer=self.optimizer)
-
-    def do_inf_step(self, *inputs: np.ndarray):
-        """
-        Returns the prediction for the given ``inputs``.
-
-        Notes
-        -----
-        Note that both input and output are **not** of type `torch.Tensor` - the conversion
-        to torch.Tensor is made inside this function.
-        """
-        return do_inf_step(*inputs, inputs2logits=self.model_core, logits2pred=self.logits2pred)
-
-    def save(self, path: str):
-        """Save the weights to ``path``."""
-        save_model_state(self.model_core, path)
-        return self
-
-    def load(self, path: str, modify_state_fn: callable = None):
-        """Load the weights from ``path``."""
-        load_model_state(self.model_core, path, modify_state_fn=modify_state_fn)
-        return self

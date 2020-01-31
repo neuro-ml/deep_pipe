@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 
 from dpipe.medim.checks import join
-from dpipe.medim.io import save_numpy, PathLike, load_or_create, load_numpy
+from dpipe.io import save_numpy, PathLike, load_or_create, load_numpy
 from dpipe.medim.itertools import zdict
 from dpipe.medim.preprocessing import normalize
 from .base import Dataset

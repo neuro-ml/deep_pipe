@@ -4,8 +4,7 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from dpipe.medim import load_by_ext
-from dpipe.medim.io import PathLike
+from ..io import PathLike, load
 from .base import Dataset
 
 
@@ -29,8 +28,7 @@ class CSV(Dataset):
         the function to load an object by the path located in a corresponding dataset entry. Default is `load_by_ext`.
     """
 
-    def __init__(self, path: PathLike, filename: str = 'meta.csv', index_col: str = 'id',
-                 loader: Callable = load_by_ext):
+    def __init__(self, path: PathLike, filename: str = 'meta.csv', index_col: str = 'id', loader: Callable = load):
         self.path = path
         self.filename = filename
         self.loader = loader

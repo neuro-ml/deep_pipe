@@ -106,14 +106,6 @@ Miscellaneous
     :undoc-members:
     :show-inheritance:
 
-Input/Output
-------------
-
-.. automodule:: dpipe.medim.io
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: NumpyEncoder
 
 Brain images registration
 -------------------------

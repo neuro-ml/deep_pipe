@@ -1,13 +1,14 @@
 scikit-image
+imageio
 numpy
 scipy
 pandas
 scikit-learn>=0.19
 tqdm
-nibabel
 pydicom
-pdp>=0.2.1,<0.3
+pdp==0.3.*
 tensorboard-easy
-resource-manager>=0.8.1<0.9
+resource-manager==0.10.*
+sphinx>=2.3
 
 matplotlib

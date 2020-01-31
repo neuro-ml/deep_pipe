@@ -6,8 +6,8 @@ from typing import Callable, Iterable
 import numpy as np
 from tqdm import tqdm
 
-from dpipe.medim.io import save_json, save_numpy, load
-from dpipe.medim.itertools import collect
+from .io import save_json, save_numpy, load
+from .medim.itertools import collect
 
 
 def np_filename2id(filename):

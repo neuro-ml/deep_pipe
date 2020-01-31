@@ -5,4 +5,3 @@ from . import metrics
 from . import patch
 from . import grid
 from . import shape_utils
-from .io import load_by_ext

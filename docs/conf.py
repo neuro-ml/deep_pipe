@@ -4,7 +4,6 @@ import matplotlib
 
 sys.path.insert(0, os.path.abspath('../'))
 matplotlib.use('agg')
-import docs.named_mock
 
 # -- General configuration ------------------------------------------------
 
@@ -16,7 +15,7 @@ extensions = [
 ]
 
 # autodoc:
-autodoc_mock_imports = ['torch', 'nipype']
+autodoc_mock_imports = ['torch', 'nipype', 'nibabel']
 autodoc_inherit_docstrings = False
 autodoc_member_order = 'bysource'
 default_role = 'any'

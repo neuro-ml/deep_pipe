@@ -4,8 +4,7 @@ import atexit
 from pathlib import Path
 from typing import Callable
 
-from dpipe.medim.io import PathLike
-from dpipe.medim.utils import name_changed
+from dpipe.io import PathLike
 from dpipe.medim.checks import join
 
 
@@ -69,12 +68,8 @@ def lock_dir(folder: PathLike = '.', lock: str = '.lock'):
     FileExistsError: if ``lock`` already exists, i.e. the folder is already locked.
     """
     lock = Path(folder) / lock
+    if lock.exists():
+        raise FileExistsError(f'Trying to lock directory {lock.resolve().parent}, but it is already locked.')
 
-    if not lock.exists():
-        lock.touch(exist_ok=False)
-        atexit.register(os.remove, lock)
-    else:
-        raise FileExistsError(f'Trying to lock directory {lock.resolve()}, but it is already locked.')
-
-
-lock_experiment_dir = name_changed(lock_dir, 'lock_experiment_dir', '19.08.2019')
+    lock.touch(exist_ok=False)
+    atexit.register(os.remove, lock)

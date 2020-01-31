@@ -8,7 +8,7 @@ from urllib.request import urlretrieve
 import pytest
 from resource_manager import read_config
 
-from dpipe.medim.io import load_json
+from dpipe.io import load_json
 
 
 @pytest.mark.integration

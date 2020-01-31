@@ -12,6 +12,7 @@ Contents
     dpipe.config
     dpipe.experiment
     dpipe.medim
+    dpipe.io
     dpipe.dataset
     dpipe.train
     dpipe.batch_iter

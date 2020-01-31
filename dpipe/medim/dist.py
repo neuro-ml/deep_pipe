@@ -74,14 +74,15 @@ def expectation(distribution: Tensor, axis: int, integral: Callable = polynomial
     Notes
     -----
     This function calculates the expectation by a piecewise-linear distribution in the range :math:`[0, N]`
-    where ``N = distribution.shape[axis]``:
+    where ``N = distribution.shape[axis] + 1``:
 
     .. math::
         \mathbb{E}_F[h] = \int\limits_0^N h(x) dF(x) = \sum\limits_0^{N-1} \int\limits_i^{i+1} h(x) dF(x) =
-        \sum\limits_0^{N-1} p_i \int\limits_i^{i+1} h(x) dx,
+        \sum\limits_0^{N-1} distribution_i \int\limits_i^{i+1} h(x) dx =
+        \sum\limits_0^{N-1} distribution_i \cdot (H(i+1) - H(i)),
 
-    where :math:`p_i` are given by ``distribution`` along ``axis``, :math:`\int\limits_i^{i+1} h(x) dx` are
-    returned by ``polynomial``.
+    where :math:`distribution_i` are taken along ``axis``, :math:`H(i) = \int\limits_0^{i} h(x) dx` are
+    returned by ``integral``.
 
     References
     ----------

@@ -2,7 +2,7 @@ from typing import Sequence
 
 import numpy as np
 
-from dpipe.medim.io import PathLike
+from dpipe.io import PathLike
 from dpipe.medim.utils import zip_equal
 
 __all__ = 'Logger', 'ConsoleLogger', 'TBLogger', 'NamedTBLogger',

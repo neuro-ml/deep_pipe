@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.colors import Colormap
 
-from dpipe.medim.io import PathLike
+from dpipe.io import PathLike
 from .hsv import gray_image_colored_mask, gray_image_bright_colored_mask, segmentation_probabilities
 from .checks import check_shape_along_axis
 from .axes import AxesParams

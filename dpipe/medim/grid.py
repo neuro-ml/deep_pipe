@@ -1,3 +1,7 @@
+"""
+Function for working with patches from tensors.
+See the :doc:`tutorials/patches` tutorial for more details.
+"""
 from typing import Iterable
 
 import numpy as np
@@ -28,6 +32,10 @@ def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesL
         the stride (step-size) of the slice.
     valid
         whether boxes of size smaller than ``box_size`` should be left out.
+
+    References
+    ----------
+    See the :doc:`tutorials/patches` tutorial for more details.
     """
     final_shape = shape_after_full_convolution(shape, box_size, axes, stride, valid=valid)
     box_size, stride = np.broadcast_arrays(box_size, stride)
@@ -55,12 +63,15 @@ def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike
         the stride (step-size) of the slice.
     valid
         whether patches of size smaller than ``patch_size`` should be left out.
+
+    References
+    ----------
+    See the :doc:`tutorials/patches` tutorial for more details.
     """
     for box in get_boxes(x.shape, patch_size, stride, axes, valid=valid):
         yield crop_to_box(x, box)
 
 
-# TODO: better doc
 def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike,
             axes: AxesLike = None, valid: bool = False) -> np.ndarray:
     """
@@ -69,7 +80,7 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
 
     References
     ----------
-    `divide` `get_boxes`
+    See the :doc:`tutorials/patches` tutorial for more details.
     """
     axes, stride = broadcast_to_axes(axes, stride)
     patch, patches = peek(patches)

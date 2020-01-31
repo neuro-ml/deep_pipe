@@ -125,6 +125,7 @@ def weighted_cross_entropy_with_logits(logit: torch.Tensor, target: torch.Tensor
         raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))
 
     if adaptive:
+        # TODO: torch.sigmoid(logit).sum() can be reused
         pos_weight = alpha * (logit.numel() - (torch.sigmoid(logit)).sum()) / (torch.sigmoid(logit)).sum()
     else:
         pos_weight = alpha
@@ -138,29 +139,6 @@ def weighted_cross_entropy_with_logits(logit: torch.Tensor, target: torch.Tensor
     if reduce is not None:
         loss = reduce(loss)
     return loss
-
-
-# TODO: this function looks too hardcoded
-def dice_loss_with_logits(logit: torch.Tensor, target: torch.Tensor, weight: torch.Tensor = None):
-    """
-    References
-    ----------
-    `Dice Loss <https://arxiv.org/abs/1606.04797>`_
-    """
-    if not (target.size() == logit.size()):
-        raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))
-
-    preds = torch.sigmoid(logit)
-
-    # TODO: why so complicated?
-    sum_dims = [-i for i in range(logit.dim() - 1, 0, -1)]
-
-    dice = 2 * torch.sum(preds * target, dim=sum_dims) \
-           / (torch.sum(preds ** 2, dim=sum_dims) + torch.sum(target ** 2, dim=sum_dims))
-
-    loss = 1 - dice
-
-    return loss.mean()
 
 
 # simply copied from np.moveaxis
@@ -186,7 +164,7 @@ def softmax(x: torch.Tensor, axes: AxesLike):
     """
     A multidimensional version of softmax.
     """
-    source = check_axes(axes)
+    source = np.core.numeric.normalize_axis_tuple(axes, x.ndim, 'axes')
     dim = len(source)
     destination = range(-dim, 0)
 

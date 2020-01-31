@@ -6,7 +6,7 @@ from typing import Sequence
 import numpy as np
 from pydicom import read_file
 
-from ..io import PathLike
+from dpipe.io import PathLike
 from ..utils import composition
 from ..itertools import zip_equal, collect
 from .spatial import *

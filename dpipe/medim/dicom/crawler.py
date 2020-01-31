@@ -8,7 +8,7 @@ import pandas as pd
 from tqdm import tqdm
 from pydicom import valuerep, errors, read_file
 
-from ..io import PathLike
+from dpipe.io import PathLike
 
 __all__ = 'get_file_meta', 'join_dicom_tree'
 

@@ -6,7 +6,7 @@ import torch
 from torch import nn
 from torch.optim import Optimizer
 
-from dpipe.medim.io import PathLike
+from dpipe.io import PathLike
 from dpipe.medim.itertools import squeeze_first, collect
 
 __all__ = [

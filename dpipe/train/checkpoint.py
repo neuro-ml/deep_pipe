@@ -6,7 +6,7 @@ from typing import Dict, Any
 import numpy as np
 import torch
 
-from dpipe.medim.io import PathLike
+from dpipe.io import PathLike
 
 __all__ = 'CheckpointManager',
 
@@ -57,7 +57,7 @@ class CheckpointManager:
         return self.base_path / f'{self._checkpoint_prefix}{iteration}'
 
     def _clear_checkpoint(self, iteration):
-        if iteration % self.frequency != 0:
+        if (iteration + 1) % self.frequency != 0:
             shutil.rmtree(self._get_checkpoint_folder(iteration))
 
     @staticmethod

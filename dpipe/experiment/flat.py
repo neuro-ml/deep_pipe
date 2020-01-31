@@ -1,9 +1,8 @@
 from pathlib import Path
 from typing import Iterable, Sequence
-
 from resource_manager import read_config
 
-from ..medim.io import PathLike, save_json
+from ..io import PathLike, save_json
 
 
 def flat(split: Iterable[Sequence], config_path: PathLike, experiment_path: PathLike,
