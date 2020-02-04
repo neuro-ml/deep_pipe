@@ -4,7 +4,7 @@ from os.path import join as jp
 from typing import Sequence
 
 import numpy as np
-from pydicom import read_file
+from pydicom import dcmread
 
 from dpipe.io import PathLike
 from ..utils import composition
@@ -32,7 +32,7 @@ def load_series(row: pd.Series, base_path: PathLike = None, orientation: bool = 
     if contains_info(row, 'InstanceNumbers'):
         files = map(itemgetter(1), sorted(zip_equal(map(int, row.InstanceNumbers.split(',')), files)))
 
-    x = np.stack([read_file(jp(folder, file)).pixel_array for file in files], axis=-1)
+    x = np.stack([dcmread(jp(folder, file)).pixel_array for file in files], axis=-1)
     if contains_info(row, 'RescaleSlope'):
         x = x * row.RescaleSlope
     if contains_info(row, 'RescaleIntercept'):
