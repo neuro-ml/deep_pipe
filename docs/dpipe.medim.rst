@@ -71,42 +71,6 @@ Distributions
     :show-inheritance:
 
 
-DICOM utils
------------
-
-.. automodule:: dpipe.medim.dicom
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Crawling
-^^^^^^^^
-.. automodule:: dpipe.medim.dicom.crawler
-    :members:
-    :show-inheritance:
-
-Aggregation
-^^^^^^^^^^^
-.. automodule:: dpipe.medim.dicom.aggregation
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Spatial localization
-^^^^^^^^^^^^^^^^^^^^
-.. automodule:: dpipe.medim.dicom.spatial
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Miscellaneous
-^^^^^^^^^^^^^
-.. automodule:: dpipe.medim.dicom.misc
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 Brain images registration
 -------------------------
 

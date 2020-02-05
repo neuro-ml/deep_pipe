@@ -15,6 +15,7 @@ from dpipe.io import load_json
 class TestMNIST(unittest.TestCase):
     sortTestMethodsUsing = None
 
+    # TODO: use a temp dir
     base_path = Path('~/tests/MNIST').expanduser()
     base_rm = read_config('dpipe/tests/mnist/setup.config')
     experiment_path = base_rm.experiment_path

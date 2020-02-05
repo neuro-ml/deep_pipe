@@ -6,6 +6,7 @@ import numpy as np
 from dpipe.dataset import Dataset
 
 
+# TODO: just use torchvision
 def load_mnist(folder, filename, offset):
     with gzip.open(expanduser(jp(folder, filename)), 'rb') as f:
         return np.frombuffer(f.read(), np.uint8, offset=offset)
