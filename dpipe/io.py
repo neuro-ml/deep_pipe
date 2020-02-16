@@ -125,7 +125,7 @@ def save(value, path: PathLike, **kwargs):
     elif name.endswith(('.pkl', '.pickle')):
         save_pickle(value, path, **kwargs)
     elif name.endswith('.txt'):
-        with open(path, mode='r', **kwargs) as file:
+        with open(path, mode='w', **kwargs) as file:
             file.write(value)
 
     else:

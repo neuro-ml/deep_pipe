@@ -82,7 +82,7 @@ def is_on_cuda(x: Union[nn.Module, torch.Tensor]):
     return x.is_cuda
 
 
-def to_var(*arrays: ArrayLike, device: Device = None, requires_grad: bool = False):
+def to_var(*arrays: ArrayLike, device: Device = 'cpu', requires_grad: bool = False):
     """
     Convert numpy arrays to torch Tensors.
 
@@ -122,7 +122,7 @@ def to_np(*tensors: torch.Tensor):
 
 
 @collect
-def sequence_to_var(*arrays: ArrayLike, device: Device = None, requires_grad: bool = False):
+def sequence_to_var(*arrays: ArrayLike, device: Device = 'cpu', requires_grad: bool = False):
     for x in arrays:
         x = torch.from_numpy(np.asarray(x))
         if requires_grad:
@@ -139,7 +139,7 @@ def sequence_to_np(*tensors: torch.Tensor):
         yield x
 
 
-def to_device(x: Union[nn.Module, torch.Tensor], device: Device = None):
+def to_device(x: Union[nn.Module, torch.Tensor], device: Device = 'cpu'):
     """
     Move ``x`` to ``device``.
 
