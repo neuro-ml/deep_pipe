@@ -5,7 +5,7 @@ scipy
 pandas
 scikit-learn>=0.19
 tqdm
-git+git://github.com/neuro-ml/dicom-csv.git
+dicom-csv
 pdp==0.3.*
 tensorboard-easy
 resource-manager==0.10.*
