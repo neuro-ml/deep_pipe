@@ -23,7 +23,28 @@ def make_consistent_seq(layer: Callable, channels: Sequence[int], *args, **kwarg
     >>>     nn.Conv2d(64, 128, kernel_size=3, padding=1),
     >>> )
     """
-    return nn.Sequential(*(layer(in_, out, *args, **kwargs) for in_, out in zip(channels, channels[1:])))
+    return ConsistentSequential(layer, channels, *args, **kwargs)
+
+
+class ConsistentSequential(nn.Sequential):
+    """
+    A sequence of layers that have consistent input and output channels/features.
+
+    ``args`` and ``kwargs`` are passed as additional parameters.
+
+    Examples
+    --------
+    >>> ConsistentSequential(nn.Conv2d, [16, 32, 64, 128], kernel_size=3, padding=1)
+    >>> # same as
+    >>> nn.Sequential(
+    >>>     nn.Conv2d(16, 32, kernel_size=3, padding=1),
+    >>>     nn.Conv2d(32, 64, kernel_size=3, padding=1),
+    >>>     nn.Conv2d(64, 128, kernel_size=3, padding=1),
+    >>> )
+    """
+
+    def __init__(self, layer: Callable, channels: Sequence[int], *args, **kwargs):
+        super().__init__(*(layer(in_, out, *args, **kwargs) for in_, out in zip(channels, channels[1:])))
 
 
 class PreActivation(nn.Module):
