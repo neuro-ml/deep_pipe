@@ -8,7 +8,7 @@ import torch
 
 from dpipe.io import PathLike
 
-__all__ = 'CheckpointManager',
+__all__ = 'Checkpoints', 'CheckpointManager'
 
 
 def save_pickle(o, path):
@@ -31,7 +31,7 @@ def load_torch(o, path):
     o.load_state_dict(torch.load(path))
 
 
-class CheckpointManager:
+class Checkpoints:
     """
     Saves the most recent iteration to ``base_path`` and removes the previous one.
 
@@ -107,3 +107,6 @@ class CheckpointManager:
             load(o, last_folder / path)
 
         return iteration
+
+
+CheckpointManager = Checkpoints

@@ -3,38 +3,12 @@ from typing import Callable
 
 import numpy as np
 
-from .checkpoint import CheckpointManager
+from .checkpoint import Checkpoints
 from .policy import Policy, ValuePolicy, EarlyStopping
 from .logging import Logger
 
 
-def one_epoch(epoch: int, train_step: Callable, batch_iter: Callable, logger: Logger, validate: Callable, **kwargs):
-    def get_values():
-        return {name: policy_.value for name, policy_ in policies.items() if isinstance(policy_, ValuePolicy)}
-
-    policies = {name: value for name, value in kwargs.items() if isinstance(value, Policy)}
-    values = {name: value for name, value in kwargs.items() if not isinstance(value, Policy)}
-
-    for policy in policies.values():
-        policy.epoch_started(epoch)
-
-    metrics = None
-    train_losses = []
-    for inputs in batch_iter():
-        train_losses.append(train_step(*inputs, **values, **get_values()))
-
-    logger.train(train_losses, epoch)
-    logger.policies(get_values(), epoch)
-
-    if validate is not None:
-        metrics = validate()
-        logger.metrics(metrics, epoch)
-
-    for policy in policies.values():
-        policy.epoch_finished(epoch, train_losses=train_losses, metrics=metrics)
-
-
-class _DummyCheckpointManager:
+class _DummyCheckpoints:
     def save(self, iteration: int):
         pass
 
@@ -57,7 +31,7 @@ def _build_context_manager(o):
 
 
 def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, logger: Logger = None,
-          checkpoint_manager: CheckpointManager = None, validate: Callable = None, **kwargs):
+          checkpoints: Checkpoints = None, validate: Callable = None, **kwargs):
     """
     Performs a series of train and validation steps.
 
@@ -70,7 +44,7 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
     n_epochs: int
         maximal number of training epochs
     logger: Logger, None, optional
-    checkpoint_manager: CheckpointManager, None, optional
+    checkpoints: Checkpoints, None, optional
     validate: Callable, None, optional
         a function to calculate metrics on the validation set.
     kwargs
@@ -82,20 +56,47 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
     ----------
     See the :doc:`tutorials/training` tutorial for more details.
     """
-    if checkpoint_manager is None:
-        checkpoint_manager = _DummyCheckpointManager()
+
+    def get_policy_values():
+        return {k: v.value for k, v in policies.items() if isinstance(v, ValuePolicy)}
+
+    def broadcast_event(method, *args, **kw):
+        for name, policy in policies.items():
+            getattr(policy, method.__name__)(*args, **kw)
+
+    if checkpoints is None:
+        checkpoints = _DummyCheckpoints()
     if logger is None:
         logger = _DummyLogger()
     if not hasattr(batch_iter, '__enter__'):
         batch_iter = _build_context_manager(batch_iter)
 
-    epoch = checkpoint_manager.restore()
+    epoch = checkpoints.restore()
+    scalars = {name: value for name, value in kwargs.items() if not isinstance(value, Policy)}
+    policies = {name: value for name, value in kwargs.items() if isinstance(value, Policy)}
 
     with batch_iter as iterator:
         try:
             while epoch < n_epochs:
-                one_epoch(epoch, train_step, iterator, logger, validate, **kwargs)
-                checkpoint_manager.save(epoch)
+                broadcast_event(Policy.epoch_started, epoch)
+
+                train_losses = []
+                for idx, inputs in enumerate(iterator()):
+                    broadcast_event(Policy.train_step_started, epoch, idx)
+                    train_losses.append(train_step(*inputs, **scalars, **get_policy_values()))
+                    broadcast_event(Policy.train_step_finished, epoch, idx, train_losses[-1])
+
+                logger.train(train_losses, epoch)
+                logger.policies(get_policy_values(), epoch)
+                broadcast_event(Policy.validation_started, epoch, train_losses)
+
+                metrics = None
+                if validate is not None:
+                    metrics = validate()
+                    logger.metrics(metrics, epoch)
+
+                broadcast_event(Policy.epoch_finished, epoch, train_losses, metrics)
+                checkpoints.save(epoch)
                 epoch += 1
 
         except EarlyStopping:

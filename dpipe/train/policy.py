@@ -1,4 +1,5 @@
-from typing import Sequence, Callable, Dict, Any
+from datetime import datetime, timedelta
+from typing import Sequence, Callable, Dict, Any, List
 
 import numpy as np
 
@@ -13,7 +14,29 @@ class Policy:
         Update the policy before an epoch will start. The epochs numeration starts at zero.
         """
 
-    def epoch_finished(self, epoch: int, *, train_losses: Sequence = None, metrics: dict = None):
+    def train_step_started(self, epoch: int, iteration: int):
+        """
+        Update the policy before a new train step.
+        ``iteration`` denotes the iteration index inside the current epoch.
+        The epochs and iterations numeration starts at zero.
+        """
+
+    def train_step_finished(self, epoch: int, iteration: int, loss: Any):
+        """
+        Update the policy after a train step.
+        ``iteration`` denotes the iteration index inside the current epoch.
+        ``loss`` is the value returned by the last train step.
+        The epochs and iterations numeration starts at zero.
+        """
+
+    def validation_started(self, epoch: int, train_losses: Sequence):
+        """
+        Update the policy after the batch iterator was depleted. The epochs numeration starts at zero.
+
+        The history of ``train_losses`` and ``metrics`` from the entire ``epoch`` is provided as additional information.
+        """
+
+    def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None):
         """
         Update the policy after an epoch is finished. The epochs numeration starts at zero.
 
@@ -59,7 +82,7 @@ class DecreasingOnPlateau(ValuePolicy):
     def get_margin_loss(self, loss):
         return max([loss * (1 - self.rtol), loss - self.atol])
 
-    def epoch_finished(self, epoch: int, *, train_losses: Sequence, **kwargs):
+    def epoch_finished(self, epoch: int, train_losses: Sequence, **kwargs):
         loss = np.mean(train_losses)
         if loss < self.margin_loss:
             self.margin_loss = self.get_margin_loss(loss)
@@ -85,7 +108,7 @@ class Exponential(ValuePolicy):
         self.step_length = step_length
         self.floordiv = floordiv
 
-    def epoch_finished(self, epoch, **kwargs):
+    def epoch_finished(self, epoch, *args, **kwargs):
         power = epoch / self.step_length
         if self.floordiv:
             power = np.floor(power)
@@ -99,7 +122,7 @@ class Schedule(ValuePolicy):
         super().__init__(initial)
         self.epoch2value_multiplier = epoch2value_multiplier
 
-    def epoch_finished(self, epoch, **kwargs):
+    def epoch_finished(self, epoch, *args, **kwargs):
         if epoch in self.epoch2value_multiplier:
             self.value *= self.epoch2value_multiplier[epoch]
 
@@ -119,7 +142,7 @@ class Switch(ValuePolicy):
         super().__init__(initial)
         self.epoch_to_value = sorted(epoch_to_value.items())
 
-    def epoch_finished(self, epoch, **kwargs):
+    def epoch_finished(self, epoch, *args, **kwargs):
         for idx, value in self.epoch_to_value:
             if idx <= epoch:
                 self.value = value
@@ -132,7 +155,7 @@ class LambdaEpoch(ValuePolicy):
         super().__init__(func(0))
         self.func = func
 
-    def epoch_finished(self, epoch, **kwargs):
+    def epoch_finished(self, epoch, *args, **kwargs):
         self.value = self.func(epoch + 1)
 
 
@@ -153,11 +176,55 @@ class LossStop(Policy):
             raise EarlyStopping
 
 
-class NEpochs(Policy):
-    def __init__(self, n_epochs):
-        super().__init__()
-        self.n_epochs = n_epochs
+class TimeProfiler(Policy):
+    def __init__(self):
+        self.stamps: List[datetime] = []
+
+    def _gather_stats(self):
+        def delta(stop, start):
+            return (stop - start).total_seconds()
+
+        def sum_deltas(seq):
+            assert len(seq) % 2 == 0
+            return sum(map(delta, seq[1::2], seq[::2]))
+
+        now = datetime.now()
+        stamps = self.stamps
+        assert len(stamps) % 2 == 1
+        n_batches = max(len(stamps) // 2, 1)
+
+        durations = [
+            ('Epoch', delta(now, stamps[0])),
+            ('Train', delta(stamps[-1], stamps[0])),
+            ('Validation', delta(now, stamps[-1])),
+
+            ('Total Batch Iter', sum_deltas(self.stamps[:-1])),
+            ('Total Train Step', sum_deltas(self.stamps[1:])),
+
+            ('Avg Batch Iter', sum_deltas(self.stamps[:-1]) / n_batches),
+            ('Avg Train Step', sum_deltas(self.stamps[1:]) / n_batches),
+        ]
+
+        return [(name, timedelta(seconds=seconds)) for name, seconds in durations]
+
+    def _display(self, epoch):
+        print(f'Epoch {epoch} time profiling:', flush=True)
+        for name, duration in self._gather_stats():
+            print('  ', f'{name}:', duration, flush=True)
+
+        print(flush=True)
 
     def epoch_started(self, epoch: int):
-        if epoch >= self.n_epochs:
-            raise EarlyStopping
+        self.stamps.append(datetime.now())
+
+    def train_step_started(self, epoch: int, iteration: int):
+        now = datetime.now()
+        self.stamps.append(now)
+
+    def train_step_finished(self, epoch: int, iteration: int, loss: Any):
+        now = datetime.now()
+        self.stamps.append(now)
+
+    def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None):
+        self._display(epoch)
+        self.stamps = []
