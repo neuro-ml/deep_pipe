@@ -177,7 +177,8 @@ class LossStop(Policy):
 
 
 class TimeProfiler(Policy):
-    def __init__(self):
+    def __init__(self, output=None):
+        self.output = output
         self.stamps: List[datetime] = []
 
     def _gather_stats(self):
@@ -208,6 +209,20 @@ class TimeProfiler(Policy):
         return [(name, timedelta(seconds=seconds)) for name, seconds in durations]
 
     def _display(self, epoch):
+        if self.output is None:
+            self._print(epoch)
+        else:
+            self._tensorboard(epoch)
+
+    def _tensorboard(self, epoch):
+        from tensorboard_easy import Logger
+        assert isinstance(self.output, Logger)
+
+        for name, duration in self._gather_stats():
+            name = name.lower().replace(' ', '_')
+            self.output.log_scalar(f'time/{name}', duration.total_seconds(), epoch)
+
+    def _print(self, epoch):
         print(f'Epoch {epoch} time profiling:', flush=True)
         for name, duration in self._gather_stats():
             print('  ', f'{name}:', duration, flush=True)
@@ -215,16 +230,13 @@ class TimeProfiler(Policy):
         print(flush=True)
 
     def epoch_started(self, epoch: int):
-        self.stamps.append(datetime.now())
+        self.stamps = [datetime.now()]
 
     def train_step_started(self, epoch: int, iteration: int):
-        now = datetime.now()
-        self.stamps.append(now)
+        self.stamps.append(datetime.now())
 
     def train_step_finished(self, epoch: int, iteration: int, loss: Any):
-        now = datetime.now()
-        self.stamps.append(now)
+        self.stamps.append(datetime.now())
 
     def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None):
         self._display(epoch)
-        self.stamps = []
