@@ -240,3 +240,7 @@ class TimeProfiler(Policy):
 
     def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None):
         self._display(epoch)
+
+    # this policy is stateless
+    def __getstate__(self):
+        return {}

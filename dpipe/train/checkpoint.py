@@ -12,13 +12,22 @@ __all__ = 'Checkpoints', 'CheckpointManager'
 
 
 def save_pickle(o, path):
+    if hasattr(o, '__getstate__'):
+        state = o.__getstate__()
+    else:
+        state = o.__dict__
+
     with open(path, 'wb') as file:
-        pickle.dump(o.__dict__, file)
+        pickle.dump(state, file)
 
 
 def load_pickle(o, path):
     with open(path, 'rb') as file:
         state = pickle.load(file)
+
+    if hasattr(o, '__setstate__'):
+        o.__setstate__(state)
+    else:
         for key, value in state.items():
             setattr(o, key, value)
 
