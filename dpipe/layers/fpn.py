@@ -7,7 +7,7 @@ import numpy as np
 
 from dpipe.medim.itertools import zip_equal, lmap
 from dpipe.medim.utils import identity
-from .structure import make_consistent_seq
+from .structure import ConsistentSequential
 
 
 class FPN(nn.Module):
@@ -66,10 +66,10 @@ class FPN(nn.Module):
             if isinstance(path, nn.Module):
                 return path
 
-            elif not isinstance(path, Sequence):
+            elif not isinstance(path, Sequence) or not all(isinstance(x, int) for x in path):
                 raise ValueError('The passed `structure` is not valid.')
 
-            return make_consistent_seq(layer, path, *args, **kwargs)
+            return ConsistentSequential(layer, path, *args, **kwargs)
 
         def make_up_down(o):
             if not isinstance(o, nn.Module):

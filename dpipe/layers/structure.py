@@ -44,6 +44,9 @@ class ConsistentSequential(nn.Sequential):
     """
 
     def __init__(self, layer: Callable, channels: Sequence[int], *args, **kwargs):
+        if len(channels) < 2:
+            raise ValueError('`channels` must contain at least two elements.')
+
         super().__init__(*(layer(in_, out, *args, **kwargs) for in_, out in zip(channels, channels[1:])))
 
 
