@@ -139,7 +139,7 @@ def sequence_to_np(*tensors: torch.Tensor):
         yield x
 
 
-def to_device(x: Union[nn.Module, torch.Tensor], device: Device = 'cpu'):
+def to_device(x: Union[nn.Module, torch.Tensor], device: Union[Device, None] = 'cpu'):
     """
     Move ``x`` to ``device``.
 
