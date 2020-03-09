@@ -1,10 +1,12 @@
-from pathlib import Path
 from typing import Iterable, Sequence
-from resource_manager import read_config
 
-from ..io import PathLike, save_json
+import numpy as np
+
+from ..layout import Flat
+from ..io import PathLike
 
 
+@np.deprecate(message='This function is deprecated in favor of `dpipe.layout.Flat`')
 def flat(split: Iterable[Sequence], config_path: PathLike, experiment_path: PathLike,
          prefixes: Sequence[str] = ('train', 'val', 'test')):
     """
@@ -45,17 +47,4 @@ def flat(split: Iterable[Sequence], config_path: PathLike, experiment_path: Path
     #       - val_ids.json # 7, 5, 2
     #       - test_ids.json # 6, 3
     """
-    experiment_path = Path(experiment_path)
-    for i, ids in enumerate(split):
-        if len(ids) != len(prefixes):
-            raise ValueError(f"The number of identifier groups ({len(ids)}) "
-                             f"does not match the number of prefixes ({len(prefixes)})")
-
-        local = experiment_path / f'experiment_{i}'
-        local.mkdir(parents=True)
-
-        for val, prefix in zip(ids, prefixes):
-            save_json(val, local / f'{prefix}_ids.json', indent=0)
-
-    # resource manager is needed here, because there may be inheritance
-    read_config(config_path).save_config(experiment_path / 'resources.config')
+    Flat(split, prefixes=prefixes).build(config_path, experiment_path)

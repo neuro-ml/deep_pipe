@@ -25,7 +25,7 @@ def get_resource_manager(source_path: str, shortcuts: dict = None, injections: d
 
 
 def render_config_resource():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(epilog='This command will soon change its behaviour. Use `run-config` instead.')
     parser.add_argument('command')
     parser.add_argument('-cp', '--config_path', required=True)
     args = parser.parse_known_args()[0]

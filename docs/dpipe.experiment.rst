@@ -1,12 +1,11 @@
 Experiments management
 ======================
 
-Experiment builder
-------------------
+Layouts
+-------
 
-.. automodule:: dpipe.experiment
+.. automodule:: dpipe.layout.base
     :members:
-    :undoc-members:
     :show-inheritance:
 
 .. automodule:: dpipe.experiment.flat

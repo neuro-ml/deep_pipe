@@ -1,11 +1,9 @@
 import os
 import shutil
-import atexit
-from pathlib import Path
 from typing import Callable
 
-from dpipe.io import PathLike
 from dpipe.medim.checks import join
+from dpipe.commands import lock_dir
 
 
 def _path_based_call(exists, missing, exists_message, missing_message, paths, keyword_paths, verbose):
@@ -57,19 +55,3 @@ def run(*args):
     if not args:
         raise ValueError('Nothing to run.')
     return args[-1]
-
-
-def lock_dir(folder: PathLike = '.', lock: str = '.lock'):
-    """
-    Lock the given ``folder`` by generating a special lock file - ``lock``.
-
-    Raises
-    ------
-    FileExistsError: if ``lock`` already exists, i.e. the folder is already locked.
-    """
-    lock = Path(folder) / lock
-    if lock.exists():
-        raise FileExistsError(f'Trying to lock directory {lock.resolve().parent}, but it is already locked.')
-
-    lock.touch(exist_ok=False)
-    atexit.register(os.remove, lock)

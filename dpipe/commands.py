@@ -1,13 +1,67 @@
 """Contains a few more sophisticated commands that are usually accessed directly inside configs."""
 import os
+import shutil
+import atexit
+from pathlib import Path
 from collections import defaultdict
 from typing import Callable, Iterable
 
 import numpy as np
 from tqdm import tqdm
 
-from .io import save_json, save_numpy, load
+from .io import save_json, save_numpy, load, PathLike
 from .medim.itertools import collect
+
+
+def populate(path: PathLike, func: Callable, *args, **kwargs):
+    """
+    Call ``func`` with ``args`` and ``kwargs`` if ``path`` doesn't exist.
+
+    Examples
+    --------
+    >>> populate('metrics.json', save_metrics, targets, predictions)
+    # if `metrics.json` doesn't exist, the following call will be performed:
+    >>> save_metrics(targets, predictions)
+
+    Raises
+    ------
+    FileNotFoundError: if after calling ``func`` the ``path`` still doesn't exist.
+    """
+
+    def flush(message):
+        print(f'\n>>> {message}', flush=True)
+
+    path = Path(path)
+    if path.exists():
+        flush(f'Nothing to be done, "{path}" already exists.')
+        return
+
+    try:
+        flush(f'Running command to generate "{path}".')
+        func(*args, **kwargs)
+    except BaseException as e:
+        if path.exists():
+            shutil.rmtree(path)
+        raise RuntimeError('An exception occurred. The outputs were cleaned up.\n') from e
+
+    if not path.exists():
+        raise FileNotFoundError(f'The output was not generated: "{path}"')
+
+
+def lock_dir(folder: PathLike = '.', lock: str = '.lock'):
+    """
+    Lock the given ``folder`` by generating a special lock file - ``lock``.
+
+    Raises
+    ------
+    FileExistsError: if ``lock`` already exists, i.e. the folder is already locked.
+    """
+    lock = Path(folder) / lock
+    if lock.exists():
+        raise FileExistsError(f'Trying to lock directory {lock.resolve().parent}, but it is already locked.')
+
+    lock.touch(exist_ok=False)
+    atexit.register(os.remove, lock)
 
 
 def np_filename2id(filename):

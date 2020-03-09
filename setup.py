@@ -29,6 +29,8 @@ setup(
     entry_points={
         'console_scripts': [
             'dpipe = dpipe.config.base:render_config_resource',
+            'dpipe-run = dpipe.layout.scripts:run',
+            'dpipe-build = dpipe.layout.scripts:build',
         ],
     },
 )
