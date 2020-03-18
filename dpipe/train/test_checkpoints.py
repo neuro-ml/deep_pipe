@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from dpipe.train.checkpoint import CheckpointManager
+from dpipe.train.checkpoint import Checkpoints
 from dpipe.train.policy import Exponential, DecreasingOnPlateau, Schedule
 
 
@@ -25,7 +25,7 @@ class TestCheckpoints(unittest.TestCase):
                 'lr': DecreasingOnPlateau(initial=1, multiplier=.1, patience=4, rtol=.02, atol=.02),
                 'scheduled': Schedule.constant_multiplier(1, .1, [3, 5, 10])
             }
-            manager = CheckpointManager(tempdir, policies)
+            manager = Checkpoints(tempdir, policies)
 
             for epoch in range(10):
                 self.advance_policies(policies.values(), 4)
@@ -33,7 +33,28 @@ class TestCheckpoints(unittest.TestCase):
 
                 params = self.get_params(policies.values())
                 self.advance_policies(policies.values(), 4)
-                self.assertTrue(any(old != new for old, new in zip(params, self.get_params(policies.values()))))
+                assert any(old != new for old, new in zip(params, self.get_params(policies.values())))
 
                 manager.restore()
-                self.assertListEqual(params, self.get_params(policies.values()))
+                assert params == self.get_params(policies.values())
+
+    def test_sequence(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            policies = [
+                Exponential(1, .1, 10, False),
+                Exponential(1, .1, 5, True),
+                DecreasingOnPlateau(initial=1, multiplier=.1, patience=4, rtol=.02, atol=.02),
+                Schedule.constant_multiplier(1, .1, [3, 5, 10]),
+            ]
+            manager = Checkpoints(tempdir, policies)
+
+            for epoch in range(10):
+                self.advance_policies(policies, 4)
+                manager.save(epoch)
+
+                params = self.get_params(policies)
+                self.advance_policies(policies, 4)
+                assert any(old != new for old, new in zip(params, self.get_params(policies)))
+
+                manager.restore()
+                assert params == self.get_params(policies)

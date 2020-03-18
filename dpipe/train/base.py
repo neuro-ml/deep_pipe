@@ -1,11 +1,14 @@
 import contextlib
-from typing import Callable
+from typing import Iterable, Callable
 
 import numpy as np
 
+from ..batch_iter import Infinite, combine_to_arrays
 from .checkpoint import Checkpoints
 from .policy import Policy, ValuePolicy, EarlyStopping
 from .logging import Logger
+
+__all__ = 'train', 'train_infinite'
 
 
 class _DummyCheckpoints:
@@ -101,3 +104,28 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
 
         except EarlyStopping:
             pass
+
+
+def train_infinite(
+        source: Iterable, *transformers: Callable, train_step: Callable,
+        batch_size: int, batches_per_epoch: int, n_epochs: int = np.inf, combiner: Callable = combine_to_arrays,
+        logger: Logger = None, checkpoints: Checkpoints = None, validate: Callable = None, **kwargs):
+    """
+
+    Parameters
+    ----------
+    source
+    transformers
+    train_step
+    batch_size
+    batches_per_epoch
+    n_epochs
+    combiner
+    logger
+    checkpoints
+    validate
+    kwargs
+    """
+    batch_iter = Infinite(
+        source, *transformers, batch_size=batch_size, batches_per_epoch=batches_per_epoch, combiner=combiner)
+    train(train_step, batch_iter, n_epochs, logger, checkpoints, validate, **kwargs)

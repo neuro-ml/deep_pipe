@@ -88,7 +88,8 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
         def wrapper(x):
             if valid:
                 shape = np.array(x.shape)[list(axes)]
-                new_shape = np.maximum(shape, patch_size) + (stride - shape + patch_size) % stride
+                padded_shape = np.maximum(shape, patch_size)
+                new_shape = padded_shape + (stride - padded_shape + patch_size) % stride
                 x = pad_to_shape(x, new_shape, axes, padding_values, ratio)
 
             patches = map(predict, divide(x, patch_size, stride, axes))

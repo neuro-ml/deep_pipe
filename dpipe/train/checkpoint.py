@@ -1,12 +1,13 @@
 import shutil
 import pickle
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Union, Iterable
 
 import numpy as np
 import torch
 
 from dpipe.io import PathLike
+from dpipe.medim.utils import composition
 
 __all__ = 'Checkpoints', 'CheckpointManager'
 
@@ -56,11 +57,30 @@ class Checkpoints:
         By default only the latest checkpoint is saved.
     """
 
-    def __init__(self, base_path: PathLike, objects: Dict[PathLike, Any], frequency: int = np.inf):
+    def __init__(self, base_path: PathLike, objects: Union[Iterable, Dict[PathLike, Any]], frequency: int = np.inf):
         self.base_path: Path = Path(base_path)
         self._checkpoint_prefix = 'checkpoint_'
+        if not isinstance(objects, dict):
+            objects = self._generate_unique_names(objects)
         self.objects = objects or {}
         self.frequency = frequency
+
+    @staticmethod
+    @composition(dict)
+    def _generate_unique_names(objects):
+        names = set()
+        for o in objects:
+            name = type(o).__name__
+            if name in names:
+                idx = 1
+                while f'{name}_{idx}' in names:
+                    idx += 1
+
+                name = f'{name}_{idx}'
+
+            assert name not in names
+            names.add(name)
+            yield name, o
 
     def _get_checkpoint_folder(self, iteration):
         return self.base_path / f'{self._checkpoint_prefix}{iteration}'

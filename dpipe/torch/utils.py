@@ -133,10 +133,7 @@ def sequence_to_var(*arrays: ArrayLike, device: Device = 'cpu', requires_grad: b
 @collect
 def sequence_to_np(*tensors: torch.Tensor):
     for x in tensors:
-        # TODO: raise if not tensor?
-        if isinstance(x, torch.Tensor):
-            x = x.data.cpu().numpy()
-        yield x
+        yield x.data.cpu().numpy()
 
 
 def to_device(x: Union[nn.Module, torch.Tensor], device: Union[Device, None] = 'cpu'):

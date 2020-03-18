@@ -9,7 +9,7 @@ import numpy as np
 from .shape_ops import crop_to_box
 from .axes import broadcast_to_axes, fill_by_indices, AxesLike
 from .box import make_box_, Box
-from .itertools import zip_equal, extract, peek
+from .itertools import zip_equal, peek
 from .shape_utils import shape_after_full_convolution
 from .utils import build_slices
 
@@ -84,8 +84,8 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     """
     axes, stride = broadcast_to_axes(axes, stride)
     patch, patches = peek(patches)
-    patch_size = np.array(extract(patch.shape, axes))
-    if len(output_shape) != patch.ndim:
+    patch_size = np.array(patch.shape)[axes]
+    if len(np.atleast_1d(output_shape)) != patch.ndim:
         output_shape = fill_by_indices(patch.shape, output_shape, axes)
 
     dtype = patch.dtype
