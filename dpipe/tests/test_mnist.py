@@ -11,8 +11,6 @@ from dpipe.io import load
 
 @pytest.mark.integration
 class TestMNIST(unittest.TestCase):
-    sortTestMethodsUsing = None
-
     # TODO: use a temp dir
     base_path = Path('~/tests/MNIST').expanduser()
     experiment_path = base_path / 'exp'

@@ -84,7 +84,7 @@ class Infinite:
 
         self.batches_per_epoch = batches_per_epoch
         self.pipeline = pdp.Pipeline(
-            source, *map(wrap, transformers), pdp.Many2One(chunk_size=batch_size, buffer_size=3),
+            source, *map(wrap, transformers), pdp.Many2One(chunk_size=batch_size, buffer_size=1),
             pdp.One2One(combiner, buffer_size=buffer_size))
 
     def close(self):
