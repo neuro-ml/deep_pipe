@@ -30,13 +30,12 @@ class FPN(nn.Module):
     last_level: bool
         If True only the result of the last level is returned (as in UNet),
         otherwise the results from all levels are returned (as in FPN).
-    args, kwargs
+    kwargs
         additional arguments passed to ``layer``.
 
     Examples
     --------
     >>> from dpipe.layers import ResBlock2d
-    >>> from functools import partial
     >>>
     >>> structure = [
     >>>     [[16, 16, 16],       [16, 16, 16]],  # level 1, left and right
@@ -44,8 +43,8 @@ class FPN(nn.Module):
     >>>                [32, 64, 32]              # final level
     >>> ]
     >>>
-    >>> upsample = partial(nn.Upsample, scale_factor=2, mode='bilinear')
-    >>> downsample = partial(nn.MaxPool2d, kernel_size=2)
+    >>> upsample = nn.Upsample(scale_factor=2, mode='bilinear')
+    >>> downsample = nn.MaxPool2d(kernel_size=2)
     >>>
     >>> ResUNet = FPN(
     >>>     ResBlock2d, downsample, upsample, torch.add,
@@ -59,7 +58,7 @@ class FPN(nn.Module):
 
     def __init__(self, layer: Callable, downsample: Union[nn.Module, Callable], upsample: Union[nn.Module, Callable],
                  merge: Callable, structure: Sequence[Union[Sequence[int], nn.Module]], last_level: bool = True,
-                 *args, **kwargs):
+                 **kwargs):
         super().__init__()
 
         def build_level(path):
@@ -69,18 +68,23 @@ class FPN(nn.Module):
             elif not isinstance(path, Sequence) or not all(isinstance(x, int) for x in path):
                 raise ValueError('The passed `structure` is not valid.')
 
-            return ConsistentSequential(layer, path, *args, **kwargs)
+            return ConsistentSequential(layer, path, **kwargs)
 
         def make_up_down(o):
             if not isinstance(o, nn.Module):
                 o = o()
             return o
 
-        self.bridge = build_level(structure[-1])
+        *levels, bridge = structure
+        # handling the case [[...]]
+        if len(bridge) == 1 and isinstance(bridge[0], Sequence):
+            bridge = bridge[0]
+
+        self.bridge = build_level(bridge)
         self.merge = merge
         self.last_level = last_level
-        self.downsample = nn.ModuleList([make_up_down(downsample) for _ in structure[:-1]])
-        self.upsample = nn.ModuleList([make_up_down(upsample) for _ in structure[:-1]])
+        self.downsample = nn.ModuleList([make_up_down(downsample) for _ in levels])
+        self.upsample = nn.ModuleList([make_up_down(upsample) for _ in levels])
 
         # group branches
         branches = []
