@@ -84,7 +84,7 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     """
     axes, stride = broadcast_to_axes(axes, stride)
     patch, patches = peek(patches)
-    patch_size = np.array(patch.shape)[axes]
+    patch_size = np.array(patch.shape)[list(axes)]
     if len(np.atleast_1d(output_shape)) != patch.ndim:
         output_shape = fill_by_indices(patch.shape, output_shape, axes)
 

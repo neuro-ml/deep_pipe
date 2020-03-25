@@ -12,8 +12,8 @@ __all__ = [
 ]
 
 
-def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: float = 2, alpha: float = None,
-                           weight: torch.Tensor = None, reduce: Union[Callable, None] = torch.mean):
+def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, weight: torch.Tensor = None,
+                           gamma: float = 2, alpha: float = 0.25, reduce: Union[Callable, None] = torch.mean):
     """
     Function that measures Focal Loss between target and output logits.
 
@@ -23,12 +23,12 @@ def focal_loss_with_logits(logits: torch.Tensor, target: torch.Tensor, gamma: fl
         tensor of an arbitrary shape.
     target: torch.Tensor
         tensor of the same shape as ``logits``.
-    gamma: float
-        the power of focal loss factor.
-    alpha: float, None, optional
-        weighting factor of the focal loss. If ``None``, no weighting will be performed. Defaults to ``None``.
     weight: torch.Tensor, None, optional
         a manual rescaling weight. Must be broadcastable to ``logits``.
+    gamma: float
+        the power of focal loss factor. Defaults to 2.
+    alpha: float, None, optional
+        weighting factor of the focal loss. If ``None``, no weighting will be performed. Defaults to 0.25.
     reduce: Callable, None, optional
         the reduction operation to be applied to the final loss. Defaults to ``torch.mean``.
         If ``None``, no reduction will be performed.
@@ -139,6 +139,35 @@ def weighted_cross_entropy_with_logits(logit: torch.Tensor, target: torch.Tensor
     if reduce is not None:
         loss = reduce(loss)
     return loss
+
+
+def dice_loss(pred: torch.Tensor, target: torch.Tensor):
+    """
+    References
+    ----------
+    `Dice Loss <https://arxiv.org/abs/1606.04797>`_
+    """
+    if not (target.size() == pred.size()):
+        raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), pred.size()))
+
+    sum_dims = list(range(1, target.dim()))
+
+    dice = 2 * torch.sum(pred * target, dim=sum_dims) / torch.sum(pred ** 2 + target ** 2, dim=sum_dims)
+    loss = 1 - dice
+
+    return loss.mean()
+
+
+def dice_loss_with_logits(logit: torch.Tensor, target: torch.Tensor):
+    """
+        References
+        ----------
+        `Dice Loss <https://arxiv.org/abs/1606.04797>`_
+        """
+    if not (target.size() == logit.size()):
+        raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))
+    pred = torch.sigmoid(logit)
+    return dice_loss(pred, target)
 
 
 # simply copied from np.moveaxis
