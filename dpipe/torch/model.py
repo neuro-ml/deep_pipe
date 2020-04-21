@@ -1,4 +1,3 @@
-import warnings
 from typing import Callable
 
 import numpy as np
@@ -6,7 +5,7 @@ import torch
 from torch.nn import Module
 from torch.optim import Optimizer
 
-from ..medim.utils import identity
+from ..im.utils import identity
 from .utils import *
 
 __all__ = 'optimizer_step', 'train_step', 'inference_step'

@@ -1,7 +1,7 @@
 from warnings import warn
 
 import pandas as pd
-from dpipe.medim.utils import composition, Sequence, collect, name_changed
+from dpipe.im.utils import composition, Sequence, collect, name_changed
 from dicom_csv import *
 
 warn('`dpipe.medim.dicom` has been moved to a separate library `dicom-csv`.', DeprecationWarning)

@@ -3,10 +3,10 @@ import unittest
 import numpy as np
 import pytest
 
-from dpipe.medim.patch import sample_box_center_uniformly, get_random_patch, get_random_box
-from dpipe.medim.box import make_box_, get_centered_box
-from dpipe.medim.shape_ops import crop_to_box
-from dpipe.medim.utils import get_random_tuple
+from dpipe.im.patch import sample_box_center_uniformly, get_random_patch, get_random_box
+from dpipe.im.box import make_box_, get_centered_box
+from dpipe.im.shape_ops import crop_to_box
+from dpipe.im.utils import get_random_tuple
 
 
 class TestPatch(unittest.TestCase):

@@ -2,11 +2,11 @@ from typing import Union, Callable
 
 import numpy as np
 
-from dpipe.medim.axes import broadcast_to_axes, AxesLike, AxesParams
-from dpipe.medim.grid import divide, combine
-from dpipe.medim.itertools import extract
-from dpipe.medim.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
-from dpipe.medim.shape_utils import prepend_dims, extract_dims
+from dpipe.im.axes import broadcast_to_axes, AxesLike, AxesParams
+from dpipe.im.grid import divide, combine
+from dpipe.itertools import extract
+from dpipe.im.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
+from dpipe.im.shape_utils import prepend_dims, extract_dims
 
 __all__ = 'add_extract_dims', 'divisible_shape', 'patches_grid'
 

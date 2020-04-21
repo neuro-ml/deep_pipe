@@ -8,4 +8,4 @@ tqdm
 dicom-csv
 pdp==0.3.*
 tensorboard-easy
-resource-manager==0.10.*
+resource-manager>=0.10<1.0

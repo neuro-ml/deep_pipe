@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional
 
-from dpipe.medim.axes import AxesLike, expand_axes, check_axes
+from dpipe.im.axes import AxesLike, expand_axes, check_axes
 from dpipe.torch.functional import moveaxis, softmax
 
 

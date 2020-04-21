@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.nn import functional
 
-from dpipe.medim.axes import AxesLike, check_axes
+from dpipe.im.axes import AxesLike, check_axes
 
 __all__ = [
     'focal_loss_with_logits', 'linear_focal_loss_with_logits', 'weighted_cross_entropy_with_logits',

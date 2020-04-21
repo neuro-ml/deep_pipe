@@ -1,12 +1,11 @@
 import unittest
-from functools import partial
 
 import numpy as np
 
 from dpipe.layers import identity
-from dpipe.medim.preprocessing import pad, min_max_scale, normalize
-from dpipe.medim.utils import filter_mask, apply_along_axes
-from dpipe.medim.itertools import zip_equal, flatten, extract, negate_indices, head_tail, peek
+from dpipe.im.preprocessing import pad, min_max_scale, normalize
+from dpipe.im.utils import filter_mask, apply_along_axes
+from dpipe.itertools import zip_equal, flatten, extract, negate_indices, head_tail, peek
 
 
 class TestPad(unittest.TestCase):

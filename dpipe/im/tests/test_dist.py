@@ -1,6 +1,6 @@
 import numpy as np
 
-from dpipe.medim.dist import *
+from dpipe.im.dist import *
 
 eq = np.testing.assert_array_almost_equal
 

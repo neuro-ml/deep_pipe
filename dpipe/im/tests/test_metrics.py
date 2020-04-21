@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import torch
 
-from dpipe.medim.metrics import cross_entropy_with_logits
+from dpipe.im.metrics import cross_entropy_with_logits
 
 
 class TestMetrics(unittest.TestCase):

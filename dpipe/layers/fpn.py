@@ -5,8 +5,8 @@ import torch.nn as nn
 from torch.nn import functional
 import numpy as np
 
-from dpipe.medim.itertools import zip_equal, lmap
-from dpipe.medim.utils import identity
+from dpipe.itertools import zip_equal, lmap
+from dpipe.im.utils import identity
 from .structure import ConsistentSequential
 
 

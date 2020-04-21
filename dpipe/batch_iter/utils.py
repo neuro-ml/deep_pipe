@@ -2,9 +2,9 @@ from typing import Callable, Iterable, Sequence
 
 import numpy as np
 
-from dpipe.medim.axes import AxesLike, AxesParams
-from dpipe.medim.itertools import lmap, squeeze_first
-from dpipe.medim.preprocessing import pad_to_shape
+from dpipe.im.axes import AxesLike, AxesParams
+from dpipe.itertools import lmap, squeeze_first
+from dpipe.im.preprocessing import pad_to_shape
 
 
 def pad_batch_equal(batch, padding_values: AxesParams = 0, ratio: AxesParams = 0.5):

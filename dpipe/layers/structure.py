@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from dpipe.medim.utils import build_slices, pam, identity
+from dpipe.im.utils import build_slices, pam, identity
 
 
 def make_consistent_seq(layer: Callable, channels: Sequence[int], *args, **kwargs):

@@ -3,7 +3,7 @@ from typing import Iterable, Callable
 
 import numpy as np
 
-from ..medim.axes import AxesParams
+from ..im.axes import AxesParams
 from .utils import pad_batch_equal
 
 __all__ = 'Infinite', 'combine_batches', 'combine_to_arrays', 'combine_pad'
@@ -62,24 +62,18 @@ class Infinite:
 
     def __init__(self, source: Iterable, *transformers: Callable, batch_size: int, batches_per_epoch: int,
                  buffer_size: int = 3, combiner: Callable = combine_to_arrays):
+        import pdp
+        from pdp.interface import ComponentDescription
 
         if batches_per_epoch <= 0:
             raise ValueError(f'Expected a positive amount of batches per epoch, but got {batches_per_epoch}')
-        import pdp
-
-        # backward compatibility with pdp==0.2.1
-        if hasattr(pdp.interface, 'ComponentDescription'):
-            source_class = transformer_class = pdp.interface.ComponentDescription
-        else:
-            source_class = pdp.Source
-            transformer_class = pdp.interface.TransformerDescription
 
         def wrap(o):
-            if not isinstance(o, transformer_class):
+            if not isinstance(o, ComponentDescription):
                 o = pdp.One2One(o, buffer_size=buffer_size)
             return o
 
-        if not isinstance(source, source_class):
+        if not isinstance(source, ComponentDescription):
             source = pdp.Source(source, buffer_size=buffer_size)
 
         self.batches_per_epoch = batches_per_epoch

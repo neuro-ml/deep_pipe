@@ -4,8 +4,8 @@ import numpy as np
 import torch.nn as nn
 
 from dpipe.layers import PreActivationND
-from dpipe.medim.utils import identity
-from dpipe.medim.shape_ops import crop_to_shape
+from dpipe.im.utils import identity
+from dpipe.im.shape_ops import crop_to_shape
 
 
 class ResBlock(nn.Module):

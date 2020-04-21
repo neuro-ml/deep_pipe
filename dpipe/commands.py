@@ -10,7 +10,7 @@ import numpy as np
 from tqdm import tqdm
 
 from .io import save_json, save_numpy, load, PathLike
-from .medim.itertools import collect
+from dpipe.itertools import collect
 
 
 def populate(path: PathLike, func: Callable, *args, **kwargs):
@@ -97,15 +97,7 @@ def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_pa
         if exist_ok and os.path.exists(output):
             continue
 
-        value = func(identifier)
-
-        # To save disk space
-        if isinstance(value, np.ndarray) and np.issubdtype(value.dtype, np.floating):
-            value = value.astype(np.float16)
-
-        save(value, output)
-        # saving some memory
-        del value
+        save(func(identifier), output)
 
 
 def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save=save_numpy):

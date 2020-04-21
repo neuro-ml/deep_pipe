@@ -7,7 +7,7 @@ from torch import nn
 from torch.optim import Optimizer
 
 from dpipe.io import PathLike
-from dpipe.medim.itertools import squeeze_first, collect
+from dpipe.itertools import squeeze_first, collect
 
 __all__ = [
     'load_model_state', 'save_model_state',
@@ -174,6 +174,13 @@ def set_lr(optimizer: Optimizer, lr: float) -> Optimizer:
 def set_params(optimizer: Optimizer, **params) -> Optimizer:
     """Change an ``optimizer``'s parameters by the ones passed in ``params``."""
     for name, value in params.items():
+        updated = False
         for param_group in optimizer.param_groups:
-            param_group[name] = value
+            if name in param_group:
+                param_group[name] = value
+                updated = True
+
+        if not updated:
+            raise ValueError(f"The optimizer doesn't have a parameter named `{name}`.")
+
     return optimizer

@@ -7,7 +7,7 @@ import numpy as np
 import torch
 
 from dpipe.io import PathLike
-from dpipe.medim.utils import composition
+from dpipe.im.utils import composition
 
 __all__ = 'Checkpoints', 'CheckpointManager'
 

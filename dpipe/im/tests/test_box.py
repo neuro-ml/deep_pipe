@@ -1,6 +1,6 @@
 import unittest
 
-from dpipe.medim.box import *
+from dpipe.im.box import *
 
 
 class TestBox(unittest.TestCase):

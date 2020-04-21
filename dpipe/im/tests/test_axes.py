@@ -1,6 +1,6 @@
 import unittest
 
-from dpipe.medim.axes import *
+from dpipe.im.axes import *
 
 
 class TestExpandAxes(unittest.TestCase):

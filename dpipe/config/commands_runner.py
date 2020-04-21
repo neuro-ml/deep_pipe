@@ -2,7 +2,7 @@ import os
 import shutil
 from typing import Callable
 
-from dpipe.medim.checks import join
+from dpipe.im.checks import join
 from dpipe.commands import lock_dir
 
 

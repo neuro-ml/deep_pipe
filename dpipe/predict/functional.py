@@ -40,7 +40,7 @@ def preprocess(func, *args, **kwargs):
 
     Examples
     --------
-        >>> from dpipe.medim.shape_ops import pad
+        >>> from dpipe.im.shape_ops import pad
         >>> from dpipe.predict.functional import preprocess
         >>>
         >>> @preprocess(pad, padding=[10, 10, 10], padding_values=np.min)

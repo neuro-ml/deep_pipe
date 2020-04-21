@@ -1,8 +1,8 @@
 import unittest
 from functools import partial
 
-from dpipe.medim.utils import get_random_tuple
-from dpipe.medim.shape_utils import *
+from dpipe.im.utils import get_random_tuple
+from dpipe.im.shape_utils import *
 
 
 class TestBroadcastShapeND(unittest.TestCase):

@@ -4,7 +4,7 @@ from functools import partial
 import pytest
 
 import numpy as np
-from dpipe.medim.shape_ops import *
+from dpipe.im.shape_ops import *
 
 assert_eq = np.testing.assert_array_equal
 

@@ -3,7 +3,7 @@ from typing import Sequence
 import numpy as np
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
-from dpipe.medim.itertools import extract
+from dpipe.itertools import extract
 from .base import split_train, kfold_split, indices_to_ids
 
 

@@ -2,7 +2,7 @@ from typing import Sequence, Callable, Union
 
 import numpy as np
 
-from dpipe.medim.utils import pam, squeeze_first
+from dpipe.im.utils import pam, squeeze_first
 
 __all__ = 'sample', 'load_by_random_id'
 

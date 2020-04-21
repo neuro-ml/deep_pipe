@@ -1,7 +1,7 @@
 import unittest
 
-from dpipe.medim import prep
-from dpipe.medim.preprocessing import *
+from dpipe.im import prep
+from dpipe.im.preprocessing import *
 
 
 class TestPrep(unittest.TestCase):

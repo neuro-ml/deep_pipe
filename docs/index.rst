@@ -11,7 +11,7 @@ Contents
 
     dpipe.config
     dpipe.experiment
-    dpipe.medim
+    dpipe.im
     dpipe.io
     dpipe.dataset
     dpipe.train

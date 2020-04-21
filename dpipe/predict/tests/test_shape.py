@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from dpipe.medim.utils import identity
+from dpipe.im.utils import identity
 from dpipe.predict.shape import *
 
 assert_eq = np.testing.assert_array_almost_equal

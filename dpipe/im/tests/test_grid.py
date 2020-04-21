@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from dpipe.medim.grid import get_boxes, combine, divide
+from dpipe.im.grid import get_boxes, combine, divide
 
 
 class TestGrid(unittest.TestCase):
