@@ -94,14 +94,6 @@ Color space conversion
     :undoc-members:
     :show-inheritance:
 
-Itertools
----------
-
-.. automodule:: dpipe.im.itertools
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Various utils
 -------------
 

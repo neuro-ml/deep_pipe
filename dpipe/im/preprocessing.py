@@ -3,6 +3,7 @@ from skimage.measure import label
 
 from dpipe.itertools import negate_indices
 from .axes import AxesLike, check_axes
+from .shape_ops import *
 
 
 def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: AxesLike = None,

@@ -9,16 +9,16 @@ Contents
 .. toctree::
     :maxdepth: 1
 
-    dpipe.config
     dpipe.experiment
     dpipe.im
     dpipe.io
-    dpipe.dataset
     dpipe.train
     dpipe.batch_iter
     dpipe.predict
     dpipe.layers
     dpipe.torch
+    dpipe.itertools
     dpipe.commands
+    dpipe.dataset
 
     dpipe.tutorials
