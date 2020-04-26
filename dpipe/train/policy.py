@@ -151,12 +151,16 @@ class Switch(ValuePolicy):
 class LambdaEpoch(ValuePolicy):
     """Use the passed function to calculate the `value` for the current epoch (starting with 0)."""
 
-    def __init__(self, func: Callable):
-        super().__init__(func(0))
+    def __init__(self, func: Callable, *args, **kwargs):
+        super().__init__(func(0, *args, **kwargs))
         self.func = func
+        self.args = args
+        self.kwargs = kwargs
 
-    def epoch_finished(self, epoch, *args, **kwargs):
-        self.value = self.func(epoch + 1)
+    def epoch_started(self, epoch: int):
+        # func(0) was already calculated
+        if epoch > 0:
+            self.value = self.func(epoch, *self.args, **self.kwargs)
 
 
 class EarlyStopping(StopIteration):
