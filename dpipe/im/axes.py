@@ -3,7 +3,7 @@ from typing import Union, Sequence
 import numpy as np
 
 from dpipe.itertools import lmap
-from .checks import join
+from ..checks import join
 
 AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]

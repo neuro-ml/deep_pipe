@@ -1,1 +1,1 @@
-from dpipe.im.checks import *
+from dpipe.checks import *

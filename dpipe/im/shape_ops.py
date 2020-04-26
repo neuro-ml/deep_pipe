@@ -5,7 +5,7 @@ import numpy as np
 from scipy import ndimage
 
 from .box import Box
-from dpipe.itertools import extract
+from ..itertools import extract
 from .axes import fill_by_indices, expand_axes, AxesLike, AxesParams, broadcast_to_axes
 from .utils import build_slices
 

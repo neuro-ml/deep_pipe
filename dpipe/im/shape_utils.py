@@ -1,7 +1,7 @@
 import numpy as np
 
 from dpipe.itertools import extract
-from .checks import check_len
+from ..checks import check_len
 from .axes import broadcast_to_axes, fill_by_indices, AxesLike
 
 

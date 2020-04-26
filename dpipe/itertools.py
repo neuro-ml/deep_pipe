@@ -6,8 +6,6 @@ from typing import Iterable, Sized, Union, Callable, Sequence, Any, Tuple
 
 import numpy as np
 
-from .im.checks import join
-
 
 def pam(functions: Iterable[Callable], *args, **kwargs):
     """
@@ -47,6 +45,7 @@ def zip_equal(*args: Union[Sized, Iterable]) -> Iterable[Tuple]:
             all_lengths.append('?')
 
     if lengths and not all(x == lengths[0] for x in lengths):
+        from .checks import join
         raise ValueError(f'The arguments have different lengths: {join(all_lengths)}.')
 
     iterables = [iter(arg) for arg in args]

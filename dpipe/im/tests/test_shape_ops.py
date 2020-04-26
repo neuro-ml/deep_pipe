@@ -68,6 +68,36 @@ class TestPad(unittest.TestCase):
             pad(x, [1, 1], padding_values=partial(np.min, axis=(1, 2), keepdims=True)),
         )
 
+    def test_pad(self):
+        x = np.arange(12).reshape((3, 2, 2))
+        padding = np.array(((0, 0), (1, 2), (2, 1)))
+        padding_values = np.min(x, axis=(1, 2), keepdims=True)
+
+        y = pad(x, padding, padding_values=padding_values)
+        np.testing.assert_array_equal(y, np.array([
+            [
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 1, 0],
+                [0, 0, 2, 3, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+            ],
+            [
+                [4, 4, 4, 4, 4],
+                [4, 4, 4, 5, 4],
+                [4, 4, 6, 7, 4],
+                [4, 4, 4, 4, 4],
+                [4, 4, 4, 4, 4],
+            ],
+            [
+                [8, 8, 8, 8, 8],
+                [8, 8, 8, 9, 8],
+                [8, 8, 10, 11, 8],
+                [8, 8, 8, 8, 8],
+                [8, 8, 8, 8, 8],
+            ],
+        ]))
+
 
 class TestCropToBox(unittest.TestCase):
     def test_shape(self):
@@ -105,3 +135,29 @@ class TestCropToBox(unittest.TestCase):
 
         with pytest.raises(ValueError):
             crop_to_box(x, np.array([[-1], [1]]))
+
+
+class TestShapeOps(unittest.TestCase):
+    def setUp(self):
+        self.x = np.random.rand(3, 10, 10) * 2 + 3
+
+    def _test_to_shape(self, func, shape, bad_shape):
+        self.assertTupleEqual(func(self.x, shape).shape, shape)
+        with self.assertRaises(ValueError):
+            func(self.x, bad_shape)
+
+    def test_scale_to_shape(self):
+        shape = (3, 4, 15)
+        self.assertTupleEqual(zoom_to_shape(self.x, shape).shape, shape)
+        self.assertTupleEqual(zoom_to_shape(self.x, shape[::-1]).shape, shape[::-1])
+
+    def test_pad_to_shape(self):
+        self._test_to_shape(pad_to_shape, (3, 15, 16), (3, 4, 10))
+
+    def test_slice_to_shape(self):
+        self._test_to_shape(crop_to_shape, (3, 4, 8), (3, 15, 10))
+
+    def test_scale(self):
+        self.assertTupleEqual(zoom(self.x, (3, 4, 15)).shape, (9, 40, 150))
+
+        self.assertTupleEqual(zoom(self.x, (4, 3)).shape, (3, 40, 30))

@@ -1,6 +1,6 @@
 import numpy as np
 
-from .checks import check_shape_along_axis
+from ..checks import check_shape_along_axis
 
 
 def iterate_slices(*data: np.ndarray, axis: int):

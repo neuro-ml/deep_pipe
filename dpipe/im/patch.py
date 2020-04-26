@@ -9,7 +9,7 @@ from .shape_ops import crop_to_box
 from .box import returns_box
 from .axes import expand_axes, fill_by_indices, AxesLike
 from .shape_utils import shape_after_convolution, shape_after_full_convolution
-from .checks import check_shape_along_axis
+from ..checks import check_shape_along_axis
 from dpipe.itertools import squeeze_first, extract, lmap
 
 

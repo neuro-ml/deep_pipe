@@ -10,7 +10,7 @@ from typing import Callable
 
 import numpy as np
 
-from .checks import check_len
+from ..checks import check_len
 from .shape_utils import compute_shape_from_spatial
 from .utils import build_slices
 

@@ -3,7 +3,7 @@ from typing import Callable
 
 import numpy as np
 
-from dpipe import itertools
+from .itertools import extract
 
 
 def join(values):
@@ -11,7 +11,7 @@ def join(values):
 
 
 def check_shape_along_axis(*arrays, axis):
-    sizes = [tuple(itertools.extract(x.shape, np.atleast_1d(axis))) for x in arrays]
+    sizes = [tuple(extract(x.shape, np.atleast_1d(axis))) for x in arrays]
     if any(x != sizes[0] for x in sizes):
         raise ValueError(f'Arrays of equal size along axis {axis} are required: {join(sizes)}')
 
