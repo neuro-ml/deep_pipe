@@ -6,7 +6,7 @@ from typing import Sequence, Iterable
 
 from resource_manager import read_config
 
-from ..io import save, PathLike
+from ..io import save, PathLike, load
 
 
 class Layout(ABC):
@@ -68,6 +68,10 @@ class Flat(Layout):
         self.prefixes = prefixes
         self.split = list(split)
 
+    @staticmethod
+    def _expand_prefix(prefix):
+        return f'{prefix}_ids.json'
+
     def build(self, config: PathLike, folder: PathLike):
         folder = Path(folder)
         for i, ids in enumerate(self.split):
@@ -80,7 +84,7 @@ class Flat(Layout):
             local.mkdir(parents=True)
 
             for val, prefix in zip(ids, self.prefixes):
-                save(val, local / f'{prefix}_ids.json', indent=0)
+                save(val, local / self._expand_prefix(prefix), indent=0)
 
         # resource manager is needed here, because there may be inheritance
         read_config(config).save_config(folder / 'resources.config')
@@ -102,3 +106,7 @@ class Flat(Layout):
 
     def run_parser(self, parser: ArgumentParser):
         parser.add_argument('-f', '--folds', nargs='+', help='Folds to run.')
+
+    def get_ids(self, prefix, folder='.'):
+        assert prefix in self.prefixes
+        return load(Path(folder) / self._expand_prefix(prefix))

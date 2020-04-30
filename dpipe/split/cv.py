@@ -68,6 +68,7 @@ def group_train_val_test_split(ids: Sequence, groups: np.ndarray, *, val_size, n
     n_splits: int
         the number of cross-validation folds
     """
+    groups = np.asarray(groups)
     split_indices = kfold_split(ids, n_splits, groups=groups, random_state=random_state)
     split_indices = split_train(split_indices, val_size, groups=groups, random_state=random_state)
     return indices_to_ids(split_indices, ids)
