@@ -2,7 +2,7 @@ import numpy as np
 from skimage.measure import label
 
 from dpipe.itertools import negate_indices
-from .axes import AxesLike, check_axes
+from .axes import AxesLike, check_axes, AxesParams
 
 __all__ = [
     'normalize', 'min_max_scale', 'bytescale',
@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 
-def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: AxesLike = None,
+def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: AxesParams = None,
               axes: AxesLike = None, dtype=None) -> np.ndarray:
     """
     Normalize ``x``'s values to make mean and std independently along ``axes`` equal to 0 and 1 respectively
