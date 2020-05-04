@@ -32,7 +32,9 @@ def combine_pad(inputs, padding_values: AxesParams = 0, ratio: AxesParams = 0.5)
     ----------
     `pad_to_shape`
     """
-    return tuple(pad_batch_equal(x, padding_values, ratio) for x in combine_batches(inputs))
+    batches = combine_batches(inputs)
+    padding_values = np.broadcast_to(padding_values, [len(batches)])
+    return tuple(pad_batch_equal(x, values, ratio) for x, values in zip(batches, padding_values))
 
 
 class Infinite:
