@@ -42,7 +42,7 @@ There are several solutions:
 
 -  Wrap the dataset
 
-Wrappers are handy when you need to change the dataset’s behaviour in a
+Wrappers are handy when you need to change the dataset's behaviour in a
 reusable way.
 
 You can think of a wrapper as an additional layer around the original
@@ -76,7 +76,7 @@ dataset. In case of upsampling it could look something like this:
 
 Now this wrapper can be reused with other datasets that have the
 ``load_image`` method. Note that ``load_label`` is also working, even
-though it wasn’t defined in the wrapper.
+though it wasn't defined in the wrapper.
 
 ``dpipe`` already has a collection of predefined wrappers, for example,
 you can apply upsampling as follows:

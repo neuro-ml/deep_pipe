@@ -52,7 +52,7 @@ Now we have a perfectly reusable function.
 Scale
 ~~~~~
 
-Now let’s write a function that downsamples the input by a factor of 2
+Now let's write a function that downsamples the input by a factor of 2
 and then zooms the output by 2.
 
 .. code-block:: python3
@@ -101,7 +101,7 @@ it looks like the function ``predict_zoom`` but with the line
 
 ::
 
-   mask = network(padded)
+    mask = network(padded)
 
 replaced by the body of ``predict_pad``.
 
@@ -116,8 +116,8 @@ argument and reuse the functions we defined above:
         
         return predict_zoom(image, network_, scale_factor)
 
-``predict_pad`` “wraps” the original ``network`` - it behaves like
-``network``, and ``predict_zoom`` doesn’t really care whether it
+``predict_pad`` "wraps" the original ``network`` - it behaves like
+``network``, and ``predict_zoom`` doesn't really care whether it
 received the original ``network`` or a wrapped one.
 
 This sounds just like a decorator (a very good explanation can be found
@@ -169,7 +169,7 @@ Then the same ``predict`` can be defined like so:
 Now ``predict`` is just a function that receives a single argument - the
 image.
 
-If you don’t like the decorator approach you can use a handy function
+If you don't like the decorator approach you can use a handy function
 for that:
 
 .. code-block:: python3

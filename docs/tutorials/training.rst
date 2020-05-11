@@ -12,30 +12,37 @@ this is the main function; it requires a batch iterator, and a
 ``train_step`` function, that performs a forward-backward pass for a
 given batch.
 
-Let’s build all the required components.
+Let's build all the required components.
 
 Batch iterator
 ~~~~~~~~~~~~~~
 
 The batch iterators are covered in a separate tutorial
-(:doc:`batch_iter`), we’ll reuse the code from it:
+(:doc:`batch\_iter`), we'll reuse the code from it:
 
 .. code-block:: python3
 
-    from dpipe.tests.mnist.resources import MNIST
-    from dpipe.batch_iter import Infinite, load_by_random_id
+    from torchvision.datasets import MNIST
+    from dpipe.batch_iter import Infinite, sample, apply_at
+    from pathlib import Path
+    import numpy as np
     
-    dataset = MNIST('PATH TO DATA')
+    # download to ~/tests/MNIST, if necessary
+    dataset = MNIST(Path('~/tests/MNIST').expanduser(), transform=np.array, download=True)
+    
+    
+    # yield 10 batches of size 30 each epoch:
     
     batch_iter = Infinite(
-        load_by_random_id(dataset.load_image, dataset.load_label, ids=dataset.ids),
-        batch_size=100, batches_per_epoch=50,
+        sample(dataset),
+        apply_at(0, lambda x: x[None].astype('float32')), # add channels dim
+        batch_size=30, batches_per_epoch=10,
     )
 
 Train Step
 ~~~~~~~~~~
 
-Next, we will implement the function that performs a train_step. But
+Next, we will implement the function that performs a train\_step. But
 first we need an architecture:
 
 .. code-block:: python3
@@ -53,7 +60,7 @@ first we need an architecture:
         nn.Conv2d(64, 128, kernel_size=3),
         
         nn.AdaptiveMaxPool2d((1, 1)),
-        layers.Reshape('0', -1),
+        nn.Flatten(),
         
         nn.ReLU(),
         nn.Linear(128, 10),
@@ -66,8 +73,8 @@ first we need an architecture:
     from dpipe.torch import to_var, to_np
     
     def cls_train_step(images, labels):
-        # images and labels are both of type `np.ndarray`
-        images, labels = torch.from_numpy(images), torch.from_numpy(labels)
+        # move images and labels to same device as architecture
+        images, labels = to_var(images, labels, device=architecture)
         architecture.train()
         
         logits = architecture(images)
@@ -78,7 +85,7 @@ first we need an architecture:
         optimizer.step()
         
         # `train_step` must return the loss which will be later user for logging
-        return loss.data.numpy()
+        return to_np(loss)
 
 Training the model
 ~~~~~~~~~~~~~~~~~~
@@ -131,7 +138,7 @@ you can pass a logger:
     00002: train loss: 0.2186189591884613
 
 
-There are various logger implementations, e.g. one that writes in a
+There are various logger implementations, e.g. one that writes in a
 format, readable by tensorboard - `TBLogger`.
 
 Checkpoints
@@ -139,38 +146,38 @@ Checkpoints
 
 It is often useful to keep checkpoints (or snapshots) of you model and
 optimizer in case you may want to resotore them. To do that, pass the
-``checkpoint_manager`` argument:
+``checkpoints`` argument:
 
 .. code-block:: python3
 
-    from dpipe.train import CheckpointManager
+    from dpipe.train import Checkpoints
     
     
-    checkpoints = CheckpointManager(
+    checkpoints = Checkpoints(
         'PATH/TO/CHECKPOINTS/FOLDER', 
-        {'model.pth': architecture, 'optimizer.pth': optimizer}
+        [architecture, optimizer],
     )
     
     train(
-        train_step, batch_iter, n_epochs=3, checkpoint_manager=checkpoints,
+        train_step, batch_iter, n_epochs=3, checkpoints=checkpoints,
         architecture=architecture, optimizer=optimizer, criterion=criterion
     )
 
-The cool part is that if the training is prematurely stopped, e.g. by an
+The cool part is that if the training is prematurely stopped, e.g. by an
 exception, you can resume the training from the same point instead of
 starting over:
 
 .. code-block:: python3
 
     train(
-        train_step, batch_iter, n_epochs=3, checkpoint_manager=checkpoints,
+        train_step, batch_iter, n_epochs=3, checkpoints=checkpoints,
         architecture=architecture, optimizer=optimizer, criterion=criterion
     )
     # ... something bad happened, e.g. KeyboardInterrupt
     
     # start from where you left off
     train(
-        train_step, batch_iter, n_epochs=3, checkpoint_manager=checkpoints,
+        train_step, batch_iter, n_epochs=3, checkpoints=checkpoints,
         architecture=architecture, optimizer=optimizer, criterion=criterion
     )
 
@@ -181,10 +188,10 @@ You can further customize the training process by passing addtitional
 values to ``train_step`` that change in time.
 
 For example, ``train_step`` takes an optional argument ``lr`` - used to
-update the ``optimizer``\ ’s learning rate.
+update the ``optimizer``'s learning rate.
 
 We can change this value after each trainig epoch using the
-`ValuePolicy` interface. Let’s use an exponential learning rate:
+`ValuePolicy` interface. Let's use an exponential learning rate:
 
 .. code-block:: python3
 
@@ -207,15 +214,17 @@ metrics, e.g.:
 .. code-block:: python3
 
     def validate():
+        architecture.eval()
+        
+        # ... predict on validation set
+        pred = ...
+        ys = ...
+        
+        acc = accuracy_score(ys, pred)
         return {
-            'acuracy': 0.95,
-            'roc_auc': 0.91,
+            'acuracy': acc
         }
-
-this is a dummy function, of course.
-
-.. code-block:: python3
-
+    
     train(
         train_step, batch_iter, n_epochs=10, validate=validate,
         architecture=architecture, optimizer=optimizer, criterion=criterion,

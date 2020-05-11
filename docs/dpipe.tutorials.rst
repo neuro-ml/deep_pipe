@@ -7,9 +7,8 @@ jupyter notebooks located `here <https://github.com/neuro-ml/dpipe_tutorial_note
 .. toctree::
     :maxdepth: 1
 
-    tutorials/wrappers
     tutorials/batch_iter
-    tutorials/predict
     tutorials/training
+    tutorials/predict
     tutorials/patches
-    tutorials/dicom
+    tutorials/wrappers

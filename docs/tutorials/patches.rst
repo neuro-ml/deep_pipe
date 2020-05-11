@@ -34,8 +34,8 @@ Probability maps
     # resnet requires normalization
     normalize = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
-We’ll classify this image by averaging the logits on each patch. We’ll
-be taking patches in a convolution-like fashion, i.e. with a fixed
+We'll classify this image by averaging the logits on each patch. We'll
+be taking patches in a convolution-like fashion, i.e. with a fixed
 stride.
 
 .. code-block:: python3
@@ -122,7 +122,7 @@ Using predictors
 ----------------
 
 The previous approach is a quite common pattern: split -> segment ->
-combine, that’s why there is a predictor that reduces boilerplate code:
+combine, that's why there is a predictor that reduces boilerplate code:
 
 .. code-block:: python3
 

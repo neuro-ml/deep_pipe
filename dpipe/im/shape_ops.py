@@ -241,4 +241,6 @@ def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesP
                          f"box {start, stop} from the shape {shape}.")
 
     padding = np.array([start, shape - stop], dtype=int).T
-    return pad(x, padding, padding_values=padding_values)
+    x = pad(x, padding, padding_values=padding_values)
+    assert all(np.array(x.shape) == shape)
+    return x
