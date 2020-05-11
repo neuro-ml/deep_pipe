@@ -3,7 +3,9 @@ from setuptools import setup, find_packages
 from dpipe import __version__
 
 classifiers = '''Development Status :: 4 - Beta
-Programming Language :: Python :: 3.6'''
+Programming Language :: Python :: 3.6
+Programming Language :: Python :: 3.7
+Programming Language :: Python :: 3.8'''
 
 with open('README.md', encoding='utf-8') as file:
     long_description = file.read()
