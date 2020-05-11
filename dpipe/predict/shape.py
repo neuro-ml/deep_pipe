@@ -1,3 +1,4 @@
+from functools import wraps, partial
 from typing import Union, Callable
 
 import numpy as np
@@ -26,8 +27,9 @@ def add_extract_dims(n_add: int = 1, n_extract: int = None):
         n_extract = n_add
 
     def decorator(predict):
-        def wrapper(*xs):
-            x = predict(*[prepend_dims(x, ndim=n_add) for x in xs])
+        @wraps(predict)
+        def wrapper(*xs, **kwargs):
+            x = predict(*[prepend_dims(x, ndim=n_add) for x in xs], **kwargs)
             return extract_dims(x, n_extract)
 
         return wrapper
@@ -58,9 +60,11 @@ def divisible_shape(divisor: AxesLike, axes: AxesLike = None, padding_values: Un
     axes, divisor, ratio = broadcast_to_axes(axes, divisor, ratio)
 
     def decorator(predict):
-        def wrapper(x):
+        @wraps(predict)
+        def wrapper(x, *args, **kwargs):
             shape = np.array(x.shape)[list(axes)]
-            result = predict(pad_to_divisible(x, divisor, axes, padding_values, ratio))
+            x = pad_to_divisible(x, divisor, axes, padding_values, ratio)
+            result = predict(x, *args, **kwargs)
             return crop_to_shape(result, shape, axes, ratio)
 
         return wrapper
@@ -85,14 +89,15 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
     valid = padding_values is not None
 
     def decorator(predict):
-        def wrapper(x):
+        @wraps(predict)
+        def wrapper(x, **kwargs):
             if valid:
                 shape = np.array(x.shape)[list(axes)]
                 padded_shape = np.maximum(shape, patch_size)
                 new_shape = padded_shape + (stride - padded_shape + patch_size) % stride
                 x = pad_to_shape(x, new_shape, axes, padding_values, ratio)
 
-            patches = map(predict, divide(x, patch_size, stride, axes))
+            patches = map(partial(predict, **kwargs), divide(x, patch_size, stride, axes))
             prediction = combine(patches, extract(x.shape, axes), stride, axes)
 
             if valid:
