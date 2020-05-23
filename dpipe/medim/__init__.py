@@ -9,5 +9,5 @@ from . import grid
 from . import shape_utils
 
 msg = 'dpipe.medim is deprecated in favor of dpipe.im'
-warn(msg, DeprecationWarning)
-warn(msg, UserWarning)
+warn(msg, DeprecationWarning, 2)
+warn(msg, UserWarning, 2)

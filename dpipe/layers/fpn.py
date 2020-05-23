@@ -57,8 +57,8 @@ class FPN(nn.Module):
     """
 
     def __init__(self, layer: Callable, downsample: Union[nn.Module, Callable], upsample: Union[nn.Module, Callable],
-                 merge: Callable, structure: Sequence[Union[Sequence[int], nn.Module]], last_level: bool = True,
-                 **kwargs):
+                 merge: Callable, structure: Sequence[Sequence[Union[Sequence[int], nn.Module]]],
+                 last_level: bool = True, **kwargs):
         super().__init__()
 
         def build_level(path):

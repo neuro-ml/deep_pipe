@@ -110,3 +110,6 @@ class Flat(Layout):
     def get_ids(self, prefix, folder='.'):
         assert prefix in self.prefixes
         return load(Path(folder) / self._expand_prefix(prefix))
+
+    def __getattr__(self, prefix):
+        return self.get_ids(prefix, '.')
