@@ -1,4 +1,5 @@
-from typing import Sequence
+from collections import defaultdict
+from typing import Sequence, Union, Dict
 
 import numpy as np
 
@@ -26,6 +27,15 @@ def make_log_vector(logger, tag: str, first_step: int = 0) -> callable:
         log_vector(logger, tag, value, step)
 
     return logger._make_log(tag, first_step, log)
+
+
+def group_dicts(dicts):
+    groups = defaultdict(list)
+    for entry in dicts:
+        for name, value in entry.items():
+            groups[name].append(value)
+
+    return dict(groups)
 
 
 class Logger:
@@ -58,7 +68,7 @@ class ConsoleLogger(Logger):
     def value(self, name, value, step):
         print(f'{step:>05}: {name}: {value}', flush=True)
 
-    def train(self, train_losses, step):
+    def train(self, train_losses: Sequence[Union[dict, tuple, float]], step):
         self.value('Train loss', np.mean(train_losses, axis=0), step)
 
     def policies(self, policies: dict, step: int):
@@ -75,8 +85,13 @@ class TBLogger(Logger):
         import tensorboard_easy
         self.logger = tensorboard_easy.Logger(log_path)
 
-    def train(self, train_losses, step):
-        self.value('train/loss', np.mean(train_losses, axis=0), step)
+    def train(self, train_losses: Sequence[Union[dict, tuple, float]], step):
+        if train_losses and isinstance(train_losses[0], dict):
+            for name, values in group_dicts(train_losses).items():
+                self.value(f'train/loss/{name}', np.mean(values), step)
+
+        else:
+            self.value('train/loss', np.mean(train_losses, axis=0), step)
 
     def value(self, name, value, step):
         log_scalar_or_vector(self.logger, name, value, step)

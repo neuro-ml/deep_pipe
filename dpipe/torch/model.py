@@ -65,8 +65,12 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
     `optimizer_step`
     """
     architecture.train()
-    n_inputs = len(inputs) - n_targets  # in case n_targets == 0
+    if n_targets >= 0:
+        n_inputs = len(inputs) - n_targets
+    else:
+        n_inputs = -n_targets
 
+    assert 0 <= n_inputs <= len(inputs)
     inputs = sequence_to_var(*inputs, device=architecture)
     inputs, targets = inputs[:n_inputs], inputs[n_inputs:]
 
@@ -76,7 +80,6 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
     return to_np(loss)
 
 
-@torch.no_grad()
 def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
@@ -87,7 +90,8 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     to and from ``torch.Tensor`` is made inside this function.
     """
     architecture.eval()
-    return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
+    with torch.no_grad():
+        return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
 
 
 @np.deprecate
