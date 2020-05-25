@@ -120,9 +120,11 @@ class PyramidPooling(nn.Module):
         pyramid = []
 
         for level in range(self.levels):
+            # adaptive pooling
             level = 2 ** level
-            stride = tuple(map(int, np.floor(shape / level)))
-            kernel_size = tuple(map(int, np.ceil(shape / level)))
+            stride = np.floor(shape / level)
+            kernel_size = shape - (level - 1) * stride
+            stride, kernel_size = tuple(map(int, stride)), tuple(map(int, kernel_size))
             temp = self.pooling(x, kernel_size=kernel_size, stride=stride)
             pyramid.append(temp.view(batch_size, -1))
 

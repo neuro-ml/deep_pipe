@@ -12,7 +12,7 @@ from dpipe.im.shape_utils import prepend_dims, extract_dims
 __all__ = 'add_extract_dims', 'divisible_shape', 'patches_grid'
 
 
-def add_extract_dims(n_add: int = 1, n_extract: int = None):
+def add_extract_dims(n_add: int = 1, n_extract: int = None, sequence: bool = False):
     """
     Adds ``n_add`` dimensions before a prediction and extracts ``n_extract`` dimensions after this prediction.
 
@@ -22,6 +22,8 @@ def add_extract_dims(n_add: int = 1, n_extract: int = None):
         number of dimensions to add.
     n_extract: int, None, optional
         number of dimensions to extract. If ``None``, extracts the same number of dimensions as were added (``n_add``).
+    sequence:
+        if True - the output is expected to be a sequence, and the dims are extracted for each element of the sequence.
     """
     if n_extract is None:
         n_extract = n_add
@@ -29,8 +31,11 @@ def add_extract_dims(n_add: int = 1, n_extract: int = None):
     def decorator(predict):
         @wraps(predict)
         def wrapper(*xs, **kwargs):
-            x = predict(*[prepend_dims(x, ndim=n_add) for x in xs], **kwargs)
-            return extract_dims(x, n_extract)
+            result = predict(*[prepend_dims(x, n_add) for x in xs], **kwargs)
+            if sequence:
+                return [extract_dims(entry, n_extract) for entry in result]
+
+            return extract_dims(result, n_extract)
 
         return wrapper
 
