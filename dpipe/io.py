@@ -74,7 +74,8 @@ def load(path: PathLike, **kwargs):
     ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, tif, hdr, img, nii, nii.gz, json, mhd, csv, txt, pickle, pkl
+        npy, tif, png, jpg, bmp, hdr, img,
+        nii, nii.gz, json, mhd, csv, txt, pickle, pkl
     """
     name = Path(path).name
 
@@ -83,7 +84,7 @@ def load(path: PathLike, **kwargs):
     if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel as nib
         return nib.load(path, **kwargs).get_data()
-    if name.endswith(('.png', '.jpg', '.tif')):
+    if name.endswith(('.png', '.jpg', '.tif', '.bmp')):
         from imageio import imread
         return imread(path, **kwargs)
     if name.endswith('.json'):
@@ -108,7 +109,8 @@ def save(value, path: PathLike, **kwargs):
     ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, tif, hdr, img, nii, nii.gz, json, txt, pickle, pkl
+        npy, tif, png, jpg, bmp, hdr, img,
+        nii, nii.gz, json, mhd, csv, txt, pickle, pkl
     """
     name = Path(path).name
 
@@ -117,7 +119,7 @@ def save(value, path: PathLike, **kwargs):
     elif name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel as nib
         nib.save(value, path, **kwargs)
-    elif name.endswith(('.png', '.jpg', '.tif')):
+    elif name.endswith(('.png', '.jpg', '.tif', '.bmp')):
         from imageio import imsave
         imsave(path, value, **kwargs)
     elif name.endswith('.json'):
