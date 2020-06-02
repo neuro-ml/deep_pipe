@@ -1,3 +1,4 @@
+
 Batch iterators
 ===============
 
@@ -48,7 +49,7 @@ Sampling
 
 .. parsed-literal::
 
-    (28, 28) 3
+    (28, 28) 7
 
 
 We use infinite sources because our batch iterators are executed in a
@@ -237,6 +238,97 @@ Now we don't even have to create another function!
 
 Check ``dpipe.batch_iter.utils`` for other helper functions.
 
+Parallel execution
+~~~~~~~~~~~~~~~~~~
+
+The batch iterator supports both thread-based and process-based
+execution.
+
+Threads
+^^^^^^^
+
+Wrap the function in `Threads` in order to enable thread-based
+parallelism:
+
+.. code-block:: python3
+
+    %%time
+    
+    import time
+    import itertools
+    from dpipe.batch_iter import Threads
+    
+    
+    def do_stuff(x):
+        time.sleep(1)
+        return x ** 2,
+    
+    batch_iter = Infinite(
+        range(10),
+        do_stuff, # sleep for 10 seconds
+        batch_size=10, batches_per_epoch=1
+    )
+    
+    for value in batch_iter():
+        pass
+
+
+.. parsed-literal::
+
+    CPU times: user 33.3 ms, sys: 9.17 ms, total: 42.5 ms
+    Wall time: 10 s
+
+
+.. code-block:: python3
+
+    %%time
+    
+    batch_iter = Infinite(
+        range(10),
+        Threads(do_stuff, n_workers=2), # sleep for 5 seconds
+        batch_size=10, batches_per_epoch=1
+    )
+    
+    for value in batch_iter():
+        pass
+
+
+.. parsed-literal::
+
+    CPU times: user 21.4 ms, sys: 7.75 ms, total: 29.1 ms
+    Wall time: 5.01 s
+
+
+Processes
+^^^^^^^^^
+
+Similarly, wrap the function in `Loky` in order to enable process-based
+parallelism:
+
+.. code-block:: python3
+
+    from dpipe.batch_iter import Loky
+
+.. code-block:: python3
+
+    %%time
+    
+    batch_iter = Infinite(
+        range(10),
+        Loky(do_stuff, n_workers=2), # sleep for 5 seconds
+        batch_size=10, batches_per_epoch=1
+    )
+    
+    for value in batch_iter():
+        pass
+
+
+.. parsed-literal::
+
+    CPU times: user 43.6 ms, sys: 27.6 ms, total: 71.2 ms
+    Wall time: 5.56 s
+
+
 Combining objects into batches
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -260,7 +352,7 @@ shape. To do this, pass a custom ``combiner`` to `Infinite`:
 
 .. parsed-literal::
 
-    ((10, 10, 27), (10, 10, 32))
+    ((10, 10, 34), (10, 10, 34))
 
 
 
@@ -282,9 +374,9 @@ shape. To do this, pass a custom ``combiner`` to `Infinite`:
 
 .. parsed-literal::
 
-    (5, 10, 10, 33) (5,)
-    (5, 10, 10, 26) (5,)
-    (5, 10, 10, 33) (5,)
+    (5, 10, 10, 39) (5,)
+    (5, 10, 10, 34) (5,)
+    (5, 10, 10, 39) (5,)
 
 
 Adaptive batch size
@@ -329,9 +421,9 @@ axis.
 
 .. parsed-literal::
 
-    (4, 10, 10, 37) (4,)
-    (4, 10, 10, 37) (4,)
-    (5, 10, 10, 33) (5,)
+    (5, 10, 10, 34) (5,)
+    (4, 10, 10, 25) (4,)
+    (4, 10, 10, 32) (4,)
 
 
 Note that the batch sizes are different: 4, 4, 5

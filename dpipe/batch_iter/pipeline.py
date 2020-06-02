@@ -1,3 +1,5 @@
+import multiprocessing
+from functools import partial
 from itertools import islice
 from typing import Iterable, Callable, Union
 
@@ -7,7 +9,11 @@ from ..itertools import zip_equal
 from ..im.axes import AxesParams
 from .utils import pad_batch_equal
 
-__all__ = 'Infinite', 'combine_batches', 'combine_to_arrays', 'combine_pad'
+__all__ = [
+    'Infinite',
+    'Threads', 'Loky', 'Iterator',
+    'combine_batches', 'combine_to_arrays', 'combine_pad',
+]
 
 
 def combine_batches(inputs):
@@ -38,6 +44,10 @@ def combine_pad(inputs, padding_values: AxesParams = 0, ratio: AxesParams = 0.5)
     return tuple(pad_batch_equal(x, values, ratio) for x, values in zip(batches, padding_values))
 
 
+class Transform:
+    component = None
+
+
 class Infinite:
     """
     Combine ``source`` and ``transformers`` into a batch iterator that yields batches of size ``batch_size``.
@@ -53,45 +63,33 @@ class Infinite:
     batches_per_epoch: int
         the number of batches to yield each epoch.
     buffer_size: int
-        the number of objects to keep buffered in each pipeline element. Default is 3.
+        the number of objects to keep buffered in each pipeline element. Default is 1.
     combiner: Callable
         combines chunks of single batches in multiple batches, e.g. combiner([(x, y), (x, y)]) -> ([x, x], [y, y]).
         Default is `combine_to_arrays`.
+    kwargs:
+        additional keyword arguments passed to the ``combiner``.
 
     References
     ----------
     See the :doc:`tutorials/batch_iter` tutorial for more details.
     """
 
-    def __init__(self, source: Iterable, *transformers: Callable,
+    def __init__(self, source: Iterable, *transformers: Union[Callable, Transform],
                  batch_size: Union[int, Callable], batches_per_epoch: int,
-                 buffer_size: int = 3, combiner: Callable = combine_to_arrays):
-        import pdp
-        from pdp.interface import ComponentDescription
-
+                 buffer_size: int = 1, combiner: Callable = combine_to_arrays, **kwargs):
         if batches_per_epoch <= 0:
             raise ValueError(f'Expected a positive amount of batches per epoch, but got {batches_per_epoch}')
 
-        def wrap(o):
-            if not isinstance(o, ComponentDescription):
-                o = pdp.One2One(o, buffer_size=buffer_size)
-            return o
-
-        if not isinstance(source, ComponentDescription):
-            source = pdp.Source(source, buffer_size=buffer_size)
-
         self.batches_per_epoch = batches_per_epoch
-        self.pipeline = pdp.Pipeline(
-            source, *map(wrap, transformers),
-            self._make_combiner(batch_size),
-            pdp.One2One(combiner, buffer_size=buffer_size)
+        self.pipeline = wrap_pipeline(
+            source, *transformers,
+            self._make_stacker(batch_size), Threads(partial(combiner, **kwargs)),
+            buffer_size=buffer_size
         )
 
     @staticmethod
-    def _make_combiner(batch_size):
-        from pdp.interface import ComponentDescription
-        from pdp.base import start_transformer
-
+    def _make_stacker(batch_size):
         if callable(batch_size):
             should_add = batch_size
 
@@ -105,20 +103,20 @@ class Infinite:
         else:
             raise TypeError(f'`batch_size` must be either int or callable, not {type(batch_size)}.')
 
-        def start_combiner(q_in, q_out, stop_event):
+        def stacker(iterable):
             chunk = []
 
-            def process_data(item):
-                nonlocal chunk
-                if not chunk or should_add(chunk, item):
-                    chunk.append(item)
+            for value in iterable:
+                if not chunk or should_add(chunk, value):
+                    chunk.append(value)
                 else:
-                    q_out.put(chunk)
-                    chunk = [item]
+                    yield chunk
+                    chunk = [value]
 
-            start_transformer(process_data, q_in, q_out, stop_event=stop_event, n_workers=1)
+            if chunk:
+                yield chunk
 
-        return ComponentDescription(start_combiner, 1, 1)
+        return Iterator(stacker)
 
     def close(self):
         """Stop all background processes."""
@@ -138,3 +136,122 @@ class Infinite:
 
     def __del__(self):
         self.close()
+
+
+def wrap_pipeline(source, *transformers, buffer_size=1):
+    from ._pdp import Pipeline, ComponentDescription, Source, One2One
+
+    def wrap(o):
+        if isinstance(o, Transform):
+            return o.component
+        if not isinstance(o, ComponentDescription):
+            return One2One(o, buffer_size=buffer_size)
+        return o
+
+    if not isinstance(source, ComponentDescription):
+        source = Source(source, buffer_size=buffer_size)
+
+    return Pipeline(source, *map(wrap, transformers))
+
+
+class Iterator(Transform):
+    """
+    Apply ``transform`` to the iterator of values that flow through the batch iterator.
+
+    Parameters
+    ----------
+    transform: Callable(Iterable) -> Iterable
+        a function that takes an iterable and yields transformed values.
+    n_workers: int
+        the number of threads to which ``transform`` will be moved.
+    buffer_size: int
+        the number of objects to keep buffered.
+    args:
+        additional positional arguments passed to ``transform``.
+    kwargs:
+        additional keyword arguments passed to ``transform``.
+
+    References
+    ----------
+    See the :doc:`tutorials/batch_iter` tutorial for more details.
+    """
+
+    def __init__(self, transform: Callable, *args, n_workers: int = 1, buffer_size: int = 1, **kwargs):
+        from ._pdp import ComponentDescription, start_iter
+
+        assert n_workers > 0
+        assert buffer_size > 0
+
+        self.component = ComponentDescription(partial(
+            start_iter, transform=transform, n_workers=n_workers, args=args, kwargs=kwargs
+        ), n_workers, buffer_size)
+
+
+class Threads(Iterator):
+    """
+    Apply ``func`` concurrently to each object in the batch iterator by moving it to ``n_workers`` threads.
+
+    Parameters
+    ----------
+    transform: Callable(Iterable) -> Iterable
+        a function that takes an iterable and yields transformed values.
+    n_workers: int
+        the number of threads to which ``transform`` will be moved.
+    buffer_size: int
+        the number of objects to keep buffered.
+    args:
+        additional positional arguments passed to ``transform``.
+    kwargs:
+        additional keyword arguments passed to ``transform``.
+
+    References
+    ----------
+    See the :doc:`tutorials/batch_iter` tutorial for more details.
+    """
+
+    def __init__(self, func: Callable, *args, n_workers: int = 1, buffer_size: int = 1, **kwargs):
+        def transform_map(iterable):
+            for value in iterable:
+                yield func(value, *args, **kwargs)
+
+        super().__init__(transform_map, n_workers=n_workers, buffer_size=buffer_size)
+
+
+class Loky(Transform):
+    """
+    Apply ``func`` concurrently to each object in the batch iterator by moving it to ``n_workers`` processes.
+
+    Parameters
+    ----------
+    transform: Callable(Iterable) -> Iterable
+        a function that takes an iterable and yields transformed values.
+    n_workers: int
+        the number of threads to which ``transform`` will be moved.
+    buffer_size: int
+        the number of objects to keep buffered.
+    args:
+        additional positional arguments passed to ``transform``.
+    kwargs:
+        additional keyword arguments passed to ``transform``.
+
+    Notes
+    -----
+    Process-based parallelism is implemented with the ``loky`` backend.
+
+    References
+    ----------
+    See the :doc:`tutorials/batch_iter` tutorial for more details.
+    """
+
+    def __init__(self, func: Callable, *args, n_workers: int = 1, buffer_size: int = 1, **kwargs):
+        from ._pdp import start_loky, ComponentDescription
+
+        if n_workers < 0:
+            n_workers = max(1, multiprocessing.cpu_count() + n_workers + 1)
+
+        assert n_workers > 0
+        assert buffer_size > 0
+
+        self.component = ComponentDescription(partial(
+            start_loky, transform=func, n_workers=n_workers, args=args, kwargs=kwargs
+        ), n_workers, buffer_size)

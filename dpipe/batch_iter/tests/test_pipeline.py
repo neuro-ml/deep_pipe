@@ -1,8 +1,75 @@
+import time
 from itertools import repeat
 
 import pytest
+from pdp import StopEvent
 
-from dpipe.batch_iter import Infinite, combine_to_arrays
+from dpipe.batch_iter import Infinite, combine_to_arrays, Threads, Loky
+from dpipe.batch_iter.pipeline import wrap_pipeline
+
+
+def test_wrapper():
+    size = 100
+    for i, item in enumerate(wrap_pipeline(range(size), lambda x: x ** 2)):
+        assert item == i ** 2
+
+    assert i == size - 1
+
+
+def test_parallel():
+    size = 10
+    sleep = 1
+
+    start = time.time()
+    for item in wrap_pipeline(range(size), lambda x: time.sleep(sleep)):
+        pass
+    delta = time.time() - start
+
+    start = time.time()
+    for item in wrap_pipeline(range(size), Threads(lambda x: time.sleep(sleep), n_workers=2)):
+        pass
+    faster = time.time() - start
+    assert abs(faster - delta / 2) < sleep
+
+    start = time.time()
+    for item in wrap_pipeline(range(size), Loky(lambda x: time.sleep(sleep), n_workers=2)):
+        pass
+    faster = time.time() - start
+    assert abs(faster - delta / 2) < sleep
+
+
+def test_loky():
+    size = 100
+    for i, item in enumerate(wrap_pipeline(range(size), Loky(lambda x: x ** 2, n_workers=2))):
+        assert item == i ** 2
+    assert i == size - 1
+    # at this point the first worker is killed
+    # start a new one
+    for i, item in enumerate(wrap_pipeline(range(size), Loky(lambda x: x ** 2, n_workers=2))):
+        assert item == i ** 2
+    assert i == size - 1
+
+    # several workers
+    for i, item in enumerate(wrap_pipeline(
+            range(size),
+            Loky(lambda x: x ** 2, n_workers=2),
+            Loky(lambda x: x ** 2, n_workers=2))):
+        assert item == i ** 4
+    assert i == size - 1
+
+
+def test_loky_exceptions():
+    def raiser(x):
+        raise ZeroDivisionError
+
+    xs = range(10)
+    # source
+    with pytest.raises(StopEvent):
+        list(wrap_pipeline(map(raiser, xs)))
+
+    for mapper in [Threads, Loky]:
+        with pytest.raises(StopEvent):
+            list(wrap_pipeline(xs, mapper(raiser, n_workers=2)))
 
 
 def pipeline(source, iters=1, transformers=(), batch_size=1, combiner=combine_to_arrays):
