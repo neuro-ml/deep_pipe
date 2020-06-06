@@ -1,4 +1,5 @@
 from typing import Callable, Sequence, Union
+from warnings import warn
 
 import torch
 import torch.nn as nn
@@ -7,6 +8,7 @@ import numpy as np
 
 from dpipe.itertools import zip_equal, lmap
 from dpipe.im.utils import identity
+from dpipe.torch.utils import order_to_mode
 from .structure import ConsistentSequential
 
 
@@ -121,7 +123,21 @@ class FPN(nn.Module):
         return results
 
 
-def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, mode: str = 'nearest'):
+def interpolate_merge(merge: Callable, order: int = 0):
+    return lambda left, down: merge(*interpolate_to_left(left, down, order))
+
+
+def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0, *, mode: str = None):
+    if mode is not None:
+        msg = 'Argument `mode` is deprecated. Use `order` instead.'
+        warn(msg, UserWarning)
+        warn(msg, DeprecationWarning)
+        order = mode
+        mode = None
+
+    if isinstance(order, int):
+        order = order_to_mode(order, len(down.shape) - 2)
+
     if np.not_equal(left.shape, down.shape).any():
-        down = functional.interpolate(down, size=left.shape[2:], mode=mode, align_corners=False)
+        down = functional.interpolate(down, size=left.shape[2:], mode=order, align_corners=False)
     return left, down

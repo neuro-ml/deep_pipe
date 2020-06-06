@@ -102,6 +102,15 @@ def lmap(func: Callable, *iterables: Iterable) -> list:
     return list(map(func, *iterables))
 
 
+def pmap(func: Callable, iterable: Iterable, *args, **kwargs) -> Iterable:
+    """
+    Partial map.
+    Maps ``func`` over ``iterable`` using ``args`` and ``kwargs`` as additional arguments.
+    """
+    for value in iterable:
+        yield func(value, *args, **kwargs)
+
+
 def dmap(func: Callable, dictionary: dict, *args, **kwargs):
     """
     Transform the ``dictionary`` by mapping ``func`` over its values.

@@ -14,6 +14,7 @@ __all__ = [
     'get_device', 'to_device', 'is_on_cuda', 'to_cuda',
     'to_var', 'sequence_to_var', 'to_np', 'sequence_to_np',
     'set_params', 'set_lr',
+    'order_to_mode',
 ]
 
 Device = Union[torch.device, nn.Module, torch.Tensor, str]
@@ -184,3 +185,27 @@ def set_params(optimizer: Optimizer, **params) -> Optimizer:
             raise ValueError(f"The optimizer doesn't have a parameter named `{name}`.")
 
     return optimizer
+
+
+def order_to_mode(order: int, dim: int):
+    """
+    Converts the order of interpolation to a "mode" string.
+
+    Examples
+    --------
+    >>> order_to_mode(1, 3)
+    'trilinear'
+    """
+    if order == 0:
+        return 'nearest'
+
+    mapping = {
+        (1, 1): 'linear',
+        (1, 2): 'bilinear',
+        (1, 3): 'trilinear',
+        (3, 2): 'bicubic',
+    }
+    if (order, dim) not in mapping:
+        raise ValueError(f'Invalid order of interpolation passed ({order}) for dim={dim}.')
+
+    return mapping[order, dim]
