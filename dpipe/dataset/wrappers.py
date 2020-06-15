@@ -13,7 +13,7 @@ import numpy as np
 
 from dpipe.checks import join
 from dpipe.io import save_numpy, PathLike, load_or_create, load_numpy
-from dpipe.itertools import zdict
+from dpipe.itertools import zdict, collect
 from dpipe.im.preprocessing import normalize
 from .base import Dataset
 
@@ -31,6 +31,7 @@ class Proxy:
         return list(set(super().__dir__()) | set(dir(self._shadowed)))
 
 
+@collect
 def _get_public_methods(instance):
     for attr in dir(instance):
         if not attr.startswith('_') and isinstance(getattr(instance, attr), (MethodType, FunctionType)):
@@ -131,7 +132,7 @@ def set_attributes(instance, **attributes):
     return proxy(instance)
 
 
-def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = ()) -> Dataset:
+def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = None) -> Dataset:
     """
     Change the ``dataset``'s ids according to the ``change_id`` function and adapt the provided ``methods``
     to work with the new ids.
@@ -145,6 +146,9 @@ def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = (
     methods: Iterable[str]
         the list of methods to be adapted. Each method takes a single argument - the identifier.
     """
+    if methods is None:
+        methods = _get_public_methods(dataset)
+
     assert 'ids' not in methods
     ids = tuple(map(change_id, dataset.ids))
     if len(set(ids)) != len(ids):
@@ -214,6 +218,9 @@ def merge(*datasets: Dataset, methods: Sequence[str] = None, attributes: Sequenc
 
     def decorator(method_name):
         def wrapper(identifier, *args, **kwargs):
+            if identifier not in id_to_dataset:
+                raise KeyError(f"This dataset doesn't contain the id {identifier}")
+
             return getattr(id_to_dataset[identifier], method_name)(identifier, *args, **kwargs)
 
         return wrapper

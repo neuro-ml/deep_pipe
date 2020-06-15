@@ -82,8 +82,8 @@ def load(path: PathLike, **kwargs):
     if name.endswith('.npy'):
         return load_numpy(path, **kwargs)
     if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
-        import nibabel as nib
-        return nib.load(path, **kwargs).get_data()
+        import nibabel
+        return nibabel.load(str(path), **kwargs).get_fdata()
     if name.endswith(('.png', '.jpg', '.tif', '.bmp')):
         from imageio import imread
         return imread(path, **kwargs)
@@ -117,8 +117,8 @@ def save(value, path: PathLike, **kwargs):
     if name.endswith('.npy'):
         save_numpy(value, path, **kwargs)
     elif name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
-        import nibabel as nib
-        nib.save(value, path, **kwargs)
+        import nibabel
+        nibabel.save(value, str(path), **kwargs)
     elif name.endswith(('.png', '.jpg', '.tif', '.bmp')):
         from imageio import imsave
         imsave(path, value, **kwargs)
