@@ -8,6 +8,7 @@ from dpipe.im.grid import divide, combine
 from dpipe.itertools import extract
 from dpipe.im.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
 from dpipe.im.shape_utils import prepend_dims, extract_dims
+from dpipe.itertools import pmap
 
 __all__ = 'add_extract_dims', 'divisible_shape', 'patches_grid'
 
@@ -95,14 +96,14 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
 
     def decorator(predict):
         @wraps(predict)
-        def wrapper(x, **kwargs):
+        def wrapper(x, *args, **kwargs):
             if valid:
                 shape = np.array(x.shape)[list(axes)]
                 padded_shape = np.maximum(shape, patch_size)
                 new_shape = padded_shape + (stride - padded_shape + patch_size) % stride
                 x = pad_to_shape(x, new_shape, axes, padding_values, ratio)
 
-            patches = map(partial(predict, **kwargs), divide(x, patch_size, stride, axes))
+            patches = pmap(predict, divide(x, patch_size, stride, axes), *args, **kwargs)
             prediction = combine(patches, extract(x.shape, axes), stride, axes)
 
             if valid:
