@@ -13,6 +13,7 @@ import re
 import os
 from pathlib import Path
 from typing import Union, Callable
+from gzip import GzipFile
 
 import numpy as np
 import pandas as pd
@@ -79,7 +80,9 @@ def load(path: PathLike, **kwargs):
     """
     name = Path(path).name
 
-    if name.endswith('.npy'):
+    if name.endswith(('.npy', '.npy.gz')):
+        if name.endswith('.gz'):
+            kwargs['decompress'] = True
         return load_numpy(path, **kwargs)
     if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel
@@ -109,12 +112,12 @@ def save(value, path: PathLike, **kwargs):
     ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, tif, png, jpg, bmp, hdr, img,
+        npy, npy.gz, tif, png, jpg, bmp, hdr, img,
         nii, nii.gz, json, mhd, csv, txt, pickle, pkl
     """
     name = Path(path).name
 
-    if name.endswith('.npy'):
+    if name.endswith(('.npy', '.npy.gz')):
         save_numpy(value, path, **kwargs)
     elif name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel
@@ -155,13 +158,21 @@ def save_json(value, path: PathLike, *, indent: int = None):
         json.dump(value, f, indent=indent, cls=NumpyEncoder)
 
 
-def save_numpy(value, path: PathLike, *, allow_pickle: bool = True, fix_imports: bool = True):
+def save_numpy(value, path: PathLike, *, allow_pickle: bool = True, fix_imports: bool = True, compression: int = None):
     """A wrapper around ``np.save`` that matches the interface ``save(what, where)``."""
+    if compression is not None:
+        with GzipFile(path, 'wb', compresslevel=compression) as file:
+            return save_numpy(value, file, allow_pickle=allow_pickle, fix_imports=fix_imports)
+
     np.save(path, value, allow_pickle=allow_pickle, fix_imports=fix_imports)
 
 
-def load_numpy(path: PathLike, *, allow_pickle: bool = True, fix_imports: bool = True):
+def load_numpy(path: PathLike, *, allow_pickle: bool = True, fix_imports: bool = True, decompress: bool = False):
     """A wrapper around ``np.load`` with ``allow_pickle`` set to True by default."""
+    if decompress:
+        with GzipFile(path, 'rb') as file:
+            return load_numpy(file, allow_pickle=allow_pickle, fix_imports=fix_imports)
+
     return np.load(path, allow_pickle=allow_pickle, fix_imports=fix_imports)
 
 
