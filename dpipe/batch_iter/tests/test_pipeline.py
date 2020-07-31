@@ -58,6 +58,16 @@ def test_loky():
     assert i == size - 1
 
 
+def test_premature_stop():
+    with wrap_pipeline(range(10), Threads(lambda x: x ** 2, n_workers=2)) as p:
+        for item in p:
+            break
+
+    with wrap_pipeline(range(10), Loky(lambda x: x ** 2, n_workers=2)) as p:
+        for item in p:
+            break
+
+
 def test_loky_exceptions():
     def raiser(x):
         raise ZeroDivisionError

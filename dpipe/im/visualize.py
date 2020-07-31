@@ -1,9 +1,10 @@
 from pathlib import Path
-from typing import Union, Callable
+from typing import Union, Callable, Sequence
 
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
+from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
 
 from ..io import PathLike
@@ -19,23 +20,34 @@ def _get_rows_cols(max_cols, data):
 
 def _slice_base(data: [np.ndarray], axis: int = -1, scale: int = 5, max_columns: int = None, colorbar: bool = False,
                 show_axes: bool = False, cmap: Union[Colormap, str] = 'gray', vlim: AxesParams = None,
-                callback: Callable = None, sliders: dict = None):
+                callback: Callable = None, sliders: dict = None, titles: list = None):
     from ipywidgets import interact, IntSlider
     check_shape_along_axis(*data, axis=axis)
     vlim = np.broadcast_to(vlim, [len(data), 2]).tolist()
     rows, columns = _get_rows_cols(max_columns, data)
     sliders = sliders or {}
+    if titles is None:
+        titles = [None] * len(data)
+
+    assert len(titles) == len(data)
     if 'idx' in sliders:
         raise ValueError(f'Overriding "idx" is not allowed.')
 
     def update(idx, **kwargs):
         fig, axes = plt.subplots(rows, columns, figsize=(scale * columns, scale * rows))
-        for ax, x, (vmin, vmax) in zip(np.array(axes).flatten(), data, vlim):
+        axes = np.array(axes).flatten()
+        ax: Axes
+        # hide unneeded axes
+        for ax in axes[len(data):]:
+            ax.set_visible(False)
+        for ax, x, (vmin, vmax), title in zip(axes, data, vlim, titles):
             im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vmin, vmax=vmax)
             if colorbar:
                 fig.colorbar(im, ax=ax, orientation='horizontal')
             if not show_axes:
                 ax.set_axis_off()
+            if title is not None:
+                ax.set_title(title)
 
         if callback is not None:
             callback(axes, idx=idx, **kwargs)
@@ -47,7 +59,8 @@ def _slice_base(data: [np.ndarray], axis: int = -1, scale: int = 5, max_columns:
 
 
 def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int = None, colorbar: bool = False,
-            show_axes: bool = False, cmap: Union[Colormap, str] = 'gray', vlim: AxesParams = None):
+            show_axes: bool = False, cmap: Union[Colormap, str] = 'gray', vlim: AxesParams = None,
+            titles: Sequence[Union[str, None]] = None):
     """
     Creates an interactive plot, simultaneously showing slices along a given ``axis`` for all the passed images.
 
@@ -68,7 +81,7 @@ def slice3d(*data: np.ndarray, axis: int = -1, scale: int = 5, max_columns: int 
         used to normalize luminance data. If None - the limits are determined automatically.
         Must be broadcastable to (len(data), 2). See `matplotlib.pyplot.imshow` (vmin and vmax) for details.
     """
-    _slice_base(data, axis, scale, max_columns, colorbar, show_axes, cmap, vlim)
+    _slice_base(data, axis, scale, max_columns, colorbar, show_axes, cmap, vlim, titles=titles)
 
 
 def animate3d(*data: np.ndarray, output_path: PathLike, axis: int = -1, scale: int = 5, max_columns: int = None,

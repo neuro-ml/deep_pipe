@@ -67,13 +67,13 @@ def start_loky(q_in, q_out, stop_event: Event, *, transform: Callable, n_workers
             q_out.put(SourceExhausted())
 
         except StopEvent:
-            wait = False
+            pass
         except BaseException:
             wait = False
             stop_event.set()
             raise
 
         finally:
-            executor.shutdown(wait=wait, kill_workers=not wait)
+            executor.shutdown(wait=wait)
 
     Thread(target=target).start()
