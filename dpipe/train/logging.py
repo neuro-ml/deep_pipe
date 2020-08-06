@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 from typing import Sequence, Union, Dict
 
@@ -94,7 +95,20 @@ class TBLogger(Logger):
             self.value('train/loss', np.mean(train_losses, axis=0), step)
 
     def value(self, name, value, step):
-        log_scalar_or_vector(self.logger, name, value, step)
+        dirname, base = os.path.split(name)
+
+        count = base.count('__')
+        if count > 1:
+            raise ValueError(f'The tag name must contain at most one magic delimiter (__): {base}.')
+        if count:
+            base, kind = base.split('__')
+        else:
+            kind = 'scalar'
+
+        name = os.path.join(dirname, base)
+
+        log = getattr(self.logger, f'log_{kind}')
+        log(name, value, step)
 
     def __getattr__(self, item):
         return getattr(self.logger, item)
