@@ -97,7 +97,10 @@ def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_pa
         if exist_ok and os.path.exists(output):
             continue
 
-        save(func(identifier), output)
+        try:
+            save(func(identifier), output)
+        except BaseException as e:
+            raise RuntimeError(f'An exception occurred while processing {identifier}.') from e
 
 
 def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save=save_numpy):
