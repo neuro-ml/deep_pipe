@@ -120,12 +120,13 @@ def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, re
         save_json(metric(targets, predictions), os.path.join(results_path, name + '.json'), indent=0)
 
 
-def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False):
+def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False,
+                                loader: Callable = load):
     assert len(metrics) > 0, 'No metric provided'
     os.makedirs(results_path, exist_ok=exist_ok)
 
     results = defaultdict(dict)
-    for identifier, prediction in tqdm(load_from_folder(predictions_path)):
+    for identifier, prediction in tqdm(load_from_folder(predictions_path, loader=loader)):
         target = load_y_true(identifier)
 
         for metric_name, metric in metrics.items():
