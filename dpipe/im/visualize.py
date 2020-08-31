@@ -138,3 +138,19 @@ def animate3d(*data: np.ndarray, output_path: PathLike, axis: int = -1, scale: i
     output_path.parent.mkdir(parents=True, exist_ok=True)
     FuncAnimation(fig, func=update, frames=data[0].shape[axis], blit=True, repeat=repeat).save(
         str(output_path), writer=writer, fps=fps)
+
+
+def default_clip(image, body_organ='Brain'):
+    """Clips image (CT) pixels/voxels to ranges, typically used for different body organs.
+
+    Parameters
+    ---
+    image - numpy.array,
+
+    body_organ - str,
+        possible values: `Brain`, `Lungs`
+    """
+    if body_organ == 'Brain':
+        return np.clip(image, -20, 90)
+    elif body_organ == 'Lungs':
+        return np.clip(image, -1250, 250)
