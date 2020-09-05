@@ -5,7 +5,7 @@ import torch
 from torch.nn import Module
 from torch.optim import Optimizer
 
-from ..im.utils import identity
+from ..im.utils import identity, dmap
 from .utils import *
 
 __all__ = 'optimizer_step', 'train_step', 'inference_step'
@@ -36,7 +36,7 @@ def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, **params) -> torch.
 
 
 def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, optimizer: Optimizer,
-               n_targets: int = 1, **optimizer_params) -> np.ndarray:
+               n_targets: int = 1, loss_key: str = None, **optimizer_params) -> np.ndarray:
     """
     Performs a forward-backward pass, and make a gradient step, according to the given ``inputs``.
 
@@ -48,10 +48,14 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
     architecture
         the neural network architecture.
     criterion
-        the loss function.
+        the loss function. Returns either a scalar or a dictionary of scalars.
+        In the latter case ``loss_key`` must be provided.
     optimizer
     n_targets
         how many values from ``inputs`` to be considered as targets.
+    loss_key
+        in case ``criterion`` returns a dictionary of scalars,
+        indicates which key should be used for gradient computation.
     optimizer_params
         additional parameters that will override the optimizer's current parameters (e.g. lr).
 
@@ -75,6 +79,10 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
     inputs, targets = inputs[:n_inputs], inputs[n_inputs:]
 
     loss = criterion(architecture(*inputs), *targets)
+
+    if loss_key is not None:
+        optimizer_step(optimizer, loss[loss_key], **optimizer_params)
+        return dmap(to_np, loss)
 
     optimizer_step(optimizer, loss, **optimizer_params)
     return to_np(loss)
