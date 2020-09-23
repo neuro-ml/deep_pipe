@@ -118,6 +118,9 @@ def save(value, path: PathLike, **kwargs):
     name = Path(path).name
 
     if name.endswith(('.npy', '.npy.gz')):
+        if name.endswith('.npy.gz') and 'compression' not in kwargs:
+            raise ValueError('If saving to gz need to specify a compression.')
+
         save_numpy(value, path, **kwargs)
     elif name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel
@@ -158,10 +161,11 @@ def save_json(value, path: PathLike, *, indent: int = None):
         json.dump(value, f, indent=indent, cls=NumpyEncoder)
 
 
-def save_numpy(value, path: PathLike, *, allow_pickle: bool = True, fix_imports: bool = True, compression: int = None):
+def save_numpy(value, path: PathLike, *, allow_pickle: bool = True, fix_imports: bool = True, compression: int = None,
+               timestamp: int = None):
     """A wrapper around ``np.save`` that matches the interface ``save(what, where)``."""
     if compression is not None:
-        with GzipFile(path, 'wb', compresslevel=compression) as file:
+        with GzipFile(path, 'wb', compresslevel=compression, mtime=timestamp) as file:
             return save_numpy(value, file, allow_pickle=allow_pickle, fix_imports=fix_imports)
 
     np.save(path, value, allow_pickle=allow_pickle, fix_imports=fix_imports)
