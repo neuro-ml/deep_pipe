@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+from functools import partial
 from typing import Sequence, Union, Dict
 
 import numpy as np
@@ -107,7 +108,10 @@ class TBLogger(Logger):
 
         name = os.path.join(dirname, base)
 
-        log = getattr(self.logger, f'log_{kind}')
+        if kind == 'vector':
+            log = partial(log_vector, self.logger)
+        else:
+            log = getattr(self.logger, f'log_{kind}')
         log(name, value, step)
 
     def __getattr__(self, item):
