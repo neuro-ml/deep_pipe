@@ -85,7 +85,7 @@ def load_from_folder(path: str, loader=load):
 
 
 def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_path: str,
-                    exist_ok: bool = False, save: Callable = save_numpy):
+                    exist_ok: bool = False, save: Callable = save_numpy, ext: str = '.npy'):
     """
     Apply ``func`` to each id from ``ids`` and save each output to ``output_path`` using ``save``.
     If ``exist_ok`` is True the existing files will be ignored, otherwise an exception is raised.
@@ -93,7 +93,7 @@ def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_pa
     os.makedirs(output_path, exist_ok=exist_ok)
 
     for identifier in ids:
-        output = os.path.join(output_path, f'{identifier}.npy')
+        output = os.path.join(output_path, f'{identifier}{ext}')
         if exist_ok and os.path.exists(output):
             continue
 
@@ -103,8 +103,8 @@ def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_pa
             raise RuntimeError(f'An exception occurred while processing {identifier}.') from e
 
 
-def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save=save_numpy):
-    map_ids_to_disk(lambda identifier: predict_fn(load_x(identifier)), tqdm(ids), output_path, exist_ok, save)
+def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save=save_numpy, ext='.npy'):
+    map_ids_to_disk(lambda identifier: predict_fn(load_x(identifier)), tqdm(ids), output_path, exist_ok, save, ext)
 
 
 def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False):
