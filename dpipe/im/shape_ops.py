@@ -154,7 +154,7 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
     return pad(x, padding, axes, padding_values=padding_values)
 
 
-def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axes: AxesLike = None,
+def pad_to_divisible(x: np.ndarray, divisor: AxesLike, remainder: AxesLike = 0, axes: AxesLike = None,
                      padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5):
     """
     Pads ``x`` to be divisible by ``divisor`` along the ``axes``.
@@ -164,6 +164,8 @@ def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axes: AxesLike = None,
     x
     divisor
         a value an incoming array should be divisible by.
+    remainder
+        ``x`` will be padded such that its shape gives the remainder ``remainder`` when divided by ``divisor``.
     axes
         axes along which the array will be padded. If None - the last ``len(divisor)`` axes are used.
     padding_values
@@ -175,9 +177,10 @@ def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axes: AxesLike = None,
     ----------
     `pad_to_shape`
     """
-    axes, divisor, ratio = broadcast_to_axes(axes, divisor, ratio)
-    shape = np.array(x.shape)[list(axes)]
-    return pad_to_shape(x, shape + (divisor - shape) % divisor, axes, padding_values, ratio)
+    axes, divisor, remainder, ratio = broadcast_to_axes(axes, divisor, remainder, ratio)
+    assert np.all(remainder >= 0)
+    shape = np.maximum(np.array(x.shape)[list(axes)], remainder)
+    return pad_to_shape(x, shape + (remainder - shape) % divisor, axes, padding_values, ratio)
 
 
 def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
