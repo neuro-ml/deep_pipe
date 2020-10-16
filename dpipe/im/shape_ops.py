@@ -154,8 +154,9 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
     return pad(x, padding, axes, padding_values=padding_values)
 
 
-def pad_to_divisible(x: np.ndarray, divisor: AxesLike, remainder: AxesLike = 0, axes: AxesLike = None,
-                     padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5):
+def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axes: AxesLike = None,
+                     padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5, 
+                     remainder: AxesLike = 0):
     """
     Pads ``x`` to be divisible by ``divisor`` along the ``axes``.
 
