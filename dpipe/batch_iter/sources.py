@@ -2,7 +2,10 @@ from typing import Sequence, Callable, Union
 
 import numpy as np
 
+from bisect import bisect
+
 from dpipe.itertools import pam, squeeze_first
+
 
 __all__ = 'sample', 'load_by_random_id'
 
