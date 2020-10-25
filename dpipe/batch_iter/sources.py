@@ -21,17 +21,23 @@ def sample(sequence: Sequence, weights: Sequence[float] = None, random_state: Un
     random_state
         if not None - used to set the random seed for reproducibility reasons.
     """
-    if weights is not None:
-        weights = np.asarray(weights)
-        assert (weights >= 0).all() and (weights > 0).any(), weights
-        weights = weights / weights.sum()
-
+    assert(len(sequence) == len(weights)), 'len(sequence) is not equal to len(weights)'
+    
     if not isinstance(random_state, np.random.RandomState):
         random_state = np.random.RandomState(random_state)
-
+        
+    if weights is None:
+        get_index = lambda: int(random_state.rand()*(len(sequence)))
+    else:
+        weights = np.asarray(weights)
+        assert (weights >= 0).all() and (weights > 0).any(), weights
+        weights /= weights.sum()
+        weights_sort_args  = np.argsort(weights)
+        weights_accum_sort = np.add.accumulate(weights[weights_sort_args])
+        get_index = lambda: weights_sort_args[bisect(weights_accum_sort,random_state.rand())]        
+        
     while True:
-        index = random_state.choice(len(sequence), p=weights)
-        yield sequence[index]
+        yield sequence[get_index()]
 
 
 def load_by_random_id(*loaders: Callable, ids: Sequence, weights: Sequence[float] = None,
