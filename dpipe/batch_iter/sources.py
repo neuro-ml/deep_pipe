@@ -29,7 +29,7 @@ def sample(sequence: Sequence, weights: Sequence[float] = None, random_state: Un
         # works faster than random_state.randint(0, len(sequence))
         L = len(sequence)
         while True:
-            yield sequence[int(random_state.rand() * L)]
+            yield sequence[int(random_state.random_sample() * L)]
     else:
         assert(len(sequence) == len(weights)), 'len(sequence) is not equal to len(weights)'
         weights = np.asarray(weights)
@@ -37,7 +37,7 @@ def sample(sequence: Sequence, weights: Sequence[float] = None, random_state: Un
         weights = weights / weights.sum()
         weights_accum = np.add.accumulate(weights)
         while True:
-            yield sequence[bisect(weights_accum, random_state.rand())]
+            yield sequence[bisect(weights_accum, random_state.random_sample())]
 
 def load_by_random_id(*loaders: Callable, ids: Sequence, weights: Sequence[float] = None,
                       random_state: Union[np.random.RandomState, int] = None):
