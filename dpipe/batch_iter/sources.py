@@ -6,9 +6,7 @@ from bisect import bisect
 
 from dpipe.itertools import pam, squeeze_first
 
-
 __all__ = 'sample', 'load_by_random_id'
-
 
 def sample(sequence: Sequence, weights: Sequence[float] = None, random_state: Union[np.random.RandomState, int] = None):
     """
@@ -29,19 +27,17 @@ def sample(sequence: Sequence, weights: Sequence[float] = None, random_state: Un
         
     if weights is None:
         # works faster than random_state.randint(0, len(sequence))
-        get_index = lambda: int(random_state.rand()*(len(sequence)))
+        L = len(sequence)
+        while True:
+            yield sequence[int(random_state.rand() * L)]
     else:
         assert(len(sequence) == len(weights)), 'len(sequence) is not equal to len(weights)'
         weights = np.asarray(weights)
         assert (weights >= 0).all() and (weights > 0).any(), weights
         weights = weights / weights.sum()
-        weights_sort_args  = np.argsort(weights)
-        weights_accum_sort = np.add.accumulate(weights[weights_sort_args])
-        get_index = lambda: weights_sort_args[bisect(weights_accum_sort,random_state.rand())]        
-        
-    while True:
-        yield sequence[get_index()]
-
+        weights_accum = np.add.accumulate(weights)
+        while True:
+            yield sequence[bisect(weights_accum, random_state.rand())]
 
 def load_by_random_id(*loaders: Callable, ids: Sequence, weights: Sequence[float] = None,
                       random_state: Union[np.random.RandomState, int] = None):
