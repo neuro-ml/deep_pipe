@@ -11,7 +11,7 @@ import time
 def test_sample():
     # multidimensional arrays support
     sequence = [[0], [1]]
-    n = 10000
+    n = 100_000
 
     def get_sum(weights=None):
         return sum(x[0] for x in islice(sample(sequence, weights), n)) / n
@@ -27,7 +27,7 @@ def test_sample_n_numpy():
     
     ids  = ['0', '1', '2', '3']
     prob = [0.15, 0.35, 0.15, 0.35]
-    N    = 10000
+    N    = 100_000
     
     def sample_bynumpy(sequence, weights):
         while True:
