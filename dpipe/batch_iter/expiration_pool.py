@@ -35,23 +35,26 @@ def expiration_pool(iterable: Iterable, pool_size: int, repetitions: int):
 
     assert pool_size > 0
     assert repetitions > 0
-
+    iterable = enumerate(iterable)
+    
     def sample_value():
         # TODO: use randomdict?
-        idx = np.random.randint(0, len(freq))
-        val = list(freq)[idx]
-        freq[val] += 1
-        if freq[val] == repetitions:
-            del freq[val]
-        return val
+        idx = np.random.choice(list(value_frequency))
+        value, frequency = value_frequency[idx]
+        frequency += 1
+        if frequency == repetitions:
+            del value_frequency[idx]
+        else:
+            value_frequency[idx] = [value, frequency]
+        return value
 
-    freq = {}
-    for value in iterable:
-        freq[value] = 0
+    value_frequency = {} # i -> [value, frequency]
+    for idx, value in iterable:
+        value_frequency[idx] = [value, 0]
         yield sample_value()
 
-        while len(freq) >= pool_size:
+        while len(value_frequency) >= pool_size:
             yield sample_value()
 
-    while len(freq):
+    while len(value_frequency):
         yield sample_value()
