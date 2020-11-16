@@ -76,7 +76,7 @@ def load(path: PathLike, **kwargs):
 
     The following extensions are supported:
         npy, tif, png, jpg, bmp, hdr, img,
-        nii, nii.gz, json, mhd, csv, txt, pickle, pkl
+        dcm, nii, nii.gz, json, mhd, csv, txt, pickle, pkl
     """
     name = Path(path).name
 
@@ -87,6 +87,9 @@ def load(path: PathLike, **kwargs):
     if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel
         return nibabel.load(str(path), **kwargs).get_fdata()
+    if name.endswith('.dcm'):
+        import pydicom
+        return pydicom.dcmread(str(path), **kwargs)
     if name.endswith(('.png', '.jpg', '.tif', '.bmp')):
         from imageio import imread
         return imread(path, **kwargs)
@@ -125,6 +128,9 @@ def save(value, path: PathLike, **kwargs):
     elif name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel
         nibabel.save(value, str(path), **kwargs)
+    elif name.endswith('.dcm'):
+        import pydicom
+        pydicom.dcmwrite(str(path), value, **kwargs)
     elif name.endswith(('.png', '.jpg', '.tif', '.bmp')):
         from imageio import imsave
         imsave(path, value, **kwargs)
