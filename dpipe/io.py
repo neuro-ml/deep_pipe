@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 __all__ = [
-    'PathLike', 'ConsoleArguments', 'load_or_create',
+    'PathLike', 'ConsoleArguments', 'load_or_create', 'choose_existing',
     'load', 'save',
     'load_json', 'save_json',
     'load_pickle', 'save_pickle',
@@ -214,6 +214,20 @@ def load_or_create(path: PathLike, create: Callable, *args,
     value = create(*args, **kwargs)
     save(value, path)
     return value
+
+
+def choose_existing(*paths: PathLike) -> Path:
+    """
+    Returns the first existing path from a list of ``paths``.
+    """
+    for path in map(Path, paths):
+        try:
+            if path.exists():
+                return path
+        except PermissionError:
+            pass
+
+    raise FileNotFoundError('No appropriate root found.')
 
 
 class ConsoleArguments:
