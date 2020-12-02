@@ -1,4 +1,4 @@
-from collections import Iterable
+from typing import Iterable
 from functools import partial
 
 import numpy as np
@@ -36,7 +36,7 @@ def expiration_pool(iterable: Iterable, pool_size: int, repetitions: int):
     assert pool_size > 0
     assert repetitions > 0
     iterable = enumerate(iterable)
-    
+
     def sample_value():
         # TODO: use randomdict?
         idx = np.random.choice(list(value_frequency))
@@ -48,7 +48,7 @@ def expiration_pool(iterable: Iterable, pool_size: int, repetitions: int):
             value_frequency[idx] = [value, frequency]
         return value
 
-    value_frequency = {} # i -> [value, frequency]
+    value_frequency = {}  # i -> [value, frequency]
     for idx, value in iterable:
         value_frequency[idx] = [value, 0]
         yield sample_value()

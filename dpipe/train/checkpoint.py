@@ -106,7 +106,7 @@ class Checkpoints:
             save = self._dispatch_saver(o)
             save(o, folder / path)
 
-    def save(self, iteration: int, train_losses: Sequence, metrics: dict = None):
+    def save(self, iteration: int, train_losses: Sequence = None, metrics: dict = None):
         """Save the states of all tracked objects."""
         current_folder = self._get_checkpoint_folder(iteration)
         current_folder.mkdir(parents=True)
