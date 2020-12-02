@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 from functools import partial
-from typing import Sequence, Union, Dict
+from typing import Sequence, Union
 
 import numpy as np
 
@@ -112,7 +112,7 @@ class TBLogger(Logger):
             log = partial(log_vector, self.logger)
         else:
             log = getattr(self.logger, f'log_{kind}')
-        log(name, value, step)
+        log(name, np.asarray(value), step)
 
     def __getattr__(self, item):
         return getattr(self.logger, item)

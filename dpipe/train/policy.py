@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Sequence, Callable, Dict, Any, List
 
 import numpy as np
+from tqdm import tqdm
 
 from dpipe.dataset.base import AbstractAttribute, ABCAttributesMeta
 
@@ -256,3 +257,26 @@ class TimeProfiler(Policy):
     # this policy is stateless
     def __getstate__(self):
         return {}
+
+
+class TQDM(Policy):
+    """
+    Adds a tqdm progressbar.
+    If loss is True - the progressbar will also display the current train loss.
+    """
+
+    def __init__(self, loss: bool = True):
+        self.loss = loss
+        self.bar: tqdm = tqdm(disable=True)
+
+    def epoch_started(self, epoch: int):
+        self.bar = tqdm(desc=f'Epoch {epoch}')
+
+    def train_step_finished(self, epoch: int, iteration: int, loss: Any):
+        if self.loss:
+            self.bar.set_description(f'Epoch {epoch}. Train loss: {loss}')
+        self.bar.update()
+
+    def validation_started(self, epoch: int, train_losses: Sequence):
+        self.bar.close()
+        self.bar = None

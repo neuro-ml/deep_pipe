@@ -1,4 +1,5 @@
-import subprocess
+import contextlib
+import os
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
@@ -25,6 +26,16 @@ class Layout(ABC):
     @abstractmethod
     def run_parser(self, parser: ArgumentParser):
         """Appropriately updates a console arguments parser for the `run` method."""
+
+
+@contextlib.contextmanager
+def change_current_dir(folder: PathLike):
+    current = os.getcwd()
+    try:
+        os.chdir(folder)
+        yield
+    finally:
+        os.chdir(current)
 
 
 class Flat(Layout):
@@ -72,7 +83,7 @@ class Flat(Layout):
     def _expand_prefix(prefix):
         return f'{prefix}_ids.json'
 
-    def build(self, config: PathLike, folder: PathLike):
+    def build(self, config: PathLike, folder: PathLike, keep: Sequence[str] = None):
         folder = Path(folder)
         for i, ids in enumerate(self.split):
             # TODO: move check to constructor
@@ -87,7 +98,7 @@ class Flat(Layout):
                 save(val, local / self._expand_prefix(prefix), indent=0)
 
         # resource manager is needed here, because there may be inheritance
-        read_config(config).save_config(folder / 'resources.config')
+        read_config(config).save_config(folder / 'resources.config', keep)
 
     def run(self, config: PathLike, folds: Sequence[int] = None):
         root = Path(config).parent
@@ -95,14 +106,12 @@ class Flat(Layout):
             folds = range(len(self.split))
 
         for fold in folds:
-            fold = root / f'experiment_{fold}'
-            subprocess.check_call(
-                f'run-config ../resources.config run_experiment',
-                shell=True, stderr=subprocess.STDOUT, cwd=fold
-            )
+            with change_current_dir(root / f'experiment_{fold}'):
+                read_config(config).get_resource('run_experiment')
 
     def build_parser(self, parser: ArgumentParser):
         parser.add_argument('folder', help='Destination folder.')
+        parser.add_argument('--keep', nargs='+', default=None, help='The definitions to keep. By default - all.')
 
     def run_parser(self, parser: ArgumentParser):
         parser.add_argument('-f', '--folds', nargs='+', help='Folds to run.')

@@ -1,6 +1,5 @@
 import contextlib
 from typing import Callable
-from tqdm import tqdm
 
 import numpy as np
 
@@ -12,7 +11,7 @@ __all__ = 'train',
 
 
 class _DummyCheckpoints:
-    def save(self, iteration: int):
+    def save(self, iteration: int, train_losses, metrics=None):
         pass
 
     @staticmethod
@@ -34,7 +33,7 @@ def _build_context_manager(o):
 
 
 def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, logger: Logger = None,
-          checkpoints: Checkpoints = None, validate: Callable = None, is_better: Callable = None, **kwargs):
+          checkpoints: Checkpoints = None, validate: Callable = None, **kwargs):
     """
     Performs a series of train and validation steps.
 
@@ -84,7 +83,7 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
                 broadcast_event(Policy.epoch_started, epoch)
 
                 train_losses = []
-                for idx, inputs in tqdm(enumerate(iterator())):
+                for idx, inputs in enumerate(iterator()):
                     broadcast_event(Policy.train_step_started, epoch, idx)
                     train_losses.append(train_step(*inputs, **scalars, **get_policy_values()))
                     broadcast_event(Policy.train_step_finished, epoch, idx, train_losses[-1])
@@ -93,17 +92,13 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
                 logger.policies(get_policy_values(), epoch)
                 broadcast_event(Policy.validation_started, epoch, train_losses)
 
-                metrics = best_metrics = None
+                metrics = None
                 if validate is not None:
                     metrics = validate()
                     logger.metrics(metrics, epoch)
 
-                    if is_better is not None and (best_metrics is None or is_better(metrics, best_metrics)):
-                        best_metrics = metrics
-                        checkpoints.save_best()
-
                 broadcast_event(Policy.epoch_finished, epoch, train_losses, metrics)
-                checkpoints.save(epoch)
+                checkpoints.save(epoch, train_losses, metrics)
                 epoch += 1
 
         except EarlyStopping:
