@@ -71,7 +71,15 @@ class ConsoleLogger(Logger):
         print(f'{step:>05}: {name}: {value}', flush=True)
 
     def train(self, train_losses: Sequence[Union[dict, tuple, float]], step):
-        self.value('Train loss', np.mean(train_losses, axis=0), step)
+        text = ''
+        if train_losses and isinstance(train_losses[0], dict):
+            for name, values in group_dicts(train_losses).items():
+                text += f'{name}: {np.mean(values)} '
+
+        else:
+            text += str(np.mean(train_losses, axis=0))
+
+        self.value('Train loss', text, step)
 
     def policies(self, policies: dict, step: int):
         self._dict('Policies: ', policies, step)

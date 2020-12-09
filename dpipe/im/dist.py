@@ -36,7 +36,7 @@ def weighted_sum(weights: Tensor, axes: AxesLike, values_range: Callable) -> Ten
     shape = fill_by_indices(np.ones_like(weights.shape), values.shape, axes)
     values = values.reshape(*shape)
     if isinstance(weights, torch.Tensor) and not isinstance(values, torch.Tensor):
-        values = to_var(values, device=weights).to(weights)
+        values = to_var(values).to(weights)
 
     return (weights * values).sum(axes)
 
@@ -97,8 +97,8 @@ def expectation(distribution: Tensor, axis: int, integral: Callable = polynomial
 
 
 @collect
-def marginal_expectation(distribution: Tensor, axes: AxesLike, integrals: Union[Callable, Sequence[Callable]],
-                         *args, **kwargs):
+def marginal_expectation(distribution: Tensor, axes: AxesLike,
+                         integrals: Union[Callable, Sequence[Callable]] = polynomial, *args, **kwargs):
     """
     Computes expectations along the ``axes`` according to ``integrals`` independently.
 
