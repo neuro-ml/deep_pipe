@@ -1,6 +1,7 @@
 """
 Tools for patch extraction and generation.
 """
+import warnings
 from typing import Callable
 
 import numpy as np
@@ -22,8 +23,8 @@ def uniform(shape):
     return np.array(lmap(np.random.randint, np.atleast_1d(shape)))
 
 
-def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike = None,
-                     distribution: Callable = uniform):
+def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axis: AxesLike = None,
+                     distribution: Callable = uniform, axes: AxesLike = None):
     """
     Get a random patch of size ``path_size`` along the ``axes`` for each of the ``arrays``.
     The patch position is equal for all the ``arrays``.
@@ -32,26 +33,37 @@ def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axes: AxesLike =
     ----------
     arrays
     patch_size
-    axes
+    axis
     distribution: Callable(shape)
         function that samples a random number in the range ``[0, n)`` for each axis. Defaults to a uniform distribution.
     """
     if not arrays:
         raise ValueError('No arrays given.')
 
-    axes = expand_axes(axes, patch_size)
-    check_shape_along_axis(*arrays, axis=axes)
+    if axes is not None:
+        assert axis is None
+        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+        axis = axes
 
-    shape = extract(arrays[0].shape, axes)
+    axis = expand_axes(axis, patch_size)
+    check_shape_along_axis(*arrays, axis=axis)
+
+    shape = extract(arrays[0].shape, axis)
     start = distribution(shape_after_convolution(shape, patch_size))
     box = np.array([start, start + patch_size])
 
-    return squeeze_first(tuple(crop_to_box(arr, box, axes) for arr in arrays))
+    return squeeze_first(tuple(crop_to_box(arr, box, axis) for arr in arrays))
 
 
 # TODO: what to do if axis != None?
 @returns_box
-def get_random_box(shape: AxesLike, box_shape: AxesLike, axes: AxesLike = None, distribution: Callable = uniform):
+def get_random_box(shape: AxesLike, box_shape: AxesLike, axis: AxesLike = None, distribution: Callable = uniform, *,
+                   axes: AxesLike = None):
     """Get a random box of shape ``box_shape`` that fits in the ``shape`` along the given ``axes``."""
-    start = distribution(shape_after_full_convolution(shape, box_shape, axes))
-    return start, start + fill_by_indices(shape, box_shape, axes)
+    if axes is not None:
+        assert axis is None
+        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+        axis = axes
+
+    start = distribution(shape_after_full_convolution(shape, box_shape, axis))
+    return start, start + fill_by_indices(shape, box_shape, axis)

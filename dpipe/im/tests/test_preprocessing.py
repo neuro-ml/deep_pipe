@@ -28,6 +28,6 @@ class TestPrep(unittest.TestCase):
         )
 
     def test_normalize_multichannel_image(self):
-        x = normalize(self.x, axes=0)
+        x = normalize(self.x, axis=0)
         np.testing.assert_almost_equal(0, x.mean(axis=(1, 2)))
         np.testing.assert_almost_equal(1, x.std(axis=(1, 2)))

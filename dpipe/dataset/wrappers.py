@@ -168,13 +168,6 @@ def change_ids(dataset: Dataset, change_id: Callable, methods: Iterable[str] = N
     return proxy(dataset)
 
 
-@np.deprecate  # 28.06.2019
-def normalized(dataset: Dataset, mean: bool = True, std: bool = True, drop_percentile: int = None,
-               dtype=None) -> Dataset:
-    return apply(dataset, load_image=functools.partial(
-        normalize, mean=mean, std=std, drop_percentile=drop_percentile, axes=0, dtype=dtype))
-
-
 def merge(*datasets: Dataset, methods: Sequence[str] = None, attributes: Sequence[str] = ()) -> Dataset:
     """
     Merge several ``datasets`` into one by preserving the provided ``methods`` and ``attributes``.

@@ -202,11 +202,11 @@ def moveaxis(x: torch.Tensor, source: AxesLike, destination: AxesLike):
     return x.permute(*order)
 
 
-def softmax(x: torch.Tensor, axes: AxesLike):
+def softmax(x: torch.Tensor, axis: AxesLike):
     """
     A multidimensional version of softmax.
     """
-    source = np.core.numeric.normalize_axis_tuple(axes, x.ndim, 'axes')
+    source = np.core.numeric.normalize_axis_tuple(axis, x.ndim, 'axis')
     dim = len(source)
     destination = range(-dim, 0)
 

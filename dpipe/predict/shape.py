@@ -1,3 +1,4 @@
+import warnings
 from functools import wraps, partial
 from typing import Union, Callable
 
@@ -43,8 +44,8 @@ def add_extract_dims(n_add: int = 1, n_extract: int = None, sequence: bool = Fal
     return decorator
 
 
-def divisible_shape(divisor: AxesLike, axes: AxesLike = None, padding_values: Union[AxesParams, Callable] = 0,
-                    ratio: AxesParams = 0.5):
+def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Union[AxesParams, Callable] = 0,
+                    ratio: AxesParams = 0.5, *, axes: AxesLike = None):
     """
     Pads an incoming array to be divisible by ``divisor`` along the ``axes``. Afterwards the padding is removed.
 
@@ -52,7 +53,7 @@ def divisible_shape(divisor: AxesLike, axes: AxesLike = None, padding_values: Un
     ----------
     divisor
         a value an incoming array should be divisible by.
-    axes
+    axis
         axes along which the array will be padded. If None - the last ``len(divisor)`` axes are used.
     padding_values
         values to pad with. If Callable (e.g. ``numpy.min``) - ``padding_values(x)`` will be used.
@@ -63,23 +64,28 @@ def divisible_shape(divisor: AxesLike, axes: AxesLike = None, padding_values: Un
     ----------
     `pad_to_divisible`
     """
-    axes, divisor, ratio = broadcast_to_axes(axes, divisor, ratio)
+    if axes is not None:
+        assert axis is None
+        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+        axis = axes
+
+    axis, divisor, ratio = broadcast_to_axes(axis, divisor, ratio)
 
     def decorator(predict):
         @wraps(predict)
         def wrapper(x, *args, **kwargs):
-            shape = np.array(x.shape)[list(axes)]
-            x = pad_to_divisible(x, divisor, axes, padding_values, ratio)
+            shape = np.array(x.shape)[list(axis)]
+            x = pad_to_divisible(x, divisor, axis, padding_values, ratio)
             result = predict(x, *args, **kwargs)
-            return crop_to_shape(result, shape, axes, ratio)
+            return crop_to_shape(result, shape, axis, ratio)
 
         return wrapper
 
     return decorator
 
 
-def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
-                 padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5):
+def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
+                 padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5, *, axes: AxesLike = None):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     predicted patches by averaging the overlapping regions.
@@ -91,23 +97,28 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
     ----------
     `grid.divide`, `grid.combine`, `pad_to_shape`
     """
-    axes, patch_size, stride = broadcast_to_axes(axes, patch_size, stride)
+    if axes is not None:
+        assert axis is None
+        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+        axis = axes
+
+    axis, patch_size, stride = broadcast_to_axes(axis, patch_size, stride)
     valid = padding_values is not None
 
     def decorator(predict):
         @wraps(predict)
         def wrapper(x, *args, **kwargs):
             if valid:
-                shape = np.array(x.shape)[list(axes)]
+                shape = np.array(x.shape)[list(axis)]
                 padded_shape = np.maximum(shape, patch_size)
                 new_shape = padded_shape + (stride - padded_shape + patch_size) % stride
-                x = pad_to_shape(x, new_shape, axes, padding_values, ratio)
+                x = pad_to_shape(x, new_shape, axis, padding_values, ratio)
 
-            patches = pmap(predict, divide(x, patch_size, stride, axes), *args, **kwargs)
-            prediction = combine(patches, extract(x.shape, axes), stride, axes)
+            patches = pmap(predict, divide(x, patch_size, stride, axis), *args, **kwargs)
+            prediction = combine(patches, extract(x.shape, axis), stride, axis)
 
             if valid:
-                prediction = crop_to_shape(prediction, shape, axes, ratio)
+                prediction = crop_to_shape(prediction, shape, axis, ratio)
             return prediction
 
         return wrapper

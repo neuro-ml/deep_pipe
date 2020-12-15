@@ -16,14 +16,14 @@ class TestPad(unittest.TestCase):
 
         assert_eq(x, main[3:-3, 3:-3, 3:-3])
         assert_eq(main, pad(x, [3, 3, 3]))
-        assert_eq(main, pad(x, 3, axes=[0, 1, 2]))
-        assert_eq(main, pad(x, [3], axes=[0, 1, 2]))
-        assert_eq(main, pad(x, [[3]], axes=[0, 1, 2]))
-        assert_eq(main, pad(x, [[3, 3]], axes=[0, 1, 2]))
-        assert_eq(main, pad(x, [[3], [3], [3]], axes=[0, 1, 2]))
+        assert_eq(main, pad(x, 3, axis=[0, 1, 2]))
+        assert_eq(main, pad(x, [3], axis=[0, 1, 2]))
+        assert_eq(main, pad(x, [[3]], axis=[0, 1, 2]))
+        assert_eq(main, pad(x, [[3, 3]], axis=[0, 1, 2]))
+        assert_eq(main, pad(x, [[3], [3], [3]], axis=[0, 1, 2]))
 
         assert_eq(
-            pad(x, 3, axes=[0, 1]),
+            pad(x, 3, axis=[0, 1]),
             pad(x, [[3, 3], [3, 3], [0, 0]])
         )
         assert_eq(
@@ -33,14 +33,14 @@ class TestPad(unittest.TestCase):
         p = pad(x, [[1, 2], [3, 4], [5, 6]])
         assert_eq(x, p[1:-2, 3:-4, 5:-6])
 
-        p = pad(x, [[1, 2], [3, 4]], axes=[0, 2])
+        p = pad(x, [[1, 2], [3, 4]], axis=[0, 2])
         assert_eq(x, p[1:-2, :, 3:-4])
 
-        p = pad(x, [[1, 2], [3, 4]], axes=[2, 0])
+        p = pad(x, [[1, 2], [3, 4]], axis=[2, 0])
         assert_eq(x, p[3:-4:, :, 1:-2])
 
         with pytest.raises(ValueError):
-            pad(x, [1, 2], axes=-1)
+            pad(x, [1, 2], axis=-1)
 
     def test_padding_values(self):
         x = np.array([
@@ -116,7 +116,7 @@ class TestCropToBox(unittest.TestCase):
         x = np.random.randint(0, 100, (3, 20, 23))
 
         assert_eq(x[:, 1:15, 2:14], crop_to_box(x, np.array([[1, 2], [15, 14]])))
-        assert_eq(x[:, 1:15, 2:14], crop_to_box(x, np.array([[1, 2], [15, 14]]), axes=[1, 2]))
+        assert_eq(x[:, 1:15, 2:14], crop_to_box(x, np.array([[1, 2], [15, 14]]), axis=[1, 2]))
 
         assert_eq(
             x[:, 1:, 2:],

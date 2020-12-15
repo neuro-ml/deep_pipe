@@ -1,8 +1,7 @@
 """
 Module for calculation of various statistics given a discrete or piecewise-linear distribution.
 """
-from collections import Callable
-from typing import Union, Sequence
+from typing import Union, Sequence, Callable
 
 import torch
 import numpy as np
@@ -16,7 +15,7 @@ __all__ = 'weighted_sum', 'expectation', 'marginal_expectation', 'polynomial'
 Tensor = Union[np.ndarray, torch.Tensor]
 
 
-def weighted_sum(weights: Tensor, axes: AxesLike, values_range: Callable) -> Tensor:
+def weighted_sum(weights: Tensor, axis: AxesLike, values_range: Callable) -> Tensor:
     """
     Calculates a weighted sum of values returned by ``values_range`` with the corresponding
     ``weights`` along a given ``axis``.
@@ -24,21 +23,21 @@ def weighted_sum(weights: Tensor, axes: AxesLike, values_range: Callable) -> Ten
     Parameters
     ----------
     weights
-    axes
+    axis
     values_range
-        takes ``n`` as input and returns an array of ``n`` values where ``n = weights.shape[axes]``.
+        takes ``n`` as input and returns an array of ``n`` values where ``n = weights.shape[axis]``.
     """
-    if not isinstance(axes, int):
-        axes = list(axes)
+    if not isinstance(axis, int):
+        axis = list(axis)
 
-    values = values_range(np.array(weights.shape)[axes])
+    values = values_range(np.array(weights.shape)[axis])
 
-    shape = fill_by_indices(np.ones_like(weights.shape), values.shape, axes)
+    shape = fill_by_indices(np.ones_like(weights.shape), values.shape, axis)
     values = values.reshape(*shape)
     if isinstance(weights, torch.Tensor) and not isinstance(values, torch.Tensor):
         values = to_var(values).to(weights)
 
-    return (weights * values).sum(axes)
+    return (weights * values).sum(axis)
 
 
 def polynomial(n: int, order=1) -> np.ndarray:
@@ -97,24 +96,24 @@ def expectation(distribution: Tensor, axis: int, integral: Callable = polynomial
 
 
 @collect
-def marginal_expectation(distribution: Tensor, axes: AxesLike,
+def marginal_expectation(distribution: Tensor, axis: AxesLike,
                          integrals: Union[Callable, Sequence[Callable]] = polynomial, *args, **kwargs):
     """
-    Computes expectations along the ``axes`` according to ``integrals`` independently.
+    Computes expectations along the ``axis`` according to ``integrals`` independently.
 
     ``args`` and ``kwargs`` are passed to ``integral`` as  additional arguments.
     """
-    axes = np.core.numeric.normalize_axis_tuple(axes, distribution.ndim, 'axes')
+    axis = np.core.numeric.normalize_axis_tuple(axis, distribution.ndim, 'axis')
     if callable(integrals):
         integrals = [integrals]
     if len(integrals) == 1:
-        integrals = [integrals[0]] * len(axes)
+        integrals = [integrals[0]] * len(axis)
 
-    for axis, integral in zip_equal(axes, integrals):
+    for ax, integral in zip_equal(axis, integrals):
         # sum over other axes, but allow for reduction of `axis`
-        other_axes = list(axes)
-        other_axes.remove(axis)
+        other_axes = list(axis)
+        other_axes.remove(ax)
         other_axes = np.array(other_axes)
-        other_axes[other_axes > axis] -= 1
+        other_axes[other_axes > ax] -= 1
 
-        yield expectation(distribution, axis, integral, *args, **kwargs).sum(tuple(other_axes))
+        yield expectation(distribution, ax, integral, *args, **kwargs).sum(tuple(other_axes))
