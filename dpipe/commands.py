@@ -9,7 +9,7 @@ from typing import Callable, Iterable
 import numpy as np
 from tqdm import tqdm
 
-from .io import save_json, save_numpy, load, PathLike
+from .io import save_json, PathLike, load as _load, save as _save
 from dpipe.itertools import collect
 
 
@@ -64,6 +64,7 @@ def lock_dir(folder: PathLike = '.', lock: str = '.lock'):
     atexit.register(os.remove, lock)
 
 
+@np.deprecate
 def np_filename2id(filename):
     *rest, extension = filename.split('.')
     assert extension == 'npy', f'Expected npy file, got {extension} from {filename}'
@@ -78,14 +79,15 @@ def transform(input_path, output_path, transform_fn):
 
 
 @collect
-def load_from_folder(path: str, loader=load):
+def load_from_folder(path: PathLike, loader=_load, ext='.npy'):
     """Yields (id, object) pairs loaded from ``path``."""
-    for filename in sorted(os.listdir(path)):
-        yield np_filename2id(filename), loader(os.path.join(path, filename))
+    for file in sorted(Path(path).iterdir()):
+        assert file.name.endswith(ext), file.name
+        yield file.name[:-len(ext)], loader(file)
 
 
 def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_path: str,
-                    exist_ok: bool = False, save: Callable = save_numpy, ext: str = '.npy'):
+                    exist_ok: bool = False, save: Callable = _save, ext: str = '.npy'):
     """
     Apply ``func`` to each id from ``ids`` and save each output to ``output_path`` using ``save``.
     If ``exist_ok`` is True the existing files will be ignored, otherwise an exception is raised.
@@ -103,7 +105,7 @@ def map_ids_to_disk(func: Callable[[str], object], ids: Iterable[str], output_pa
             raise RuntimeError(f'An exception occurred while processing {identifier}.') from e
 
 
-def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save=save_numpy, ext='.npy'):
+def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save: Callable = _save, ext='.npy'):
     map_ids_to_disk(lambda identifier: predict_fn(load_x(identifier)), tqdm(ids), output_path, exist_ok, save, ext)
 
 
@@ -121,7 +123,7 @@ def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, re
 
 
 def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False,
-                                loader: Callable = load):
+                                loader: Callable = _load):
     assert len(metrics) > 0, 'No metric provided'
     os.makedirs(results_path, exist_ok=exist_ok)
 

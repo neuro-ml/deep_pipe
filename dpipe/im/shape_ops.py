@@ -267,14 +267,14 @@ def _resolve_deprecation(axis, axes, ndim, values):
     if axes is not None:
         assert axis is None
         msg = 'The argument `axes` is deprecated. Use `axis` instead.'
-        warnings.warn(msg, UserWarning, 1)
-        warnings.warn(msg, DeprecationWarning, 1)
+        warnings.warn(msg, UserWarning, 3)
+        warnings.warn(msg, DeprecationWarning, 3)
         axis = axes
 
     if axis is None and ndim != values:
         msg = ('In the future the last axes will not be used to infer `axis`. '
                'Pass the appropriate `axis` to suppress this warning.')
-        warnings.warn(msg, UserWarning, 1)
-        warnings.warn(msg, DeprecationWarning, 1)
+        warnings.warn(msg, UserWarning, 3)
+        warnings.warn(msg, DeprecationWarning, 3)
 
     return axis
