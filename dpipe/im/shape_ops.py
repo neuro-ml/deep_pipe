@@ -32,7 +32,7 @@ def zoom(x: np.ndarray, scale_factor: AxesParams, axis: AxesLike = None, order: 
     fill_value
         value to fill past edges. If Callable (e.g. `numpy.min`) - ``fill_value(x)`` will be used.
     """
-    axis = _resolve_deprecation(axis, axes, x.ndim, len(scale_factor))
+    axis = _resolve_deprecation(axis, axes, x.ndim, scale_factor)
     scale_factor = fill_by_indices(np.ones(x.ndim, 'float64'), scale_factor, axis)
     if callable(fill_value):
         fill_value = fill_value(x)
@@ -60,7 +60,7 @@ def zoom_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, order: 
     fill_value
         value to fill past edges. If Callable (e.g. `numpy.min`) - ``fill_value(x)`` will be used.
     """
-    axis = _resolve_deprecation(axis, axes, x.ndim, len(shape))
+    axis = _resolve_deprecation(axis, axes, x.ndim, shape)
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(fill_by_indices(x.shape, shape, axis), 'float64')
     return zoom(x, new_shape / old_shape, order=order, fill_value=fill_value)
@@ -84,7 +84,7 @@ def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = 
     order
         order of interpolation.
     """
-    axis = _resolve_deprecation(axis, axes, x.ndim, len(shape))
+    axis = _resolve_deprecation(axis, axes, x.ndim, shape)
     axis = expand_axes(axis, shape)
     scale_factor = (np.array(shape, 'float64') / extract(x.shape, axis)).min()
     return pad_to_shape(zoom(x, scale_factor, axis, order), shape, axis, padding_values)
@@ -113,7 +113,7 @@ def pad(x: np.ndarray, padding: Union[AxesLike, Sequence[Sequence[int]]], axis: 
     padding = np.asarray(padding)
     if padding.ndim < 2:
         padding = padding.reshape(-1, 1)
-    axis = _resolve_deprecation(axis, axes, x.ndim, len(padding))
+    axis = _resolve_deprecation(axis, axes, x.ndim, padding)
     padding = np.asarray(fill_by_indices(np.zeros((x.ndim, 2), dtype=int), np.atleast_2d(padding), axis))
     if (padding < 0).any():
         raise ValueError(f'Padding must be non-negative: {padding.tolist()}.')
@@ -147,7 +147,7 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, padding_
     ratio
         the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """
-    axis = _resolve_deprecation(axis, axes, x.ndim, len(shape))
+    axis = _resolve_deprecation(axis, axes, x.ndim, shape)
     axis, shape, ratio = broadcast_to_axes(axis, shape, ratio)
     old_shape = np.array(x.shape)[list(axis)]
     if (old_shape > shape).any():
@@ -184,7 +184,7 @@ def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axis: AxesLike = None,
     ----------
     `pad_to_shape`
     """
-    axis = _resolve_deprecation(axis, axes, x.ndim, len(divisor))
+    axis = _resolve_deprecation(axis, axes, x.ndim, divisor)
     axis, divisor, remainder, ratio = broadcast_to_axes(axis, divisor, remainder, ratio)
     assert np.all(remainder >= 0)
     shape = np.maximum(np.array(x.shape)[list(axis)], remainder)
@@ -206,7 +206,7 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
     ratio
         the fraction of the crop that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """
-    axis = _resolve_deprecation(axis, axes, x.ndim, len(shape))
+    axis = _resolve_deprecation(axis, axes, x.ndim, shape)
     axis, shape, ratio = broadcast_to_axes(axis, shape, ratio)
     old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axis))
     if (old_shape < new_shape).any():
@@ -226,7 +226,7 @@ def crop_to_box(x: np.ndarray, box: Box, axis: AxesLike = None, padding_values: 
     If axes is None - the last ``box.shape[-1]`` axes are used.
     """
     start, stop = box
-    axis = _resolve_deprecation(axis, axes, x.ndim, len(start))
+    axis = _resolve_deprecation(axis, axes, x.ndim, start)
     axis = expand_axes(axis, start)
 
     slice_start = np.maximum(start, 0)
@@ -261,7 +261,9 @@ def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesP
     return x
 
 
-def _resolve_deprecation(axis, axes, ndim, values_size):
+def _resolve_deprecation(axis, axes, ndim, values):
+    values = len(np.atleast_1d(values))
+
     if axes is not None:
         assert axis is None
         msg = 'The argument `axes` is deprecated. Use `axis` instead.'
@@ -269,7 +271,7 @@ def _resolve_deprecation(axis, axes, ndim, values_size):
         warnings.warn(msg, DeprecationWarning, 1)
         axis = axes
 
-    if axis is None and ndim != values_size:
+    if axis is None and ndim != values:
         msg = ('In the future the last axes will not be used to infer `axis`. '
                'Pass the appropriate `axis` to suppress this warning.')
         warnings.warn(msg, UserWarning, 1)
