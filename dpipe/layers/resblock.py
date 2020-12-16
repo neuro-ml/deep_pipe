@@ -72,7 +72,9 @@ class ResBlock(nn.Module):
 
     def forward(self, x):
         x_conv = self.conv_path(x)
-        x_skip = crop_to_shape(self.adjust_to_stride(x), shape=x_conv.shape[2:])
+        shape = x_conv.shape[2:]
+        axes = range(-len(shape), 0)
+        x_skip = crop_to_shape(self.adjust_to_stride(x), shape=shape, axis=axes)
         return x_conv + x_skip
 
 

@@ -94,12 +94,12 @@ class Softmax(nn.Module):
     A multidimensional version of softmax.
     """
 
-    def __init__(self, axes):
+    def __init__(self, axis):
         super().__init__()
-        self.axes = axes
+        self.axis = axis
 
     def forward(self, x):
-        return softmax(x, self.axes)
+        return softmax(x, self.axis)
 
 
 class PyramidPooling(nn.Module):
