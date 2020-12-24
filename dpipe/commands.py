@@ -109,12 +109,13 @@ def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save: Callable
     map_ids_to_disk(lambda identifier: predict_fn(load_x(identifier)), tqdm(ids), output_path, exist_ok, save, ext)
 
 
-def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False):
+def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False,
+				loader: Callable = _load, ext='.npy'):
     assert len(metrics) > 0, 'No metric provided'
     os.makedirs(results_path, exist_ok=exist_ok)
 
     targets, predictions = [], []
-    for identifier, prediction in tqdm(load_from_folder(predictions_path)):
+    for identifier, prediction in tqdm(load_from_folder(predictions_path, loader=loader, ext=ext)):
         predictions.append(prediction)
         targets.append(load_y_true(identifier))
 
@@ -123,12 +124,12 @@ def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, re
 
 
 def evaluate_individual_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False,
-                                loader: Callable = _load):
+                                loader: Callable = _load, ext='.npy'):
     assert len(metrics) > 0, 'No metric provided'
     os.makedirs(results_path, exist_ok=exist_ok)
 
     results = defaultdict(dict)
-    for identifier, prediction in tqdm(load_from_folder(predictions_path, loader=loader)):
+    for identifier, prediction in tqdm(load_from_folder(predictions_path, loader=loader, ext=ext)):
         target = load_y_true(identifier)
 
         for metric_name, metric in metrics.items():
