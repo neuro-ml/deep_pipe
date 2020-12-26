@@ -60,12 +60,12 @@ class TestPad(unittest.TestCase):
 
         x = np.random.randint(0, 100, (3, 20, 23))
         assert_eq(
-            pad(x, [1, 1], padding_values=x.min()),
-            pad(x, [1, 1], padding_values=np.min),
+            pad(x, [1, 1], padding_values=x.min(), axis=(1, 2)),
+            pad(x, [1, 1], padding_values=np.min, axis=(1, 2)),
         )
         assert_eq(
-            pad(x, [1, 1], padding_values=x.min(axis=(1, 2), keepdims=True)),
-            pad(x, [1, 1], padding_values=partial(np.min, axis=(1, 2), keepdims=True)),
+            pad(x, [1, 1], padding_values=x.min(axis=(1, 2), keepdims=True), axis=(1, 2)),
+            pad(x, [1, 1], padding_values=partial(np.min, axis=(1, 2), keepdims=True), axis=(1, 2)),
         )
 
     def test_pad(self):
@@ -115,26 +115,25 @@ class TestCropToBox(unittest.TestCase):
     def test_axes(self):
         x = np.random.randint(0, 100, (3, 20, 23))
 
-        assert_eq(x[:, 1:15, 2:14], crop_to_box(x, np.array([[1, 2], [15, 14]])))
         assert_eq(x[:, 1:15, 2:14], crop_to_box(x, np.array([[1, 2], [15, 14]]), axis=[1, 2]))
 
         assert_eq(
             x[:, 1:, 2:],
-            crop_to_box(x, np.array([[1, 2], [40, 33]]), padding_values=0)[:, :19, :21]
+            crop_to_box(x, np.array([[1, 2], [40, 33]]), padding_values=0, axis=(1, 2))[:, :19, :21]
         )
 
         assert_eq(
             x[:, :15, :14],
-            crop_to_box(x, np.array([[-10, -5], [15, 14]]), padding_values=0)[:, 10:, 5:]
+            crop_to_box(x, np.array([[-10, -5], [15, 14]]), padding_values=0, axis=(1, 2))[:, 10:, 5:]
         )
 
     def test_raises(self):
         x = np.empty((3, 20, 23))
         with pytest.raises(ValueError):
-            crop_to_box(x, np.array([[1], [40]]))
+            crop_to_box(x, np.array([[1], [40]]), axis=(1, 2))
 
         with pytest.raises(ValueError):
-            crop_to_box(x, np.array([[-1], [1]]))
+            crop_to_box(x, np.array([[-1], [1]]), axis=(1, 2))
 
 
 class TestShapeOps(unittest.TestCase):
@@ -142,14 +141,14 @@ class TestShapeOps(unittest.TestCase):
         self.x = np.random.rand(3, 10, 10) * 2 + 3
 
     def _test_to_shape(self, func, shape, bad_shape):
-        self.assertTupleEqual(func(self.x, shape).shape, shape)
-        with self.assertRaises(ValueError):
+        assert func(self.x, shape).shape == shape
+        with pytest.raises(ValueError):
             func(self.x, bad_shape)
 
     def test_scale_to_shape(self):
         shape = (3, 4, 15)
-        self.assertTupleEqual(zoom_to_shape(self.x, shape).shape, shape)
-        self.assertTupleEqual(zoom_to_shape(self.x, shape[::-1]).shape, shape[::-1])
+        assert zoom_to_shape(self.x, shape).shape == shape
+        assert zoom_to_shape(self.x, shape[::-1]).shape == shape[::-1]
 
     def test_pad_to_shape(self):
         self._test_to_shape(pad_to_shape, (3, 15, 16), (3, 4, 10))
@@ -158,6 +157,5 @@ class TestShapeOps(unittest.TestCase):
         self._test_to_shape(crop_to_shape, (3, 4, 8), (3, 15, 10))
 
     def test_scale(self):
-        self.assertTupleEqual(zoom(self.x, (3, 4, 15)).shape, (9, 40, 150))
-
-        self.assertTupleEqual(zoom(self.x, (4, 3)).shape, (3, 40, 30))
+        assert zoom(self.x, (3, 4, 15)).shape == (9, 40, 150)
+        assert zoom(self.x, (4, 3), axis=(1, 2)).shape == (3, 40, 30)
