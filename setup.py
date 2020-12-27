@@ -18,7 +18,7 @@ setup(
     packages=find_packages(include=('dpipe',)),
     include_package_data=True,
     version=__version__,
-    descriprion='A collection of tools for deep learning experiments',
+    description='A collection of tools for deep learning experiments',
     long_description=long_description,
     long_description_content_type='text/markdown',
     license='MIT',
