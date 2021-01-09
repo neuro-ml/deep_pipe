@@ -101,7 +101,7 @@ class TBLogger(Logger):
                 self.value(f'train/loss/{name}', np.mean(values), step)
 
         else:
-            self.value('train/loss', np.mean(train_losses, axis=0), step)
+            log_scalar_or_vector(self.logger, 'train/loss', np.mean(train_losses, axis=0), step)
 
     def value(self, name, value, step):
         dirname, base = os.path.split(name)
