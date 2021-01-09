@@ -11,9 +11,11 @@ from .utils import *
 __all__ = 'optimizer_step', 'train_step', 'inference_step'
 
 
-def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, **params) -> torch.Tensor:
+def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, scaler: torch.cuda.amp.GradScaler = None,
+                   **params) -> torch.Tensor:
     """
     Performs the backward pass with respect to ``loss``, as well as a gradient step.
+    If a ``scaler`` is passed - it is used to perform the gradient step (automatic mixed precission support).
 
     ``params`` is used to change the optimizer's parameters.
 
@@ -30,13 +32,21 @@ def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, **params) -> torch.
     """
     set_params(optimizer, **params)
     optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
+    if scaler is not None:
+        # autocast is not recommended during backward
+        with torch.cuda.amp.autocast(False):
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+    else:
+        loss.backward()
+        optimizer.step()
+
     return loss
 
 
-def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, optimizer: Optimizer,
-               n_targets: int = 1, loss_key: str = None, **optimizer_params) -> np.ndarray:
+def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, optimizer: Optimizer, n_targets: int = 1,
+               loss_key: str = None, scaler: torch.cuda.amp.GradScaler = None, **optimizer_params) -> np.ndarray:
     """
     Performs a forward-backward pass, and make a gradient step, according to the given ``inputs``.
 
@@ -58,6 +68,8 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
         indicates which key should be used for gradient computation.
     optimizer_params
         additional parameters that will override the optimizer's current parameters (e.g. lr).
+    scaler
+        a gradient scaler used to operate in automatic mixed precision mode.
 
     Notes
     -----
@@ -78,13 +90,14 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
     inputs = sequence_to_var(*inputs, device=architecture)
     inputs, targets = inputs[:n_inputs], inputs[n_inputs:]
 
-    loss = criterion(architecture(*inputs), *targets)
+    with torch.cuda.amp.autocast(scaler is not None or torch.is_autocast_enabled()):
+        loss = criterion(architecture(*inputs), *targets)
 
     if loss_key is not None:
-        optimizer_step(optimizer, loss[loss_key], **optimizer_params)
+        optimizer_step(optimizer, loss[loss_key], scaler=scaler, **optimizer_params)
         return dmap(to_np, loss)
 
-    optimizer_step(optimizer, loss, **optimizer_params)
+    optimizer_step(optimizer, loss, scaler=scaler, **optimizer_params)
     return to_np(loss)
 
 
