@@ -121,6 +121,10 @@ def get_mask_volume(mask: np.ndarray, *spacing: AxesParams, location: bool = Fal
     return mask.flatten() @ mesh.flatten() * weight
 
 
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
 # this function is too general, so nobody uses it
 @np.deprecate
 def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> Callable:

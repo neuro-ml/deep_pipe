@@ -1,14 +1,14 @@
-from typing import Callable
+from typing import Callable, Union, Sequence
 
 import numpy as np
 import torch
 from torch.nn import Module
 from torch.optim import Optimizer
 
-from ..im.utils import identity, dmap
+from ..im.utils import identity, dmap, zip_equal, collect
 from .utils import *
 
-__all__ = 'optimizer_step', 'train_step', 'inference_step'
+__all__ = 'optimizer_step', 'train_step', 'inference_step', 'multi_inference_step'
 
 
 def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, scaler: torch.cuda.amp.GradScaler = None,
@@ -113,6 +113,31 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     architecture.eval()
     with torch.no_grad():
         return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
+
+
+@collect
+def multi_inference_step(*inputs: np.ndarray, architecture: Module,
+                         activations: Union[Callable, Sequence[Union[Callable, None]]] = identity) -> np.ndarray:
+    """
+    Returns the prediction for the given ``inputs``.
+
+    The ``architecture`` is expected to return a sequence of torch.Tensor objects.
+
+    Notes
+    -----
+    Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
+    to and from ``torch.Tensor`` is made inside this function.
+    """
+    architecture.eval()
+    with torch.no_grad():
+        results = architecture(*sequence_to_var(*inputs, device=architecture))
+        if callable(activations):
+            activations = [activations] * len(results)
+
+        for activation, result in zip_equal(activations, results):
+            if activation is not None:
+                result = activation(result)
+            yield to_np(result)
 
 
 @np.deprecate
