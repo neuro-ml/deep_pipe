@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Union, Callable
 
 import numpy as np
 from sklearn.model_selection import StratifiedKFold, train_test_split
@@ -47,7 +47,8 @@ def train_val_test_split(ids, *, val_size, n_splits, random_state=42):
     return indices_to_ids(split_indices, ids)
 
 
-def group_train_val_test_split(ids: Sequence, groups: np.ndarray, *, val_size, n_splits, random_state=42):
+def group_train_val_test_split(ids: Sequence, groups: Union[Callable, Sequence], *, val_size, n_splits,
+                               random_state=42):
     """
     Splits the dataset's ids into triplets (train, validation, test) keeping all the objects
     from a group in the same set (either train, validation or test).
@@ -68,22 +69,30 @@ def group_train_val_test_split(ids: Sequence, groups: np.ndarray, *, val_size, n
     n_splits: int
         the number of cross-validation folds
     """
+    if callable(groups):
+        groups = list(map(groups, ids))
     groups = np.asarray(groups)
     split_indices = kfold_split(ids, n_splits, groups=groups, random_state=random_state)
     split_indices = split_train(split_indices, val_size, groups=groups, random_state=random_state)
     return indices_to_ids(split_indices, ids)
 
 
-def stratified_train_val_test_split(ids, labels, *, val_size, n_splits, random_state=42):
+def stratified_train_val_test_split(ids: Sequence, labels: Union[Callable, Sequence], *, val_size, n_splits,
+                                    random_state=42):
+    if callable(labels):
+        labels = list(map(labels, ids))
+
     cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
 
     train_val_test_ids = []
     for i, (train_val_indices, test_indices) in enumerate(cv.split(ids, labels)):
         train_val_ids = extract(ids, train_val_indices)
         test_ids = extract(ids, test_indices)
-        train_ids, val_ids = train_test_split(
-            train_val_ids, test_size=val_size, random_state=25 + i
-        )
+        if val_size:
+            train_ids, val_ids = train_test_split(train_val_ids, test_size=val_size, random_state=25 + i)
+        else:
+            train_ids, val_ids = train_val_ids, []
+
         train_val_test_ids.append((train_ids, val_ids, test_ids))
 
     return train_val_test_ids

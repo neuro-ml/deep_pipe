@@ -110,7 +110,7 @@ def predict(ids, output_path, load_x, predict_fn, exist_ok=False, save: Callable
 
 
 def evaluate_aggregated_metrics(load_y_true, metrics: dict, predictions_path, results_path, exist_ok=False,
-				loader: Callable = _load, ext='.npy'):
+                                loader: Callable = _load, ext='.npy'):
     assert len(metrics) > 0, 'No metric provided'
     os.makedirs(results_path, exist_ok=exist_ok)
 
