@@ -149,7 +149,8 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, padding_
     axis
         axes along which ``x`` will be padded. If None - the last ``len(shape)`` axes are used.
     ratio
-        the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
+        the fraction of the padding that will be applied to the left, ``1.0 - ratio`` will be applied to the right.
+        By default ``0.5 - ratio``, it is applied uniformly to the left and right.
     """
     x = _to_array(x)
     axis = _resolve_deprecation(axis, axes, x.ndim, shape)
