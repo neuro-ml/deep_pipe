@@ -106,8 +106,8 @@ def load(path: PathLike, **kwargs):
         from SimpleITK import ReadImage
         return ReadImage(name, **kwargs)
     if name.endswith('.config'):
-        from resource_manager import read_config
-        return read_config(path, **kwargs)
+        import lazycon
+        return lazycon.load(path, **kwargs)
 
     raise ValueError(f'Couldn\'t read file "{path}". Unknown extension.')
 

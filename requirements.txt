@@ -7,5 +7,5 @@ scikit-learn>=0.19
 tqdm
 pdp==0.3.*
 tensorboard-easy
-resource-manager>=0.11.3<1.0
+lazycon>=0.1.0<1.0
 loky~=2.8.0
