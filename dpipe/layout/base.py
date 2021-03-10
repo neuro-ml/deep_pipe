@@ -98,7 +98,7 @@ class Flat(Layout):
                 save(val, local / self._expand_prefix(prefix), indent=0)
 
         # resource manager is needed here, because there may be inheritance
-        lazycon.load(config).save_config(folder / 'resources.config', keep)
+        lazycon.load(config).dump(folder / 'resources.config', keep)
 
     def run(self, config: PathLike, folds: Sequence[int] = None):
         root = Path(config).parent
@@ -107,7 +107,7 @@ class Flat(Layout):
 
         for fold in folds:
             with change_current_dir(root / f'experiment_{fold}'):
-                lazycon.load(config).get_resource('run_experiment')
+                lazycon.load(config).get('run_experiment')
 
     def build_parser(self, parser: ArgumentParser):
         parser.add_argument('folder', help='Destination folder.')
