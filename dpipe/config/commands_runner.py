@@ -73,11 +73,16 @@ class Locker:
 
         lock.touch(exist_ok=False)
         self.lock = lock
-        self.run = self._run
 
-    def _run(self, *args):
+    def run(*args):
+        if not args:
+            raise AttributeError('Use "Locker().run instead of Locker.run"')
+        self, *args = args
+        if not isinstance(self, Locker):
+            raise AttributeError('Use "Locker().run instead of Locker.run"')
+
         os.remove(self.lock)
 
-    @classmethod
-    def run(cls, *args):
-        cls()._run()
+    def __del__(self):
+        if hasattr(self, 'lock') and self.lock.exists():
+            os.remove(self.lock)
