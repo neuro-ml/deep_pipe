@@ -15,10 +15,10 @@ with open('requirements.txt', encoding='utf-8') as file:
 
 setup(
     name='deep_pipe',
-    packages=find_packages(include=('dpipe', 'dpipe_configs')),
+    packages=find_packages(include=('dpipe',)),
     include_package_data=True,
     version=__version__,
-    descriprion='A collection of tools for deep learning experiments',
+    description='A collection of tools for deep learning experiments',
     long_description=long_description,
     long_description_content_type='text/markdown',
     license='MIT',
@@ -30,7 +30,6 @@ setup(
     python_requires='>=3.6',
     entry_points={
         'console_scripts': [
-            'dpipe = dpipe.config.base:render_config_resource',
             'dpipe-run = dpipe.layout.scripts:run',
             'dpipe-build = dpipe.layout.scripts:build',
         ],

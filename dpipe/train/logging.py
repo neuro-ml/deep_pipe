@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 from functools import partial
-from typing import Sequence, Union, Dict
+from typing import Sequence, Union
 
 import numpy as np
 
@@ -71,7 +71,15 @@ class ConsoleLogger(Logger):
         print(f'{step:>05}: {name}: {value}', flush=True)
 
     def train(self, train_losses: Sequence[Union[dict, tuple, float]], step):
-        self.value('Train loss', np.mean(train_losses, axis=0), step)
+        text = ''
+        if train_losses and isinstance(train_losses[0], dict):
+            for name, values in group_dicts(train_losses).items():
+                text += f'{name}: {np.mean(values)} '
+
+        else:
+            text += str(np.mean(train_losses, axis=0))
+
+        self.value('Train loss', text, step)
 
     def policies(self, policies: dict, step: int):
         self._dict('Policies: ', policies, step)
@@ -93,7 +101,7 @@ class TBLogger(Logger):
                 self.value(f'train/loss/{name}', np.mean(values), step)
 
         else:
-            self.value('train/loss', np.mean(train_losses, axis=0), step)
+            log_scalar_or_vector(self.logger, 'train/loss', np.mean(train_losses, axis=0), step)
 
     def value(self, name, value, step):
         dirname, base = os.path.split(name)
@@ -112,7 +120,7 @@ class TBLogger(Logger):
             log = partial(log_vector, self.logger)
         else:
             log = getattr(self.logger, f'log_{kind}')
-        log(name, value, step)
+        log(name, np.asarray(value), step)
 
     def __getattr__(self, item):
         return getattr(self.logger, item)

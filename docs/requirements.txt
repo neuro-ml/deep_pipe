@@ -8,7 +8,7 @@ tqdm
 pydicom
 pdp==0.3.*
 tensorboard-easy
-resource-manager==0.10.*
+lazycon
 sphinx>=2.3
 
 matplotlib

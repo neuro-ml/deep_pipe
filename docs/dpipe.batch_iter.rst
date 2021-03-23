@@ -22,6 +22,14 @@ Sources
     :undoc-members:
     :show-inheritance:
 
+Blocks
+------
+
+.. automodule:: dpipe.batch_iter.expiration_pool
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Utils
 -----
 

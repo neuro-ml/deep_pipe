@@ -34,7 +34,16 @@ def combine_pad(inputs, padding_values: AxesParams = 0, ratio: AxesParams = 0.5)
     """
     Combines tuples from ``inputs`` into batches and pads each batch in order to obtain
     a correctly shaped numpy array.
-
+    
+    Parameters
+    ----------
+    inputs
+    padding_values
+        values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
+    ratio
+        the fraction of the padding that will be applied to the left, ``1.0 - ratio`` will be applied to the right.
+        By default ``0.5 - ratio``, it is applied uniformly to the left and right.
+        
     References
     ----------
     `pad_to_shape`

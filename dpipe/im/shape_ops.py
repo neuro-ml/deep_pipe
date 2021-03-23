@@ -16,8 +16,8 @@ __all__ = [
 ]
 
 
-def zoom(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: int = 1,
-         fill_value: Union[float, Callable] = 0) -> np.ndarray:
+def zoom(x: np.ndarray, scale_factor: AxesParams, axis: AxesLike = None, order: int = 1,
+         fill_value: Union[float, Callable] = 0, *, axes: AxesLike = None) -> np.ndarray:
     """
     Rescale ``x`` according to ``scale_factor`` along the ``axes``.
 
@@ -25,14 +25,16 @@ def zoom(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: 
     ----------
     x
     scale_factor
-    axes
-        axes along which the tensor will be scaled. If None - the last ``len(shape)`` axes are used.
+    axis
+        axis along which the tensor will be scaled. If None - the last ``len(scale_factor)`` axes are used.
     order
         order of interpolation.
     fill_value
         value to fill past edges. If Callable (e.g. `numpy.min`) - ``fill_value(x)`` will be used.
     """
-    scale_factor = fill_by_indices(np.ones(x.ndim, 'float64'), scale_factor, axes)
+    x = _to_array(x)
+    axis = _resolve_deprecation(axis, axes, x.ndim, scale_factor)
+    scale_factor = fill_by_indices(np.ones(x.ndim, 'float64'), scale_factor, axis)
     if callable(fill_value):
         fill_value = fill_value(x)
 
@@ -42,8 +44,8 @@ def zoom(x: np.ndarray, scale_factor: AxesParams, axes: AxesLike = None, order: 
         return ndimage.zoom(x, scale_factor, order=order, cval=fill_value)
 
 
-def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: int = 1,
-                  fill_value: Union[float, Callable] = 0) -> np.ndarray:
+def zoom_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, order: int = 1,
+                  fill_value: Union[float, Callable] = 0, *, axes: AxesLike = None) -> np.ndarray:
     """
     Rescale ``x`` to match ``shape`` along the ``axes``.
 
@@ -52,20 +54,23 @@ def zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, order: 
     x
     shape
         final shape.
-    axes
+    axis
         axes along which the tensor will be scaled. If None - the last ``len(shape)`` axes are used.
     order
         order of interpolation.
     fill_value
         value to fill past edges. If Callable (e.g. `numpy.min`) - ``fill_value(x)`` will be used.
     """
+    x = _to_array(x)
+    axis = _resolve_deprecation(axis, axes, x.ndim, shape)
     old_shape = np.array(x.shape, 'float64')
-    new_shape = np.array(fill_by_indices(x.shape, shape, axes), 'float64')
+    new_shape = np.array(fill_by_indices(x.shape, shape, axis), 'float64')
     return zoom(x, new_shape / old_shape, order=order, fill_value=fill_value)
 
 
-def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None,
-                               padding_values: Union[AxesParams, Callable] = 0, order: int = 1) -> np.ndarray:
+def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None,
+                               padding_values: Union[AxesParams, Callable] = 0, order: int = 1, *,
+                               axes: AxesLike = None) -> np.ndarray:
     """
     Proportionally rescale ``x`` to fit ``shape`` along ``axes`` then pad it to that shape.
 
@@ -74,20 +79,22 @@ def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = 
     x
     shape
         final shape.
-    axes
+    axis
         axes along which ``x`` will be padded. If None - the last ``len(shape)`` axes are used.
     padding_values
         values to pad with.
     order
         order of interpolation.
     """
-    axes = expand_axes(axes, shape)
-    scale_factor = (np.array(shape, 'float64') / extract(x.shape, axes)).min()
-    return pad_to_shape(zoom(x, scale_factor, axes, order), shape, axes, padding_values)
+    x = _to_array(x)
+    axis = _resolve_deprecation(axis, axes, x.ndim, shape)
+    axis = expand_axes(axis, shape)
+    scale_factor = (np.array(shape, 'float64') / extract(x.shape, axis)).min()
+    return pad_to_shape(zoom(x, scale_factor, axis, order), shape, axis, padding_values)
 
 
-def pad(x: np.ndarray, padding: Union[AxesLike, Sequence[Sequence[int]]], axes: AxesLike = None,
-        padding_values: Union[AxesParams, Callable] = 0) -> np.ndarray:
+def pad(x: np.ndarray, padding: Union[AxesLike, Sequence[Sequence[int]]], axis: AxesLike = None,
+        padding_values: Union[AxesParams, Callable] = 0, *, axes: AxesLike = None) -> np.ndarray:
     """
     Pad ``x`` according to ``padding`` along the ``axes``.
 
@@ -103,13 +110,15 @@ def pad(x: np.ndarray, padding: Union[AxesLike, Sequence[Sequence[int]]], axes: 
     padding_values
         values to pad with, must be broadcastable to the resulting array.
         If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
-    axes
+    axis
         axes along which ``x`` will be padded. If None - the last ``len(padding)`` axes are used.
     """
+    x = _to_array(x)
     padding = np.asarray(padding)
     if padding.ndim < 2:
         padding = padding.reshape(-1, 1)
-    padding = np.asarray(fill_by_indices(np.zeros((x.ndim, 2), dtype=int), np.atleast_2d(padding), axes))
+    axis = _resolve_deprecation(axis, axes, x.ndim, padding)
+    padding = np.asarray(fill_by_indices(np.zeros((x.ndim, 2), dtype=int), np.atleast_2d(padding), axis))
     if (padding < 0).any():
         raise ValueError(f'Padding must be non-negative: {padding.tolist()}.')
     if callable(padding_values):
@@ -125,8 +134,8 @@ def pad(x: np.ndarray, padding: Union[AxesLike, Sequence[Sequence[int]]], axes: 
     return new_x
 
 
-def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_values: Union[AxesParams, Callable] = 0,
-                 ratio: AxesParams = 0.5) -> np.ndarray:
+def pad_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, padding_values: Union[AxesParams, Callable] = 0,
+                 ratio: AxesParams = 0.5, *, axes: AxesLike = None) -> np.ndarray:
     """
     Pad ``x`` to match ``shape`` along the ``axes``.
 
@@ -137,26 +146,29 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, padding_
         final shape.
     padding_values
         values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
-    axes
+    axis
         axes along which ``x`` will be padded. If None - the last ``len(shape)`` axes are used.
     ratio
-        the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
+        the fraction of the padding that will be applied to the left, ``1.0 - ratio`` will be applied to the right.
+        By default ``0.5 - ratio``, it is applied uniformly to the left and right.
     """
-    axes, shape, ratio = broadcast_to_axes(axes, shape, ratio)
-    old_shape = np.array(x.shape)[list(axes)]
+    x = _to_array(x)
+    axis = _resolve_deprecation(axis, axes, x.ndim, shape)
+    axis, shape, ratio = broadcast_to_axes(axis, shape, ratio)
+    old_shape = np.array(x.shape)[list(axis)]
     if (old_shape > shape).any():
-        shape = fill_by_indices(x.shape, shape, axes)
+        shape = fill_by_indices(x.shape, shape, axis)
         raise ValueError(f'The resulting shape cannot be smaller than the original: {x.shape} vs {shape}')
 
     delta = shape - old_shape
     start = (delta * ratio).astype(int)
     padding = np.array((start, delta - start)).T.astype(int)
-    return pad(x, padding, axes, padding_values=padding_values)
+    return pad(x, padding, axis, padding_values=padding_values)
 
 
-def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axes: AxesLike = None,
-                     padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5, 
-                     remainder: AxesLike = 0):
+def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axis: AxesLike = None,
+                     padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
+                     remainder: AxesLike = 0, *, axes: AxesLike = None):
     """
     Pads ``x`` to be divisible by ``divisor`` along the ``axes``.
 
@@ -167,7 +179,7 @@ def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axes: AxesLike = None,
         a value an incoming array should be divisible by.
     remainder
         ``x`` will be padded such that its shape gives the remainder ``remainder`` when divided by ``divisor``.
-    axes
+    axis
         axes along which the array will be padded. If None - the last ``len(divisor)`` axes are used.
     padding_values
         values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
@@ -178,13 +190,16 @@ def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axes: AxesLike = None,
     ----------
     `pad_to_shape`
     """
-    axes, divisor, remainder, ratio = broadcast_to_axes(axes, divisor, remainder, ratio)
+    x = _to_array(x)
+    axis = _resolve_deprecation(axis, axes, x.ndim, divisor)
+    axis, divisor, remainder, ratio = broadcast_to_axes(axis, divisor, remainder, ratio)
     assert np.all(remainder >= 0)
-    shape = np.maximum(np.array(x.shape)[list(axes)], remainder)
-    return pad_to_shape(x, shape + (remainder - shape) % divisor, axes, padding_values, ratio)
+    shape = np.maximum(np.array(x.shape)[list(axis)], remainder)
+    return pad_to_shape(x, shape + (remainder - shape) % divisor, axis, padding_values, ratio)
 
 
-def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
+def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: AxesParams = 0.5, *,
+                  axes: AxesLike = None) -> np.ndarray:
     """
     Crop ``x`` to match ``shape`` along ``axes``.
 
@@ -193,43 +208,48 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axes: AxesLike = None, ratio: 
     x
     shape
         final shape.
-    axes
+    axis
         axes along which ``x`` will be padded. If None - the last ``len(shape)`` axes are used.
     ratio
         the fraction of the crop that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """
-    axes, shape, ratio = broadcast_to_axes(axes, shape, ratio)
-    old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axes))
+    x = _to_array(x)
+    axis = _resolve_deprecation(axis, axes, x.ndim, shape)
+    axis, shape, ratio = broadcast_to_axes(axis, shape, ratio)
+    old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axis))
     if (old_shape < new_shape).any():
         raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}')
 
     ndim = len(x.shape)
-    ratio = fill_by_indices(np.zeros(ndim), ratio, axes)
+    ratio = fill_by_indices(np.zeros(ndim), ratio, axis)
     start = ((old_shape - new_shape) * ratio).astype(int)
     return x[build_slices(start, start + new_shape)]
 
 
-def crop_to_box(x: np.ndarray, box: Box, axes: AxesLike = None, padding_values: AxesParams = None) -> np.ndarray:
+def crop_to_box(x: np.ndarray, box: Box, axis: AxesLike = None, padding_values: AxesParams = None, *,
+                axes: AxesLike = None) -> np.ndarray:
     """
     Crop ``x`` according to ``box`` along ``axes``.
 
     If axes is None - the last ``box.shape[-1]`` axes are used.
     """
+    x = _to_array(x)
     start, stop = box
-    axes = expand_axes(axes, start)
+    axis = _resolve_deprecation(axis, axes, x.ndim, start)
+    axis = expand_axes(axis, start)
 
     slice_start = np.maximum(start, 0)
-    slice_stop = np.minimum(stop, extract(x.shape, axes))
+    slice_stop = np.minimum(stop, extract(x.shape, axis))
     padding = np.array([slice_start - start, stop - slice_stop], dtype=int).T
     if padding_values is None and padding.any():
         raise ValueError(f"The box {box} exceeds the input's limits {x.shape}.")
 
-    slice_start = fill_by_indices(np.zeros(x.ndim, int), slice_start, axes)
-    slice_stop = fill_by_indices(x.shape, slice_stop, axes)
+    slice_start = fill_by_indices(np.zeros(x.ndim, int), slice_start, axis)
+    slice_stop = fill_by_indices(x.shape, slice_stop, axis)
     x = x[build_slices(slice_start, slice_stop)]
 
     if padding_values is not None and padding.any():
-        x = pad(x, padding, axes, padding_values)
+        x = pad(x, padding, axis, padding_values)
     return x
 
 
@@ -237,6 +257,7 @@ def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesP
     """
     Pad ``x`` to match ``shape``. The left padding is taken equal to ``box``'s start.
     """
+    x = _to_array(x)
     assert len(shape) == x.ndim
     start, stop = box
 
@@ -248,3 +269,30 @@ def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesP
     x = pad(x, padding, padding_values=padding_values)
     assert all(np.array(x.shape) == shape)
     return x
+
+
+def _to_array(x):
+    # TODO: smarter check
+    # we want to handle torch when possible
+    if not hasattr(x, 'ndim') or not hasattr(x, 'shape'):
+        x = np.asarray(x)
+    return x
+
+
+def _resolve_deprecation(axis, axes, ndim, values):
+    values = len(np.atleast_1d(values))
+
+    if axes is not None:
+        assert axis is None
+        msg = 'The argument `axes` is deprecated. Use `axis` instead.'
+        warnings.warn(msg, UserWarning, 3)
+        warnings.warn(msg, DeprecationWarning, 3)
+        axis = axes
+
+    if axis is None and ndim != values:
+        msg = ('In the future the last axes will not be used to infer `axis`. '
+               'Pass the appropriate `axis` to suppress this warning.')
+        warnings.warn(msg, UserWarning, 3)
+        warnings.warn(msg, DeprecationWarning, 3)
+
+    return axis

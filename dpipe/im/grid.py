@@ -2,6 +2,7 @@
 Function for working with patches from tensors.
 See the :doc:`tutorials/patches` tutorial for more details.
 """
+import warnings
 from typing import Iterable
 
 import numpy as np
@@ -16,8 +17,8 @@ from .utils import build_slices
 __all__ = 'get_boxes', 'divide', 'combine'
 
 
-def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
-              valid: bool = True) -> Iterable[Box]:
+def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
+              valid: bool = True, *, axes: AxesLike = None) -> Iterable[Box]:
     """
     Yield boxes appropriate for a tensor of shape ``shape`` in a convolution-like fashion.
 
@@ -26,7 +27,7 @@ def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesL
     shape
         the input tensor's shape.
     box_size
-    axes
+    axis
         axes along which the slices will be taken.
     stride
         the stride (step-size) of the slice.
@@ -37,19 +38,24 @@ def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axes: AxesL
     ----------
     See the :doc:`tutorials/patches` tutorial for more details.
     """
-    final_shape = shape_after_full_convolution(shape, box_size, axes, stride, valid=valid)
+    if axes is not None:
+        assert axis is None
+        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+        axis = axes
+
+    final_shape = shape_after_full_convolution(shape, box_size, axis, stride, valid=valid)
     box_size, stride = np.broadcast_arrays(box_size, stride)
 
-    full_box = fill_by_indices(shape, box_size, axes)
-    full_stride = fill_by_indices(np.ones_like(shape), stride, axes)
+    full_box = fill_by_indices(shape, box_size, axis)
+    full_stride = fill_by_indices(np.ones_like(shape), stride, axis)
 
     for start in np.ndindex(*final_shape):
         start = np.asarray(start) * full_stride
         yield make_box_([start, np.minimum(start + full_box, shape)])
 
 
-def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike = None,
-           valid: bool = False) -> Iterable[np.ndarray]:
+def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
+           valid: bool = False, *, axes: AxesLike = None) -> Iterable[np.ndarray]:
     """
     A convolution-like approach to generating patches from a tensor.
 
@@ -57,7 +63,7 @@ def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike
     ----------
     x
     patch_size
-    axes
+    axis
         dimensions along which the slices will be taken.
     stride
         the stride (step-size) of the slice.
@@ -68,12 +74,17 @@ def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axes: AxesLike
     ----------
     See the :doc:`tutorials/patches` tutorial for more details.
     """
-    for box in get_boxes(x.shape, patch_size, stride, axes, valid=valid):
+    if axes is not None:
+        assert axis is None
+        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+        axis = axes
+
+    for box in get_boxes(x.shape, patch_size, stride, axis, valid=valid):
         yield crop_to_box(x, box)
 
 
 def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike,
-            axes: AxesLike = None, valid: bool = False) -> np.ndarray:
+            axis: AxesLike = None, valid: bool = False, *, axes: AxesLike = None) -> np.ndarray:
     """
     Build a tensor of shape ``output_shape`` from ``patches`` obtained in a convolution-like approach
     with corresponding parameters. The overlapping parts are averaged.
@@ -82,11 +93,16 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     ----------
     See the :doc:`tutorials/patches` tutorial for more details.
     """
-    axes, stride = broadcast_to_axes(axes, stride)
+    if axes is not None:
+        assert axis is None
+        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+        axis = axes
+
+    axis, stride = broadcast_to_axes(axis, stride)
     patch, patches = peek(patches)
-    patch_size = np.array(patch.shape)[list(axes)]
+    patch_size = np.array(patch.shape)[list(axis)]
     if len(np.atleast_1d(output_shape)) != patch.ndim:
-        output_shape = fill_by_indices(patch.shape, output_shape, axes)
+        output_shape = fill_by_indices(patch.shape, output_shape, axis)
 
     dtype = patch.dtype
     if not np.issubdtype(dtype, np.floating):
@@ -94,7 +110,7 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
 
     result = np.zeros(output_shape, dtype)
     counts = np.zeros(output_shape, int)
-    for box, patch in zip_equal(get_boxes(output_shape, patch_size, stride, axes, valid), patches):
+    for box, patch in zip_equal(get_boxes(output_shape, patch_size, stride, axis, valid), patches):
         slc = build_slices(*box)
         result[slc] += patch
         counts[slc] += 1

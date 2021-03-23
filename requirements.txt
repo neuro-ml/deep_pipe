@@ -5,8 +5,7 @@ scipy
 pandas
 scikit-learn>=0.19
 tqdm
-dicom-csv
 pdp==0.3.*
 tensorboard-easy
-resource-manager>=0.10<1.0
+lazycon>=0.1.0<1.0
 loky~=2.8.0

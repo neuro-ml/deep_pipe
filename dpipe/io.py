@@ -16,14 +16,15 @@ from typing import Union, Callable
 from gzip import GzipFile
 
 import numpy as np
-import pandas as pd
 
 __all__ = [
-    'PathLike', 'ConsoleArguments', 'load_or_create',
+    'PathLike', 'ConsoleArguments', 'load_or_create', 'choose_existing',
     'load', 'save',
     'load_json', 'save_json',
     'load_pickle', 'save_pickle',
     'load_numpy', 'save_numpy',
+    'load_csv', 'save_csv',
+    'load_text', 'save_text',
 ]
 
 PathLike = Union[Path, str]
@@ -75,8 +76,8 @@ def load(path: PathLike, **kwargs):
     ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, tif, png, jpg, bmp, hdr, img,
-        nii, nii.gz, json, mhd, csv, txt, pickle, pkl
+        npy, tif, png, jpg, bmp, hdr, img, csv,
+        dcm, nii, nii.gz, json, mhd, csv, txt, pickle, pkl, config
     """
     name = Path(path).name
 
@@ -84,24 +85,29 @@ def load(path: PathLike, **kwargs):
         if name.endswith('.gz'):
             kwargs['decompress'] = True
         return load_numpy(path, **kwargs)
+    if name.endswith(('.csv', '.csv.gz')):
+        return load_csv(path, **kwargs)
     if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel
         return nibabel.load(str(path), **kwargs).get_fdata()
+    if name.endswith('.dcm'):
+        import pydicom
+        return pydicom.dcmread(str(path), **kwargs)
     if name.endswith(('.png', '.jpg', '.tif', '.bmp')):
         from imageio import imread
         return imread(path, **kwargs)
     if name.endswith('.json'):
         return load_json(path, **kwargs)
-    if name.endswith('.csv'):
-        return pd.read_csv(path, **kwargs)
     if name.endswith(('.pkl', '.pickle')):
         return load_pickle(path, **kwargs)
     if name.endswith('.txt'):
-        with open(path, mode='r', **kwargs) as file:
-            return file.read()
+        return load_text(path)
     if name.endswith('.mhd'):
         from SimpleITK import ReadImage
         return ReadImage(name, **kwargs)
+    if name.endswith('.config'):
+        import lazycon
+        return lazycon.load(path, **kwargs)
 
     raise ValueError(f'Couldn\'t read file "{path}". Unknown extension.')
 
@@ -112,7 +118,7 @@ def save(value, path: PathLike, **kwargs):
     ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, npy.gz, tif, png, jpg, bmp, hdr, img,
+        npy, npy.gz, tif, png, jpg, bmp, hdr, img, csv
         nii, nii.gz, json, mhd, csv, txt, pickle, pkl
     """
     name = Path(path).name
@@ -122,9 +128,17 @@ def save(value, path: PathLike, **kwargs):
             raise ValueError('If saving to gz need to specify a compression.')
 
         save_numpy(value, path, **kwargs)
+    elif name.endswith(('.csv', '.csv.gz')):
+        if name.endswith('.csv.gz') and 'compression' not in kwargs:
+            raise ValueError('If saving to gz need to specify a compression.')
+
+        save_csv(value, path, **kwargs)
     elif name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel
         nibabel.save(value, str(path), **kwargs)
+    elif name.endswith('.dcm'):
+        import pydicom
+        pydicom.dcmwrite(str(path), value, **kwargs)
     elif name.endswith(('.png', '.jpg', '.tif', '.bmp')):
         from imageio import imsave
         imsave(path, value, **kwargs)
@@ -133,8 +147,7 @@ def save(value, path: PathLike, **kwargs):
     elif name.endswith(('.pkl', '.pickle')):
         save_pickle(value, path, **kwargs)
     elif name.endswith('.txt'):
-        with open(path, mode='w', **kwargs) as file:
-            file.write(value)
+        save_text(value, path)
 
     else:
         raise ValueError(f'Couldn\'t write to file "{path}". Unknown extension.')
@@ -192,6 +205,31 @@ def load_pickle(path: PathLike):
         return pickle.load(file)
 
 
+def save_text(value: str, path: PathLike):
+    with open(path, mode='w') as file:
+        file.write(value)
+
+
+def load_text(path: PathLike):
+    with open(path, mode='r') as file:
+        return file.read()
+
+
+def save_csv(value, path: PathLike, *, compression: int = None, **kwargs):
+    if compression is not None:
+        kwargs['compression'] = {
+            'method': 'gzip',
+            'compresslevel': compression,
+        }
+
+    value.to_csv(path, **kwargs)
+
+
+def load_csv(path: PathLike, **kwargs):
+    import pandas as pd
+    return pd.read_csv(path, **kwargs)
+
+
 def load_or_create(path: PathLike, create: Callable, *args,
                    save: Callable = save, load: Callable = load, **kwargs):
     """
@@ -208,6 +246,20 @@ def load_or_create(path: PathLike, create: Callable, *args,
     value = create(*args, **kwargs)
     save(value, path)
     return value
+
+
+def choose_existing(*paths: PathLike) -> Path:
+    """
+    Returns the first existing path from a list of ``paths``.
+    """
+    for path in map(Path, paths):
+        try:
+            if path.exists():
+                return path
+        except PermissionError:
+            pass
+
+    raise FileNotFoundError('No appropriate root found.')
 
 
 class ConsoleArguments:

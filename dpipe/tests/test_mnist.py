@@ -4,7 +4,6 @@ import unittest
 from pathlib import Path
 
 import pytest
-from resource_manager import read_config
 
 from dpipe.io import load
 
@@ -15,7 +14,7 @@ class TestMNIST(unittest.TestCase):
     base_path = Path('~/tests/MNIST').expanduser()
     experiment_path = base_path / 'exp'
     config_path = 'dpipe/tests/mnist/setup.config'
-    config = read_config(config_path)
+    config = load(config_path)
 
     @classmethod
     def tearDownClass(cls):

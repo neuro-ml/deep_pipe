@@ -9,10 +9,13 @@ from dpipe.train.policy import Exponential, DecreasingOnPlateau, Schedule
 
 class TestCheckpoints(unittest.TestCase):
     @staticmethod
-    def advance_policies(policies, epochs):
-        for epoch in range(epochs):
+    def advance_policies(policies, current, epochs):
+        for epoch in range(current, current + epochs):
             for policy in policies:
+                policy.epoch_started(epoch)
                 policy.epoch_finished(epoch, train_losses=np.random.uniform(0, .01, 100))
+
+        return current + epochs
 
     @staticmethod
     def get_params(policies):
@@ -27,12 +30,13 @@ class TestCheckpoints(unittest.TestCase):
             }
             manager = Checkpoints(tempdir, policies)
 
+            current = 0
             for epoch in range(10):
-                self.advance_policies(policies.values(), 4)
+                current = self.advance_policies(policies.values(), current, 4)
                 manager.save(epoch)
 
                 params = self.get_params(policies.values())
-                self.advance_policies(policies.values(), 4)
+                current = self.advance_policies(policies.values(), current, 4)
                 assert any(old != new for old, new in zip(params, self.get_params(policies.values())))
 
                 manager.restore()
@@ -48,12 +52,13 @@ class TestCheckpoints(unittest.TestCase):
             ]
             manager = Checkpoints(tempdir, policies)
 
+            current = 0
             for epoch in range(10):
-                self.advance_policies(policies, 4)
+                current = self.advance_policies(policies, current, 4)
                 manager.save(epoch)
 
                 params = self.get_params(policies)
-                self.advance_policies(policies, 4)
+                current = self.advance_policies(policies, current, 4)
                 assert any(old != new for old, new in zip(params, self.get_params(policies)))
 
                 manager.restore()

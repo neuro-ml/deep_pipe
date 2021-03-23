@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Sequence, Callable, Dict, Any, List
 
 import numpy as np
+from tqdm import tqdm
 
 from dpipe.dataset.base import AbstractAttribute, ABCAttributesMeta
 
@@ -108,7 +109,7 @@ class Exponential(ValuePolicy):
         self.step_length = step_length
         self.floordiv = floordiv
 
-    def epoch_finished(self, epoch, *args, **kwargs):
+    def epoch_started(self, epoch: int):
         power = epoch / self.step_length
         if self.floordiv:
             power = np.floor(power)
@@ -120,11 +121,17 @@ class Schedule(ValuePolicy):
 
     def __init__(self, initial: float, epoch2value_multiplier: Dict[int, float]):
         super().__init__(initial)
-        self.epoch2value_multiplier = epoch2value_multiplier
+        self.initial = initial
+        self.epoch2value_multiplier = sorted(epoch2value_multiplier.items())
 
-    def epoch_finished(self, epoch, *args, **kwargs):
-        if epoch in self.epoch2value_multiplier:
-            self.value *= self.epoch2value_multiplier[epoch]
+    def epoch_started(self, epoch: int):
+        value = self.initial
+        for idx, multiplier in self.epoch2value_multiplier:
+            if epoch < idx:
+                break
+            value *= multiplier
+
+        self.value = value
 
     # ----------------------------------
     # Factories to build Schedule object
@@ -142,10 +149,12 @@ class Switch(ValuePolicy):
         super().__init__(initial)
         self.epoch_to_value = sorted(epoch_to_value.items())
 
-    def epoch_finished(self, epoch, *args, **kwargs):
+    def epoch_started(self, epoch: int):
         for idx, value in self.epoch_to_value:
-            if idx <= epoch:
-                self.value = value
+            if epoch < idx:
+                break
+
+            self.value = value
 
 
 class LambdaEpoch(ValuePolicy):
@@ -248,3 +257,26 @@ class TimeProfiler(Policy):
     # this policy is stateless
     def __getstate__(self):
         return {}
+
+
+class TQDM(Policy):
+    """
+    Adds a tqdm progressbar.
+    If loss is True - the progressbar will also display the current train loss.
+    """
+
+    def __init__(self, loss: bool = True):
+        self.loss = loss
+        self.bar: tqdm = tqdm(disable=True)
+
+    def epoch_started(self, epoch: int):
+        self.bar = tqdm(desc=f'Epoch {epoch}')
+
+    def train_step_finished(self, epoch: int, iteration: int, loss: Any):
+        if self.loss:
+            self.bar.set_description(f'Epoch {epoch}. Train loss: {loss}')
+        self.bar.update()
+
+    def validation_started(self, epoch: int, train_losses: Sequence):
+        self.bar.close()
+        self.bar = None

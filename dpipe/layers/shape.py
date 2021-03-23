@@ -1,3 +1,4 @@
+import warnings
 from typing import Callable, Union
 
 import numpy as np
@@ -11,7 +12,7 @@ from dpipe.torch.functional import moveaxis, softmax
 
 class InterpolateToInput(nn.Module):
     """
-    Interpolates the result of ``path`` to the original shape along the spatial ``axes``.
+    Interpolates the result of ``path`` to the original shape along the spatial ``axis``.
 
     Parameters
     ----------
@@ -20,14 +21,19 @@ class InterpolateToInput(nn.Module):
     mode: str
         algorithm used for upsampling.
         Should be one of 'nearest' | 'linear' | 'bilinear' | 'trilinear' | 'area'. Default is 'nearest'.
-    axes: AxesLike, None, optional
+    axis: AxesLike, None, optional
         spatial axes to interpolate result along.
         If ``axes`` is ``None``, the result is interpolated along all the spatial axes.
     """
 
-    def __init__(self, path: nn.Module, mode: str = 'nearest', axes: AxesLike = None):
+    def __init__(self, path: nn.Module, mode: str = 'nearest', axis: AxesLike = None, *, axes: AxesLike = None):
         super().__init__()
-        self.axes = axes
+        if axes is not None:
+            assert axis is None
+            warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+            axis = axes
+
+        self.axes = axis
         self.path = path
         self.mode = mode
 
@@ -88,12 +94,12 @@ class Softmax(nn.Module):
     A multidimensional version of softmax.
     """
 
-    def __init__(self, axes):
+    def __init__(self, axis):
         super().__init__()
-        self.axes = axes
+        self.axis = axis
 
     def forward(self, x):
-        return softmax(x, self.axes)
+        return softmax(x, self.axis)
 
 
 class PyramidPooling(nn.Module):

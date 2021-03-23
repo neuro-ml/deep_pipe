@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 from skimage.measure import label
 
@@ -11,7 +13,7 @@ __all__ = [
 
 
 def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: AxesParams = None,
-              axes: AxesLike = None, dtype=None) -> np.ndarray:
+              axis: AxesLike = None, dtype=None, *, axes: AxesLike = None) -> np.ndarray:
     """
     Normalize ``x``'s values to make mean and std independently along ``axes`` equal to 0 and 1 respectively
     (if specified).
@@ -27,28 +29,33 @@ def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: A
         if pair (a, b) - the percentiles between which mean and/or std will be estimated
         if scalar (s) - same as (s, 100 - s)
         if None - same as (0, 100).
-    axes
+    axis
         axes along which mean and/or std will be estimated independently.
         If None - the statistics will be estimated globally.
     dtype
         the dtype of the output.
     """
     if axes is not None:
-        axes = tuple(negate_indices(check_axes(axes), x.ndim))
+        assert axis is None
+        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+        axis = axes
+
+    if axis is not None:
+        axis = tuple(negate_indices(check_axes(axis), x.ndim))
 
     robust_values = x
     if percentiles is not None:
         if np.size(percentiles) == 1:
             percentiles = [percentiles, 100 - percentiles]
 
-        bottom, top = np.percentile(x, percentiles, axes, keepdims=True)
+        bottom, top = np.percentile(x, percentiles, axis, keepdims=True)
         mask = (x < bottom) | (x > top)
         robust_values = np.ma.masked_array(x, mask=mask)
 
     if mean:
-        x = x - robust_values.mean(axes, keepdims=True)
+        x = x - robust_values.mean(axis, keepdims=True)
     if std:
-        x = x / robust_values.std(axes, keepdims=True)
+        x = x / robust_values.std(axis, keepdims=True)
 
     x = np.ma.filled(x, np.nan)
     if dtype is not None:
@@ -56,15 +63,20 @@ def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: A
     return x
 
 
-def min_max_scale(x: np.ndarray, axes: AxesLike = None) -> np.ndarray:
+def min_max_scale(x: np.ndarray, axis: AxesLike = None, *, axes: AxesLike = None) -> np.ndarray:
     """
     Scale ``x``'s values so that its minimum and maximum become 0 and 1 respectively
     independently along ``axes``.
     """
     if axes is not None:
-        axes = tuple(negate_indices(check_axes(axes), x.ndim))
+        assert axis is None
+        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
+        axis = axes
 
-    x_min, x_max = x.min(axis=axes, keepdims=True), x.max(axis=axes, keepdims=True)
+    if axis is not None:
+        axis = tuple(negate_indices(check_axes(axis), x.ndim))
+
+    x_min, x_max = x.min(axis=axis, keepdims=True), x.max(axis=axis, keepdims=True)
     return (x - x_min) / (x_max - x_min)
 
 

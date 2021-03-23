@@ -4,11 +4,11 @@ import numpy as np
 import torch
 from torch.nn import functional
 
-from dpipe.im.axes import AxesLike, check_axes
+from dpipe.im.axes import AxesLike
 
 __all__ = [
     'focal_loss_with_logits', 'linear_focal_loss_with_logits', 'weighted_cross_entropy_with_logits',
-    'moveaxis', 'softmax',
+    'masked_loss', 'moveaxis', 'softmax',
 ]
 
 
@@ -170,6 +170,19 @@ def dice_loss_with_logits(logit: torch.Tensor, target: torch.Tensor):
     return dice_loss(pred, target)
 
 
+def masked_loss(mask: torch.Tensor, criterion: Callable, prediction: torch.Tensor, target: torch.Tensor, **kwargs):
+    """
+    Calculates the ``criterion`` between the masked ``prediction`` and ``target``.
+    ``args`` and ``kwargs`` are passed to ``criterion`` as additional arguments.
+
+    If the ``mask`` is empty - returns 0 wrapped in a torch tensor.
+    """
+    if not mask.any():
+        return torch.tensor(0).to(prediction)
+
+    return criterion(prediction[mask], target[mask], **kwargs)
+
+
 # simply copied from np.moveaxis
 def moveaxis(x: torch.Tensor, source: AxesLike, destination: AxesLike):
     """
@@ -189,11 +202,11 @@ def moveaxis(x: torch.Tensor, source: AxesLike, destination: AxesLike):
     return x.permute(*order)
 
 
-def softmax(x: torch.Tensor, axes: AxesLike):
+def softmax(x: torch.Tensor, axis: AxesLike):
     """
     A multidimensional version of softmax.
     """
-    source = np.core.numeric.normalize_axis_tuple(axes, x.ndim, 'axes')
+    source = np.core.numeric.normalize_axis_tuple(axis, x.ndim, 'axis')
     dim = len(source)
     destination = range(-dim, 0)
 

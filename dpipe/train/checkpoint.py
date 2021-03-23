@@ -1,7 +1,7 @@
 import shutil
 import pickle
 from pathlib import Path
-from typing import Dict, Any, Union, Iterable
+from typing import Dict, Any, Union, Iterable, Sequence
 
 import numpy as np
 import torch
@@ -101,25 +101,19 @@ class Checkpoints:
             return load_torch
         return load_pickle
 
-    def save(self, iteration: int):
+    def _save_to(self, folder):
+        for path, o in self.objects.items():
+            save = self._dispatch_saver(o)
+            save(o, folder / path)
+
+    def save(self, iteration: int, train_losses: Sequence = None, metrics: dict = None):
         """Save the states of all tracked objects."""
         current_folder = self._get_checkpoint_folder(iteration)
         current_folder.mkdir(parents=True)
-
-        for path, o in self.objects.items():
-            save = self._dispatch_saver(o)
-            save(o, current_folder / path)
+        self._save_to(current_folder)
 
         if iteration:
             self._clear_checkpoint(iteration - 1)
-
-    def save_best(self):
-        current_folder = self.base_path / 'best'
-        current_folder.mkdir(parents=True, exist_ok=True)
-
-        for path, o in self.objects.items():
-            save = self._dispatch_saver(o)
-            save(o, current_folder / path)
 
     def restore(self) -> int:
         """Restore the most recent states of all tracked objects and return next iteration's index."""

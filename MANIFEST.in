@@ -3,4 +3,3 @@ include requirements.txt
 include LICENSE
 recursive-include dpipe *.py
 recursive-include dpipe *.config
-recursive-include dpipe_configs *.config
