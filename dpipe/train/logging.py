@@ -133,3 +133,38 @@ class NamedTBLogger(TBLogger):
         values = np.mean(train_losses, axis=0)
         for name, value in zip_equal(self.loss_names, values):
             self.logger.log_scalar(f'train/loss/{name}', value, step)
+
+
+class WANDBLogger(Logger):
+    def __init__(self, project, run_name=None, *,
+                 entity='neuro-ml', config=None, model=None):
+        """
+        A logger that writes to a wandb run.
+
+        Call wandb.login() before usage.
+        """
+        import wandb
+        self.experiment = wandb.init(
+            entity=entity,
+            project=project
+        )
+        if run_name is not None:
+            self.experiment.name = run_name
+
+        if config is not None:
+            self.experiment.config.update(config)
+
+        if model is not None:
+            self.experiment.watch(model)
+
+    def value(self, name: str, value, step: int):
+        self.experiment.log({name: value, 'step': step})
+
+    def test_metrics(self, metrics: dict):
+        """
+        Log final metrics calculated in the end of experiment to summary table.
+        Idea is to use these values for preparing leaderboard.
+
+        TODO: might be unnecessary
+        """
+        self.experiment.summary.update(metrics)
