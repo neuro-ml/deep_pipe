@@ -152,21 +152,21 @@ class WANDBLogger(Logger):
         Call wandb.login() before usage.
         """
         import wandb
-        self.experiment = wandb.init(
+        self._experiment = wandb.init(
             entity=entity,
             project=project
         )
         if run_name is not None:
-            self.experiment.name = run_name
+            self._experiment.name = run_name
 
         if config is not None:
-            self.experiment.config.update(config)
+            self._experiment.config.update(config)
 
         if model is not None:
-            self.experiment.watch(model)
+            self._experiment.watch(model)
 
     def value(self, name: str, value, step: int):
-        self.experiment.log({name: value, 'step': step})
+        self._experiment.log({name: value, 'step': step})
 
     def test_metrics(self, metrics: dict):
         """
@@ -175,4 +175,11 @@ class WANDBLogger(Logger):
 
         TODO: might be unnecessary
         """
-        self.experiment.summary.update(metrics)
+        self._experiment.summary.update(metrics)
+
+    def image(self, name: str, *values, step: int):
+        """
+        TODO: think about possible scenario of usage in common config.
+        """
+        from wandb import Image
+        self._experiment.log({name: [Image(value) for value in values], 'step': step})
