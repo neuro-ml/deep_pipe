@@ -8,7 +8,7 @@ import numpy as np
 from dpipe.io import PathLike
 from dpipe.im.utils import zip_equal
 
-__all__ = 'Logger', 'ConsoleLogger', 'TBLogger', 'NamedTBLogger',
+__all__ = 'Logger', 'ConsoleLogger', 'TBLogger', 'NamedTBLogger', 'WANDBLogger'
 
 
 def log_vector(logger, tag: str, vector, step: int):
@@ -167,6 +167,13 @@ class WANDBLogger(Logger):
 
     def value(self, name: str, value, step: int):
         self._experiment.log({name: value, 'step': step})
+
+    def train(self, train_losses: Sequence[Union[dict, float]], step):
+        if train_losses and isinstance(train_losses[0], dict):
+            for name, values in group_dicts(train_losses).items():
+                self.value(f'train/loss/{name}', np.mean(values), step)
+        else:
+            self.value('train/loss', np.mean(train_losses, axis=0), step)
 
     def watch(self, model, criterion=None):
         self._experiment.watch(model, criterion=criterion)
