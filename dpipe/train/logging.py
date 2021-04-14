@@ -168,9 +168,6 @@ class WANDBLogger(Logger):
     def value(self, name: str, value, step: int):
         self._experiment.log({name: value, 'step': step})
 
-    def add2summary(self, name: str, value):
-        self._experiment.summary[name] = value
-
     def train(self, train_losses: Sequence[Union[dict, float]], step):
         if train_losses and isinstance(train_losses[0], dict):
             for name, values in group_dicts(train_losses).items():
@@ -178,28 +175,52 @@ class WANDBLogger(Logger):
         else:
             self.value('train/loss', np.mean(train_losses), step)
 
-    def test(self, metrics: dict):
-        for name, value in metrics.items():
-            self.add2summary(name, value)
-
     def watch(self, model, criterion=None):
         self._experiment.watch(model, criterion=criterion)
 
     def config(self, config_args):
         self._experiment.config.update(config_args)
 
-    def test_metrics(self, metrics: dict):
+    def agg_metrics(self, metrics: dict):
         """
         Log final metrics calculated in the end of experiment to summary table.
         Idea is to use these values for preparing leaderboard.
+
+        metrics: dictionary with name of metric as a key and with its value
 
         TODO: might be unnecessary
         """
         self._experiment.summary.update(metrics)
 
+    def ind_metrics(self, ind_metrics, step: int = 0):
+        """
+        Save individual metrics to a table to see bad cases
+
+        ind_metrics: DataFrame
+        """
+        from wandb import Table
+        table = Table(dataframe=ind_metrics)
+        self._experiment.log({"Individual Metrics": table, 'step': step})
+
     def image(self, name: str, *values, step: int):
         """
         TODO: think about possible scenario of usage in common config.
+        Answer: special policy that works as callback
         """
         from wandb import Image
-        self._experiment.log({name: [Image(value) for value in values], 'step': step})
+        self._experiment.log(
+            {
+                name: [Image(
+                    value['image'],
+                    masks={
+                        'predictions': {
+                            'mask_data': value['pred']
+                        },
+                        'ground_truth': {
+                            'mask_data': value['target']
+                        }
+                    },
+                    caption=value.get('caption', None)
+                ) for value in values],
+                'step': step
+            })
