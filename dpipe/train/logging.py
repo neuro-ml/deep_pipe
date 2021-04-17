@@ -1,10 +1,12 @@
 import os
 from collections import defaultdict
 from functools import partial
+from pathlib import Path
 from typing import Sequence, Union
 
 import numpy as np
 
+from dpipe.commands import load_from_folder
 from dpipe.io import PathLike
 from dpipe.im.utils import zip_equal
 
@@ -181,33 +183,44 @@ class WANDBLogger(Logger):
     def config(self, config_args):
         self._experiment.config.update(config_args)
 
-    def agg_metrics(self, metrics: dict):
+    def agg_metrics(self, agg_metrics: Union[dict, str, Path]):
         """
         Log final metrics calculated in the end of experiment to summary table.
         Idea is to use these values for preparing leaderboard.
 
         metrics: dictionary with name of metric as a key and with its value
-
-        TODO: might be unnecessary
         """
-        self._experiment.summary.update(metrics)
+        if isinstance(agg_metrics, str) or isinstance(agg_metrics, Path):
+            agg_metrics = {k: v for k, v in load_from_folder(agg_metrics, ext='.json')}
+        self._experiment.summary.update(agg_metrics)
 
-    def ind_metrics(self, ind_metrics, step: int = 0):
+    def ind_metrics(self, ind_metrics: Union[dict, str, Path], step: int = 0, section: str = None):
         """
         Save individual metrics to a table to see bad cases
 
         ind_metrics: DataFrame
+        step: int
+        section: str, defines some metrics' grouping
         """
         from wandb import Table
+        import pandas as pd
+        if isinstance(ind_metrics, str) or isinstance(ind_metrics, Path):
+            ind_metrics = pd.DataFrame.from_dict(
+                {k: v for k, v in load_from_folder(ind_metrics, ext='.json')}).reset_index()
         table = Table(dataframe=ind_metrics)
-        self._experiment.log({"Individual Metrics": table, 'step': step})
 
-    def image(self, name: str, *values, step: int):
+        name = "Individual Metrics" if section is None else f"{section}/Individual Metrics"
+        self._experiment.log({name: table, 'step': step})
+
+    def image(self, name: str, *values, step: int, section: str = None):
         """
-        TODO: think about possible scenario of usage in common config.
-        Answer: special policy that works as callback
+        Method that logs images (set by values),
+        each value is a dict with fields,preds,target and optinally caption defined
+        Special policy that works as callback
         """
         from wandb import Image
+
+        name = name if section is None else f"{section}/{name}"
         self._experiment.log(
             {
                 name: [Image(
