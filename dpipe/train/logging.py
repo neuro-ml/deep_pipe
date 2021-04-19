@@ -183,18 +183,22 @@ class WANDBLogger(Logger):
     def config(self, config_args):
         self._experiment.config.update(config_args)
 
-    def agg_metrics(self, agg_metrics: Union[dict, str, Path]):
+    def agg_metrics(self, agg_metrics: Union[dict, str, Path], section=''):
         """
         Log final metrics calculated in the end of experiment to summary table.
         Idea is to use these values for preparing leaderboard.
 
-        metrics: dictionary with name of metric as a key and with its value
+        agg_metrics: dictionary with name of metric as a key and with its value
         """
         if isinstance(agg_metrics, str) or isinstance(agg_metrics, Path):
-            agg_metrics = {k: v for k, v in load_from_folder(agg_metrics, ext='.json')}
+            agg_metrics = {k if not section else f'{section}/{k}': v
+                           for k, v in load_from_folder(agg_metrics, ext='.json')}
+        elif section:
+            agg_metrics = {f'{section}/{k}': v
+                           for k, v in agg_metrics.items()}
         self._experiment.summary.update(agg_metrics)
 
-    def ind_metrics(self, ind_metrics: Union[dict, str, Path], step: int = 0, section: str = None):
+    def ind_metrics(self, ind_metrics, step: int = 0, section: str = None):
         """
         Save individual metrics to a table to see bad cases
 
