@@ -241,3 +241,8 @@ class WANDBLogger(Logger):
                 ) for value in values],
                 'step': step
             })
+
+    def chart(self, name: str, *figs, section: str = None):
+        from wandb import Image
+        name = name if section is None else f"{section}/{name}"
+        self._experiment.log({name: [Image(fig) for fig in figs]})
