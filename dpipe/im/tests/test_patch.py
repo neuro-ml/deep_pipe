@@ -46,45 +46,55 @@ class TestPatch(unittest.TestCase):
             box = get_centered_box(center, box_size=box_size)
             np.testing.assert_equal(box[1] - box[0], box_size)
             hits[tuple(box[0])] += 1
-        self.assertIn(hits[(0, 0)], range(400, 600))
+
+        assert 400 <= hits[(0, 0)] < 600
 
 
-class TestRandomPatch(unittest.TestCase):
-    def test_no_spatial_dims(self):
-        x = np.empty((3, 4, 10))
-        patch = get_random_patch(x, patch_size=[2, 2])
-        assert patch.shape == (3, 2, 2)
+def test_no_spatial_dims():
+    x = np.empty((3, 4, 10))
+    patch = get_random_patch(x, patch_size=[2, 2], axis=[-2, -1])
+    assert patch.shape == (3, 2, 2)
 
-    def test_multiple(self):
-        arrays = np.empty((3, 4, 10)), np.empty((20, 3, 4, 10)), np.empty((4, 10))
-        expected_shapes = [(3, 2, 2), (20, 3, 2, 2), (2, 2)]
 
-        shapes = [x.shape for x in get_random_patch(*arrays, patch_size=[2, 2])]
-        assert expected_shapes == shapes
+def test_multiple():
+    arrays = np.empty((3, 4, 10)), np.empty((20, 3, 4, 10)), np.empty((4, 10))
+    expected_shapes = [(3, 2, 2), (20, 3, 2, 2), (2, 2)]
 
-        shapes = [x.shape for x in get_random_patch(*arrays[::-1], patch_size=[2, 2])[::-1]]
-        assert expected_shapes == shapes
+    with pytest.raises(ValueError):
+        get_random_patch(*arrays, patch_size=[2, 2])
 
-    def test_raises(self):
-        with pytest.raises(ValueError):
-            get_random_patch(patch_size=1)
+    shapes = [x.shape for x in get_random_patch(*arrays, patch_size=[2, 2], axis=[-2, -1])]
+    assert expected_shapes == shapes
 
-    def test_spatial_dims(self):
-        x = np.empty((3, 4, 10))
-        patch = get_random_patch(x, patch_size=[2, 2], axis=[0, 2])
-        assert patch.shape == (2, 4, 2)
+    with pytest.raises(ValueError):
+        get_random_patch(*arrays[::-1], patch_size=[2, 2])
 
-    def test_get_random_box(self):
-        for _ in range(100):
-            size = np.random.randint(1, 6)
-            shape = get_random_tuple(5, 20, size)
-            kernel_size = get_random_tuple(1, min(shape) + 1, size)
+    shapes = [x.shape for x in get_random_patch(*arrays[::-1], patch_size=[2, 2], axis=[-2, -1])[::-1]]
+    assert expected_shapes == shapes
 
-            with self.subTest(shape=shape, kernel_size=kernel_size):
-                start, stop = get_random_box(shape, kernel_size)
-                np.testing.assert_array_compare(np.less_equal, 0, start)
-                np.testing.assert_array_compare(np.less_equal, start, stop)
-                np.testing.assert_array_compare(np.less_equal, stop, shape)
 
-        with pytest.raises(ValueError):
-            get_random_box([3], [4])
+def test_raises():
+    with pytest.raises(ValueError):
+        get_random_patch(patch_size=1)
+
+
+def test_spatial_dims():
+    x = np.empty((3, 4, 10))
+    patch = get_random_patch(x, patch_size=[2, 2], axis=[0, 2])
+    assert patch.shape == (2, 4, 2)
+
+
+def test_get_random_box(subtests):
+    for _ in range(100):
+        size = np.random.randint(1, 6)
+        shape = get_random_tuple(5, 20, size)
+        kernel_size = get_random_tuple(1, min(shape) + 1, size)
+
+        with subtests.test(shape=shape, kernel_size=kernel_size):
+            start, stop = get_random_box(shape, kernel_size)
+            np.testing.assert_array_compare(np.less_equal, 0, start)
+            np.testing.assert_array_compare(np.less_equal, start, stop)
+            np.testing.assert_array_compare(np.less_equal, stop, shape)
+
+    with pytest.raises(ValueError):
+        get_random_box([3], [4])

@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 from skimage.measure import label
 
@@ -13,7 +11,7 @@ __all__ = [
 
 
 def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: AxesParams = None,
-              axis: AxesLike = None, dtype=None, *, axes: AxesLike = None) -> np.ndarray:
+              axis: AxesLike = None, dtype=None) -> np.ndarray:
     """
     Normalize ``x``'s values to make mean and std independently along ``axes`` equal to 0 and 1 respectively
     (if specified).
@@ -35,11 +33,6 @@ def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: A
     dtype
         the dtype of the output.
     """
-    if axes is not None:
-        assert axis is None
-        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
-        axis = axes
-
     if axis is not None:
         axis = tuple(negate_indices(check_axes(axis), x.ndim))
 
@@ -63,16 +56,11 @@ def normalize(x: np.ndarray, mean: bool = True, std: bool = True, percentiles: A
     return x
 
 
-def min_max_scale(x: np.ndarray, axis: AxesLike = None, *, axes: AxesLike = None) -> np.ndarray:
+def min_max_scale(x: np.ndarray, axis: AxesLike = None) -> np.ndarray:
     """
     Scale ``x``'s values so that its minimum and maximum become 0 and 1 respectively
     independently along ``axes``.
     """
-    if axes is not None:
-        assert axis is None
-        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
-        axis = axes
-
     if axis is not None:
         axis = tuple(negate_indices(check_axes(axis), x.ndim))
 

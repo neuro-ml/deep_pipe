@@ -10,7 +10,7 @@ almost_eq = np.testing.assert_array_almost_equal
 def test_apply():
     x = np.random.rand(3, 10, 10) * 2 + 3
     almost_eq(
-        apply_along_axes(normalize, x, axes=(1, 2), percentiles=20),
+        apply_along_axes(normalize, x, axis=(1, 2), percentiles=20),
         normalize(x, percentiles=20, axis=0)
     )
 
