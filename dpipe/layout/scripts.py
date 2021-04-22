@@ -1,6 +1,6 @@
 import argparse
 
-from resource_manager import read_config
+import lazycon
 
 
 def build():
@@ -8,7 +8,7 @@ def build():
     parser.add_argument('config')
     args = parser.parse_known_args()[0]
 
-    layout = read_config(args.config).layout
+    layout = lazycon.load(args.config).layout
     layout.build_parser(parser)
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this message and exit')
 
@@ -21,7 +21,7 @@ def run():
     parser.add_argument('config')
     args = parser.parse_known_args()[0]
 
-    layout = read_config(args.config).layout
+    layout = lazycon.load(args.config).layout
     layout.run_parser(parser)
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this message and exit')
 

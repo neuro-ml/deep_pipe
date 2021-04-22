@@ -97,9 +97,9 @@ def aggregate_metric(xs, ys, metric, aggregate_fn=np.mean):
 
 
 def convert_to_aggregated(metrics: Dict[str, Callable], aggregate_fn: Callable = np.mean,
-                          key_prefix: str = '', *args, **kwargs):
+                          key_prefix: str = '', key_suffix: str = '', *args, **kwargs):
     return {
-        key_prefix + key: to_aggregated(metric, aggregate_fn, *args, **kwargs)
+        key_prefix + key + key_suffix: to_aggregated(metric, aggregate_fn, *args, **kwargs)
         for key, metric in metrics.items()
     }
 

@@ -86,8 +86,6 @@ def load(path: PathLike, **kwargs):
             kwargs['decompress'] = True
         return load_numpy(path, **kwargs)
     if name.endswith(('.csv', '.csv.gz')):
-        if name.endswith('.gz'):
-            kwargs['decompress'] = True
         return load_csv(path, **kwargs)
     if name.endswith(('.nii', '.nii.gz', '.hdr', '.img')):
         import nibabel
@@ -108,8 +106,8 @@ def load(path: PathLike, **kwargs):
         from SimpleITK import ReadImage
         return ReadImage(name, **kwargs)
     if name.endswith('.config'):
-        from resource_manager import read_config
-        return read_config(path, **kwargs)
+        import lazycon
+        return lazycon.load(path, **kwargs)
 
     raise ValueError(f'Couldn\'t read file "{path}". Unknown extension.')
 
@@ -217,19 +215,17 @@ def load_text(path: PathLike):
         return file.read()
 
 
-def save_csv(value, path: PathLike, *, compression: int = None, timestamp: int = None, **kwargs):
+def save_csv(value, path: PathLike, *, compression: int = None, **kwargs):
     if compression is not None:
-        with GzipFile(path, 'wb', compresslevel=compression, mtime=timestamp) as file:
-            return save_csv(value, file, **kwargs)
+        kwargs['compression'] = {
+            'method': 'gzip',
+            'compresslevel': compression,
+        }
 
     value.to_csv(path, **kwargs)
 
 
-def load_csv(path: PathLike, *, decompress: bool = False, **kwargs):
-    if decompress:
-        with GzipFile(path, 'rb') as file:
-            return load_csv(file, **kwargs)
-
+def load_csv(path: PathLike, **kwargs):
     import pandas as pd
     return pd.read_csv(path, **kwargs)
 

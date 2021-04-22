@@ -32,6 +32,7 @@ def zoom(x: np.ndarray, scale_factor: AxesParams, axis: AxesLike = None, order: 
     fill_value
         value to fill past edges. If Callable (e.g. `numpy.min`) - ``fill_value(x)`` will be used.
     """
+    x = _to_array(x)
     axis = _resolve_deprecation(axis, axes, x.ndim, scale_factor)
     scale_factor = fill_by_indices(np.ones(x.ndim, 'float64'), scale_factor, axis)
     if callable(fill_value):
@@ -60,6 +61,7 @@ def zoom_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, order: 
     fill_value
         value to fill past edges. If Callable (e.g. `numpy.min`) - ``fill_value(x)`` will be used.
     """
+    x = _to_array(x)
     axis = _resolve_deprecation(axis, axes, x.ndim, shape)
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(fill_by_indices(x.shape, shape, axis), 'float64')
@@ -84,6 +86,7 @@ def proportional_zoom_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = 
     order
         order of interpolation.
     """
+    x = _to_array(x)
     axis = _resolve_deprecation(axis, axes, x.ndim, shape)
     axis = expand_axes(axis, shape)
     scale_factor = (np.array(shape, 'float64') / extract(x.shape, axis)).min()
@@ -110,6 +113,7 @@ def pad(x: np.ndarray, padding: Union[AxesLike, Sequence[Sequence[int]]], axis: 
     axis
         axes along which ``x`` will be padded. If None - the last ``len(padding)`` axes are used.
     """
+    x = _to_array(x)
     padding = np.asarray(padding)
     if padding.ndim < 2:
         padding = padding.reshape(-1, 1)
@@ -145,8 +149,10 @@ def pad_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, padding_
     axis
         axes along which ``x`` will be padded. If None - the last ``len(shape)`` axes are used.
     ratio
-        the fraction of the padding that will be applied to the left, ``1 - ratio`` will be applied to the right.
+        the fraction of the padding that will be applied to the left, ``1.0 - ratio`` will be applied to the right.
+        By default ``0.5 - ratio``, it is applied uniformly to the left and right.
     """
+    x = _to_array(x)
     axis = _resolve_deprecation(axis, axes, x.ndim, shape)
     axis, shape, ratio = broadcast_to_axes(axis, shape, ratio)
     old_shape = np.array(x.shape)[list(axis)]
@@ -184,6 +190,7 @@ def pad_to_divisible(x: np.ndarray, divisor: AxesLike, axis: AxesLike = None,
     ----------
     `pad_to_shape`
     """
+    x = _to_array(x)
     axis = _resolve_deprecation(axis, axes, x.ndim, divisor)
     axis, divisor, remainder, ratio = broadcast_to_axes(axis, divisor, remainder, ratio)
     assert np.all(remainder >= 0)
@@ -206,6 +213,7 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
     ratio
         the fraction of the crop that will be applied to the left, ``1 - ratio`` will be applied to the right.
     """
+    x = _to_array(x)
     axis = _resolve_deprecation(axis, axes, x.ndim, shape)
     axis, shape, ratio = broadcast_to_axes(axis, shape, ratio)
     old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axis))
@@ -225,6 +233,7 @@ def crop_to_box(x: np.ndarray, box: Box, axis: AxesLike = None, padding_values: 
 
     If axes is None - the last ``box.shape[-1]`` axes are used.
     """
+    x = _to_array(x)
     start, stop = box
     axis = _resolve_deprecation(axis, axes, x.ndim, start)
     axis = expand_axes(axis, start)
@@ -248,6 +257,7 @@ def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesP
     """
     Pad ``x`` to match ``shape``. The left padding is taken equal to ``box``'s start.
     """
+    x = _to_array(x)
     assert len(shape) == x.ndim
     start, stop = box
 
@@ -258,6 +268,14 @@ def restore_crop(x: np.ndarray, box: Box, shape: AxesLike, padding_values: AxesP
     padding = np.array([start, shape - stop], dtype=int).T
     x = pad(x, padding, padding_values=padding_values)
     assert all(np.array(x.shape) == shape)
+    return x
+
+
+def _to_array(x):
+    # TODO: smarter check
+    # we want to handle torch when possible
+    if not hasattr(x, 'ndim') or not hasattr(x, 'shape'):
+        x = np.asarray(x)
     return x
 
 

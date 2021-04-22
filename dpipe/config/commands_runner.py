@@ -1,9 +1,13 @@
 import os
 import shutil
+from pathlib import Path
 from typing import Callable
 
+import numpy as np
+from dpipe.io import PathLike
+
 from dpipe.checks import join
-from dpipe.commands import lock_dir
+from dpipe.commands import lock_dir as _lock
 
 
 def _path_based_call(exists, missing, exists_message, missing_message, paths, keyword_paths, verbose):
@@ -33,6 +37,7 @@ def _path_based_call(exists, missing, exists_message, missing_message, paths, ke
     return value
 
 
+@np.deprecate
 def if_missing(func: Callable, *paths: str, verbose: bool = True, **keyword_paths: str):
     """
     Call ``func`` if at least some of the ``paths`` or ``keyword_paths`` do not exist.
@@ -55,3 +60,29 @@ def run(*args):
     if not args:
         raise ValueError('Nothing to run.')
     return args[-1]
+
+
+lock_dir = np.deprecate(_lock, message='lock_dir was moved to `dpipe.commands`')
+
+
+class Locker:
+    def __init__(self, folder: PathLike = '.', lock: str = '.lock'):
+        lock = Path(folder) / lock
+        if lock.exists():
+            raise FileExistsError(f'Trying to lock directory {lock.resolve().parent}, but it is already locked.')
+
+        lock.touch(exist_ok=False)
+        self.lock = lock
+
+    def run(*args):
+        if not args:
+            raise AttributeError('Use "Locker().run instead of Locker.run"')
+        self, *args = args
+        if not isinstance(self, Locker):
+            raise AttributeError('Use "Locker().run instead of Locker.run"')
+
+        os.remove(self.lock)
+
+    def __del__(self):
+        if hasattr(self, 'lock') and self.lock.exists():
+            os.remove(self.lock)

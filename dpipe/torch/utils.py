@@ -40,7 +40,6 @@ def load_model_state(module: nn.Module, path: PathLike, modify_state_fn: Callabl
         current_state = module.state_dict()
         state_to_load = modify_state_fn(current_state, state_to_load)
     module.load_state_dict(state_to_load)
-    return module
 
 
 def save_model_state(module: nn.Module, path: PathLike):
