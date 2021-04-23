@@ -230,7 +230,7 @@ class WANDBLogger(Logger):
             {
                 name: [Image(
                     value['image'],
-                    masks={k: {'mask_data': value[k] for k in keys}},
+                    masks={k: {'mask_data': value[k]} for k in masks_keys},
                     caption=value.get('caption', None)
                 ) for value in values],
                 'step': step
