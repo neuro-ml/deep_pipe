@@ -97,20 +97,20 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
     def decorator(predict):
         @wraps(predict)
         def wrapper(x, *args, **kwargs):
-            local_axis = resolve_deprecation(axis, x.ndim, patch_size, stride)
-            local_size, local_stride = broadcast_to_axis(local_axis, patch_size, stride)
+            input_axis = resolve_deprecation(axis, x.ndim, patch_size, stride)
+            local_size, local_stride = broadcast_to_axis(input_axis, patch_size, stride)
 
             if valid:
-                shape = np.array(x.shape)[list(local_axis)]
+                shape = extract(x.shape, input_axis)
                 padded_shape = np.maximum(shape, local_size)
                 new_shape = padded_shape + (local_stride - padded_shape + local_size) % local_stride
-                x = pad_to_shape(x, new_shape, local_axis, padding_values, ratio)
+                x = pad_to_shape(x, new_shape, input_axis, padding_values, ratio)
 
-            patches = pmap(predict, divide(x, local_size, local_stride, local_axis), *args, **kwargs)
-            prediction = combine(patches, extract(x.shape, local_axis), local_stride, local_axis)
+            patches = pmap(predict, divide(x, local_size, local_stride, input_axis), *args, **kwargs)
+            prediction = combine(patches, extract(x.shape, input_axis), local_stride, axis)
 
             if valid:
-                prediction = crop_to_shape(prediction, shape, local_axis, ratio)
+                prediction = crop_to_shape(prediction, shape, axis, ratio)
             return prediction
 
         return wrapper

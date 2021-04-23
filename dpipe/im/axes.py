@@ -36,9 +36,15 @@ def broadcast_to_axis(axis: AxesLike, *arrays: AxesParams):
     return tuple(np.repeat(x, len(axis) // len(x), 0) for x in arrays)
 
 
-def axis_from_dim(axis: Union[AxesLike, None], dim: int):
+def axis_from_dim(axis: Union[AxesLike, None], dim: int) -> tuple:
     if axis is None:
-        axis = tuple(range(dim))
+        return tuple(range(dim))
+
+    axis = check_axes(axis)
+    left, right = -dim, dim - 1
+    if min(axis) < left or max(axis) > right:
+        raise ValueError(f'For dim={dim} axis must be within ({left}, {right}): but provided {axis}.')
+
     return np.core.numeric.normalize_axis_tuple(axis, dim, 'axis')
 
 
