@@ -7,7 +7,7 @@ import numpy as np
 
 from .shape_ops import crop_to_box
 from .box import returns_box
-from .axes import fill_by_indices, AxesLike, resolve_deprecation
+from .axes import fill_by_indices, AxesLike, resolve_deprecation, check_axes
 from .shape_utils import shape_after_convolution, shape_after_full_convolution
 from ..checks import check_shape_along_axis
 from dpipe.itertools import squeeze_first, extract, lmap
@@ -45,6 +45,7 @@ def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axis: AxesLike =
             raise ValueError(f'Must pass the axes explicitly, because the arrays have different ndims: {dims}.')
 
         axis = resolve_deprecation(axis, arrays[0].ndim, patch_size)
+    axis = check_axes(axis)
     check_shape_along_axis(*arrays, axis=axis)
 
     shape = extract(arrays[0].shape, axis)

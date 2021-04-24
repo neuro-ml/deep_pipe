@@ -82,6 +82,8 @@ def test_spatial_dims():
     x = np.empty((3, 4, 10))
     patch = get_random_patch(x, patch_size=[2, 2], axis=[0, 2])
     assert patch.shape == (2, 4, 2)
+    patch = get_random_patch(x, patch_size=2, axis=2)
+    assert patch.shape == (3, 4, 2)
 
 
 def test_get_random_box(subtests):

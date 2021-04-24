@@ -67,6 +67,7 @@ def shape_after_convolution(shape: AxesLike, kernel_size: AxesLike, stride: Axes
     return new_shape
 
 
+# TODO: deprecate
 def shape_after_full_convolution(shape: AxesLike, kernel_size: AxesLike, axis: AxesLike = None, stride: AxesLike = 1,
                                  padding: AxesLike = 0, dilation: AxesLike = 1, valid: bool = True) -> tuple:
     """
