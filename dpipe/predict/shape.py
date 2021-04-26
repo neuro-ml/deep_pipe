@@ -1,15 +1,13 @@
-import warnings
-from functools import wraps, partial
+from functools import wraps
 from typing import Union, Callable
 
 import numpy as np
 
-from dpipe.im.axes import broadcast_to_axes, AxesLike, AxesParams
-from dpipe.im.grid import divide, combine
-from dpipe.itertools import extract
-from dpipe.im.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
-from dpipe.im.shape_utils import prepend_dims, extract_dims
-from dpipe.itertools import pmap
+from ..im.axes import broadcast_to_axis, AxesLike, AxesParams, axis_from_dim, resolve_deprecation
+from ..im.grid import divide, combine
+from ..itertools import extract, pmap
+from ..im.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
+from ..im.shape_utils import prepend_dims, extract_dims
 
 __all__ = 'add_extract_dims', 'divisible_shape', 'patches_grid'
 
@@ -45,7 +43,7 @@ def add_extract_dims(n_add: int = 1, n_extract: int = None, sequence: bool = Fal
 
 
 def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Union[AxesParams, Callable] = 0,
-                    ratio: AxesParams = 0.5, *, axes: AxesLike = None):
+                    ratio: AxesParams = 0.5):
     """
     Pads an incoming array to be divisible by ``divisor`` along the ``axes``. Afterwards the padding is removed.
 
@@ -64,20 +62,17 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
     ----------
     `pad_to_divisible`
     """
-    if axes is not None:
-        assert axis is None
-        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
-        axis = axes
-
-    axis, divisor, ratio = broadcast_to_axes(axis, divisor, ratio)
 
     def decorator(predict):
         @wraps(predict)
         def wrapper(x, *args, **kwargs):
-            shape = np.array(x.shape)[list(axis)]
-            x = pad_to_divisible(x, divisor, axis, padding_values, ratio)
+            local_axis = axis_from_dim(axis, x.ndim)
+            local_divisor, local_ratio = broadcast_to_axis(local_axis, divisor, ratio)
+
+            shape = np.array(x.shape)[list(local_axis)]
+            x = pad_to_divisible(x, local_divisor, local_axis, padding_values, local_ratio)
             result = predict(x, *args, **kwargs)
-            return crop_to_shape(result, shape, axis, ratio)
+            return crop_to_shape(result, shape, local_axis, local_ratio)
 
         return wrapper
 
@@ -85,7 +80,7 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
 
 
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
-                 padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5, *, axes: AxesLike = None):
+                 padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     predicted patches by averaging the overlapping regions.
@@ -97,25 +92,22 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
     ----------
     `grid.divide`, `grid.combine`, `pad_to_shape`
     """
-    if axes is not None:
-        assert axis is None
-        warnings.warn('`axes` has been renamed to `axis`', UserWarning)
-        axis = axes
-
-    axis, patch_size, stride = broadcast_to_axes(axis, patch_size, stride)
     valid = padding_values is not None
 
     def decorator(predict):
         @wraps(predict)
         def wrapper(x, *args, **kwargs):
-            if valid:
-                shape = np.array(x.shape)[list(axis)]
-                padded_shape = np.maximum(shape, patch_size)
-                new_shape = padded_shape + (stride - padded_shape + patch_size) % stride
-                x = pad_to_shape(x, new_shape, axis, padding_values, ratio)
+            input_axis = resolve_deprecation(axis, x.ndim, patch_size, stride)
+            local_size, local_stride = broadcast_to_axis(input_axis, patch_size, stride)
 
-            patches = pmap(predict, divide(x, patch_size, stride, axis), *args, **kwargs)
-            prediction = combine(patches, extract(x.shape, axis), stride, axis)
+            if valid:
+                shape = extract(x.shape, input_axis)
+                padded_shape = np.maximum(shape, local_size)
+                new_shape = padded_shape + (local_stride - padded_shape + local_size) % local_stride
+                x = pad_to_shape(x, new_shape, input_axis, padding_values, ratio)
+
+            patches = pmap(predict, divide(x, local_size, local_stride, input_axis), *args, **kwargs)
+            prediction = combine(patches, extract(x.shape, input_axis), local_stride, axis)
 
             if valid:
                 prediction = crop_to_shape(prediction, shape, axis, ratio)

@@ -2,7 +2,7 @@ import os
 import inspect
 
 from .axes import check_axes, AxesParams
-from dpipe.itertools import *
+from ..itertools import *
 from .shape_utils import *
 
 
@@ -11,7 +11,7 @@ def identity(x):
 
 
 # TODO: weaken the restriction to same ndim
-def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike, *args, **kwargs):
+def apply_along_axes(func: Callable, x: np.ndarray, axis: AxesLike, *args, **kwargs):
     """
     Apply ``func`` to slices from ``x`` taken along ``axes``.
     ``args`` and ``kwargs`` are passed as additional arguments.
@@ -20,15 +20,15 @@ def apply_along_axes(func: Callable, x: np.ndarray, axes: AxesLike, *args, **kwa
     -----
     ``func`` must return an array of the same shape as it received.
     """
-    axes = check_axes(axes)
-    if len(axes) == x.ndim:
+    axis = check_axes(axis)
+    if len(axis) == x.ndim:
         return func(x)
 
-    other_axes = negate_indices(axes, x.ndim)
+    other_axes = negate_indices(axis, x.ndim)
     begin = np.arange(len(other_axes))
 
     y = np.moveaxis(x, other_axes, begin)
-    result = np.stack([func(patch, *args, **kwargs) for patch in y.reshape(-1, *extract(x.shape, axes))])
+    result = np.stack([func(patch, *args, **kwargs) for patch in y.reshape(-1, *extract(x.shape, axis))])
     return np.moveaxis(result.reshape(*y.shape), begin, other_axes)
 
 

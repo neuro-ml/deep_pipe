@@ -11,28 +11,41 @@ AxesParams = Union[float, Sequence[float]]
 
 def fill_by_indices(target, values, indices):
     """Replace the values in ``target`` located at ``indices`` by the ones from ``values``."""
-    indices = expand_axes(indices, values)
+    assert indices is not None
+    indices = check_axes(indices)
     target = np.array(target)
     target[list(indices)] = values
     return tuple(target)
 
 
-def broadcast_to_axes(axes: Union[AxesLike, None], *arrays: AxesParams):
+def broadcast_to_axis(axis: AxesLike, *arrays: AxesParams):
     """Broadcast ``arrays`` to the length of ``axes``. Axes are inferred from the arrays if necessary."""
     if not arrays:
         raise ValueError('No arrays provided.')
 
     arrays = lmap(np.atleast_1d, arrays)
     lengths = lmap(len, arrays)
-    if axes is None:
-        axes = list(range(-max(lengths), 0))
-    axes = check_axes(axes)
+    if axis is None:
+        raise ValueError('`axis` cannot be None')
 
-    if not all(len(axes) == x or x == 1 for x in lengths):
-        raise ValueError(f'Axes and arrays are not broadcastable: {len(axes)} vs {join(lengths)}.')
+    axis = check_axes(axis)
 
-    arrays = [np.repeat(x, len(axes) // len(x), 0) for x in arrays]
-    return (axes, *arrays)
+    if not all(len(axis) == x or x == 1 for x in lengths):
+        raise ValueError(f'Axes and arrays are not broadcastable: {len(axis)} vs {join(lengths)}.')
+
+    return tuple(np.repeat(x, len(axis) // len(x), 0) for x in arrays)
+
+
+def axis_from_dim(axis: Union[AxesLike, None], dim: int) -> tuple:
+    if axis is None:
+        return tuple(range(dim))
+
+    axis = check_axes(axis)
+    left, right = -dim, dim - 1
+    if min(axis) < left or max(axis) > right:
+        raise ValueError(f'For dim={dim} axis must be within ({left}, {right}): but provided {axis}.')
+
+    return np.core.numeric.normalize_axis_tuple(axis, dim, 'axis')
 
 
 def check_axes(axes) -> tuple:
@@ -47,10 +60,6 @@ def check_axes(axes) -> tuple:
     return axes
 
 
-def expand_axes(axes, values) -> tuple:
-    return broadcast_to_axes(axes, values)[0]
-
-
 def ndim2spatial_axes(ndim):
     """
     >>> ndim2spatial_axes(3)
@@ -60,3 +69,12 @@ def ndim2spatial_axes(ndim):
     (-1,)
     """
     return tuple(range(-ndim, 0))
+
+
+def resolve_deprecation(axis, ndim, *values):
+    # in this case the behaviour is not consistent
+    if axis is None and any(ndim != len(np.atleast_1d(v)) for v in values):
+        raise ValueError('In the future the last axes will not be used to infer `axis`. '
+                         'Pass the appropriate `axis` to suppress this error.')
+
+    return axis_from_dim(axis, ndim)

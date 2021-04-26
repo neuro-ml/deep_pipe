@@ -1,6 +1,5 @@
 from functools import wraps
 from typing import Callable
-
 import numpy as np
 
 from .itertools import extract
@@ -11,7 +10,10 @@ def join(values):
 
 
 def check_shape_along_axis(*arrays, axis):
-    sizes = [tuple(extract(x.shape, np.atleast_1d(axis))) for x in arrays]
+    sizes = []
+    for array in arrays:
+        sizes.append(tuple(extract(array.shape, np.core.numeric.normalize_axis_tuple(axis, array.ndim))))
+
     if any(x != sizes[0] for x in sizes):
         raise ValueError(f'Arrays of equal size along axis {axis} are required: {join(sizes)}')
 

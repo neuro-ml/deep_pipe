@@ -178,7 +178,7 @@ def masked_loss(mask: torch.Tensor, criterion: Callable, prediction: torch.Tenso
     If the ``mask`` is empty - returns 0 wrapped in a torch tensor.
     """
     if not mask.any():
-        return torch.tensor(0).to(prediction)
+        return torch.tensor(0., requires_grad=True).to(prediction)
 
     return criterion(prediction[mask], target[mask], **kwargs)
 

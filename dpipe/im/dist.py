@@ -6,8 +6,8 @@ from typing import Union, Sequence, Callable
 import torch
 import numpy as np
 
-from .axes import fill_by_indices, AxesLike
-from dpipe.itertools import zip_equal, collect
+from .axes import fill_by_indices, AxesLike, axis_from_dim
+from ..itertools import zip_equal, collect
 from ..torch import to_var
 
 __all__ = 'weighted_sum', 'expectation', 'marginal_expectation', 'polynomial'
@@ -103,7 +103,7 @@ def marginal_expectation(distribution: Tensor, axis: AxesLike,
 
     ``args`` and ``kwargs`` are passed to ``integral`` as  additional arguments.
     """
-    axis = np.core.numeric.normalize_axis_tuple(axis, distribution.ndim, 'axis')
+    axis = axis_from_dim(axis, distribution.ndim)
     if callable(integrals):
         integrals = [integrals]
     if len(integrals) == 1:

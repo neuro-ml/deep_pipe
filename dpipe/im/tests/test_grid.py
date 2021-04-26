@@ -1,8 +1,11 @@
 import unittest
 
 import numpy as np
+import pytest
 
 from dpipe.im.grid import get_boxes, combine, divide
+
+almost_eq = np.testing.assert_array_almost_equal
 
 
 class TestGrid(unittest.TestCase):
@@ -18,7 +21,7 @@ class TestGrid(unittest.TestCase):
         self.assertEqual(len(x_parts), np.prod((1, 5, 7, 9)))
 
     def test_divide_combine(self):
-        result_shape = np.array((3, 40, 56, 72))
+        result_shape = (3, 40, 56, 72)
         slices = tuple([slice(None)] + [slice(1, -1)] * 3)
         a1 = np.random.randn(*self.x_shape)
         a_parts = divide(a1, self.patch_size, self.stride)
@@ -28,7 +31,7 @@ class TestGrid(unittest.TestCase):
     def test_get_boxes_grid(self):
         shape = np.array((10, 15, 27, 3))
         box_size = (3, 3, 3, 3)
-        grid = np.stack(list(get_boxes(shape, box_size, stride=1)))
+        grid = np.stack(list(get_boxes(shape, box_size, stride=1, axis=(0, 1, 2, 3))))
         start, stop = grid[:, 0], grid[:, 1]
 
         self.assertEqual(np.prod(shape - box_size + 1), len(grid))
@@ -36,18 +39,23 @@ class TestGrid(unittest.TestCase):
         self.assertTrue((stop <= shape).all())
         self.assertTrue((start + box_size == stop).all())
 
-    def test_combine_int(self):
-        patch_size = np.array([20] * 3, int)
-        stride = patch_size // 2
-        shape = [45, 43, 48]
 
-        x = np.random.randint(0, 100, size=(1, *shape))
-        np.testing.assert_array_almost_equal(x, combine(divide(x, patch_size, stride), shape, stride))
+def test_combine_int():
+    patch_size = np.array([20] * 3, int)
+    stride = patch_size // 2
+    shape = [45, 43, 48]
 
-    def test_combine_grid_patches(self):
-        stride = patch_size = [20] * 3
-        for _ in range(20):
-            shape = np.random.randint(40, 50, size=3)
-            with self.subTest(shape=shape):
-                x = np.random.randn(1, *shape)
-                np.testing.assert_array_almost_equal(x, combine(divide(x, patch_size, stride), shape, stride))
+    x = np.random.randint(0, 100, size=(1, *shape))
+    almost_eq(x, combine(divide(x, patch_size, stride, axis=[1, 2, 3]), shape, stride, axis=[1, 2, 3]))
+
+    with pytest.raises(ValueError):
+        combine(divide(x, patch_size, stride), shape, stride)
+
+
+def test_combine_grid_patches(subtests):
+    stride = patch_size = [20] * 3
+    for _ in range(20):
+        shape = np.random.randint(40, 50, size=3)
+        with subtests.test(shape=shape):
+            x = np.random.randn(1, *shape)
+            almost_eq(x, combine(divide(x, patch_size, stride, axis=[1, 2, 3]), shape, stride, axis=[1, 2, 3]))

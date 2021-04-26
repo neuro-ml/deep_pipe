@@ -1,4 +1,3 @@
-import warnings
 from typing import Callable, Union
 
 import numpy as np
@@ -6,8 +5,8 @@ import torch
 import torch.nn as nn
 from torch.nn import functional
 
-from dpipe.im.axes import AxesLike, expand_axes, check_axes
-from dpipe.torch.functional import moveaxis, softmax
+from ..im.axes import AxesLike, axis_from_dim
+from ..torch.functional import moveaxis, softmax
 
 
 class InterpolateToInput(nn.Module):
@@ -26,27 +25,19 @@ class InterpolateToInput(nn.Module):
         If ``axes`` is ``None``, the result is interpolated along all the spatial axes.
     """
 
-    def __init__(self, path: nn.Module, mode: str = 'nearest', axis: AxesLike = None, *, axes: AxesLike = None):
+    def __init__(self, path: nn.Module, mode: str = 'nearest', axis: AxesLike = None):
         super().__init__()
-        if axes is not None:
-            assert axis is None
-            warnings.warn('`axes` has been renamed to `axis`', UserWarning)
-            axis = axes
-
         self.axes = axis
         self.path = path
         self.mode = mode
 
     def forward(self, x):
         old_shape = x.shape[2:]
-        axes = self.axes
-        if axes is None:
-            axes = expand_axes(axes, old_shape)
-        axes = check_axes(axes)
+        axis = axis_from_dim(self.axes, len(old_shape))
 
         x = self.path(x)
         new_shape = list(x.shape[2:])
-        for i in axes:
+        for i in axis:
             new_shape[i] = old_shape[i]
 
         if np.not_equal(x.shape[2:], new_shape).any():
