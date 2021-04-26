@@ -76,8 +76,8 @@ def load(path: PathLike, **kwargs):
     ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, tif, png, jpg, bmp, hdr, img, csv,
-        dcm, nii, nii.gz, json, mhd, csv, txt, pickle, pkl, config
+        npy, npy.gz, tif, png, jpg, bmp, hdr, img, csv, csv.gz,
+        dcm, nii, nii.gz, json, mhd, csv, txt, log, pickle, pkl, config
     """
     name = Path(path).name
 
@@ -100,7 +100,7 @@ def load(path: PathLike, **kwargs):
         return load_json(path, **kwargs)
     if name.endswith(('.pkl', '.pickle')):
         return load_pickle(path, **kwargs)
-    if name.endswith('.txt'):
+    if name.endswith(('.txt', '.log')):
         return load_text(path)
     if name.endswith('.mhd'):
         from SimpleITK import ReadImage
@@ -118,8 +118,8 @@ def save(value, path: PathLike, **kwargs):
     ``kwargs`` are format-specific keyword arguments.
 
     The following extensions are supported:
-        npy, npy.gz, tif, png, jpg, bmp, hdr, img, csv
-        nii, nii.gz, json, mhd, csv, txt, pickle, pkl
+        npy, npy.gz, tif, png, jpg, bmp, hdr, img, csv, csv.gz,
+        dcm, nii, nii.gz, json, mhd, csv, txt, log, pickle, pkl
     """
     name = Path(path).name
 
@@ -146,7 +146,7 @@ def save(value, path: PathLike, **kwargs):
         save_json(value, path, **kwargs)
     elif name.endswith(('.pkl', '.pickle')):
         save_pickle(value, path, **kwargs)
-    elif name.endswith('.txt'):
+    elif name.endswith(('.txt', '.log')):
         save_text(value, path)
 
     else:
