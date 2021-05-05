@@ -2,7 +2,7 @@ import numpy as np
 
 from dpipe.itertools import extract
 from ..checks import check_len
-from .axes import broadcast_to_axes, fill_by_indices, AxesLike
+from .axes import broadcast_to_axis, fill_by_indices, AxesLike, resolve_deprecation
 
 
 def compute_shape_from_spatial(complete_shape, spatial_shape, spatial_dims):
@@ -67,15 +67,18 @@ def shape_after_convolution(shape: AxesLike, kernel_size: AxesLike, stride: Axes
     return new_shape
 
 
-def shape_after_full_convolution(shape: AxesLike, kernel_size: AxesLike, axes: AxesLike = None, stride: AxesLike = 1,
+# TODO: deprecate
+def shape_after_full_convolution(shape: AxesLike, kernel_size: AxesLike, axis: AxesLike = None, stride: AxesLike = 1,
                                  padding: AxesLike = 0, dilation: AxesLike = 1, valid: bool = True) -> tuple:
     """
     Get the shape of a tensor after applying a convolution with corresponding parameters along the given axes.
     The dimensions along the remaining axes will become singleton.
     """
-    axes, *params = broadcast_to_axes(axes, kernel_size, stride, padding, dilation)
+    params = kernel_size, stride, padding, dilation
+    axis = resolve_deprecation(axis, len(np.atleast_1d(shape)), *params)
+    params = broadcast_to_axis(axis, *params)
 
     return fill_by_indices(
         np.ones_like(shape),
-        shape_after_convolution(extract(shape, axes), *params, valid), axes
+        shape_after_convolution(extract(shape, axis), *params, valid), axis
     )

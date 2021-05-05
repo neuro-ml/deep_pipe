@@ -147,7 +147,7 @@ class NamedTBLogger(TBLogger):
 
 class WANDBLogger(Logger):
     def __init__(self, project, run_name=None, *,
-                 entity='neuro-ml', config=None, model=None, criterion=None):
+                 entity='neuro-ml', config=None, model=None, criterion=None, resume="auto"):
         """
         A logger that writes to a wandb run.
 
@@ -156,10 +156,11 @@ class WANDBLogger(Logger):
         import wandb
         self._experiment = wandb.init(
             entity=entity,
-            project=project
+            project=project,
+            resume=resume
         )
         if run_name is not None:
-            self._experiment.name = run_name
+            self._experiment.name = run_name  # can be changed manually
 
         if config is not None:
             self.config(config)
@@ -216,7 +217,8 @@ class WANDBLogger(Logger):
         name = "Individual Metrics" if section is None else f"{section}/Individual Metrics"
         self._experiment.log({name: table, 'step': step})
 
-    def image(self, name: str, *values, step: int, section: str = None):
+    def image(self, name: str, *values, step: int, section: str = None,
+              masks_keys: tuple = ('predictions', 'ground_truth')):
         """
         Method that logs images (set by values),
         each value is a dict with fields,preds,target and optinally caption defined
@@ -229,20 +231,12 @@ class WANDBLogger(Logger):
             {
                 name: [Image(
                     value['image'],
-                    masks={
-                        'predictions': {
-                            'mask_data': value['pred']
-                        },
-                        'ground_truth': {
-                            'mask_data': value['target']
-                        }
-                    },
+                    masks={k: {'mask_data': value[k]} for k in masks_keys},
                     caption=value.get('caption', None)
                 ) for value in values],
                 'step': step
             })
 
-    def chart(self, name: str, *figs, section: str = None):
-        from wandb import Image
+    def log_info(self, name: str, wandb_converter, *infos, section: str = None):
         name = name if section is None else f"{section}/{name}"
-        self._experiment.log({name: [Image(fig) for fig in figs]})
+        self._experiment.log({name: [wandb_converter(info) for info in infos]})

@@ -9,7 +9,7 @@ assert_eq = np.testing.assert_array_almost_equal
 
 def test_patches_grid():
     def check_equal(**kwargs):
-        assert_eq(x, patches_grid(**kwargs)(identity)(x))
+        assert_eq(x, patches_grid(**kwargs, axis=-1)(identity)(x))
 
     x = np.random.randn(3, 23, 20, 27) * 10
     check_equal(patch_size=10, stride=1, padding_values=0)

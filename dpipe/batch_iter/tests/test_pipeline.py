@@ -18,7 +18,7 @@ def test_wrapper():
 
 def test_parallel():
     size = 10
-    sleep = 1
+    sleep = 0.5
 
     start = time.time()
     for item in wrap_pipeline(range(size), lambda x: time.sleep(sleep)):
