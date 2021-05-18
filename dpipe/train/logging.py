@@ -148,7 +148,7 @@ class NamedTBLogger(TBLogger):
 
 class WANDBLogger(Logger):
     def __init__(self, project, run_name=None, *,
-                 entity='neuro-ml', config=None, model=None, criterion=None, resume="auto"):
+                 entity='neuro-ml', config=None, model=None, criterion=None, dir=None, resume="auto"):
         """
         A logger that writes to a wandb run.
 
@@ -157,7 +157,8 @@ class WANDBLogger(Logger):
         self._experiment = wandb.init(
             entity=entity,
             project=project,
-            resume=resume
+            resume=resume,
+            dir=dir
         )
         if run_name is not None:
             self._experiment.name = run_name  # can be changed manually
