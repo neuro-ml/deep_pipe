@@ -9,6 +9,7 @@ import numpy as np
 from dpipe.commands import load_from_folder
 from dpipe.io import PathLike
 from dpipe.im.utils import zip_equal
+import wandb
 
 __all__ = 'Logger', 'ConsoleLogger', 'TBLogger', 'NamedTBLogger', 'WANDBLogger'
 
@@ -153,7 +154,6 @@ class WANDBLogger(Logger):
 
         Call wandb.login() before usage.
         """
-        import wandb
         self._experiment = wandb.init(
             entity=entity,
             project=project,
@@ -197,7 +197,10 @@ class WANDBLogger(Logger):
         elif section:
             agg_metrics = {f'{section}/{k}': v
                            for k, v in agg_metrics.items()}
-        self._experiment.summary.update(agg_metrics)
+
+        for k, v in agg_metrics.items():
+            self._experiment.summary[k] = v
+            #self._experiment.summary.update()
 
     def ind_metrics(self, ind_metrics, step: int = 0, section: str = None):
         """
