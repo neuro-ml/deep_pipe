@@ -5,7 +5,6 @@ import numpy as np
 from tqdm import tqdm
 
 from dpipe.dataset.base import AbstractAttribute, ABCAttributesMeta
-from dpipe.train.logging import WANDBLogger
 
 
 class Policy:
@@ -299,6 +298,3 @@ class LoggerPolicy(Policy):
     def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None):
         self.logger.train(train_losses, epoch)
         self.logger.metrics(metrics, epoch)
-
-
-
