@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
-from typing import Sequence, Callable, Dict, Any, List
+from typing import Sequence, Callable, Dict, Any, List, Union
 
 import numpy as np
 from tqdm import tqdm
 
 from dpipe.dataset.base import AbstractAttribute, ABCAttributesMeta
+from dpipe.train.logging import WANDBLogger
 
 
 class Policy:
@@ -280,3 +281,24 @@ class TQDM(Policy):
     def validation_started(self, epoch: int, train_losses: Sequence):
         self.bar.close()
         self.bar = None
+
+
+class LoggerPolicy(Policy):
+    def __init__(self, logger):
+        self.logger = logger
+
+    def train_step_finished(self, epoch: int, iteration: int, loss: Union[dict, float]):
+        if not isinstance(loss, dict):
+            loss = {'train/loss_step': loss}
+        else:
+            loss = {f'train/loss_step/{name}': v for name, v in loss.items()}
+
+        for name, value in loss.items():
+            self.logger.value(name, value)
+
+    def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None):
+        self.logger.train(train_losses, epoch)
+        self.logger.metrics(metrics, epoch)
+
+
+

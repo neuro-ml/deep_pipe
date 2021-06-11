@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Sequence, Union
 
 import numpy as np
-from dpipe.train import Policy
 
 from dpipe.commands import load_from_folder
 from dpipe.io import PathLike
@@ -147,7 +146,7 @@ class NamedTBLogger(TBLogger):
             self.logger.log_scalar(f'train/loss/{name}', value, step)
 
 
-class WANDBLogger(Logger, Policy):
+class WANDBLogger(Logger):
     def __init__(self, project, run_name=None, *,
                  entity='neuro-ml', config=None, model=None, criterion=None, dir=None, resume="auto"):
         """
@@ -184,16 +183,7 @@ class WANDBLogger(Logger, Policy):
         self._experiment.watch(model, criterion=criterion)
 
     def config(self, config_args):
-        self._experiment.config.update(config_args)
-
-    def train_step_finished(self, epoch: int, iteration: int, loss: Any):
-        if not isinstance(loss, dict):
-            loss = {'train/loss_step': loss}
-        else:
-            loss = {f'train/loss_step/{name}': v for name, v in loss.items()}
-
-        for name, value in loss.items():
-            self.value(name, value)
+        self._experiment.config.update(config_args, allow_val_change=True)
 
     def agg_metrics(self, agg_metrics: Union[dict, str, Path], section=''):
         """
