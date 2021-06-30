@@ -162,6 +162,11 @@ class WANDBLogger(Logger):
         )
         if run_name is not None:
             self._experiment.name = run_name  # can be changed manually
+        else:
+            self._experiment.name = Path(self._experiment.dir).parent.name
+
+        self._experiment.group = Path(self._experiment.dir).parent.parent.name
+
 
         if config is not None:
             self.config(config)
