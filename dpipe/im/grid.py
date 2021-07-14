@@ -2,18 +2,18 @@
 Function for working with patches from tensors.
 See the :doc:`tutorials/patches` tutorial for more details.
 """
-from typing import Iterable
+from typing import Iterable, Type, Tuple
 
 import numpy as np
 
 from .shape_ops import crop_to_box
 from .axes import fill_by_indices, AxesLike, resolve_deprecation, axis_from_dim, broadcast_to_axis
 from .box import make_box_, Box
-from dpipe.itertools import zip_equal, peek, negate_indices, extract
+from dpipe.itertools import zip_equal, peek
 from .shape_utils import shape_after_convolution
 from .utils import build_slices
 
-__all__ = 'get_boxes', 'divide', 'combine'
+__all__ = 'get_boxes', 'divide', 'combine', 'PatchCombiner', 'Average'
 
 
 def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
@@ -72,11 +72,40 @@ def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axis: AxesLike
         yield crop_to_box(x, box)
 
 
+class PatchCombiner:
+    def __init__(self, shape: Tuple[int, ...], dtype: np.dtype):
+        self.dtype = dtype
+        self.shape = shape
+
+    def update(self, box: Box, patch: np.ndarray):
+        raise NotImplementedError
+
+    def build(self) -> np.ndarray:
+        raise NotImplementedError
+
+
+class Average(PatchCombiner):
+    def __init__(self, shape: Tuple[int, ...], dtype: np.dtype):
+        super().__init__(shape, dtype)
+        self._result = np.zeros(shape, dtype)
+        self._counts = np.zeros(shape, int)
+
+    def update(self, box: Box, patch: np.ndarray):
+        slc = build_slices(*box)
+        self._result[slc] += patch
+        self._counts[slc] += 1
+
+    def build(self):
+        np.true_divide(self._result, self._counts, out=self._result, where=self._counts > 0)
+        return self._result
+
+
 def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike,
-            axis: AxesLike = None, valid: bool = False) -> np.ndarray:
+            axis: AxesLike = None, valid: bool = False, combiner: Type[PatchCombiner] = Average) -> np.ndarray:
     """
     Build a tensor of shape ``output_shape`` from ``patches`` obtained in a convolution-like approach
-    with corresponding parameters. The overlapping parts are averaged.
+    with corresponding parameters.
+    The overlapping parts are aggregated using the strategy from ``combiner`` - Average by default.
 
     References
     ----------
@@ -98,12 +127,8 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     if not np.issubdtype(dtype, np.floating):
         dtype = float
 
-    result = np.zeros(output_shape, dtype)
-    counts = np.zeros(output_shape, int)
+    combiner = combiner(output_shape, dtype)
     for box, patch in zip_equal(get_boxes(output_shape, patch_size, stride, valid=valid), patches):
-        slc = build_slices(*box)
-        result[slc] += patch
-        counts[slc] += 1
+        combiner.update(box, patch)
 
-    np.true_divide(result, counts, out=result, where=counts > 0)
-    return result
+    return combiner.build()
