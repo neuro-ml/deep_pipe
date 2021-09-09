@@ -166,6 +166,11 @@ class WANDBLogger(Logger):
         else:
             self._experiment.name = Path(self._experiment.dir).parent.parent.parent.parent.name
 
+        try:
+            self._experiment.save('resources.config', Path(self._experiment.dir).parent.parent.parent.parent, 'now')
+        except:
+            pass
+
         if config is not None:
             self.config(config)
 
