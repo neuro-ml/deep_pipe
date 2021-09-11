@@ -149,7 +149,7 @@ def single_strategy(model):
 def composite_strategy(model):
     strategies = []
 
-    def make_strategy(accum, use_hf, lr, first_logger=None, second_logger=None):
+    def make_strategy(accum, use_hf, lr, composed_logger=None, first_logger=None, second_logger=None):
         opt = SGD(model.parameters(), lr=lr.value if isinstance(lr, ValuePolicy) else lr)
         if not torch.cuda.is_available():
             use_hf = False
@@ -168,8 +168,9 @@ def composite_strategy(model):
         second_strategy = make_forward_strategy(
             batch_size=11, batches_per_epoch=5, use_hf=use_hf, model=model, n_targets=0, logger=second_logger
         )
-        composed = CompositeTrainStrategy(first_strategy, second_strategy, optimization_policy=accum)
-
+        composed = CompositeTrainStrategy(
+            first_strategy, second_strategy, optimization_policy=accum, logger=composed_logger
+        )
         nonlocal strategies
         strategies.extend([first_strategy, second_strategy])
         return composed, model

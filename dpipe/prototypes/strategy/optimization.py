@@ -4,6 +4,7 @@ from torch.cuda.amp import GradScaler
 from abc import ABCMeta, abstractmethod
 from typing import Sequence, Any, Generator, Union, Dict
 
+from dpipe.torch import to_np
 from dpipe.torch.utils import set_params
 from .policy import PolicyHandler, Policy
 
@@ -68,7 +69,7 @@ class GradientsAccumulator(OptimizationPolicy):
                 total_loss += loss
             self.optimizer.step()
 
-        return total_loss
+        return to_np(total_loss)
 
 
 class LossAccumulator(OptimizationPolicy):
@@ -89,4 +90,4 @@ class LossAccumulator(OptimizationPolicy):
             total_loss.backward()
             self.optimizer.step()
 
-        return total_loss
+        return to_np(total_loss)

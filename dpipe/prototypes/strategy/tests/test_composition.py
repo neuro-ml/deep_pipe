@@ -2,8 +2,9 @@ import pytest
 import numpy as np
 
 from dpipe.torch import to_np
+from dpipe.train import ConsoleLogger
 from dpipe.torch import inference_step
-from dpipe.prototypes import GradientsAccumulator, LossAccumulator
+from dpipe.prototypes import GradientsAccumulator, LossAccumulator, train_multiple_strategies
 
 
 @pytest.mark.parametrize("use_hf", [True, False])
@@ -18,9 +19,9 @@ def test_forward_loss(composite_strategy, use_hf, accum, task_data):
     second_loss = 2 * np.mean((first_pred - second_pred) ** 2)
     composed_loss = first_loss + second_loss
     s.start_epoch(0)
-    first_batch_loss = to_np(s.process_batch(0, 0))
+    first_batch_loss = s.process_batch(0, 0)
     assert np.isclose(composed_loss, first_batch_loss, atol=1e-3)
-    second_batch_loss = to_np(s.process_batch(0, 1))
+    second_batch_loss = s.process_batch(0, 1)
     assert np.isclose(composed_loss, second_batch_loss, atol=1e-3)
 
 
@@ -47,3 +48,11 @@ def test_optimization(composite_strategy, use_hf, accum, task_data):
         # check updates
         assert np.isclose(to_np(model.weight), init_weight - lr * w_grad, atol=atol)
         assert np.isclose(to_np(model.bias), init_bias - lr * b_grad, atol=atol)
+
+
+@pytest.mark.parametrize("use_hf", [True, False])
+@pytest.mark.parametrize("accum", [GradientsAccumulator, LossAccumulator])
+def test_loss_logging(composite_strategy, use_hf, accum, task_data):
+    logger = ConsoleLogger()
+    strategy, _ = composite_strategy(accum, use_hf, lr=0.1, composed_logger=logger)
+    train_multiple_strategies(strategy, n_epochs=2)
