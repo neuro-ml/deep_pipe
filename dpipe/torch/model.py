@@ -101,7 +101,8 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
     return to_np(loss)
 
 
-def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity) -> np.ndarray:
+def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity,
+                   scaler: torch.cuda.amp.GradScaler = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -112,12 +113,14 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     """
     architecture.eval()
     with torch.no_grad():
-        return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
+        with torch.cuda.amp.autocast(scaler is not None or torch.is_autocast_enabled()):
+            return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
 
 
 @collect
 def multi_inference_step(*inputs: np.ndarray, architecture: Module,
-                         activations: Union[Callable, Sequence[Union[Callable, None]]] = identity) -> np.ndarray:
+                         activations: Union[Callable, Sequence[Union[Callable, None]]] = identity,
+                         scaler: torch.cuda.amp.GradScaler = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -130,14 +133,15 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     """
     architecture.eval()
     with torch.no_grad():
-        results = architecture(*sequence_to_var(*inputs, device=architecture))
-        if callable(activations):
-            activations = [activations] * len(results)
+        with torch.cuda.amp.autocast(scaler is not None or torch.is_autocast_enabled()):
+            results = architecture(*sequence_to_var(*inputs, device=architecture))
+            if callable(activations):
+                activations = [activations] * len(results)
 
-        for activation, result in zip_equal(activations, results):
-            if activation is not None:
-                result = activation(result)
-            yield to_np(result)
+            for activation, result in zip_equal(activations, results):
+                if activation is not None:
+                    result = activation(result)
+                yield to_np(result)
 
 
 @np.deprecate
