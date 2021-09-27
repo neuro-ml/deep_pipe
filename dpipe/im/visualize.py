@@ -19,10 +19,11 @@ def _get_rows_cols(max_cols, data):
 
 
 def _slice_base(data: [np.ndarray], axis: int = -1, scale: int = 5, max_columns: int = None, colorbar: bool = False,
-                show_axes: bool = False, cmap: Union[Colormap, str] = 'gray', vlim: AxesParams = None,
+                show_axes: bool = False, cmap: Union[Colormap, str, Sequence[Colormap], Sequence[str]] = 'gray', vlim: AxesParams = None,
                 callback: Callable = None, sliders: dict = None, titles: list = None):
     from ipywidgets import interact, IntSlider
     check_shape_along_axis(*data, axis=axis)
+    cmap = np.broadcast_to(cmap, len(data)).tolist()
     vlim = np.broadcast_to(vlim, [len(data), 2]).tolist()
     rows, columns = _get_rows_cols(max_columns, data)
     sliders = sliders or {}
@@ -40,8 +41,8 @@ def _slice_base(data: [np.ndarray], axis: int = -1, scale: int = 5, max_columns:
         # hide unneeded axes
         for ax in axes[len(data):]:
             ax.set_visible(False)
-        for ax, x, (vmin, vmax), title in zip(axes, data, vlim, titles):
-            im = ax.imshow(x.take(idx, axis=axis), cmap=cmap, vmin=vmin, vmax=vmax)
+        for ax, x, cmap_, (vmin, vmax), title in zip(axes, data, cmap, vlim, titles):
+            im = ax.imshow(x.take(idx, axis=axis), cmap=cmap_, vmin=vmin, vmax=vmax)
             if colorbar:
                 fig.colorbar(im, ax=ax, orientation='horizontal')
             if not show_axes:
