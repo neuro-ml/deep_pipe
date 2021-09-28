@@ -1,6 +1,7 @@
 """
 Tools for patch extraction and generation.
 """
+from functools import partial
 from typing import Callable
 
 import numpy as np
@@ -13,13 +14,15 @@ from ..checks import check_shape_along_axis
 from dpipe.itertools import squeeze_first, extract, lmap
 
 
-def uniform(shape):
-    return np.array(lmap(np.random.randint, np.atleast_1d(shape)))
+def uniform(shape, random_state: np.random.RandomState = None):
+    if not isinstance(random_state, np.random.RandomState):
+        random_state = np.random.RandomState(seed=random_state)
+    return np.array(lmap(random_state.randint, np.atleast_1d(shape)))
 
 
-def sample_box_center_uniformly(shape, box_size: np.array, distribution: Callable = uniform):
+def sample_box_center_uniformly(shape, box_size: np.array, random_state: np.random.RandomState = None):
     """Returns the center of a sampled uniformly box of size ``box_size``, contained in the array of shape ``shape``."""
-    return get_random_box(shape, box_size, distribution=distribution)[0] + box_size // 2
+    return get_random_box(shape, box_size, distribution=partial(uniform, random_state=random_state))[0] + box_size // 2
 
 
 def get_random_patch(*arrays: np.ndarray, patch_size: AxesLike, axis: AxesLike = None,
