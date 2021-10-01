@@ -12,8 +12,8 @@ from .utils import *
 __all__ = 'optimizer_step', 'train_step', 'inference_step', 'multi_inference_step'
 
 
-def optimizer_step(architecture: Module, optimizer: Optimizer, loss: torch.Tensor,
-                   scaler: torch.cuda.amp.GradScaler = None, clip_grad: float = None, **params) -> torch.Tensor:
+def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, scaler: torch.cuda.amp.GradScaler = None,
+                   clip_grad: float = None, **params) -> torch.Tensor:
     """
     Performs the backward pass with respect to ``loss``, as well as a gradient step.
     If a ``scaler`` is passed - it is used to perform the gradient step (automatic mixed precission support).
@@ -24,9 +24,9 @@ def optimizer_step(architecture: Module, optimizer: Optimizer, loss: torch.Tenso
     Examples
     --------
     >>> optimizer = Adam(model.parameters(), lr=1)
-    >>> optimizer_step(model, optimizer, loss) # perform a gradient step
-    >>> optimizer_step(model, optimizer, loss, lr=1e-3) # set lr to 1e-3 and perform a gradient step
-    >>> optimizer_step(model, optimizer, loss, betas=(0, 0)) # set betas to 0 and perform a gradient step
+    >>> optimizer_step(optimizer, loss) # perform a gradient step
+    >>> optimizer_step(optimizer, loss, lr=1e-3) # set lr to 1e-3 and perform a gradient step
+    >>> optimizer_step(optimizer, loss, betas=(0, 0)) # set betas to 0 and perform a gradient step
 
     Notes
     -----
@@ -41,7 +41,7 @@ def optimizer_step(architecture: Module, optimizer: Optimizer, loss: torch.Tenso
 
             if clip_grad is not None:
                 scaler.unscale_(optimizer)
-                clip_grad_norm_(architecture.parameters(), clip_grad)
+                clip_grad_norm_(get_parameters(optimizer), clip_grad)
 
             scaler.step(optimizer)
             scaler.update()
@@ -49,7 +49,7 @@ def optimizer_step(architecture: Module, optimizer: Optimizer, loss: torch.Tenso
         loss.backward()
 
         if clip_grad is not None:
-            clip_grad_norm_(architecture.parameters(), clip_grad)
+            clip_grad_norm_(get_parameters(optimizer), clip_grad)
 
         optimizer.step()
 
@@ -107,10 +107,10 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
         loss = criterion(architecture(*inputs), *targets)
 
     if loss_key is not None:
-        optimizer_step(architecture, optimizer, loss[loss_key], scaler=scaler, clip_grad=clip_grad, **optimizer_params)
+        optimizer_step(optimizer, loss[loss_key], scaler=scaler, clip_grad=clip_grad, **optimizer_params)
         return dmap(to_np, loss)
 
-    optimizer_step(architecture, optimizer, loss, scaler=scaler, clip_grad=clip_grad, **optimizer_params)
+    optimizer_step(optimizer, loss, scaler=scaler, clip_grad=clip_grad, **optimizer_params)
     return to_np(loss)
 
 
