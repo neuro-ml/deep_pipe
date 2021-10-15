@@ -165,11 +165,8 @@ class WANDBLogger(Logger):
             self._experiment.name = run_name  # can be changed manually
         else:
             self._experiment.name = Path(self._experiment.dir).parent.parent.parent.parent.name
-
-        try:
-            self._experiment.save('resources.config', Path(self._experiment.dir).parent.parent.parent.parent, 'now')
-        except:
-            pass
+        print(str(Path(self._experiment.dir).parent.parent.parent.parent))
+        print(self._experiment.save(str(Path(self._experiment.dir).parent.parent.parent.parent / 'resources.config'), policy='now'))
 
         if config is not None:
             self.config(config)
