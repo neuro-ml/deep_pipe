@@ -9,6 +9,7 @@ import numpy as np
 from dpipe.commands import load_from_folder
 from dpipe.io import PathLike
 from dpipe.im.utils import zip_equal
+import wandb
 
 __all__ = 'Logger', 'ConsoleLogger', 'TBLogger', 'NamedTBLogger', 'WANDBLogger'
 
@@ -147,20 +148,25 @@ class NamedTBLogger(TBLogger):
 
 class WANDBLogger(Logger):
     def __init__(self, project, run_name=None, *,
-                 entity='neuro-ml', config=None, model=None, criterion=None, resume="auto"):
+                 group=None, entity='neuro-ml', config=None, model=None, criterion=None, dir=None, resume="auto"):
         """
         A logger that writes to a wandb run.
 
         Call wandb.login() before usage.
         """
-        import wandb
         self._experiment = wandb.init(
             entity=entity,
             project=project,
-            resume=resume
+            resume=resume,
+            group=group,
+            dir=dir
         )
         if run_name is not None:
             self._experiment.name = run_name  # can be changed manually
+        else:
+            self._experiment.name = Path(self._experiment.dir).parent.parent.parent.parent.name
+        print(str(Path(self._experiment.dir).parent.parent.parent.parent))
+        print(self._experiment.save(str(Path(self._experiment.dir).parent.parent.parent.parent / 'resources.config'), policy='now'))
 
         if config is not None:
             self.config(config)
@@ -168,7 +174,7 @@ class WANDBLogger(Logger):
         if model is not None:
             self.watch(model, criterion)
 
-    def value(self, name: str, value, step: int):
+    def value(self, name: str, value, step: int=None):
         self._experiment.log({name: value, 'step': step})
 
     def train(self, train_losses: Sequence[Union[dict, float]], step):
@@ -182,7 +188,7 @@ class WANDBLogger(Logger):
         self._experiment.watch(model, criterion=criterion)
 
     def config(self, config_args):
-        self._experiment.config.update(config_args)
+        self._experiment.config.update(config_args, allow_val_change=True)
 
     def agg_metrics(self, agg_metrics: Union[dict, str, Path], section=''):
         """
@@ -197,7 +203,10 @@ class WANDBLogger(Logger):
         elif section:
             agg_metrics = {f'{section}/{k}': v
                            for k, v in agg_metrics.items()}
-        self._experiment.summary.update(agg_metrics)
+
+        for k, v in agg_metrics.items():
+            self._experiment.summary[k] = v
+            #self._experiment.summary.update()
 
     def ind_metrics(self, ind_metrics, step: int = 0, section: str = None):
         """

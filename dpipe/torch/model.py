@@ -3,6 +3,7 @@ from typing import Callable, Union, Sequence
 import numpy as np
 import torch
 from torch.nn import Module
+from torch.nn.utils import clip_grad_norm_
 from torch.optim import Optimizer
 
 from ..im.utils import identity, dmap, zip_equal, collect
@@ -12,10 +13,11 @@ __all__ = 'optimizer_step', 'train_step', 'inference_step', 'multi_inference_ste
 
 
 def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, scaler: torch.cuda.amp.GradScaler = None,
-                   **params) -> torch.Tensor:
+                   clip_grad: float = None, **params) -> torch.Tensor:
     """
     Performs the backward pass with respect to ``loss``, as well as a gradient step.
     If a ``scaler`` is passed - it is used to perform the gradient step (automatic mixed precission support).
+    If a ``clip_grad`` is passed - gradient will be clipped by this value considered as maximum l2 norm
 
     ``params`` is used to change the optimizer's parameters.
 
@@ -36,17 +38,26 @@ def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, scaler: torch.cuda.
         # autocast is not recommended during backward
         with torch.cuda.amp.autocast(False):
             scaler.scale(loss).backward()
+
+            if clip_grad is not None:
+                scaler.unscale_(optimizer)
+                clip_grad_norm_(get_parameters(optimizer), clip_grad)
+
             scaler.step(optimizer)
             scaler.update()
     else:
         loss.backward()
+
+        if clip_grad is not None:
+            clip_grad_norm_(get_parameters(optimizer), clip_grad)
+
         optimizer.step()
 
     return loss
 
 
 def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, optimizer: Optimizer, n_targets: int = 1,
-               loss_key: str = None, scaler: torch.cuda.amp.GradScaler = None, **optimizer_params) -> np.ndarray:
+               loss_key: str = None, scaler: torch.cuda.amp.GradScaler = None, clip_grad: float = None, **optimizer_params) -> np.ndarray:
     """
     Performs a forward-backward pass, and make a gradient step, according to the given ``inputs``.
 
@@ -70,6 +81,8 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
         additional parameters that will override the optimizer's current parameters (e.g. lr).
     scaler
         a gradient scaler used to operate in automatic mixed precision mode.
+    clip_grad
+        maximum l2 norm of the gradient to clip it by
 
     Notes
     -----
@@ -94,14 +107,15 @@ def train_step(*inputs: np.ndarray, architecture: Module, criterion: Callable, o
         loss = criterion(architecture(*inputs), *targets)
 
     if loss_key is not None:
-        optimizer_step(optimizer, loss[loss_key], scaler=scaler, **optimizer_params)
+        optimizer_step(optimizer, loss[loss_key], scaler=scaler, clip_grad=clip_grad, **optimizer_params)
         return dmap(to_np, loss)
 
-    optimizer_step(optimizer, loss, scaler=scaler, **optimizer_params)
+    optimizer_step(optimizer, loss, scaler=scaler, clip_grad=clip_grad, **optimizer_params)
     return to_np(loss)
 
 
-def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity) -> np.ndarray:
+def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity,
+                   amp: bool = False) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -112,12 +126,14 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     """
     architecture.eval()
     with torch.no_grad():
-        return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
+        with torch.cuda.amp.autocast(amp or torch.is_autocast_enabled()):
+            return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
 
 
 @collect
 def multi_inference_step(*inputs: np.ndarray, architecture: Module,
-                         activations: Union[Callable, Sequence[Union[Callable, None]]] = identity) -> np.ndarray:
+                         activations: Union[Callable, Sequence[Union[Callable, None]]] = identity,
+                         amp: bool = False) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -130,14 +146,15 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     """
     architecture.eval()
     with torch.no_grad():
-        results = architecture(*sequence_to_var(*inputs, device=architecture))
-        if callable(activations):
-            activations = [activations] * len(results)
+        with torch.cuda.amp.autocast(amp or torch.is_autocast_enabled()):
+            results = architecture(*sequence_to_var(*inputs, device=architecture))
+            if callable(activations):
+                activations = [activations] * len(results)
 
-        for activation, result in zip_equal(activations, results):
-            if activation is not None:
-                result = activation(result)
-            yield to_np(result)
+            for activation, result in zip_equal(activations, results):
+                if activation is not None:
+                    result = activation(result)
+                yield to_np(result)
 
 
 @np.deprecate

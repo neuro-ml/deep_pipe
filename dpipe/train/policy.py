@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Sequence, Callable, Dict, Any, List
+from typing import Sequence, Callable, Dict, Any, List, Union
 
 import numpy as np
 from tqdm import tqdm
@@ -37,11 +37,11 @@ class Policy:
         The history of ``train_losses`` and ``metrics`` from the entire ``epoch`` is provided as additional information.
         """
 
-    def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None):
+    def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None, policies: dict = None):
         """
         Update the policy after an epoch is finished. The epochs numeration starts at zero.
 
-        The history of ``train_losses`` and ``metrics`` from the entire ``epoch`` is provided as additional information.
+        The history of ``train_losses`` and ``metrics`` and ``policies`` from the entire ``epoch`` is provided as additional information.
         """
 
 
@@ -182,7 +182,7 @@ class LossStop(Policy):
         self.min_loss = np.inf
         self.max_ratio = max_ratio
 
-    def epoch_finished(self, epoch, *, train_losses: Sequence[float] = None, metrics: dict = None):
+    def epoch_finished(self, epoch, *, train_losses: Sequence[float] = None, metrics: dict = None, **kwargs):
         loss = np.mean(train_losses)
         self.min_loss = min(self.min_loss, loss)
         if loss > self.max_ratio * self.min_loss:
@@ -251,7 +251,7 @@ class TimeProfiler(Policy):
     def train_step_finished(self, epoch: int, iteration: int, loss: Any):
         self.stamps.append(datetime.now())
 
-    def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None):
+    def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None, **kwargs):
         self._display(epoch)
 
     # this policy is stateless
@@ -280,3 +280,24 @@ class TQDM(Policy):
     def validation_started(self, epoch: int, train_losses: Sequence):
         self.bar.close()
         self.bar = None
+
+
+class LoggerPolicy(Policy):
+    def __init__(self, logger):
+        self.logger = logger
+
+    def train_step_finished(self, epoch: int, iteration: int, loss: Union[dict, float]):
+        if not isinstance(loss, dict):
+            loss = {'train/loss_step': loss}
+        else:
+            loss = {f'train/loss_step/{name}': v for name, v in loss.items()}
+
+        for name, value in loss.items():
+            self.logger.value(name, value)
+
+    def epoch_finished(self, epoch: int, train_losses: Sequence, metrics: dict = None, policies: dict = None):
+        self.logger.train(train_losses, epoch)
+        if metrics is not None:
+            self.logger.metrics(metrics, epoch)
+        if policies is not None:
+            self.logger.policies(policies, epoch)

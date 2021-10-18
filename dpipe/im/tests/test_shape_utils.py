@@ -69,6 +69,8 @@ def test_shape_after_convolution(subtests):
             else:
                 assert new_shape == tuple(conv(tensor).shape[2:])
 
+    assert shape_after_convolution((10, 20), 11, 1, valid=False) == (1, 10)
+
 
 def test_shape_after_full_convolution(subtests):
     def subtest(shape, real_shape, kernel_size, axes=None):

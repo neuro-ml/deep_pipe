@@ -9,3 +9,5 @@ pdp==0.3.*
 tensorboard-easy
 lazycon>=0.1.0<1.0
 loky~=2.8.0
+wandb
+nibabel

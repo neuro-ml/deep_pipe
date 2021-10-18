@@ -52,15 +52,27 @@ def append_dims(array, ndim=1):
     return np.asarray(array)[idx]
 
 
+def insert_dims(array, index=0, ndim=1):
+    """Increase the dimensionality of ``array`` by adding ``ndim`` singleton dimensions before the specified ``index` of its shape."""
+    array = np.asarray(array)
+    idx = [(slice(None, None, 1)) for _ in range(array.ndim)]
+    idx = tuple(idx[:index] + [None]*ndim + idx[index:])
+    return array[idx]
+
+
 def shape_after_convolution(shape: AxesLike, kernel_size: AxesLike, stride: AxesLike = 1, padding: AxesLike = 0,
                             dilation: AxesLike = 1, valid: bool = True) -> tuple:
     """Get the shape of a tensor after applying a convolution with corresponding parameters."""
     padding, shape, dilation, kernel_size = map(np.asarray, [padding, shape, dilation, kernel_size])
 
     result = (shape + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1
-    to_int = np.floor if valid else np.ceil
+    if valid:
+        result = np.floor(result).astype(int)
+    else:
+        # values <= 0 just mean that the kernel is greater than the input shape
+        # which is fine for valid=False
+        result = np.maximum(np.ceil(result).astype(int), 1)
 
-    result = to_int(result).astype(int)
     new_shape = tuple(result)
     if (result <= 0).any():
         raise ValueError(f'Such a convolution is not possible. Output shape: {new_shape}.')

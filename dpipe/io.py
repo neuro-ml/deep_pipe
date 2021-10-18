@@ -70,7 +70,7 @@ def load_experiment_test_pred(identifier, experiment_path):
         raise FileNotFoundError('No prediction found')
 
 
-def load(path: PathLike, **kwargs):
+def load(path: PathLike, ext: str = None, **kwargs):
     """
     Load a file located at ``path``.
     ``kwargs`` are format-specific keyword arguments.
@@ -79,7 +79,7 @@ def load(path: PathLike, **kwargs):
         npy, tif, png, jpg, bmp, hdr, img, csv,
         dcm, nii, nii.gz, json, mhd, csv, txt, pickle, pkl, config
     """
-    name = Path(path).name
+    name = Path(path).name if ext is None else ext
 
     if name.endswith(('.npy', '.npy.gz')):
         if name.endswith('.gz'):

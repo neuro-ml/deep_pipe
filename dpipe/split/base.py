@@ -35,7 +35,7 @@ def split_train(splits, val_size, groups=None, **kwargs):
     for train_val, test in splits:
         sub_groups = None if groups is None else groups[train_val]
         train, val = train_test_split_groups(
-            train_val, val_size=val_size, groups=sub_groups, **kwargs)
+            train_val, val_size=val_size, groups=sub_groups, **kwargs) if val_size > 0 else (train_val, [])
         new_splits.append([train, val, test])
     return new_splits
 

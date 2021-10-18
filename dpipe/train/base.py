@@ -97,7 +97,8 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
                     metrics = validate()
                     logger.metrics(metrics, epoch)
 
-                broadcast_event(Policy.epoch_finished, epoch, train_losses, metrics)
+                broadcast_event(Policy.epoch_finished, epoch, train_losses,
+                                metrics=metrics, policies=get_policy_values())
                 checkpoints.save(epoch, train_losses, metrics)
                 epoch += 1
 

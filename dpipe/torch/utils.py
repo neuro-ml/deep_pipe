@@ -1,9 +1,10 @@
 from pathlib import Path
-from typing import Callable, Union, Iterable
+from typing import Callable, Union, Iterable, Iterator
 
 import numpy as np
 import torch
 from torch import nn
+from torch.nn.parameter import Parameter
 from torch.optim import Optimizer
 
 from dpipe.io import PathLike
@@ -13,7 +14,7 @@ __all__ = [
     'load_model_state', 'save_model_state',
     'get_device', 'to_device', 'is_on_cuda', 'to_cuda',
     'to_var', 'sequence_to_var', 'to_np', 'sequence_to_np',
-    'set_params', 'set_lr',
+    'set_params', 'set_lr', 'get_parameters',
     'order_to_mode',
 ]
 
@@ -208,3 +209,10 @@ def order_to_mode(order: int, dim: int):
         raise ValueError(f'Invalid order of interpolation passed ({order}) for dim={dim}.')
 
     return mapping[order, dim]
+
+
+def get_parameters(optimizer: Optimizer) -> Iterator[Parameter]:
+    """Returns an iterator over model parameters stored in ``optimizer``."""
+    for group in optimizer.param_groups:
+        for param in group['params']:
+            yield param
