@@ -80,7 +80,7 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
 
 
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
-                 padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
+                 padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5, scale_factor: int = 1,
                  combiner: Type[PatchCombiner] = Average):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
@@ -108,10 +108,11 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                 x = pad_to_shape(x, new_shape, input_axis, padding_values, ratio)
 
             patches = pmap(predict, divide(x, local_size, local_stride, input_axis), *args, **kwargs)
-            prediction = combine(patches, extract(x.shape, input_axis), local_stride, axis, combiner=combiner)
+            prediction = combine(patches, np.divide(extract(x.shape, input_axis), scale_factor),
+                                 local_stride / scale_factor, axis, combiner=combiner)
 
             if valid:
-                prediction = crop_to_shape(prediction, shape, axis, ratio)
+                prediction = crop_to_shape(prediction, np.divide(shape, scale_factor), axis, ratio)
             return prediction
 
         return wrapper
