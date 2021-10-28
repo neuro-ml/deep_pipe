@@ -52,7 +52,9 @@ def sensitivity(y_true, y_pred):
 @add_check_bool
 @add_check_shapes
 def specificity(y_true, y_pred):
-    return fraction(np.sum(y_pred & y_true), np.sum(y_pred), empty_val=0)
+    tn = np.sum((~y_true) & (~y_pred))
+    fp = np.sum(y_pred & (~y_true))
+    return fraction(tn, tn + fp, empty_val=0)
 
 
 @add_check_bool
