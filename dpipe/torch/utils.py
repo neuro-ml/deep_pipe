@@ -22,25 +22,26 @@ Device = Union[torch.device, nn.Module, torch.Tensor, str]
 ArrayLike = Union[np.ndarray, Iterable, int, float]
 
 
-def load_model_state(module: nn.Module, path: PathLike, modify_state_fn: Callable = None) -> nn.Module:
+def load_model_state(module: nn.Module, path: PathLike, modify_state_fn: Callable = None, strict: bool = True):
     """
     Updates the ``module``'s state dict by the one located at ``path``.
 
     Parameters
     ----------
-    module
-    path
-    modify_state_fn: Callable(current_state, loaded_state)
+    module: nn.Module
+    path: PathLike
+    modify_state_fn: Callable(current_state, state_to_load)
         if not ``None``, two arguments will be passed to the function:
         current state of the model and the state loaded from the path.
         This function should modify states as needed and return the final state to load.
         For example, it could help you to transfer weights from similar but not completely equal architecture.
+    strict: bool
     """
     state_to_load = torch.load(path, map_location=get_device(module))
     if modify_state_fn is not None:
         current_state = module.state_dict()
         state_to_load = modify_state_fn(current_state, state_to_load)
-    module.load_state_dict(state_to_load)
+    module.load_state_dict(state_to_load, strict=strict)
 
 
 def save_model_state(module: nn.Module, path: PathLike):
