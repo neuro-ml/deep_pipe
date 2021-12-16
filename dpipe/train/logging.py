@@ -1,4 +1,5 @@
 import os
+import shutil
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
@@ -165,8 +166,13 @@ class WANDBLogger(Logger):
             self._experiment.name = run_name  # can be changed manually
         else:
             self._experiment.name = Path(self._experiment.dir).parent.parent.parent.parent.name
-        print(str(Path(self._experiment.dir).parent.parent.parent.parent))
-        print(self._experiment.save(str(Path(self._experiment.dir).parent.parent.parent.parent / 'resources.config'), policy='now'))
+        artifact = wandb.Artifact('model', type='config')
+
+        artifact.add_file(
+            Path(self._experiment.dir).parent.parent.parent.parent / 'resources.config',
+            f'{self._experiment.name}/config.txt'
+        )
+        wandb.log_artifact(artifact)
 
         if config is not None:
             self.config(config)
