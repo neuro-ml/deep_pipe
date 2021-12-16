@@ -1,3 +1,4 @@
+import warnings
 from typing import Union, Callable
 
 import numpy as np
@@ -8,6 +9,8 @@ from dpipe.im.axes import AxesLike
 
 __all__ = [
     'focal_loss_with_logits', 'linear_focal_loss_with_logits', 'weighted_cross_entropy_with_logits',
+    'tversky_loss', 'focal_tversky_loss', 'tversky_loss_with_logits', 'focal_tversky_loss_with_logits',
+    'dice_loss', 'dice_loss_with_logits',
     'masked_loss', 'moveaxis', 'softmax',
 ]
 
@@ -141,7 +144,7 @@ def weighted_cross_entropy_with_logits(logit: torch.Tensor, target: torch.Tensor
     return loss
 
 
-def dice_loss(pred: torch.Tensor, target: torch.Tensor):
+def dice_loss(pred: torch.Tensor, target: torch.Tensor, epsilon=1e-7):
     """
     References
     ----------
@@ -152,22 +155,72 @@ def dice_loss(pred: torch.Tensor, target: torch.Tensor):
 
     sum_dims = list(range(1, target.dim()))
 
-    dice = 2 * torch.sum(pred * target, dim=sum_dims) / torch.sum(pred ** 2 + target ** 2, dim=sum_dims)
+    dice = 2 * torch.sum(pred * target, dim=sum_dims) / (torch.sum(pred ** 2 + target ** 2, dim=sum_dims) + epsilon)
     loss = 1 - dice
 
     return loss.mean()
 
 
-def dice_loss_with_logits(logit: torch.Tensor, target: torch.Tensor):
+def tversky_loss(pred: torch.Tensor, target: torch.Tensor, alpha=0.5, epsilon=1e-7,
+                 reduce: Union[Callable, None] = torch.mean):
     """
-        References
-        ----------
-        `Dice Loss <https://arxiv.org/abs/1606.04797>`_
-        """
+    References
+    ----------
+    `Tversky Loss https://arxiv.org/abs/1706.05721`_
+    """
+    if not (target.size() == pred.size()):
+        raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), pred.size()))
+
+    if alpha < 0 or alpha > 1:
+        raise ValueError("Invalid alpha value, expected to be in (0, 1) interval")
+
+    sum_dims = list(range(1, target.dim()))
+    beta = 1 - alpha
+
+    intersection = pred*target
+    fps, fns = pred*(1-target), (1-pred)*target
+
+    numerator = torch.sum(intersection, dim=sum_dims)
+    denumenator = torch.sum(intersection, dim=sum_dims) + alpha*torch.sum(fps, dim=sum_dims) + beta*torch.sum(fns, dim=sum_dims)
+    tversky = numerator / (denumenator + epsilon)
+    loss = 1 - tversky
+
+    if reduce is not None:
+        loss = reduce(loss)
+    return loss
+
+
+def focal_tversky_loss(pred: torch.Tensor, target: torch.Tensor, gamma=4/3, alpha=0.5, epsilon=1e-7):
+    """
+    References
+    ----------
+    `Focal Tversky Loss https://arxiv.org/abs/1810.07842`_
+    """
+    if gamma <= 1:
+        warnings.warn("Gamma is <=1, to focus on less accurate predictions choose gamma > 1.")
+    tl = tversky_loss(pred, target, alpha, epsilon, reduce=None)
+
+    return torch.pow(tl, 1/gamma).mean()
+
+
+def loss_with_logits(criterion: Callable, logit: torch.Tensor, target: torch.Tensor, **kwargs):
     if not (target.size() == logit.size()):
         raise ValueError("Target size ({}) must be the same as logit size ({})".format(target.size(), logit.size()))
     pred = torch.sigmoid(logit)
-    return dice_loss(pred, target)
+
+    return criterion(pred, target, **kwargs)
+
+
+def dice_loss_with_logits(logit: torch.Tensor, target: torch.Tensor):
+    return loss_with_logits(dice_loss, logit, target)
+
+
+def tversky_loss_with_logits(logit: torch.Tensor, target: torch.Tensor, alpha=0.5):
+    return loss_with_logits(tversky_loss, logit, target, alpha=alpha)
+
+
+def focal_tversky_loss_with_logits(logit: torch.Tensor, target: torch.Tensor, gamma, alpha=0.5):
+    return loss_with_logits(focal_tversky_loss, logit, target, gamma=gamma, alpha=alpha)
 
 
 def masked_loss(mask: torch.Tensor, criterion: Callable, prediction: torch.Tensor, target: torch.Tensor, **kwargs):
