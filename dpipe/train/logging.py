@@ -149,7 +149,7 @@ class NamedTBLogger(TBLogger):
 
 class WANDBLogger(Logger):
     def __init__(self, project, run_name=None, *,
-                 group=None, entity='neuro-ml', config=None, model=None, criterion=None, dir=None, resume="auto"):
+                 group=None, entity='neuro-ml', config=None, dir=None, resume="auto", **watch_kwargs):
         """
         A logger that writes to a wandb run.
 
@@ -177,8 +177,8 @@ class WANDBLogger(Logger):
         if config is not None:
             self.config(config)
 
-        if model is not None:
-            self.watch(model, criterion)
+        if watch_kwargs:
+            self.watch(**watch_kwargs)
 
     def value(self, name: str, value, step: int=None):
         self._experiment.log({name: value, 'step': step})
@@ -190,8 +190,8 @@ class WANDBLogger(Logger):
         else:
             self.value('train/loss', np.mean(train_losses), step)
 
-    def watch(self, model, criterion=None):
-        self._experiment.watch(model, criterion=criterion)
+    def watch(self, **kwargs):
+        self._experiment.watch(**kwargs)
 
     def config(self, config_args):
         self._experiment.config.update(config_args, allow_val_change=True)
