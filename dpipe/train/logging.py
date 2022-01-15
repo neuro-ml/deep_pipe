@@ -184,7 +184,7 @@ class WANDBLogger(Logger):
         else:
             name = experiment_root.name
             if cut_into_folds:
-                name = "{}-{}".format(name, current_experiment_number)
+                name = f"{name}-{current_experiment_number}"
             self._experiment.name = name
         artifact = wandb.Artifact('model', type='config')
 
