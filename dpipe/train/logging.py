@@ -200,9 +200,10 @@ class WANDBLogger(Logger):
             )
         wandb.log_artifact(artifact)
 
-        # TODO: add fold number to config
         if config is not None:
-            self.config(config)
+            self.update_config(config)
+        if cut_into_folds:
+            self.update_config(dict(fold=current_experiment_number))
 
         if watch_kwargs:
             self.watch(**watch_kwargs)
@@ -220,7 +221,7 @@ class WANDBLogger(Logger):
     def watch(self, **kwargs):
         self._experiment.watch(**kwargs)
 
-    def config(self, config_args):
+    def update_config(self, config_args):
         self._experiment.config.update(config_args, allow_val_change=True)
 
     def agg_metrics(self, agg_metrics: Union[dict, str, Path], section=''):
