@@ -192,7 +192,12 @@ class WANDBLogger(Logger):
             experiment_root / 'resources.config',
             f'{self._experiment.name}/config.txt'
         )
-        # TODO: add all experiment json files to artifacts
+        # all json files of the current fold are added as artifacts
+        for json in current_fold_root.glob('*.json'):
+            artifact.add_file(
+                json,
+                f'{self._experiment.name}/{json.name}'
+            )
         wandb.log_artifact(artifact)
 
         # TODO: add fold number to config
