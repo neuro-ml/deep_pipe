@@ -162,14 +162,17 @@ class WANDBLogger(Logger):
             group=group,
             dir=dir
         )
+
+        experiment_root = Path(self._experiment.dir).parent.parent.parent.parent
+
         if run_name is not None:
             self._experiment.name = run_name  # can be changed manually
         else:
-            self._experiment.name = Path(self._experiment.dir).parent.parent.parent.parent.name
+            self._experiment.name = experiment_root.name
         artifact = wandb.Artifact('model', type='config')
 
         artifact.add_file(
-            Path(self._experiment.dir).parent.parent.parent.parent / 'resources.config',
+            experiment_root / 'resources.config',
             f'{self._experiment.name}/config.txt'
         )
         # TODO: add all experiment json files to artifacts
