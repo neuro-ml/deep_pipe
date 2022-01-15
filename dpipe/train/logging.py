@@ -163,7 +163,8 @@ class WANDBLogger(Logger):
             dir=dir
         )
 
-        experiment_root = Path(self._experiment.dir).parent.parent.parent.parent
+        current_fold_root = Path(self._experiment.dir).parent.parent.parent.parent
+        experiment_root = current_fold_root.parent
 
         if run_name is not None:
             self._experiment.name = run_name  # can be changed manually
