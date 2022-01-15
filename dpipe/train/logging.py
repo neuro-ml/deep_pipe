@@ -172,8 +172,10 @@ class WANDBLogger(Logger):
             Path(self._experiment.dir).parent.parent.parent.parent / 'resources.config',
             f'{self._experiment.name}/config.txt'
         )
+        # TODO: add all experiment json files to artifacts
         wandb.log_artifact(artifact)
 
+        # TODO: add fold number to config
         if config is not None:
             self.config(config)
 
