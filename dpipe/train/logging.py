@@ -182,7 +182,10 @@ class WANDBLogger(Logger):
         if run_name is not None:
             self._experiment.name = run_name  # can be changed manually
         else:
-            self._experiment.name = experiment_root.name
+            name = experiment_root.name
+            if cut_into_folds:
+                name = "{}-{}".format(name, current_experiment_number)
+            self._experiment.name = name
         artifact = wandb.Artifact('model', type='config')
 
         artifact.add_file(
