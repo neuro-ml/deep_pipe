@@ -200,10 +200,11 @@ class WANDBLogger(Logger):
             )
         wandb.log_artifact(artifact)
 
-        if config is not None:
-            self.update_config(config)
+        self.update_config(dict(experiment=experiment_root.name))
         if cut_into_folds:
             self.update_config(dict(fold=current_experiment_number))
+        if config is not None:
+            self.update_config(config)
 
         if watch_kwargs:
             self.watch(**watch_kwargs)
