@@ -164,7 +164,6 @@ class WANDBLogger(Logger):
         )
 
         current_fold_root = Path(self._experiment.dir).parent.parent.parent
-        current_experiment_number = int(current_fold_root.name.replace('experiment_', ''))
         experiment_root = current_fold_root.parent
 
         # find out if the experiment is cut into several folds
@@ -178,6 +177,8 @@ class WANDBLogger(Logger):
             )
             > 1
         )
+
+        current_experiment_number = int(current_fold_root.name.replace('experiment_', '')) if cut_into_folds else 0
 
         if run_name is not None:
             self._experiment.name = run_name  # can be changed manually
