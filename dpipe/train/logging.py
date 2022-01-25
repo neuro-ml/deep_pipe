@@ -1,16 +1,14 @@
 import os
-import shutil
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import Sequence, Union
+from typing import Callable, Sequence, Union
 
 import numpy as np
-
-from dpipe.commands import load_from_folder
-from dpipe.io import PathLike
-from dpipe.im.utils import zip_equal
 import wandb
+from dpipe.commands import load_from_folder
+from dpipe.im.utils import zip_equal
+from dpipe.io import PathLike
 
 __all__ = 'Logger', 'ConsoleLogger', 'TBLogger', 'NamedTBLogger', 'WANDBLogger'
 
@@ -28,7 +26,7 @@ def log_scalar_or_vector(logger, tag, value: np.ndarray, step):
         logger.log_scalar(tag, value, step)
 
 
-def make_log_vector(logger, tag: str, first_step: int = 0) -> callable:
+def make_log_vector(logger, tag: str, first_step: int = 0) -> Callable:
     def log(tag, value, step):
         log_vector(logger, tag, value, step)
 
@@ -211,7 +209,7 @@ class WANDBLogger(Logger):
             self.watch(**watch_kwargs)
 
     def value(self, name: str, value, step: int=None):
-        self._experiment.log({name: value, 'step': step})
+        self._experiment.log({name: value}, step=step)
 
     def train(self, train_losses: Sequence[Union[dict, float]], step):
         if train_losses and isinstance(train_losses[0], dict):
@@ -252,15 +250,15 @@ class WANDBLogger(Logger):
         step: int
         section: str, defines some metrics' grouping
         """
-        from wandb import Table
         import pandas as pd
+        from wandb import Table
         if isinstance(ind_metrics, str) or isinstance(ind_metrics, Path):
             ind_metrics = pd.DataFrame.from_dict(
                 {k: v for k, v in load_from_folder(ind_metrics, ext='.json')}).reset_index()
         table = Table(dataframe=ind_metrics)
 
         name = "Individual Metrics" if section is None else f"{section}/Individual Metrics"
-        self._experiment.log({name: table, 'step': step})
+        self._experiment.log({name: table}, step=step)
 
     def image(self, name: str, *values, step: int, section: str = None,
               masks_keys: tuple = ('predictions', 'ground_truth')):
@@ -279,8 +277,9 @@ class WANDBLogger(Logger):
                     masks={k: {'mask_data': value[k]} for k in masks_keys},
                     caption=value.get('caption', None)
                 ) for value in values],
-                'step': step
-            })
+            },
+            step=step,
+        )
 
     def log_info(self, name: str, wandb_converter, *infos, section: str = None):
         name = name if section is None else f"{section}/{name}"
