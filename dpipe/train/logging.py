@@ -223,10 +223,12 @@ class WANDBLogger(Logger):
     def experiment(self) -> wandbRun:
         return self._experiment
 
-    def value(self, name: str, value: Any, step: int=None) -> None:
+    def value(self, name: str, value: Any, step: int = None) -> None:
         self.experiment.log({name: value}, step=step)
 
-    def train(self, train_losses: Union[Sequence[Dict], Sequence[float]], step: int) -> None:
+    def train(
+        self, train_losses: Union[Sequence[Dict], Sequence[float]], step: int
+    ) -> None:
         if not train_losses:
             return None
         train_losses_types = {type(tl) for tl in train_losses}
@@ -234,39 +236,40 @@ class WANDBLogger(Logger):
         t = train_losses_types.pop()
         if issubclass(t, dict):
             for name, values in group_dicts(train_losses).items():
-                self.value(f'train/loss/{name}', np.mean(values), step)
+                self.value(f"train/loss/{name}", np.mean(values), step)
         elif issubclass(t, float):
-            self.value('train/loss', np.mean(train_losses), step)
+            self.value("train/loss", np.mean(train_losses), step)
         msg = f"The elements of the train_losses are expected to be of float or dict type, but the elements are of {t.__name__} type"
         raise NotImplementedError(msg)
 
-    def watch(self, **kwargs)-> None:
+    def watch(self, **kwargs) -> None:
         self.experiment.watch(**kwargs)
 
     def update_config(self, config_args) -> None:
         self.experiment.config.update(config_args, allow_val_change=True)
 
-    def agg_metrics(self, agg_metrics: Union[dict, str, Path], section: str='') -> None:
-        """
-        Log final metrics calculated in the end of experiment to summary table.
+    def agg_metrics(
+        self, agg_metrics: Union[dict, str, Path], section: str = ""
+    ) -> None:
+        """Log final metrics calculated in the end of experiment to summary table.
         Idea is to use these values for preparing leaderboard.
 
         agg_metrics: dictionary with name of metric as a key and with its value
         """
         if isinstance(agg_metrics, str) or isinstance(agg_metrics, Path):
-            agg_metrics = {k if not section else f'{section}/{k}': v
-                           for k, v in load_from_folder(agg_metrics, ext='.json')}
+            agg_metrics = {
+                k if not section else f"{section}/{k}": v
+                for k, v in load_from_folder(agg_metrics, ext=".json")
+            }
         elif section:
-            agg_metrics = {f'{section}/{k}': v
-                           for k, v in agg_metrics.items()}
+            agg_metrics = {f"{section}/{k}": v for k, v in agg_metrics.items()}
 
         for k, v in agg_metrics.items():
             self.experiment.summary[k] = v
-            #self.experiment.summary.update()
+            # self.experiment.summary.update()
 
-    def ind_metrics(self, ind_metrics, step: int = 0, section: str = None):
-        """
-        Save individual metrics to a table to see bad cases
+    def ind_metrics(self, ind_metrics: Any, step: int = 0, section: str = None) -> None:
+        """Save individual metrics to a table to see bad cases
 
         ind_metrics: DataFrame
         step: int
@@ -274,19 +277,28 @@ class WANDBLogger(Logger):
         """
         import pandas as pd
         from wandb import Table
+
         if isinstance(ind_metrics, str) or isinstance(ind_metrics, Path):
             ind_metrics = pd.DataFrame.from_dict(
-                {k: v for k, v in load_from_folder(ind_metrics, ext='.json')}).reset_index()
+                {k: v for k, v in load_from_folder(ind_metrics, ext=".json")}
+            ).reset_index()
         table = Table(dataframe=ind_metrics)
 
-        name = "Individual Metrics" if section is None else f"{section}/Individual Metrics"
+        name = (
+            "Individual Metrics" if section is None else f"{section}/Individual Metrics"
+        )
         self.experiment.log({name: table}, step=step)
 
-    def image(self, name: str, *values, step: int, section: str = None,
-              masks_keys: tuple = ('predictions', 'ground_truth')):
-        """
-        Method that logs images (set by values),
-        each value is a dict with fields,preds,target and optinally caption defined
+    def image(
+        self,
+        name: str,
+        *values,
+        step: int,
+        section: str = None,
+        masks_keys: tuple = ("predictions", "ground_truth"),
+    ) -> None:
+        """Method that logs images (set by values),
+        each value is a dict with fields, preds, target and optinally caption defined
         Special policy that works as callback
         """
         from wandb import Image
@@ -294,15 +306,18 @@ class WANDBLogger(Logger):
         name = name if section is None else f"{section}/{name}"
         self.experiment.log(
             {
-                name: [Image(
-                    value['image'],
-                    masks={k: {'mask_data': value[k]} for k in masks_keys},
-                    caption=value.get('caption', None)
-                ) for value in values],
+                name: [
+                    Image(
+                        value["image"],
+                        masks={k: {"mask_data": value[k]} for k in masks_keys},
+                        caption=value.get("caption", None),
+                    )
+                    for value in values
+                ],
             },
             step=step,
         )
 
-    def log_info(self, name: str, wandb_converter, *infos, section: str = None):
+    def log_info(self, name: str, wandb_converter, *infos, section: str = None) -> None:
         name = name if section is None else f"{section}/{name}"
         self.experiment.log({name: [wandb_converter(info) for info in infos]})
