@@ -223,23 +223,30 @@ class WANDBLogger(Logger):
     def experiment(self) -> wandbRun:
         return self._experiment
 
-    def value(self, name: str, value, step: int=None):
+    def value(self, name: str, value: Any, step: int=None) -> None:
         self.experiment.log({name: value}, step=step)
 
-    def train(self, train_losses: Sequence[Union[dict, float]], step):
-        if train_losses and isinstance(train_losses[0], dict):
+    def train(self, train_losses: Union[Sequence[Dict], Sequence[float]], step: int) -> None:
+        if not train_losses:
+            return None
+        train_losses_types = {type(tl) for tl in train_losses}
+        assert len(train_losses_types) == 1, "Inconsistent train_losses"
+        t = train_losses_types.pop()
+        if issubclass(t, dict):
             for name, values in group_dicts(train_losses).items():
                 self.value(f'train/loss/{name}', np.mean(values), step)
-        else:
+        elif issubclass(t, float):
             self.value('train/loss', np.mean(train_losses), step)
+        msg = f"The elements of the train_losses are expected to be of float or dict type, but the elements are of {t.__name__} type"
+        raise NotImplementedError(msg)
 
-    def watch(self, **kwargs):
+    def watch(self, **kwargs)-> None:
         self.experiment.watch(**kwargs)
 
-    def update_config(self, config_args):
+    def update_config(self, config_args) -> None:
         self.experiment.config.update(config_args, allow_val_change=True)
 
-    def agg_metrics(self, agg_metrics: Union[dict, str, Path], section=''):
+    def agg_metrics(self, agg_metrics: Union[dict, str, Path], section: str='') -> None:
         """
         Log final metrics calculated in the end of experiment to summary table.
         Idea is to use these values for preparing leaderboard.
