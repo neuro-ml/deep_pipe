@@ -227,7 +227,7 @@ class WANDBLogger(Logger):
         self.experiment.log({name: value}, step=step)
 
     def train(
-        self, train_losses: Union[Sequence[Dict], Sequence[float]], step: int
+        self, train_losses: Union[Sequence[Dict], Sequence[float], Sequence[tuple], Sequence[np.ndarray]], step: int
     ) -> None:
         if not train_losses:
             return None
@@ -237,10 +237,11 @@ class WANDBLogger(Logger):
         if issubclass(t, dict):
             for name, values in group_dicts(train_losses).items():
                 self.value(f"train/loss/{name}", np.mean(values), step)
-        elif issubclass(t, float):
+        elif issubclass(t, (float, tuple, np.ndarray)):
             self.value("train/loss", np.mean(train_losses), step)
-        msg = f"The elements of the train_losses are expected to be of float or dict type, but the elements are of {t.__name__} type"
-        raise NotImplementedError(msg)
+        else:
+            msg = f"The elements of the train_losses are expected to be of dict, float, tuple or numpy array type, but the elements are of {t.__name__} type"
+            raise NotImplementedError(msg)
 
     def watch(self, **kwargs) -> None:
         self.experiment.watch(**kwargs)
