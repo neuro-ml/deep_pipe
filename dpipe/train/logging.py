@@ -2,13 +2,14 @@ import os
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import Callable, Sequence, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 import numpy as np
 import wandb
 from dpipe.commands import load_from_folder
 from dpipe.im.utils import zip_equal
 from dpipe.io import PathLike
+from wandb.sdk.wandb_run import Run as wandbRun
 
 __all__ = 'Logger', 'ConsoleLogger', 'TBLogger', 'NamedTBLogger', 'WANDBLogger'
 
@@ -146,22 +147,29 @@ class NamedTBLogger(TBLogger):
 
 
 class WANDBLogger(Logger):
-    def __init__(self, project, run_name=None, *,
-                 group=None, entity='neuro-ml', config=None, dir=None, resume="auto", **watch_kwargs):
-        """
-        A logger that writes to a wandb run.
+    def __init__(
+        self,
+        project: Optional[str],
+        run_name: Optional[str] = None,
+        *,
+        group: Optional[str] = None,
+        entity: str = "neuro-ml",
+        config: Union[Dict, str, None] = None,
+        dir: Optional[str] = None,
+        resume: str = "auto",
+        **watch_kwargs: Any,
+    ) -> None:
+        """A logger that writes to a wandb run.
 
         Call wandb.login() before usage.
         """
-        self._experiment = wandb.init(
-            entity=entity,
-            project=project,
-            resume=resume,
-            group=group,
-            dir=dir
+        exp = wandb.init(
+            entity=entity, project=project, resume=resume, group=group, dir=dir
         )
 
-        current_fold_root = Path(self._experiment.dir).parent.parent.parent
+        assert isinstance(exp, wandbRun), "Failed to register launch with wandb"
+
+        current_fold_root = Path(exp.dir).parent.parent.parent
         experiment_root = current_fold_root.parent
 
         # find out if the experiment is cut into several folds
@@ -176,27 +184,30 @@ class WANDBLogger(Logger):
             > 1
         )
 
-        current_experiment_number = int(current_fold_root.name.replace('experiment_', '')) if cut_into_folds else 0
+        current_experiment_number = (
+            int(current_fold_root.name.replace("experiment_", ""))
+            if cut_into_folds
+            else 0
+        )
 
         if run_name is not None:
-            self._experiment.name = run_name  # can be changed manually
+            exp.name = run_name  # can be changed manually
         else:
             name = experiment_root.name
             if cut_into_folds:
                 name = f"{name}-{current_experiment_number}"
-            self._experiment.name = name
-        artifact = wandb.Artifact('model', type='config')
+            exp.name = name
+        artifact = wandb.Artifact("model", type="config")
 
         artifact.add_file(
-            experiment_root / 'resources.config',
-            f'{self._experiment.name}/config.txt'
+            str(experiment_root / "resources.config"), f"{exp.name}/config.txt"
         )
+
         # all json files of the current fold are added as artifacts
-        for json in current_fold_root.glob('*.json'):
-            artifact.add_file(
-                json,
-                f'{self._experiment.name}/{json.name}'
-            )
+        for json in current_fold_root.glob("*.json"):
+            artifact.add_file(str(json), f"{exp.name}/{json.name}")
+        self._experiment = exp
+
         wandb.log_artifact(artifact)
 
         self.update_config(dict(experiment=experiment_root.name))
@@ -208,8 +219,12 @@ class WANDBLogger(Logger):
         if watch_kwargs:
             self.watch(**watch_kwargs)
 
+    @property
+    def experiment(self) -> wandbRun:
+        return self._experiment
+
     def value(self, name: str, value, step: int=None):
-        self._experiment.log({name: value}, step=step)
+        self.experiment.log({name: value}, step=step)
 
     def train(self, train_losses: Sequence[Union[dict, float]], step):
         if train_losses and isinstance(train_losses[0], dict):
@@ -219,10 +234,10 @@ class WANDBLogger(Logger):
             self.value('train/loss', np.mean(train_losses), step)
 
     def watch(self, **kwargs):
-        self._experiment.watch(**kwargs)
+        self.experiment.watch(**kwargs)
 
     def update_config(self, config_args):
-        self._experiment.config.update(config_args, allow_val_change=True)
+        self.experiment.config.update(config_args, allow_val_change=True)
 
     def agg_metrics(self, agg_metrics: Union[dict, str, Path], section=''):
         """
@@ -239,8 +254,8 @@ class WANDBLogger(Logger):
                            for k, v in agg_metrics.items()}
 
         for k, v in agg_metrics.items():
-            self._experiment.summary[k] = v
-            #self._experiment.summary.update()
+            self.experiment.summary[k] = v
+            #self.experiment.summary.update()
 
     def ind_metrics(self, ind_metrics, step: int = 0, section: str = None):
         """
@@ -258,7 +273,7 @@ class WANDBLogger(Logger):
         table = Table(dataframe=ind_metrics)
 
         name = "Individual Metrics" if section is None else f"{section}/Individual Metrics"
-        self._experiment.log({name: table}, step=step)
+        self.experiment.log({name: table}, step=step)
 
     def image(self, name: str, *values, step: int, section: str = None,
               masks_keys: tuple = ('predictions', 'ground_truth')):
@@ -270,7 +285,7 @@ class WANDBLogger(Logger):
         from wandb import Image
 
         name = name if section is None else f"{section}/{name}"
-        self._experiment.log(
+        self.experiment.log(
             {
                 name: [Image(
                     value['image'],
@@ -283,4 +298,4 @@ class WANDBLogger(Logger):
 
     def log_info(self, name: str, wandb_converter, *infos, section: str = None):
         name = name if section is None else f"{section}/{name}"
-        self._experiment.log({name: [wandb_converter(info) for info in infos]})
+        self.experiment.log({name: [wandb_converter(info) for info in infos]})
