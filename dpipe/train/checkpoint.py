@@ -82,10 +82,10 @@ class Checkpoints:
             names.add(name)
             yield name, o
 
-    def _get_checkpoint_folder(self, iteration):
+    def _get_checkpoint_folder(self, iteration: int):
         return self.base_path / f'{self._checkpoint_prefix}{iteration}'
 
-    def _clear_checkpoint(self, iteration):
+    def _clear_checkpoint(self, iteration: int):
         if (iteration + 1) % self.frequency != 0:
             shutil.rmtree(self._get_checkpoint_folder(iteration))
 
