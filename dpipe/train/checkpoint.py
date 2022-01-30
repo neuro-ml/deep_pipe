@@ -3,7 +3,6 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict, Iterable, Sequence, Union
 
-import numpy as np
 import torch
 from dpipe.im.utils import composition
 from dpipe.io import PathLike
@@ -56,13 +55,13 @@ class Checkpoints:
         By default only the latest checkpoint is saved.
     """
 
-    def __init__(self, base_path: PathLike, objects: Union[Iterable, Dict[PathLike, Any]], frequency: int = np.inf):
+    def __init__(self, base_path: PathLike, objects: Union[Iterable, Dict[PathLike, Any]], frequency: int = None):
         self.base_path: Path = Path(base_path)
         self._checkpoint_prefix = 'checkpoint_'
         if not isinstance(objects, dict):
             objects = self._generate_unique_names(objects)
         self.objects = objects or {}
-        self.frequency = frequency
+        self.frequency = frequency or float('inf')
 
     @staticmethod
     @composition(dict)
@@ -100,7 +99,7 @@ class Checkpoints:
             return load_torch
         return load_pickle
 
-    def _save_to(self, folder):
+    def _save_to(self, folder: Path):
         for path, o in self.objects.items():
             save = self._dispatch_saver(o)
             save(o, folder / path)
