@@ -12,7 +12,7 @@ from dpipe.im.utils import composition
 __all__ = 'Checkpoints', 'CheckpointManager'
 
 
-def save_pickle(o, path):
+def save_pickle(o, path: PathLike):
     if hasattr(o, '__getstate__'):
         state = o.__getstate__()
     else:
@@ -22,7 +22,7 @@ def save_pickle(o, path):
         pickle.dump(state, file)
 
 
-def load_pickle(o, path):
+def load_pickle(o, path: PathLike):
     with open(path, 'rb') as file:
         state = pickle.load(file)
 
@@ -33,11 +33,11 @@ def load_pickle(o, path):
             setattr(o, key, value)
 
 
-def save_torch(o, path):
+def save_torch(o, path: PathLike):
     torch.save(o.state_dict(), path)
 
 
-def load_torch(o, path):
+def load_torch(o, path: PathLike):
     o.load_state_dict(torch.load(path))
 
 
