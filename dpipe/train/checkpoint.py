@@ -1,13 +1,12 @@
-import shutil
 import pickle
+import shutil
 from pathlib import Path
-from typing import Dict, Any, Union, Iterable, Sequence
+from typing import Any, Dict, Iterable, Sequence, Union
 
 import numpy as np
 import torch
-
-from dpipe.io import PathLike
 from dpipe.im.utils import composition
+from dpipe.io import PathLike
 
 __all__ = 'Checkpoints', 'CheckpointManager'
 
