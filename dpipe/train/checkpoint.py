@@ -122,9 +122,9 @@ class Checkpoints:
 
         max_iteration = -1
         for file in self.base_path.iterdir():
-            file = file.name
-            if file.startswith(self._checkpoint_prefix):
-                max_iteration = max(max_iteration, int(file[len(self._checkpoint_prefix):]))
+            filename = file.name
+            if filename.startswith(self._checkpoint_prefix):
+                max_iteration = max(max_iteration, int(filename[len(self._checkpoint_prefix):]))
 
         # no backups found
         if max_iteration < 0:
