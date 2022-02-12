@@ -1,4 +1,5 @@
 import os
+import warnings
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
@@ -199,13 +200,16 @@ class WANDBLogger(Logger):
             exp.name = name
         artifact = wandb.Artifact("model", type="config")
 
-        artifact.add_file(
-            str(experiment_root / "resources.config"), f"{exp.name}/config.txt"
-        )
+        try:
+            artifact.add_file(
+                str(experiment_root / "resources.config"), f"{exp.name}/config.txt"
+            )
+            # all json files of the current fold are added as artifacts
+            for json in current_fold_root.glob("*.json"):
+                artifact.add_file(str(json), f"{exp.name}/{json.name}")
+        except ValueError:
+            warnings.warn("It's likely you don't run a usual experiment, some artifacts were not found")
 
-        # all json files of the current fold are added as artifacts
-        for json in current_fold_root.glob("*.json"):
-            artifact.add_file(str(json), f"{exp.name}/{json.name}")
         self._experiment = exp
 
         wandb.log_artifact(artifact)
