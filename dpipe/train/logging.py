@@ -228,7 +228,7 @@ class WANDBLogger(Logger):
         return self._experiment
 
     def value(self, name: str, value: Any, step: int = None) -> None:
-        self.experiment.log({name: value}, step=step)
+        self._experiment.log({name: value, 'epoch': step})
 
     def train(
         self, train_losses: Union[Sequence[Dict], Sequence[float], Sequence[tuple], Sequence[np.ndarray]], step: int
