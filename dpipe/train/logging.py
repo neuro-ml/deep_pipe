@@ -223,6 +223,9 @@ class WANDBLogger(Logger):
         if watch_kwargs:
             self.watch(**watch_kwargs)
 
+    def __del__(self):
+        wandb.finish()
+
     @property
     def experiment(self) -> wandbRun:
         return self._experiment
