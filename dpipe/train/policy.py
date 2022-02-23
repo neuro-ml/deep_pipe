@@ -83,17 +83,16 @@ class DecreasingOnPlateau(ValuePolicy):
     def get_margin_loss(self, loss):
         return max([loss * (1 - self.rtol), loss - self.atol])
 
-    def epoch_finished(self, epoch: int, train_losses: Sequence, **kwargs):
+    def epoch_finished(self, epoch: int, train_losses: Sequence, **kwargs) -> None:
         loss = np.mean(train_losses)
         if loss < self.margin_loss:
             self.margin_loss = self.get_margin_loss(loss)
             self.epochs_waited = 0
-        else:
-            self.epochs_waited += 1
-
-            if self.epochs_waited > self.patience:
-                self.value *= self.lr_dec_mul
-                self.epochs_waited = 0
+            return
+        self.epochs_waited += 1
+        if self.epochs_waited > self.patience:
+            self.value *= self.lr_dec_mul
+            self.epochs_waited = 0
 
 
 class Exponential(ValuePolicy):
