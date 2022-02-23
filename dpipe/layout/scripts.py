@@ -27,4 +27,5 @@ def run():
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this message and exit')
 
     args = parser.parse_args()
-    layout.run(config=config_path)
+    folds = args.folds
+    layout.run(config=config_path, folds=folds)
