@@ -186,7 +186,7 @@ class WANDBLogger(Logger):
         )
 
         current_experiment_number = (
-            int(current_fold_root.name.replace("experiment_", ""))
+            str(int(current_fold_root.name.replace("experiment_", "")))
             if cut_into_folds
             else 0
         )
