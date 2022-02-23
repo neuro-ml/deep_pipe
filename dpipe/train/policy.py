@@ -68,6 +68,8 @@ class DecreasingOnPlateau(ValuePolicy):
     """
     Policy that traces average train loss and if it didn't decrease according to ``atol``
     or ``rtol`` for ``patience`` epochs, multiply `value` by ``multiplier``.
+    ``atol`` :- absolute tolerance for detecting change in training loss value.
+    ``rtol`` :- relative tolerance for detecting change in training loss value.
     """
 
     def __init__(self, *, initial: float, multiplier: float, patience: int, rtol, atol):
@@ -81,7 +83,7 @@ class DecreasingOnPlateau(ValuePolicy):
         self.margin_loss = np.inf
 
     def get_margin_loss(self, loss):
-        return max([loss * (1 - self.rtol), loss - self.atol])
+        return max(loss - self.atol, loss * (1 - self.rtol))
 
     def epoch_finished(self, epoch: int, train_losses: Sequence, **kwargs) -> None:
         loss = np.mean(train_losses)
