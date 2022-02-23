@@ -57,6 +57,7 @@ class ValuePolicy(Policy, metaclass=ABCAttributesMeta):
 
     def __init__(self, initial):
         super().__init__()
+        # TODO: turn self.value into a property
         self.value = initial
 
 
