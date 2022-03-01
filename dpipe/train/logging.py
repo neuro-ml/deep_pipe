@@ -164,9 +164,16 @@ class WANDBLogger(Logger):
 
         Call wandb.login() before usage.
         """
-        exp = wandb.init(
-            entity=entity, project=project, resume=resume, group=group, dir=dir
-        )
+
+        try:
+            exp = wandb.init(
+                entity=entity, project=project, resume=resume, group=group, dir=dir,
+            )
+        except wandb.UsageError:
+            exp = wandb.init(
+                entity=entity, project=project, resume=resume, group=group, dir=dir,
+                settings=wandb.Settings(start_method='fork')
+            )
 
         assert isinstance(exp, wandbRun), "Failed to register launch with wandb"
 
