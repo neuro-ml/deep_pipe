@@ -305,7 +305,7 @@ class WANDBLogger(Logger):
         name = (
             "Individual Metrics" if section is None else f"{section}/Individual Metrics"
         )
-        self.experiment.log({name: table}, step=step)
+        self.experiment.log({name: table})
 
     def image(
         self,
