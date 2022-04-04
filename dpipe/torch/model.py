@@ -41,6 +41,8 @@ def optimizer_step(optimizer: Optimizer, loss: torch.Tensor, scaler: torch.cuda.
 
             if clip_grad is not None:
                 scaler.unscale_(optimizer)
+                assert not isinstance(clip_grad, bool), "Use of boolean clip_grad value (e.g. False) can lead to " \
+                                                        "unexpected behaviour. "
                 clip_grad_norm_(get_parameters(optimizer), clip_grad)
 
             scaler.step(optimizer)
