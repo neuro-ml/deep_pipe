@@ -10,7 +10,6 @@ import numpy as np
 from tqdm import tqdm
 
 from .io import save_json, PathLike, load as _load, save as _save
-from dpipe.itertools import collect
 
 
 def populate(path: PathLike, func: Callable, *args, **kwargs):
@@ -78,7 +77,6 @@ def transform(input_path, output_path, transform_fn):
         np.save(os.path.join(output_path, f), transform_fn(np.load(os.path.join(input_path, f))))
 
 
-@collect
 def load_from_folder(path: PathLike, loader=_load, ext='.npy'):
     """Yields (id, object) pairs loaded from ``path``."""
     for file in sorted(Path(path).iterdir()):
