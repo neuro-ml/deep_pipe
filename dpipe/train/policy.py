@@ -104,18 +104,21 @@ class Exponential(ValuePolicy):
     If ``floordiv`` is False - the `value` will be changed continuously.
     """
 
-    def __init__(self, initial: float, multiplier: float, step_length: int = 1, floordiv: bool = True):
+    def __init__(self, initial: float, multiplier: float, step_length: int = 1, floordiv: bool = True,
+                 min_value: float = -np.inf, max_value: float = np.inf):
         super().__init__(initial)
         self.multiplier = multiplier
         self.initial = initial
         self.step_length = step_length
         self.floordiv = floordiv
+        self.min_value = min_value
+        self.max_value = max_value
 
     def epoch_started(self, epoch: int):
         power = epoch / self.step_length
         if self.floordiv:
             power = np.floor(power)
-        self.value = self.initial * self.multiplier ** power
+        self.value = np.clip(self.initial * self.multiplier ** power, self.min_value, self.max_value)
 
 
 class Schedule(ValuePolicy):
