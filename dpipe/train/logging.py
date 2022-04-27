@@ -299,7 +299,7 @@ class WANDBLogger(Logger):
         if isinstance(ind_metrics, str) or isinstance(ind_metrics, Path):
             ind_metrics = pd.DataFrame.from_dict(
                 {k: v for k, v in load_from_folder(ind_metrics, ext=".json")}
-            ).reset_index()
+            ).reset_index().round(2)
         table = Table(dataframe=ind_metrics)
 
         name = (
