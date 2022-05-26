@@ -4,8 +4,9 @@ from typing import Callable, Union, Iterable, Iterator
 import numpy as np
 import torch
 from torch import nn
-from torch.nn.parameter import Parameter
 from torch.optim import Optimizer
+from torch.nn.parameter import Parameter
+from torch.nn.modules.batchnorm import _BatchNorm
 
 from dpipe.io import PathLike
 from dpipe.itertools import squeeze_first, collect
@@ -14,7 +15,7 @@ __all__ = [
     'load_model_state', 'save_model_state',
     'get_device', 'to_device', 'is_on_cuda', 'to_cuda',
     'to_var', 'sequence_to_var', 'to_np', 'sequence_to_np',
-    'set_params', 'set_lr', 'get_parameters',
+    'set_params', 'set_lr', 'get_parameters', 'has_batchnorm',
     'order_to_mode',
 ]
 
@@ -217,3 +218,12 @@ def get_parameters(optimizer: Optimizer) -> Iterator[Parameter]:
     for group in optimizer.param_groups:
         for param in group['params']:
             yield param
+
+
+def has_batchnorm(architecture: nn.Module) -> bool:
+    """Check whether ``architecture`` has BatchNorm module"""
+    for module in architecture.modules():
+        if isinstance(module, _BatchNorm):
+            return True
+
+    return False
