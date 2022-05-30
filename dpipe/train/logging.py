@@ -241,7 +241,7 @@ class WANDBLogger(Logger):
         return self._experiment
 
     def value(self, name: str, value: Any, step: Optional[int] = None) -> None:
-        self._experiment.log({name: value, 'epoch': step})
+        self._experiment.log({name: value, 'epoch': step}, step=step)
 
     def train(
         self, train_losses: Union[Sequence[Dict], Sequence[float], Sequence[tuple], Sequence[np.ndarray]], step: int
@@ -305,7 +305,7 @@ class WANDBLogger(Logger):
         name = (
             'Individual Metrics' if section is None else f'{section}/Individual Metrics'
         )
-        self.experiment.log({name: table})
+        self.experiment.log({name: table}, step=step)
 
     def image(
         self,
@@ -338,4 +338,4 @@ class WANDBLogger(Logger):
 
     def log_info(self, name: str, wandb_converter, *infos, section: Optional[str] = None, step: Optional[int] = None) -> None:
         name = name if section is None else f'{section}/{name}'
-        self.experiment.log({name: [wandb_converter(info) for info in infos]})
+        self.experiment.log({name: [wandb_converter(info) for info in infos]}, step=step)
