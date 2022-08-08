@@ -4,7 +4,7 @@ from typing import Union, Callable, Type
 import numpy as np
 
 from ..im.axes import broadcast_to_axis, AxesLike, AxesParams, axis_from_dim, resolve_deprecation
-from ..im.grid import divide, combine, PatchCombiner, Average
+from ..im.grid import divide, combine, get_boxes, PatchCombiner, Average
 from ..itertools import extract, pmap
 from ..im.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
 from ..im.shape_utils import prepend_dims, extract_dims
@@ -81,7 +81,7 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
 
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
-                 combiner: Type[PatchCombiner] = Average):
+                 combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     the predicted patches by aggregating the overlapping regions using the ``combiner`` - Average by default.
@@ -107,8 +107,15 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                 new_shape = padded_shape + (local_stride - padded_shape + local_size) % local_stride
                 x = pad_to_shape(x, new_shape, input_axis, padding_values, ratio)
 
-            patches = pmap(predict, divide(x, local_size, local_stride, input_axis), *args, **kwargs)
-            prediction = combine(patches, extract(x.shape, input_axis), local_stride, axis, combiner=combiner)
+            patches = pmap(
+                predict,
+                divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes),
+                *args, **kwargs
+            )
+            prediction = combine(
+                patches, extract(x.shape, input_axis), local_stride, axis,
+                combiner=combiner, get_boxes=get_boxes
+            )
 
             if valid:
                 prediction = crop_to_shape(prediction, shape, axis, ratio)
