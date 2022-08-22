@@ -1,11 +1,14 @@
 import contextlib
-from typing import Callable
+from typing import Callable, Optional
+from warnings import warn
 
 import numpy as np
 
 from .checkpoint import Checkpoints
 from .policy import Policy, ValuePolicy, EarlyStopping
 from .logging import Logger
+from ..torch.utils import has_batchnorm
+
 
 __all__ = 'train',
 
@@ -32,8 +35,16 @@ def _build_context_manager(o):
     yield o
 
 
-def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, logger: Logger = None,
-          checkpoints: Checkpoints = None, validate: Callable = None, **kwargs):
+def train(
+    train_step: Callable,
+    batch_iter: Callable,
+    n_epochs: int = np.inf,
+    logger: Optional[Logger] = None,
+    checkpoints: Optional[Checkpoints] = None,
+    validate: Optional[Callable] = None,
+    gradient_accumulation_steps: int = 1,
+    **kwargs,
+) -> None:
     """
     Performs a series of train and validation steps.
 
@@ -49,6 +60,7 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
     checkpoints: Checkpoints, None, optional
     validate: Callable, None, optional
         a function to calculate metrics on the validation set.
+    gradient_accumulation_steps: int
     kwargs
         additional keyword arguments passed to ``train_step``.
         For instances of `ValuePolicy` their `value` attribute is passed.
@@ -77,6 +89,14 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
     scalars = {name: value for name, value in kwargs.items() if not isinstance(value, Policy)}
     policies = {name: value for name, value in kwargs.items() if isinstance(value, Policy)}
 
+    assert isinstance(gradient_accumulation_steps, int)
+
+    if gradient_accumulation_steps > 1 and has_batchnorm(kwargs['architecture']):
+        warn(
+            "Be careful! Implemented gradient accumulation is naive and doesn't take into account specifity of "
+            "BatchNorm you are using."
+        )
+
     with batch_iter as iterator:
         try:
             while epoch < n_epochs:
@@ -85,7 +105,15 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
                 train_losses = []
                 for idx, inputs in enumerate(iterator()):
                     broadcast_event(Policy.train_step_started, epoch, idx)
-                    train_losses.append(train_step(*inputs, **scalars, **get_policy_values()))
+                    train_losses.append(
+                        train_step(
+                            *inputs,
+                            accumulate=(idx + 1) % gradient_accumulation_steps != 0,
+                            gradient_accumulation_steps=gradient_accumulation_steps,
+                            **scalars,
+                            **get_policy_values(),
+                        )
+                    )
                     broadcast_event(Policy.train_step_finished, epoch, idx, train_losses[-1])
 
                 logger.train(train_losses, epoch)
@@ -99,6 +127,7 @@ def train(train_step: Callable, batch_iter: Callable, n_epochs: int = np.inf, lo
 
                 broadcast_event(Policy.epoch_finished, epoch, train_losses,
                                 metrics=metrics, policies=get_policy_values())
+
                 checkpoints.save(epoch, train_losses, metrics)
                 epoch += 1
 

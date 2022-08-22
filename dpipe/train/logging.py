@@ -1,15 +1,16 @@
 import os
+import warnings
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import Sequence, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 import numpy as np
-
-from dpipe.commands import load_from_folder
-from dpipe.io import PathLike
-from dpipe.im.utils import zip_equal
 import wandb
+from dpipe.commands import load_from_folder
+from dpipe.im.utils import zip_equal
+from dpipe.io import PathLike
+from wandb.sdk.wandb_run import Run as wandbRun
 
 __all__ = 'Logger', 'ConsoleLogger', 'TBLogger', 'NamedTBLogger', 'WANDBLogger'
 
@@ -27,7 +28,7 @@ def log_scalar_or_vector(logger, tag, value: np.ndarray, step):
         logger.log_scalar(tag, value, step)
 
 
-def make_log_vector(logger, tag: str, first_step: int = 0) -> callable:
+def make_log_vector(logger, tag: str, first_step: int = 0) -> Callable:
     def log(tag, value, step):
         log_vector(logger, tag, value, step)
 
@@ -147,105 +148,194 @@ class NamedTBLogger(TBLogger):
 
 
 class WANDBLogger(Logger):
-    def __init__(self, project, run_name=None, *,
-                 group=None, entity='neuro-ml', config=None, model=None, criterion=None, dir=None, resume="auto"):
-        """
-        A logger that writes to a wandb run.
+    def __init__(
+        self,
+        project: Optional[str],
+        run_name: Optional[str] = None,
+        *,
+        group: Optional[str] = None,
+        entity: str = 'neuro-ml',
+        config: Union[Dict, str, None] = None,
+        dir: Optional[str] = None,
+        resume: str = 'auto',
+        **watch_kwargs: Any,
+    ) -> None:
+        """A logger that writes to a wandb run.
 
-        Call wandb.login() before usage.
+        Call `wandb login` before first usage.
         """
-        self._experiment = wandb.init(
-            entity=entity,
-            project=project,
-            resume=resume,
-            group=group,
-            dir=dir
+
+        settings = [None, wandb.Settings(start_method='fork'), wandb.Settings(start_method='thread')]
+        exp = None
+        for i, s in enumerate(settings):
+            try:
+                exp = wandb.init(
+                    entity=entity, project=project, resume=resume, group=group, dir=dir,
+                    settings=s
+                )
+                break
+            except wandb.errors.UsageError:
+                warnings.warn(f"Couldn't init wandb with setting {i}, trying another one.")
+                continue
+
+        assert isinstance(exp, wandbRun), 'Failed to register launch with wandb'
+
+        current_fold_root = Path(exp.dir).parent.parent.parent
+        experiment_root = current_fold_root.parent
+
+        # find out if the experiment is cut into several folds
+        cut_into_folds = (
+            len(
+                [
+                    p
+                    for p in experiment_root.glob('*')
+                    if p.name.startswith('experiment_') and p.is_dir()
+                ]
+            )
+            > 1
         )
+
+        current_experiment_number = (
+            str(int(current_fold_root.name.replace('experiment_', '')))
+            if cut_into_folds
+            else 0
+        )
+
         if run_name is not None:
-            self._experiment.name = run_name  # can be changed manually
+            exp.name = run_name  # can be changed manually
         else:
-            self._experiment.name = Path(self._experiment.dir).parent.parent.parent.parent.name
-        print(str(Path(self._experiment.dir).parent.parent.parent.parent))
-        print(self._experiment.save(str(Path(self._experiment.dir).parent.parent.parent.parent / 'resources.config'), policy='now'))
+            name = experiment_root.name
+            if cut_into_folds:
+                name = f'{name}-{current_experiment_number}'
+            exp.name = name
+        artifact = wandb.Artifact('model', type='config')
 
+        try:
+            artifact.add_file(
+                str(experiment_root / 'resources.config'), f'{exp.name}/config.txt'
+            )
+            # all json files of the current fold are added as artifacts
+            for json in current_fold_root.glob('*.json'):
+                artifact.add_file(str(json), f'{exp.name}/{json.name}')
+        except ValueError:
+            warnings.warn("It's likely you don't run a usual experiment, some artifacts were not found")
+
+        self._experiment = exp
+
+        wandb.log_artifact(artifact)
+
+        self.update_config(dict(experiment=experiment_root.name))
+        if cut_into_folds:
+            self.update_config(dict(fold=current_experiment_number))
         if config is not None:
-            self.config(config)
+            self.update_config(config)
 
-        if model is not None:
-            self.watch(model, criterion)
+        if watch_kwargs:
+            self.watch(**watch_kwargs)
 
-    def value(self, name: str, value, step: int=None):
-        self._experiment.log({name: value, 'step': step})
+    def __del__(self):
+        wandb.finish()
 
-    def train(self, train_losses: Sequence[Union[dict, float]], step):
-        if train_losses and isinstance(train_losses[0], dict):
+    @property
+    def experiment(self) -> wandbRun:
+        return self._experiment
+
+    def value(self, name: str, value: Any, step: Optional[int] = None) -> None:
+        self._experiment.log({name: value, 'epoch': step})
+
+    def train(
+        self, train_losses: Union[Sequence[Dict], Sequence[float], Sequence[tuple], Sequence[np.ndarray]], step: int
+    ) -> None:
+        if not train_losses:
+            return None
+        train_losses_types = {type(tl) for tl in train_losses}
+        assert len(train_losses_types) == 1, 'Inconsistent train_losses'
+        t = train_losses_types.pop()
+        if issubclass(t, dict):
             for name, values in group_dicts(train_losses).items():
                 self.value(f'train/loss/{name}', np.mean(values), step)
-        else:
+        elif issubclass(t, (float, tuple, np.ndarray)):
             self.value('train/loss', np.mean(train_losses), step)
+        else:
+            msg = f'The elements of the train_losses are expected to be of dict, float, tuple or numpy array type, but the elements are of {t.__name__} type'
+            raise NotImplementedError(msg)
 
-    def watch(self, model, criterion=None):
-        self._experiment.watch(model, criterion=criterion)
+    def watch(self, **kwargs) -> None:
+        self.experiment.watch(**kwargs)
 
-    def config(self, config_args):
-        self._experiment.config.update(config_args, allow_val_change=True)
+    def update_config(self, config_args) -> None:
+        self.experiment.config.update(config_args, allow_val_change=True)
 
-    def agg_metrics(self, agg_metrics: Union[dict, str, Path], section=''):
-        """
-        Log final metrics calculated in the end of experiment to summary table.
+    def agg_metrics(
+        self, agg_metrics: Union[dict, str, Path], section: str = ''
+    ) -> None:
+        """Log final metrics calculated in the end of experiment to summary table.
         Idea is to use these values for preparing leaderboard.
 
         agg_metrics: dictionary with name of metric as a key and with its value
         """
         if isinstance(agg_metrics, str) or isinstance(agg_metrics, Path):
-            agg_metrics = {k if not section else f'{section}/{k}': v
-                           for k, v in load_from_folder(agg_metrics, ext='.json')}
+            agg_metrics = {
+                k if not section else f'{section}/{k}': v
+                for k, v in load_from_folder(agg_metrics, ext='.json')
+            }
         elif section:
-            agg_metrics = {f'{section}/{k}': v
-                           for k, v in agg_metrics.items()}
+            agg_metrics = {f'{section}/{k}': v for k, v in agg_metrics.items()}
 
         for k, v in agg_metrics.items():
-            self._experiment.summary[k] = v
-            #self._experiment.summary.update()
+            self.experiment.summary[k] = v
+            # self.experiment.summary.update()
 
-    def ind_metrics(self, ind_metrics, step: int = 0, section: str = None):
-        """
-        Save individual metrics to a table to see bad cases
+    def ind_metrics(self, ind_metrics: Any, step: int = 0, section: Optional[str] = None) -> None:
+        """Save individual metrics to a table to see bad cases
 
         ind_metrics: DataFrame
         step: int
         section: str, defines some metrics' grouping
         """
-        from wandb import Table
         import pandas as pd
+        from wandb import Table
+
         if isinstance(ind_metrics, str) or isinstance(ind_metrics, Path):
             ind_metrics = pd.DataFrame.from_dict(
-                {k: v for k, v in load_from_folder(ind_metrics, ext='.json')}).reset_index()
+                {k: v for k, v in load_from_folder(ind_metrics, ext='.json')}
+            ).reset_index().round(2)
         table = Table(dataframe=ind_metrics)
 
-        name = "Individual Metrics" if section is None else f"{section}/Individual Metrics"
-        self._experiment.log({name: table, 'step': step})
+        name = (
+            'Individual Metrics' if section is None else f'{section}/Individual Metrics'
+        )
+        self.experiment.log({name: table})
 
-    def image(self, name: str, *values, step: int, section: str = None,
-              masks_keys: tuple = ('predictions', 'ground_truth')):
-        """
-        Method that logs images (set by values),
-        each value is a dict with fields,preds,target and optinally caption defined
+    def image(
+        self,
+        name: str,
+        *values,
+        step: int,
+        section: Optional[str] = None,
+        masks_keys: tuple = ('predictions', 'ground_truth'),
+    ) -> None:
+        """Method that logs images (set by values),
+        each value is a dict with fields, preds, target and optinally caption defined
         Special policy that works as callback
         """
         from wandb import Image
 
-        name = name if section is None else f"{section}/{name}"
-        self._experiment.log(
+        name = name if section is None else f'{section}/{name}'
+        self.experiment.log(
             {
-                name: [Image(
-                    value['image'],
-                    masks={k: {'mask_data': value[k]} for k in masks_keys},
-                    caption=value.get('caption', None)
-                ) for value in values],
-                'step': step
-            })
+                name: [
+                    Image(
+                        value['image'],
+                        masks={k: {'mask_data': value[k]} for k in masks_keys},
+                        caption=value.get('caption', None),
+                    )
+                    for value in values
+                ],
+            },
+            step=step,
+        )
 
-    def log_info(self, name: str, wandb_converter, *infos, section: str = None):
-        name = name if section is None else f"{section}/{name}"
-        self._experiment.log({name: [wandb_converter(info) for info in infos]})
+    def log_info(self, name: str, wandb_converter, *infos, section: Optional[str] = None, step: Optional[int] = None) -> None:
+        name = name if section is None else f'{section}/{name}'
+        self.experiment.log({name: [wandb_converter(info) for info in infos]})

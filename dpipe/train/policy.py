@@ -57,6 +57,7 @@ class ValuePolicy(Policy, metaclass=ABCAttributesMeta):
 
     def __init__(self, initial):
         super().__init__()
+        # TODO: turn self.value into a property
         self.value = initial
 
 
@@ -68,6 +69,8 @@ class DecreasingOnPlateau(ValuePolicy):
     """
     Policy that traces average train loss and if it didn't decrease according to ``atol``
     or ``rtol`` for ``patience`` epochs, multiply `value` by ``multiplier``.
+    ``atol`` :- absolute tolerance for detecting change in training loss value.
+    ``rtol`` :- relative tolerance for detecting change in training loss value.
     """
 
     def __init__(self, *, initial: float, multiplier: float, patience: int, rtol, atol):
@@ -81,19 +84,18 @@ class DecreasingOnPlateau(ValuePolicy):
         self.margin_loss = np.inf
 
     def get_margin_loss(self, loss):
-        return max([loss * (1 - self.rtol), loss - self.atol])
+        return max(loss - self.atol, loss * (1 - self.rtol))
 
-    def epoch_finished(self, epoch: int, train_losses: Sequence, **kwargs):
+    def epoch_finished(self, epoch: int, train_losses: Sequence, **kwargs) -> None:
         loss = np.mean(train_losses)
         if loss < self.margin_loss:
             self.margin_loss = self.get_margin_loss(loss)
             self.epochs_waited = 0
-        else:
-            self.epochs_waited += 1
-
-            if self.epochs_waited > self.patience:
-                self.value *= self.lr_dec_mul
-                self.epochs_waited = 0
+            return
+        self.epochs_waited += 1
+        if self.epochs_waited > self.patience:
+            self.value *= self.lr_dec_mul
+            self.epochs_waited = 0
 
 
 class Exponential(ValuePolicy):
@@ -102,18 +104,21 @@ class Exponential(ValuePolicy):
     If ``floordiv`` is False - the `value` will be changed continuously.
     """
 
-    def __init__(self, initial: float, multiplier: float, step_length: int = 1, floordiv: bool = True):
+    def __init__(self, initial: float, multiplier: float, step_length: int = 1, floordiv: bool = True,
+                 min_value: float = -np.inf, max_value: float = np.inf):
         super().__init__(initial)
         self.multiplier = multiplier
         self.initial = initial
         self.step_length = step_length
         self.floordiv = floordiv
+        self.min_value = min_value
+        self.max_value = max_value
 
     def epoch_started(self, epoch: int):
         power = epoch / self.step_length
         if self.floordiv:
             power = np.floor(power)
-        self.value = self.initial * self.multiplier ** power
+        self.value = np.clip(self.initial * self.multiplier ** power, self.min_value, self.max_value)
 
 
 class Schedule(ValuePolicy):

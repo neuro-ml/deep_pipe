@@ -1,18 +1,16 @@
-import shutil
 import pickle
+import shutil
 from pathlib import Path
-from typing import Dict, Any, Union, Iterable, Sequence
+from typing import Any, Dict, Iterable, Sequence, Union
 
-import numpy as np
 import torch
-
-from dpipe.io import PathLike
 from dpipe.im.utils import composition
+from dpipe.io import PathLike
 
 __all__ = 'Checkpoints', 'CheckpointManager'
 
 
-def save_pickle(o, path):
+def save_pickle(o, path: PathLike):
     if hasattr(o, '__getstate__'):
         state = o.__getstate__()
     else:
@@ -22,7 +20,7 @@ def save_pickle(o, path):
         pickle.dump(state, file)
 
 
-def load_pickle(o, path):
+def load_pickle(o, path: PathLike):
     with open(path, 'rb') as file:
         state = pickle.load(file)
 
@@ -33,11 +31,11 @@ def load_pickle(o, path):
             setattr(o, key, value)
 
 
-def save_torch(o, path):
+def save_torch(o, path: PathLike):
     torch.save(o.state_dict(), path)
 
 
-def load_torch(o, path):
+def load_torch(o, path: PathLike):
     o.load_state_dict(torch.load(path))
 
 
@@ -57,13 +55,13 @@ class Checkpoints:
         By default only the latest checkpoint is saved.
     """
 
-    def __init__(self, base_path: PathLike, objects: Union[Iterable, Dict[PathLike, Any]], frequency: int = np.inf):
+    def __init__(self, base_path: PathLike, objects: Union[Iterable, Dict[PathLike, Any]], frequency: int = None):
         self.base_path: Path = Path(base_path)
         self._checkpoint_prefix = 'checkpoint_'
         if not isinstance(objects, dict):
             objects = self._generate_unique_names(objects)
         self.objects = objects or {}
-        self.frequency = frequency
+        self.frequency = frequency or float('inf')
 
     @staticmethod
     @composition(dict)
@@ -82,10 +80,10 @@ class Checkpoints:
             names.add(name)
             yield name, o
 
-    def _get_checkpoint_folder(self, iteration):
+    def _get_checkpoint_folder(self, iteration: int):
         return self.base_path / f'{self._checkpoint_prefix}{iteration}'
 
-    def _clear_checkpoint(self, iteration):
+    def _clear_checkpoint(self, iteration: int):
         if (iteration + 1) % self.frequency != 0:
             shutil.rmtree(self._get_checkpoint_folder(iteration))
 
@@ -101,7 +99,7 @@ class Checkpoints:
             return load_torch
         return load_pickle
 
-    def _save_to(self, folder):
+    def _save_to(self, folder: Path):
         for path, o in self.objects.items():
             save = self._dispatch_saver(o)
             save(o, folder / path)
@@ -122,9 +120,9 @@ class Checkpoints:
 
         max_iteration = -1
         for file in self.base_path.iterdir():
-            file = file.name
-            if file.startswith(self._checkpoint_prefix):
-                max_iteration = max(max_iteration, int(file[len(self._checkpoint_prefix):]))
+            filename = file.name
+            if filename.startswith(self._checkpoint_prefix):
+                max_iteration = max(max_iteration, int(filename[len(self._checkpoint_prefix):]))
 
         # no backups found
         if max_iteration < 0:

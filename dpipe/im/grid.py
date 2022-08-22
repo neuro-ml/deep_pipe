@@ -2,7 +2,7 @@
 Function for working with patches from tensors.
 See the :doc:`tutorials/patches` tutorial for more details.
 """
-from typing import Iterable, Type, Tuple
+from typing import Iterable, Type, Tuple, Callable
 
 import numpy as np
 
@@ -49,7 +49,7 @@ def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesL
 
 
 def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
-           valid: bool = False) -> Iterable[np.ndarray]:
+           valid: bool = False, get_boxes: Callable = get_boxes) -> Iterable[np.ndarray]:
     """
     A convolution-like approach to generating patches from a tensor.
 
@@ -63,6 +63,8 @@ def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axis: AxesLike
         the stride (step-size) of the slice.
     valid
         whether patches of size smaller than ``patch_size`` should be left out.
+    get_boxes
+        function that yields boxes, for signature see ``get_boxes``
 
     References
     ----------
@@ -101,7 +103,8 @@ class Average(PatchCombiner):
 
 
 def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike,
-            axis: AxesLike = None, valid: bool = False, combiner: Type[PatchCombiner] = Average) -> np.ndarray:
+            axis: AxesLike = None, valid: bool = False,
+            combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes) -> np.ndarray:
     """
     Build a tensor of shape ``output_shape`` from ``patches`` obtained in a convolution-like approach
     with corresponding parameters.
