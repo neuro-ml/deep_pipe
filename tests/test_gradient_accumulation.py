@@ -1,8 +1,6 @@
 import pytest
 
-import torch
 import numpy as np
-from torch import nn
 from dpipe.torch import train_step
 from dpipe.train import train
 
@@ -10,6 +8,9 @@ from dpipe.train import train
 @pytest.mark.cuda
 @pytest.mark.parametrize('batch_size', [4, 16, 64])
 def test_train(batch_size):
+    import torch
+    from torch import nn
+
     net1 = nn.Sequential(
         nn.Conv2d(3, 4, kernel_size=3, padding=1),
         nn.LayerNorm([28, 28]),
