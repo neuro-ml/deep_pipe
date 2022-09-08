@@ -13,7 +13,7 @@ class TestMNIST(unittest.TestCase):
     # TODO: use a temp dir
     base_path = Path('~/tests/MNIST').expanduser()
     experiment_path = base_path / 'exp'
-    config_path = 'dpipe/tests/mnist/setup.config'
+    config_path = Path(__file__).resolve().parent / 'mnist/setup.config'
     config = load(config_path)
 
     @classmethod

@@ -7,6 +7,7 @@ from dpipe.torch import train_step
 from dpipe.train import train
 
 
+@pytest.mark.cuda
 @pytest.mark.parametrize('batch_size', [4, 16, 64])
 def test_train(batch_size):
     net1 = nn.Sequential(
