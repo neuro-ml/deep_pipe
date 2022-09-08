@@ -11,4 +11,5 @@ lazycon>=0.1.0<1.0
 loky~=2.8.0
 wandb
 nibabel
+torch
 imops>=0.3.0<1.0
