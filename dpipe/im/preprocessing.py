@@ -1,5 +1,5 @@
 import numpy as np
-from skimage.measure import label
+from imops.measure import label
 
 from dpipe.itertools import negate_indices
 from .axes import AxesLike, check_axes, AxesParams
@@ -99,14 +99,16 @@ def describe_connected_components(mask: np.ndarray, background: int = 0, drop_ba
     volumes
         a list of corresponding labels' volumes.
     """
-    label_map = label(mask, background=background)
-    labels, volumes = np.unique(label_map, return_counts=True)
+    label_map, labels, volumes = label(mask, background=background, return_labels=True, return_sizes=True)
+
+    if not drop_background:
+        # background's label is always 0
+        labels = np.append(labels, 0)
+        volumes = np.append(volumes, label_map.size - volumes.sum(dtype=int))
+
     idx = volumes.argsort()[::-1]
     labels, volumes = labels[idx], volumes[idx]
-    if drop_background:
-        # background's label is always 0
-        foreground = labels != 0
-        labels, volumes = labels[foreground], volumes[foreground]
+
     return label_map, labels, volumes
 
 
