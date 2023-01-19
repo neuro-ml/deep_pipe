@@ -23,6 +23,9 @@ def test_patches_grid():
     with pytest.raises(ValueError):
         check_equal(patch_size=30, stride=1, padding_values=None)
 
+    check_equal(patch_size=9, stride=9, padding_values=None)
+    check_equal(patch_size=15, stride=12, padding_values=None)
+
 
 def test_divisible_patches():
     def check_equal(**kwargs):
