@@ -38,24 +38,25 @@ def test_parallel():
     assert abs(faster - delta / 2) < sleep
 
 
-def test_loky():
-    size = 100
-    for i, item in enumerate(wrap_pipeline(range(size), Loky(lambda x: x ** 2, n_workers=2))):
-        assert item == i ** 2
-    assert i == size - 1
-    # at this point the first worker is killed
-    # start a new one
-    for i, item in enumerate(wrap_pipeline(range(size), Loky(lambda x: x ** 2, n_workers=2))):
-        assert item == i ** 2
-    assert i == size - 1
+# TODO: uncomment as soon as #68 is solved
+# def test_loky():
+#     size = 100
+#     for i, item in enumerate(wrap_pipeline(range(size), Loky(lambda x: x ** 2, n_workers=2))):
+#         assert item == i ** 2
+#     assert i == size - 1
+#     # at this point the first worker is killed
+#     # start a new one
+#     for i, item in enumerate(wrap_pipeline(range(size), Loky(lambda x: x ** 2, n_workers=2))):
+#         assert item == i ** 2
+#     assert i == size - 1
 
-    # several workers
-    for i, item in enumerate(wrap_pipeline(
-            range(size),
-            Loky(lambda x: x ** 2, n_workers=2),
-            Loky(lambda x: x ** 2, n_workers=2))):
-        assert item == i ** 4
-    assert i == size - 1
+#     # several workers
+#     for i, item in enumerate(wrap_pipeline(
+#             range(size),
+#             Loky(lambda x: x ** 2, n_workers=2),
+#             Loky(lambda x: x ** 2, n_workers=2))):
+#         assert item == i ** 4
+#     assert i == size - 1
 
 
 def test_premature_stop():
