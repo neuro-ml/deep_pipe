@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [ 3.6, 3.7, 3.8, 3.9, '3.10' ]
+        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10' ]
 
     steps:
       - uses: actions/checkout@v2
@@ -19,12 +19,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Check the version and build the package
+      - name: Check the version
+        if: "! github.event.pull_request.head.repo.fork "
         run: |
           VERSION=$(python -c "from pathlib import Path; import runpy; folder, = {d.parent for d in Path().resolve().glob('*/__init__.py') if d.parent.is_dir() and (d.parent / '__version__.py').exists()}; print(runpy.run_path(folder / '__version__.py')['__version__'])")
-          MATCH=$(pip index versions deep-pipe | grep "Available versions:" | grep $VERSION) || echo
+          MATCH=$(pip index versions "$MODULE_NAME" | grep "Available versions:" | grep $VERSION) || echo
           echo $MATCH
           if [ "$GITHUB_BASE_REF" = "master" ] && [ "$MATCH" != "" ]; then exit 1; fi
+      - name: Build the package
+        run: |
           python setup.py sdist
 
       - name: Install
