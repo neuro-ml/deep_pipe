@@ -25,7 +25,7 @@ jobs:
       - name: Check the version and build the package
         run: |
           RELEASE=${{ steps.get_version.outputs.version-without-v }}
-          VERSION=$(python -c "from pathlib import Path; import runpy; folder, = {d.parent for d in Path().resolve().glob('*/__init__.py')}; print(runpy.run_path(folder / '__init__.py')['__version__'])")
+          VERSION=$(python -c "from pathlib import Path; import runpy; folder, = {d.parent for d in Path().resolve().glob('*/__init__.py') if d.parent.is_dir() and (d.parent / '__version__.py').exists()}; print(runpy.run_path(folder / '__version__.py')['__version__'])")
           MATCH=$(pip index versions $MODULE_NAME | grep "Available versions:" | grep $VERSION) || echo
           echo $MATCH
           if [ "$GITHUB_BASE_REF" = "master" ] && [ "$MATCH" != "" ]; then echo "Version $VERSION already present" && exit 1; fi
