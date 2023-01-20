@@ -1,17 +1,24 @@
-from setuptools import setup, find_packages
+from pathlib import Path
 
-from dpipe import __version__
+from setuptools import setup, find_packages
 
 classifiers = '''Development Status :: 4 - Beta
 Programming Language :: Python :: 3.6
 Programming Language :: Python :: 3.7
-Programming Language :: Python :: 3.8'''
+Programming Language :: Python :: 3.8
+Programming Language :: Python :: 3.9
+Programming Language :: Python :: 3.10'''
 
 with open('README.md', encoding='utf-8') as file:
     long_description = file.read()
 
 with open('requirements.txt', encoding='utf-8') as file:
     requirements = file.read().splitlines()
+
+with open(Path(__file__).resolve().parent / 'dpipe/__version__.py', encoding='utf-8') as file:
+    scope = {}
+    exec(file.read(), scope)
+    __version__ = scope['__version__']
 
 setup(
     name='deep_pipe',

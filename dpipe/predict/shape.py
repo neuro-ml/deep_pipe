@@ -87,7 +87,8 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
     the predicted patches by aggregating the overlapping regions using the ``combiner`` - Average by default.
 
     If ``padding_values`` is not None, the array will be padded to an appropriate shape to make a valid division.
-    Afterwards the padding is removed.
+    Afterwards the padding is removed. Otherwise if input cannot be patched without remainder
+    ``ValueError`` is raised.
 
     References
     ----------
@@ -100,12 +101,15 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
         def wrapper(x, *args, **kwargs):
             input_axis = resolve_deprecation(axis, x.ndim, patch_size, stride)
             local_size, local_stride = broadcast_to_axis(input_axis, patch_size, stride)
+            shape = extract(x.shape, input_axis)
 
             if valid:
-                shape = extract(x.shape, input_axis)
                 padded_shape = np.maximum(shape, local_size)
                 new_shape = padded_shape + (local_stride - padded_shape + local_size) % local_stride
                 x = pad_to_shape(x, new_shape, input_axis, padding_values, ratio)
+            elif ((shape - local_size) < 0).any() or ((local_stride - shape + local_size) % local_stride).any():
+                raise ValueError('Input cannot be patched without remainder.')
+
 
             patches = pmap(
                 predict,
