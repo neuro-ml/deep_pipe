@@ -27,7 +27,7 @@ setup(
     version=__version__,
     description='A collection of tools for deep learning experiments',
     long_description=long_description,
-    author="Vladimir Philipenko"
+    author="NeuroML Group"
     long_description_content_type='text/markdown',
     license='MIT',
     url='https://github.com/neuro-ml/deep_pipe',
