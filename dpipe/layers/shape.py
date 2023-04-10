@@ -40,7 +40,8 @@ class InterpolateToInput(nn.Module):
         for i in axis:
             new_shape[i] = old_shape[i]
 
-        x = functional.interpolate(x, size=new_shape, mode=self.mode, align_corners=False)
+        if np.not_equal(x.shape[2:], new_shape).any():
+            x = functional.interpolate(x, size=new_shape, mode=self.mode, align_corners=False)
         return x
 
 

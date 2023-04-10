@@ -74,7 +74,8 @@ class ResBlock(nn.Module):
         x_conv = self.conv_path(x)
         shape = x_conv.shape[2:]
         axes = range(-len(shape), 0)
-        return x_conv + self.adjust_to_stride(x)
+        x_skip = crop_to_shape(self.adjust_to_stride(x), shape=shape, axis=axes)
+        return x_conv + x_skip
 
 
 ResBlock1d = partial(ResBlock, conv_module=nn.Conv1d, batch_norm_module=nn.BatchNorm1d)
