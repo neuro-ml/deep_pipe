@@ -138,11 +138,10 @@ def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0, 
     if isinstance(order, int):
         order = order_to_mode(order, len(down.shape) - 2)
 
-    if np.not_equal(left.shape, down.shape).any():
-        interpolate = functional.interpolate
-        if order in ['linear', 'bilinear', ' bicubic', 'trilinear']:
-            interpolate = partial(interpolate, align_corners=False)
+    interpolate = functional.interpolate
+    if order in ['linear', 'bilinear', ' bicubic', 'trilinear']:
+        interpolate = partial(interpolate, align_corners=False)
 
-        down = interpolate(down, size=left.shape[2:], mode=order)
+    down = interpolate(down, size=left.shape[2:], mode=order)
 
     return left, down
