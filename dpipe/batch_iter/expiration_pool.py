@@ -22,15 +22,17 @@ class ExpirationPool(Iterator):
     )
     """
 
-    def __init__(self, pool_size: int, repetitions: int):
-        super().__init__(partial(expiration_pool, pool_size=pool_size, repetitions=repetitions), )
+    def __init__(self, pool_size: int, repetitions: int, iterations: int = 1):
+        super().__init__(partial(expiration_pool, pool_size=pool_size, repetitions=repetitions, iterations=iterations))
 
 
-def expiration_pool(iterable: Iterable, pool_size: int, repetitions: int):
+def expiration_pool(iterable: Iterable, pool_size: int, repetitions: int, iterations: int = 1):
     """
     Caches ``pool_size`` items from ``iterable``.
     The item is removed from cache after it was generated ``repetitions`` times.
     After an item is removed, a new one is extracted from the ``iterable``.
+    Finally, ``iterations`` controls how many values are generated after a new value is added,
+    thus speeding up the pipeline at early stages.
     """
 
     assert pool_size > 0
@@ -51,7 +53,10 @@ def expiration_pool(iterable: Iterable, pool_size: int, repetitions: int):
     value_frequency = {}  # i -> [value, frequency]
     for idx, value in iterable:
         value_frequency[idx] = [value, 0]
-        yield sample_value()
+
+        for _ in range(iterations):
+            if value_frequency:
+                yield sample_value()
 
         while len(value_frequency) >= pool_size:
             yield sample_value()
