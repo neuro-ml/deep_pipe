@@ -232,7 +232,7 @@ def masked_loss(mask: torch.Tensor, criterion: Callable, prediction: torch.Tenso
     """
     if not mask.any():
         # https://github.com/neuro-ml/deep_pipe/issues/75
-        return (prediction * 0).sum()
+        return 0 * prediction.flatten()[0]
 
     return criterion(prediction[mask], target[mask], **kwargs)
 
