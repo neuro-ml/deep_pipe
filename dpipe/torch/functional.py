@@ -231,7 +231,8 @@ def masked_loss(mask: torch.Tensor, criterion: Callable, prediction: torch.Tenso
     If the ``mask`` is empty - returns 0 wrapped in a torch tensor.
     """
     if not mask.any():
-        return torch.tensor(0., requires_grad=True).to(prediction)
+        # https://github.com/neuro-ml/deep_pipe/issues/75
+        return 0 * prediction.flatten()[0]
 
     return criterion(prediction[mask], target[mask], **kwargs)
 

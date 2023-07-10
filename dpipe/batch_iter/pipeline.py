@@ -131,6 +131,9 @@ class Infinite:
         """Stop all background processes."""
         self.__exit__(None, None, None)
 
+    def __iter__(self):
+        return self()
+
     def __call__(self):
         if not self.pipeline.pipeline_active:
             self.__enter__()
