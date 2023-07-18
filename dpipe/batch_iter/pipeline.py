@@ -144,7 +144,7 @@ class Infinite:
         from lightning.pytorch.callbacks import Callback
 
         class ClosingCallback(Callback):
-            def on_train_end(self, trainer, pl_module):
+            def teardown(self, trainer, pl_module, stage):
                 this.close()
 
         this = self
