@@ -131,6 +131,25 @@ class Infinite:
         """Stop all background processes."""
         self.__exit__(None, None, None)
 
+    @property
+    def closing_callback(self):
+        """
+        A callback to make this interface compatible with `Lightning` which allows for a safe release of resources
+
+        Examples
+        --------
+        >>> batch_iter = Infinite(...)
+        >>> trainer = Trainer(callbacks=[batch_iter.closing_callback, ...])
+        """
+        from lightning.pytorch.callbacks import Callback
+
+        class ClosingCallback(Callback):
+            def on_train_end(self, trainer, pl_module):
+                this.close()
+
+        this = self
+        return ClosingCallback()
+
     def __iter__(self):
         return self()
 
