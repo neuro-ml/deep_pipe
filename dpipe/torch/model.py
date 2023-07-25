@@ -175,7 +175,7 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     # NumPy >= 1.24 warns about underflow during cast which is really insignificant
     if amp:
         with np.errstate(under='ignore'):
-            inputs = tuple(np.asarray(x, dtype=np.float16 if amp else x.dtype) for x in inputs)
+            inputs = tuple(np.asarray(x, dtype=np.float16) for x in inputs)
 
     with torch.no_grad():
         with torch.cuda.amp.autocast(amp or torch.is_autocast_enabled()):
