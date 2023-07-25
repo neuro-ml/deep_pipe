@@ -168,8 +168,15 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     -----
     Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
     to and from ``torch.Tensor`` is made inside this function.
+    Inputs will be converted to fp16 if ``amp`` is True.
     """
     architecture.eval()
+
+    # NumPy >= 1.24 warns about underflow during cast which is really insignificant
+    if amp:
+        with np.errstate(under='ignore'):
+            inputs = tuple(np.asarray(x, dtype=np.float16) for x in inputs)
+
     with torch.no_grad():
         with torch.cuda.amp.autocast(amp or torch.is_autocast_enabled()):
             return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
@@ -188,8 +195,15 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     -----
     Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
     to and from ``torch.Tensor`` is made inside this function.
+    Inputs will be converted to fp16 if ``amp`` is True.
     """
     architecture.eval()
+
+    # NumPy >= 1.24 warns about underflow during cast which is really insignificant
+    if amp:
+        with np.errstate(under='ignore'):
+            inputs = tuple(np.asarray(x, dtype=np.float16) for x in inputs)
+
     with torch.no_grad():
         with torch.cuda.amp.autocast(amp or torch.is_autocast_enabled()):
             results = architecture(*sequence_to_var(*inputs, device=architecture))
