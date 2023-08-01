@@ -146,7 +146,7 @@ class Infinite:
         class ClosingCallback(Callback):
             def teardown(self, trainer, pl_module, stage):
                 this.close()
-            def on_exception(trainer, pl_module, exception):
+            def on_exception(self, trainer, pl_module, exception):
                 this.close()
         
         this = self
