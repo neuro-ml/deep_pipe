@@ -90,10 +90,15 @@ class Infinite:
         if batches_per_epoch <= 0:
             raise ValueError(f'Expected a positive amount of batches per epoch, but got {batches_per_epoch}')
 
+        if not isinstance(combiner, Transform):
+            combiner = Threads(partial(combiner, **kwargs))
+        elif kwargs:
+            raise ValueError('The `combiner` is already wrapped in a `Transform`, passing `kwargs` has no effect')
+
         self.batches_per_epoch = batches_per_epoch
         self.pipeline = wrap_pipeline(
             source, *transformers,
-            self._make_stacker(batch_size), Threads(partial(combiner, **kwargs)),
+            self._make_stacker(batch_size), combiner,
             buffer_size=buffer_size
         )
 
