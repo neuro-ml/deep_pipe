@@ -96,7 +96,8 @@ class Infinite:
             raise ValueError('The `combiner` is already wrapped in a `Transform`, passing `kwargs` has no effect')
 
         self.batches_per_epoch = batches_per_epoch
-        self.pipeline = wrap_pipeline(
+        self.pipeline = None
+        self._pipeline_factory = lambda: wrap_pipeline(
             source, *transformers,
             self._make_stacker(batch_size), combiner,
             buffer_size=buffer_size
@@ -151,9 +152,10 @@ class Infinite:
         class ClosingCallback(Callback):
             def teardown(self, trainer, pl_module, stage):
                 this.close()
+
             def on_exception(self, trainer, pl_module, exception):
                 this.close()
-        
+
         this = self
         return ClosingCallback()
 
@@ -161,16 +163,22 @@ class Infinite:
         return self()
 
     def __call__(self):
+        if self.pipeline is None:
+            self.pipeline = self._pipeline_factory()
         if not self.pipeline.pipeline_active:
             self.__enter__()
         return islice(self.pipeline, self.batches_per_epoch)
 
     def __enter__(self):
+        if self.pipeline is None:
+            self.pipeline = self._pipeline_factory()
         self.pipeline.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        return self.pipeline.__exit__(exc_type, exc_val, exc_tb)
+        if self.pipeline is not None:
+            self.pipeline, pipeline = None, self.pipeline
+            return pipeline.__exit__(exc_type, exc_val, exc_tb)
 
     def __del__(self):
         self.close()
