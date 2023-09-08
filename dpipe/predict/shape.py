@@ -81,7 +81,7 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
 
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
-                 combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes):
+                 combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, **imops_kwargs):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     the predicted patches by aggregating the overlapping regions using the ``combiner`` - Average by default.
@@ -106,7 +106,7 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
             if valid:
                 padded_shape = np.maximum(shape, local_size)
                 new_shape = padded_shape + (local_stride - padded_shape + local_size) % local_stride
-                x = pad_to_shape(x, new_shape, input_axis, padding_values, ratio)
+                x = pad_to_shape(x, new_shape, input_axis, padding_values, ratio, **imops_kwargs)
             elif ((shape - local_size) < 0).any() or ((local_stride - shape + local_size) % local_stride).any():
                 raise ValueError('Input cannot be patched without remainder.')
 
@@ -118,7 +118,7 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
             )
             prediction = combine(
                 patches, extract(x.shape, input_axis), local_stride, axis,
-                combiner=combiner, get_boxes=get_boxes
+                combiner=combiner, get_boxes=get_boxes,
             )
 
             if valid:

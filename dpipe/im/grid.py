@@ -5,6 +5,7 @@ See the :doc:`tutorials/patches` tutorial for more details.
 from typing import Iterable, Type, Tuple, Callable
 
 import numpy as np
+from imops.numeric import pointwise_add
 
 from .shape_ops import crop_to_box
 from .axes import fill_by_indices, AxesLike, resolve_deprecation, axis_from_dim, broadcast_to_axis
@@ -87,15 +88,20 @@ class PatchCombiner:
 
 
 class Average(PatchCombiner):
-    def __init__(self, shape: Tuple[int, ...], dtype: np.dtype):
+    def __init__(self, shape: Tuple[int, ...], dtype: np.dtype, **imops_kwargs: dict):
         super().__init__(shape, dtype)
         self._result = np.zeros(shape, dtype)
         self._counts = np.zeros(shape, int)
+        self._imops_kwargs = imops_kwargs
 
     def update(self, box: Box, patch: np.ndarray):
         slc = build_slices(*box)
-        self._result[slc] += patch
-        self._counts[slc] += 1
+
+        result_slc = self._result[slc]
+        pointwise_add(result_slc, patch, result_slc, **self._imops_kwargs)
+
+        counts_slc = self._counts[slc]
+        pointwise_add(counts_slc, 1, counts_slc, **self._imops_kwargs)
 
     def build(self):
         np.true_divide(self._result, self._counts, out=self._result, where=self._counts > 0)
@@ -104,7 +110,7 @@ class Average(PatchCombiner):
 
 def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike,
             axis: AxesLike = None, valid: bool = False,
-            combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes) -> np.ndarray:
+            combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, **combiner_kwargs) -> np.ndarray:
     """
     Build a tensor of shape ``output_shape`` from ``patches`` obtained in a convolution-like approach
     with corresponding parameters.
@@ -130,7 +136,7 @@ def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesL
     if not np.issubdtype(dtype, np.floating):
         dtype = float
 
-    combiner = combiner(output_shape, dtype)
+    combiner = combiner(output_shape, dtype, **combiner_kwargs)
     for box, patch in zip_equal(get_boxes(output_shape, patch_size, stride, valid=valid), patches):
         combiner.update(box, patch)
 
