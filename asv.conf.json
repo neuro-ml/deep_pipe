@@ -1,0 +1,21 @@
+{
+    "version": 1,
+    "project": "deep_pipe",
+    "project_url": "https://github.com/neuro-ml/deep_pipe",
+    "repo": ".",
+    "branches": ["master, develop"],
+    "dvcs": "git",
+    "environment_type": "conda",
+    "show_commit_url": "https://github.com/neuro-ml/deep_pipe/commit",
+    "pythons": ["3.10"],
+    "conda_channels": ["defaults", "conda-forge"],
+    "matrix": {
+        "req": {
+            "imops": ["0.8.3"]
+        }
+    },
+    "env_dir": ".asv/env",
+    "results_dir": ".asv/results",
+    "html_dir": ".asv/html",
+    "build_cache_size": 2
+}
