@@ -3,7 +3,7 @@
     "project": "deep_pipe",
     "project_url": "https://github.com/neuro-ml/deep_pipe",
     "repo": ".",
-    "branches": ["master, develop"],
+    "branches": ["master", "develop"],
     "dvcs": "git",
     "environment_type": "conda",
     "show_commit_url": "https://github.com/neuro-ml/deep_pipe/commit",
