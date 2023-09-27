@@ -11,7 +11,7 @@
     "conda_channels": ["defaults", "conda-forge"],
     "matrix": {
         "req": {
-            "imops": ["0.8.3"]
+            "pip+imops": ["0.8.3"]
         }
     },
     "env_dir": ".asv/env",
