@@ -5,6 +5,7 @@ from dpipe.predict import patches_grid
 
 class TimeSuite:
     params = [('float16', 'float32', 'float64')]
+    param_names = ['dtype']
     timeout = 300
 
     def setup(self, dtype):
