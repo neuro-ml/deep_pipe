@@ -10,6 +10,7 @@ from ..im.utils import identity, dmap, zip_equal, collect
 from .utils import *
 
 __all__ = 'optimizer_step', 'train_step', 'inference_step', 'multi_inference_step'
+_inference_ctx_manager = torch.no_grad if torch.__version__[:3] < '1.9' else torch.inference_mode
 
 
 def optimizer_step(
@@ -172,7 +173,7 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     """
     architecture.eval()
     amp = amp or torch.is_autocast_enabled()
-    with torch.no_grad():
+    with _inference_ctx_manager():
         with torch.cuda.amp.autocast(amp):
             return to_np(
                 activation(architecture(*sequence_to_var(*inputs, device=architecture, dtype=torch.float16 if amp else None))),
@@ -197,7 +198,7 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     """
     architecture.eval()
     amp = amp or torch.is_autocast_enabled()
-    with torch.no_grad():
+    with _inference_ctx_manager():
         with torch.cuda.amp.autocast(amp):
             results = architecture(*sequence_to_var(*inputs, device=architecture, dtype=torch.float16 if amp else None))
             if callable(activations):
