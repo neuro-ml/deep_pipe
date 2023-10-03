@@ -85,7 +85,7 @@ def is_on_cuda(x: Union[nn.Module, torch.Tensor]):
     return x.is_cuda
 
 
-def to_var(*arrays: ArrayLike, device: Device = 'cpu', requires_grad: bool = False):
+def to_var(*arrays: ArrayLike, device: Device = 'cpu', requires_grad: bool = False, dtype: torch.dtype = None):
     """
     Convert numpy arrays to torch Tensors.
 
@@ -97,6 +97,8 @@ def to_var(*arrays: ArrayLike, device: Device = 'cpu', requires_grad: bool = Fal
         the device on which to move ``x``. See `get_device` for details.
     requires_grad
         whether the tensors require grad.
+    dtype
+        dtype to which tensors will be converted
 
     Notes
     -----
@@ -106,12 +108,14 @@ def to_var(*arrays: ArrayLike, device: Device = 'cpu', requires_grad: bool = Fal
 
     If this is not the desired behaviour, use `sequence_to_var`, which always returns a tuple of tensors.
     """
-    return squeeze_first(tuple(sequence_to_var(*arrays, device=device, requires_grad=requires_grad)))
+    return squeeze_first(tuple(sequence_to_var(*arrays, device=device, requires_grad=requires_grad, dtype=dtype)))
 
 
-def to_np(*tensors: torch.Tensor):
+def to_np(*tensors: torch.Tensor, dtype: torch.dtype = None):
     """
     Convert torch Tensors to numpy arrays.
+
+    Optionally converts Tensors data to the desired dtype.
 
     Notes
     -----
@@ -121,22 +125,22 @@ def to_np(*tensors: torch.Tensor):
 
     If this is not the desired behaviour, use `sequence_to_np`, which always returns a tuple of arrays.
     """
-    return squeeze_first(tuple(sequence_to_np(*tensors)))
+    return squeeze_first(tuple(sequence_to_np(*tensors, dtype=dtype)))
 
 
 @collect
-def sequence_to_var(*arrays: ArrayLike, device: Device = 'cpu', requires_grad: bool = False):
+def sequence_to_var(*arrays: ArrayLike, device: Device = 'cpu', requires_grad: bool = False, dtype: torch.dtype = None):
     for x in arrays:
         x = torch.from_numpy(np.asarray(x))
         if requires_grad:
             x.requires_grad_()
-        yield to_device(x, device)
+        yield to_device(x.to(dtype or x.dtype), device)
 
 
 @collect
-def sequence_to_np(*tensors: torch.Tensor):
+def sequence_to_np(*tensors: torch.Tensor, dtype: torch.dtype = None):
     for x in tensors:
-        yield x.data.cpu().numpy()
+        yield x.data.cpu().to(dtype or x.dtype).numpy()
 
 
 def to_device(x: Union[nn.Module, torch.Tensor], device: Union[Device, None] = 'cpu'):

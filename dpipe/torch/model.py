@@ -50,8 +50,8 @@ def optimizer_step(
             if not accumulate:
                 if clip_grad is not None:
                     scaler.unscale_(optimizer)
-                    assert not isinstance(clip_grad, bool), "Use of boolean clip_grad value (e.g. False) can lead to " \
-                                                            "unexpected behaviour. "
+                    assert not isinstance(clip_grad, bool), 'Use of boolean clip_grad value (e.g. False) can lead to ' \
+                                                            'unexpected behaviour. '
                     clip_grad_norm_(get_parameters(optimizer), clip_grad)
 
                 scaler.step(optimizer)
@@ -171,15 +171,13 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     Inputs will be converted to fp16 if ``amp`` is True.
     """
     architecture.eval()
-
-    # NumPy >= 1.24 warns about underflow during cast which is really insignificant
-    if amp:
-        with np.errstate(under='ignore'):
-            inputs = tuple(np.asarray(x, dtype=np.float16) for x in inputs)
-
+    amp = amp or torch.is_autocast_enabled()
     with torch.no_grad():
-        with torch.cuda.amp.autocast(amp or torch.is_autocast_enabled()):
-            return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
+        with torch.cuda.amp.autocast(amp):
+            return to_np(
+                activation(architecture(*sequence_to_var(*inputs, device=architecture, dtype=torch.float16 if amp else None))),
+                dtype=torch.float32,
+            )
 
 
 @collect
@@ -198,22 +196,17 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     Inputs will be converted to fp16 if ``amp`` is True.
     """
     architecture.eval()
-
-    # NumPy >= 1.24 warns about underflow during cast which is really insignificant
-    if amp:
-        with np.errstate(under='ignore'):
-            inputs = tuple(np.asarray(x, dtype=np.float16) for x in inputs)
-
+    amp = amp or torch.is_autocast_enabled()
     with torch.no_grad():
-        with torch.cuda.amp.autocast(amp or torch.is_autocast_enabled()):
-            results = architecture(*sequence_to_var(*inputs, device=architecture))
+        with torch.cuda.amp.autocast(amp):
+            results = architecture(*sequence_to_var(*inputs, device=architecture, dtype=torch.float16 if amp else None))
             if callable(activations):
                 activations = [activations] * len(results)
 
             for activation, result in zip_equal(activations, results):
                 if activation is not None:
                     result = activation(result)
-                yield to_np(result)
+                yield to_np(result, dtype=torch.float32)
 
 
 @np.deprecate
