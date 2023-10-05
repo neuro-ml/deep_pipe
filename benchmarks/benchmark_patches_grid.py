@@ -5,6 +5,12 @@ from dpipe.predict import patches_grid
 from dpipe.torch.model import inference_step
 
 
+class IdentityWithParams(nn.Conv3d):
+    """Needed for determining device"""
+    def forward(self, x):
+        return x
+
+
 class TimeSuite:
     params = (('float16', 'float32', 'float64'),)
     param_names = ('dtype',)
@@ -28,7 +34,11 @@ class TimeTorchSuite:
     def setup(self, amp):
         self.inp = np.random.randn(512, 512, 512).astype('float32')
         self.predict = patches_grid(200, 100, axis=-1)(
-            lambda x: inference_step(x, architecture=nn.Identity(), amp=amp).astype('float32', copy=False)
+            lambda x: inference_step(
+                x[None, None],
+                architecture=IdentityWithParams(1, 1, kernel_size=3),
+                amp=amp,
+            ).astype('float32', copy=False)[0][0]
         )
 
     def time_patches_grid(self, amp):
