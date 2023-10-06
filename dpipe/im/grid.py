@@ -98,7 +98,7 @@ class Average(PatchCombiner):
         slc = build_slices(*box)
 
         result_slc = self._result[slc]
-        pointwise_add(result_slc, patch, result_slc, **self._imops_kwargs)
+        pointwise_add(result_slc, patch.astype(result_slc.dtype, copy=False), result_slc, **self._imops_kwargs)
 
         counts_slc = self._counts[slc]
         pointwise_add(counts_slc, 1, counts_slc, **self._imops_kwargs)
