@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from torch import nn
 
 from dpipe.predict import patches_grid
@@ -33,13 +34,24 @@ class TimeTorchSuite:
 
     def setup(self, amp):
         self.inp = np.random.randn(512, 512, 512).astype('float32')
-        self.predict = patches_grid(200, 100, axis=-1)(
-            lambda x: inference_step(
-                x[None, None],
-                architecture=IdentityWithParams(1, 1, kernel_size=3),
-                amp=amp,
-            ).astype('float32', copy=False)[0][0]
-        )
+
+        try:
+            inference_step(self.inp[None, None], architecture=IdentityWithParams(1, 1, kernel_size=3), in_dtype=torch.float32)
+            self.predict = patches_grid(200, 100, axis=-1)(
+                lambda x: inference_step(
+                    x[None, None],
+                    architecture=IdentityWithParams(1, 1, kernel_size=3),
+                    amp=amp, out_dtype=torch.float32,
+                )[0][0]
+            )
+        except TypeError:
+            self.predict = patches_grid(200, 100, axis=-1)(
+                lambda x: inference_step(
+                    x[None, None],
+                    architecture=IdentityWithParams(1, 1, kernel_size=3),
+                    amp=amp,
+                ).astype('float32', copy=False)[0][0]
+            )
 
     def time_patches_grid(self, amp):
         self.predict(self.inp)

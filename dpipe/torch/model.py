@@ -161,7 +161,7 @@ def train_step(
 
 
 def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity,
-                   amp: bool = False) -> np.ndarray:
+                   amp: bool = False, in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -169,22 +169,23 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     -----
     Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
     to and from ``torch.Tensor`` is made inside this function.
-    Inputs will be converted to fp16 if ``amp`` is True.
+    Inputs will be converted to fp16 if ``amp`` is True and ``in_dtype`` is not specified.
     """
     architecture.eval()
     amp = amp or torch.is_autocast_enabled()
+    in_dtype = in_dtype or (torch.float16 if amp else None)
     with _inference_ctx_manager():
         with torch.cuda.amp.autocast(amp):
             return to_np(
-                activation(architecture(*sequence_to_var(*inputs, device=architecture, dtype=torch.float16 if amp else None))),
-                dtype=torch.float32,
+                activation(architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))),
+                dtype=out_dtype,
             )
 
 
 @collect
 def multi_inference_step(*inputs: np.ndarray, architecture: Module,
                          activations: Union[Callable, Sequence[Union[Callable, None]]] = identity,
-                         amp: bool = False) -> np.ndarray:
+                         amp: bool = False, in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -194,20 +195,21 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     -----
     Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
     to and from ``torch.Tensor`` is made inside this function.
-    Inputs will be converted to fp16 if ``amp`` is True.
+    Inputs will be converted to fp16 if ``amp`` is True and ``in_dtype`` is not specified.
     """
     architecture.eval()
     amp = amp or torch.is_autocast_enabled()
+    in_dtype = in_dtype or (torch.float16 if amp else None)
     with _inference_ctx_manager():
         with torch.cuda.amp.autocast(amp):
-            results = architecture(*sequence_to_var(*inputs, device=architecture, dtype=torch.float16 if amp else None))
+            results = architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))
             if callable(activations):
                 activations = [activations] * len(results)
 
             for activation, result in zip_equal(activations, results):
                 if activation is not None:
                     result = activation(result)
-                yield to_np(result, dtype=torch.float32)
+                yield to_np(result, dtype=out_dtype)
 
 
 @np.deprecate
