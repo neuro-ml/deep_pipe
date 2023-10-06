@@ -10,7 +10,7 @@ tensorboard-easy
 lazycon>=0.1.0,<1.0.0
 loky>=3.0.0,<4.0.0
 wandb<=0.15.7; python_version < '3.7'
-wandb; python_version >= '3.8'
+wandb; python_version >= '3.7'
 nibabel
 torch
 imops>=0.8.3,<1.0.0
