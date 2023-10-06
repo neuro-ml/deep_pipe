@@ -97,9 +97,11 @@ class Infinite:
 
         self.batches_per_epoch = batches_per_epoch
         self.pipeline = None
+
+        stacker = self._make_stacker(batch_size)
         self._pipeline_factory = lambda: wrap_pipeline(
             source, *transformers,
-            self._make_stacker(batch_size), combiner,
+            stacker, combiner,
             buffer_size=buffer_size
         )
 
