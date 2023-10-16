@@ -1,6 +1,6 @@
 scikit-image
 imageio
-numpy
+numpy<2.0.0
 scipy
 pandas
 scikit-learn>=0.19
