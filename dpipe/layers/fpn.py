@@ -112,11 +112,14 @@ class FPN(nn.Module):
             x = down(x)
 
         x = self.bridge(x)
-        results.append(x)
+
+        if not self.last_level:
+            results.append(x)
 
         for layer, up, left in zip_equal(reversed(self.up_path), self.upsample, reversed(levels)):
             x = layer(self.merge(left, up(x)))
-            results.append(x)
+            if not self.last_level:
+                results.append(x)
 
         if self.last_level:
             return x

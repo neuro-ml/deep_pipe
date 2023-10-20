@@ -1,6 +1,6 @@
 scikit-image
 imageio
-numpy
+numpy<2.0.0
 scipy
 pandas
 scikit-learn>=0.19
@@ -9,7 +9,8 @@ pdp==0.3.*
 tensorboard-easy
 lazycon>=0.1.0,<1.0.0
 loky>=3.0.0,<4.0.0
-wandb
+wandb<=0.15.7; python_version < '3.7'
+wandb; python_version >= '3.7'
 nibabel
 torch
-imops>=0.7.4,<1.0.0
+imops>=0.8.4,<1.0.0

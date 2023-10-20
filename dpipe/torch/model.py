@@ -10,6 +10,7 @@ from ..im.utils import identity, dmap, zip_equal, collect
 from .utils import *
 
 __all__ = 'optimizer_step', 'train_step', 'inference_step', 'multi_inference_step'
+_inference_ctx_manager = torch.no_grad if torch.__version__[:3] < '1.9' else torch.inference_mode
 
 
 def optimizer_step(
@@ -50,8 +51,8 @@ def optimizer_step(
             if not accumulate:
                 if clip_grad is not None:
                     scaler.unscale_(optimizer)
-                    assert not isinstance(clip_grad, bool), "Use of boolean clip_grad value (e.g. False) can lead to " \
-                                                            "unexpected behaviour. "
+                    assert not isinstance(clip_grad, bool), 'Use of boolean clip_grad value (e.g. False) can lead to ' \
+                                                            'unexpected behaviour. '
                     clip_grad_norm_(get_parameters(optimizer), clip_grad)
 
                 scaler.step(optimizer)
@@ -160,7 +161,7 @@ def train_step(
 
 
 def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity,
-                   amp: bool = False) -> np.ndarray:
+                   amp: bool = False, in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -168,24 +169,23 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     -----
     Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
     to and from ``torch.Tensor`` is made inside this function.
-    Inputs will be converted to fp16 if ``amp`` is True.
+    Inputs will be converted to fp16 if ``amp`` is True and ``in_dtype`` is not specified.
     """
     architecture.eval()
-
-    # NumPy >= 1.24 warns about underflow during cast which is really insignificant
-    if amp:
-        with np.errstate(under='ignore'):
-            inputs = tuple(np.asarray(x, dtype=np.float16) for x in inputs)
-
-    with torch.no_grad():
-        with torch.cuda.amp.autocast(amp or torch.is_autocast_enabled()):
-            return to_np(activation(architecture(*sequence_to_var(*inputs, device=architecture))))
+    amp = amp or torch.is_autocast_enabled()
+    in_dtype = in_dtype or (torch.float16 if amp else None)
+    with _inference_ctx_manager():
+        with torch.cuda.amp.autocast(amp):
+            return to_np(
+                activation(architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))),
+                dtype=out_dtype,
+            )
 
 
 @collect
 def multi_inference_step(*inputs: np.ndarray, architecture: Module,
                          activations: Union[Callable, Sequence[Union[Callable, None]]] = identity,
-                         amp: bool = False) -> np.ndarray:
+                         amp: bool = False, in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -195,25 +195,21 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     -----
     Note that both input and output are **not** of type ``torch.Tensor`` - the conversion
     to and from ``torch.Tensor`` is made inside this function.
-    Inputs will be converted to fp16 if ``amp`` is True.
+    Inputs will be converted to fp16 if ``amp`` is True and ``in_dtype`` is not specified.
     """
     architecture.eval()
-
-    # NumPy >= 1.24 warns about underflow during cast which is really insignificant
-    if amp:
-        with np.errstate(under='ignore'):
-            inputs = tuple(np.asarray(x, dtype=np.float16) for x in inputs)
-
-    with torch.no_grad():
-        with torch.cuda.amp.autocast(amp or torch.is_autocast_enabled()):
-            results = architecture(*sequence_to_var(*inputs, device=architecture))
+    amp = amp or torch.is_autocast_enabled()
+    in_dtype = in_dtype or (torch.float16 if amp else None)
+    with _inference_ctx_manager():
+        with torch.cuda.amp.autocast(amp):
+            results = architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))
             if callable(activations):
                 activations = [activations] * len(results)
 
             for activation, result in zip_equal(activations, results):
                 if activation is not None:
                     result = activation(result)
-                yield to_np(result)
+                yield to_np(result, dtype=out_dtype)
 
 
 @np.deprecate

@@ -108,10 +108,12 @@ def test_batch_size():
         assert len(list(p())[0][0]) == bs
 
     with pytest.raises(TypeError):
-        pipeline([1], batch_size=0.5)
+        with pipeline([1], batch_size=0.5):
+            pass
 
     with pytest.raises(TypeError):
-        pipeline([1], batch_size=[1])
+        with pipeline([1], batch_size=[1]):
+            pass
 
     def max_three(chunk, item):
         return sum(map(len, chunk + [item])) <= 3
