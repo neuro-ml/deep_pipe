@@ -7,9 +7,14 @@ from dpipe.predict.shape import *
 assert_eq = np.testing.assert_array_almost_equal
 
 
-def test_patches_grid():
+@pytest.fixture(params=[1, 2, 3, 4])
+def batch_size(request):
+    return request.param
+
+
+def test_patches_grid(batch_size):
     def check_equal(**kwargs):
-        assert_eq(x, patches_grid(**kwargs, axis=-1)(identity)(x))
+        assert_eq(x, patches_grid(**kwargs, axis=-1, batch_size=batch_size)(identity)(x))
 
     x = np.random.randn(3, 23, 20, 27) * 10
     check_equal(patch_size=10, stride=1, padding_values=0)
@@ -27,9 +32,9 @@ def test_patches_grid():
     check_equal(patch_size=15, stride=12, padding_values=None)
 
 
-def test_divisible_patches():
+def test_divisible_patches(batch_size):
     def check_equal(**kwargs):
-        assert_eq(x, divisible_shape(divisible)(patches_grid(**kwargs)(identity))(x))
+        assert_eq(x, divisible_shape(divisible)(patches_grid(**kwargs, batch_size=batch_size)(identity))(x))
 
     size = [80] * 3
     stride = [20] * 3
