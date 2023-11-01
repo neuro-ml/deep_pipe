@@ -1,7 +1,5 @@
 from functools import wraps
 from typing import Union, Callable, Type
-from more_itertools import batched
-from itertools import chain
 
 import numpy as np
 
