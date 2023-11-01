@@ -176,7 +176,8 @@ class Infinite:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.pipeline is not None:
+        # need getattr here, because the destructor might get called before the field is initialized
+        if getattr(self, 'pipeline', None) is not None:
             self.pipeline, pipeline = None, self.pipeline
             return pipeline.__exit__(exc_type, exc_val, exc_tb)
 
