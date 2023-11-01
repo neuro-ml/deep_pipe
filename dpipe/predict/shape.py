@@ -83,7 +83,8 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
 
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
-                 combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, batch_size=1, **imops_kwargs):
+                 combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, stream: bool = False,
+                 **imops_kwargs):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     the predicted patches by aggregating the overlapping regions using the ``combiner`` - Average by default.
@@ -111,18 +112,16 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                 x = pad_to_shape(x, new_shape, input_axis, padding_values, ratio, **imops_kwargs)
             elif ((shape - local_size) < 0).any() or ((local_stride - shape + local_size) % local_stride).any():
                 raise ValueError('Input cannot be patched without remainder.')
-            if batch_size == 1:
+
+            if stream:
+                patches = predict(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), *args, **kwargs)
+            else:
                 patches = pmap(
                     predict,
                     divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes),
                     *args, **kwargs
                 )
-            else:
-                patches = chain.from_iterable(pmap(
-                    predict,
-                    map(np.array, batched(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size)),
-                    *args, **kwargs
-                ))
+
             prediction = combine(
                 patches, extract(x.shape, input_axis), local_stride, axis,
                 combiner=combiner, get_boxes=get_boxes,

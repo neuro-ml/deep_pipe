@@ -1,3 +1,4 @@
 pytest
 pytest-cov
 pytest-subtests
+more_itertools; python_version >= '3.7'
