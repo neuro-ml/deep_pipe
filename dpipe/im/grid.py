@@ -15,6 +15,8 @@ from dpipe.itertools import zip_equal, peek
 from .shape_utils import shape_after_convolution
 from .utils import build_slices
 
+from efficient_training.measurement.line_profiler import LProfiler
+
 __all__ = 'get_boxes', 'divide', 'combine', 'PatchCombiner', 'Average'
 
 
@@ -122,7 +124,7 @@ class Average(PatchCombiner):
         return self._result
 
 
-@LProfiler.profile
+#@LProfiler.profile
 def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike,
             axis: AxesLike = None, valid: bool = False,
             combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, **combiner_kwargs) -> np.ndarray:

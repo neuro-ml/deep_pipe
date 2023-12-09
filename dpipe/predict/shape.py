@@ -1,7 +1,11 @@
 from functools import wraps
-from typing import Union, Callable, Type
+from typing import Union, Callable, Type, Iterable
 
 import numpy as np
+
+from queue import Queue
+from threading import Thread, Lock
+from efficient_training.measurement.line_profiler import LProfiler
 
 from ..im.axes import broadcast_to_axis, AxesLike, AxesParams, axis_from_dim, resolve_deprecation
 from ..im.grid import divide, combine, get_boxes, PatchCombiner, Average
@@ -79,10 +83,44 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
     return decorator
 
 
+class AsyncPmap:
+    def __init__(self, func: Callable, iterable: Iterable, *args, **kwargs) -> None:
+        self.__func = func
+        self.__iterable = iterable
+        self.__args = args
+        self.__kwargs = kwargs
+
+        self.__prediction_queue = Queue()
+        self.__lock = Lock()
+        self.__finished = False
+        
+        self.__working_thread = Thread(
+            target = self._prediction_func
+        )
+
+    def start(self):
+        self.__working_thread.start()
+
+    def _prediction_func(self):
+        for value in self.__iterable:
+            self.__prediction_queue.put(self.__func(value, *self.__args, **self.__kwargs))
+        with self.__lock:
+            self.__finished = True
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        with self.__lock:
+            if self.__finished:
+                raise StopIteration
+        return self.__prediction_queue.get()
+        
+
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
                  combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, stream: bool = False,
-                 use_torch: bool = False, **imops_kwargs):
+                 use_torch: bool = False, async_predict: bool = False, **imops_kwargs):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     the predicted patches by aggregating the overlapping regions using the ``combiner`` - Average by default.
@@ -99,6 +137,7 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
 
     def decorator(predict):
         @wraps(predict)
+        #@LProfiler.profile
         def wrapper(x, *args, **kwargs):
             input_axis = resolve_deprecation(axis, x.ndim, patch_size, stride)
             local_size, local_stride = broadcast_to_axis(input_axis, patch_size, stride)
@@ -113,6 +152,13 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
 
             if stream:
                 patches = predict(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), *args, **kwargs)
+            elif async_predict:
+                patches = AsyncPmap(
+                    predict,
+                    divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes),
+                    *args, **kwargs
+                )
+                patches.start()
             else:
                 patches = pmap(
                     predict,
