@@ -15,8 +15,6 @@ from dpipe.itertools import zip_equal, peek
 from .shape_utils import shape_after_convolution
 from .utils import build_slices
 
-from efficient_training.measurement.line_profiler import LProfiler
-
 __all__ = 'get_boxes', 'divide', 'combine', 'PatchCombiner', 'Average'
 
 
@@ -94,7 +92,7 @@ class Average(PatchCombiner):
     def __init__(self, shape: Tuple[int, ...], dtype: np.dtype, use_torch: bool = False, **imops_kwargs: dict):
         super().__init__(shape, dtype)
         self._result = np.zeros(shape, dtype)
-        self._counts = np.zeros(shape, int)
+        self._counts = np.zeros(shape, np.uint8 if use_torch else int)
         self._imops_kwargs = imops_kwargs
 
         self._use_torch = use_torch
@@ -120,11 +118,18 @@ class Average(PatchCombiner):
             pointwise_add(counts_slc, 1, counts_slc, **self._imops_kwargs)
 
     def build(self):
-        np.true_divide(self._result, self._counts, out=self._result, where=self._counts > 0)
+        if self._use_torch:
+            result_torch = torch.from_numpy(self._result)
+            counts_torch = torch.from_numpy(self._counts)
+
+            with torch.inference_mode():
+                counts_torch[counts_torch == 0] = 1
+                torch.div(result_torch, counts_torch, out=result_torch)
+        else:
+            np.true_divide(self._result, self._counts, out=self._result, where=self._counts > 0)
         return self._result
 
 
-#@LProfiler.profile
 def combine(patches: Iterable[np.ndarray], output_shape: AxesLike, stride: AxesLike,
             axis: AxesLike = None, valid: bool = False,
             combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, **combiner_kwargs) -> np.ndarray:

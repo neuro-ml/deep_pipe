@@ -4,8 +4,7 @@ from typing import Union, Callable, Type, Iterable
 import numpy as np
 
 from queue import Queue
-from threading import Thread, Lock
-from efficient_training.measurement.line_profiler import LProfiler
+from threading import Thread
 
 from ..im.axes import broadcast_to_axis, AxesLike, AxesParams, axis_from_dim, resolve_deprecation
 from ..im.grid import divide, combine, get_boxes, PatchCombiner, Average
@@ -83,6 +82,10 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
     return decorator
 
 
+class FinishedToken:
+    pass
+
+
 class AsyncPmap:
     def __init__(self, func: Callable, iterable: Iterable, *args, **kwargs) -> None:
         self.__func = func
@@ -91,8 +94,6 @@ class AsyncPmap:
         self.__kwargs = kwargs
 
         self.__prediction_queue = Queue()
-        self.__lock = Lock()
-        self.__finished = False
         
         self.__working_thread = Thread(
             target = self._prediction_func
@@ -103,18 +104,17 @@ class AsyncPmap:
 
     def _prediction_func(self):
         for value in self.__iterable:
-            self.__prediction_queue.put(self.__func(value, *self.__args, **self.__kwargs))
-        with self.__lock:
-            self.__finished = True
+            self.__prediction_queue.put_nowait(self.__func(value, *self.__args, **self.__kwargs))
+        self.__prediction_queue.put_nowait(FinishedToken)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        with self.__lock:
-            if self.__finished:
-                raise StopIteration
-        return self.__prediction_queue.get()
+        obj = self.__prediction_queue.get()
+        if obj is FinishedToken:
+            raise StopIteration
+        return obj
         
 
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
@@ -137,7 +137,6 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
 
     def decorator(predict):
         @wraps(predict)
-        #@LProfiler.profile
         def wrapper(x, *args, **kwargs):
             input_axis = resolve_deprecation(axis, x.ndim, patch_size, stride)
             local_size, local_stride = broadcast_to_axis(input_axis, patch_size, stride)
