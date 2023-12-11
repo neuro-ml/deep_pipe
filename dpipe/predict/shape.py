@@ -79,10 +79,6 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
     return decorator
 
 
-class FinishedToken:
-    pass
-
-
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
                  combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, stream: bool = False,

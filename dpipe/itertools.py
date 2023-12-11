@@ -113,6 +113,10 @@ def pmap(func: Callable, iterable: Iterable, *args, **kwargs) -> Iterable:
         yield func(value, *args, **kwargs)
 
 
+class FinishToken:
+    pass
+
+
 class AsyncPmap:
     def __init__(self, func: Callable, iterable: Iterable, *args, **kwargs) -> None:
         self.__func = func
@@ -132,14 +136,14 @@ class AsyncPmap:
     def _prediction_func(self) -> None:
         for value in self.__iterable:
             self.__result_queue.put(self.__func(value, *self.__args, **self.__kwargs))
-        self.__result_queue.put(FinishedToken)
+        self.__result_queue.put(FinishToken)
 
-    def __iter__(self) -> AsyncPmap:
+    def __iter__(self):
         return self
 
     def __next__(self) -> Any:
         obj = self.__result_queue.get()
-        if obj is FinishedToken:
+        if obj is FinishToken:
             raise StopIteration
         return obj
 
