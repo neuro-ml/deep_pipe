@@ -89,7 +89,7 @@ class PatchCombiner:
 
 
 class Average(PatchCombiner):
-    def __init__(self, shape: Tuple[int, ...], dtype: np.dtype, use_torch: bool = False, **imops_kwargs: dict):
+    def __init__(self, shape: Tuple[int, ...], dtype: np.dtype, use_torch: bool = True, **imops_kwargs: dict):
         super().__init__(shape, dtype)
         self._result = np.zeros(shape, dtype)
         self._counts = np.zeros(shape, np.uint8 if use_torch else int)
@@ -104,16 +104,14 @@ class Average(PatchCombiner):
         if self._use_torch:
             result_slc_torch = torch.from_numpy(result_slc)
             patch_torch = torch.from_numpy(patch.astype(result_slc.dtype, copy=False))
-            with torch.inference_mode():
-                result_slc_torch += patch_torch
+            result_slc_torch += patch_torch
         else:
             pointwise_add(result_slc, patch.astype(result_slc.dtype, copy=False), result_slc, **self._imops_kwargs)
 
         counts_slc = self._counts[slc]
         if self._use_torch:
             counts_slc_torch = torch.from_numpy(counts_slc)
-            with torch.inference_mode():
-                counts_slc_torch.add_(1)
+            counts_slc_torch += 1
         else:
             pointwise_add(counts_slc, 1, counts_slc, **self._imops_kwargs)
 
@@ -122,9 +120,8 @@ class Average(PatchCombiner):
             result_torch = torch.from_numpy(self._result)
             counts_torch = torch.from_numpy(self._counts)
 
-            with torch.inference_mode():
-                counts_torch[counts_torch == 0] = 1
-                torch.div(result_torch, counts_torch, out=result_torch)
+            counts_torch[counts_torch == 0] = 1
+            torch.div(result_torch, counts_torch, out=result_torch)
         else:
             np.true_divide(self._result, self._counts, out=self._result, where=self._counts > 0)
         return self._result

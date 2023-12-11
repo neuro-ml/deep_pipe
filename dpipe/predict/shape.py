@@ -3,12 +3,9 @@ from typing import Union, Callable, Type, Iterable
 
 import numpy as np
 
-from queue import Queue
-from threading import Thread
-
 from ..im.axes import broadcast_to_axis, AxesLike, AxesParams, axis_from_dim, resolve_deprecation
 from ..im.grid import divide, combine, get_boxes, PatchCombiner, Average
-from ..itertools import extract, pmap
+from ..itertools import extract, pmap, AsyncPmap
 from ..im.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
 from ..im.shape_utils import prepend_dims, extract_dims
 
@@ -86,41 +83,10 @@ class FinishedToken:
     pass
 
 
-class AsyncPmap:
-    def __init__(self, func: Callable, iterable: Iterable, *args, **kwargs) -> None:
-        self.__func = func
-        self.__iterable = iterable
-        self.__args = args
-        self.__kwargs = kwargs
-
-        self.__prediction_queue = Queue()
-        
-        self.__working_thread = Thread(
-            target = self._prediction_func
-        )
-
-    def start(self):
-        self.__working_thread.start()
-
-    def _prediction_func(self):
-        for value in self.__iterable:
-            self.__prediction_queue.put_nowait(self.__func(value, *self.__args, **self.__kwargs))
-        self.__prediction_queue.put_nowait(FinishedToken)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        obj = self.__prediction_queue.get()
-        if obj is FinishedToken:
-            raise StopIteration
-        return obj
-        
-
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
                  combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, stream: bool = False,
-                 use_torch: bool = False, async_predict: bool = False, **imops_kwargs):
+                 use_torch: bool = True, async_predict: bool = True, **imops_kwargs):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     the predicted patches by aggregating the overlapping regions using the ``combiner`` - Average by default.
@@ -134,6 +100,9 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
     `grid.divide`, `grid.combine`, `pad_to_shape`
     """
     valid = padding_values is not None
+
+    if stream and async_predict:
+        raise ValueError('Unable to use async_predict when using stream. Please specify async_predict=False explicitly')
 
     def decorator(predict):
         @wraps(predict)
