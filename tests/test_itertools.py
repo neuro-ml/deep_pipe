@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 
 from dpipe.im.utils import filter_mask
-from dpipe.itertools import zip_equal, flatten, extract, negate_indices, head_tail, peek
+from dpipe.itertools import zip_equal, flatten, extract, negate_indices, head_tail, peek, AsyncPmap
 
 
 class TestItertools(unittest.TestCase):
@@ -65,3 +65,13 @@ class TestItertools(unittest.TestCase):
             head, new_it = peek(self.make_iterable(it))
             self.assertEqual(head, it[0])
             self.assertListEqual(list(new_it), it)
+
+    def test_async_pmap(self):
+        foo = lambda x: x**2
+        iterable = range(10)
+        async_results = AsyncPmap(foo, iterable)
+        async_results.start()
+        for i in iterable:
+            assert foo(i) == next(async_results)
+        with self.assertRaises(StopIteration):
+            next(async_results)

@@ -3,9 +3,11 @@ import sys
 import pytest
 import numpy as np
 
+from contextlib import nullcontext
 from dpipe.im.utils import identity
 from dpipe.predict.shape import *
 from dpipe.itertools import pmap
+from functools import partial
 
 assert_eq = np.testing.assert_array_almost_equal
 
@@ -20,9 +22,25 @@ def stream(request):
     return request.param
 
 
-def test_patches_grid(stream):
+@pytest.fixture(params=[False, True])
+def use_torch(request):
+    return request.param
+
+
+@pytest.fixture(params=[False, True])
+def async_predict(request):
+    return request.param
+
+
+def test_patches_grid(stream, use_torch, async_predict):
     def check_equal(**kwargs):
-        assert_eq(x, patches_grid(**kwargs, stream=stream, axis=-1)(identity)(x))
+        if stream and async_predict:
+            with pytest.raises(ValueError):
+                predict = patches_grid(**kwargs, stream=stream, use_torch=use_torch, async_predict=async_predict, axis=-1)(identity)
+            predict = patches_grid(**kwargs, stream=stream, use_torch=use_torch, async_predict=False, axis=-1)(identity)
+        else:
+            predict = patches_grid(**kwargs, stream=stream, use_torch=use_torch, async_predict=async_predict, axis=-1)(identity)
+        assert_eq(x, predict(x))
 
     x = np.random.randn(3, 23, 20, 27) * 10
     check_equal(patch_size=10, stride=1, padding_values=0)
@@ -42,7 +60,7 @@ def test_patches_grid(stream):
 
 def test_divisible_patches(stream):
     def check_equal(**kwargs):
-        assert_eq(x, divisible_shape(divisible)(patches_grid(**kwargs, stream=stream)(identity))(x))
+        assert_eq(x, divisible_shape(divisible)(patches_grid(**kwargs, stream=stream, async_predict=False)(identity))(x))
 
     size = [80] * 3
     stride = [20] * 3
