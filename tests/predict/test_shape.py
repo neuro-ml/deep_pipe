@@ -3,11 +3,9 @@ import sys
 import pytest
 import numpy as np
 
-from contextlib import nullcontext
 from dpipe.im.utils import identity
 from dpipe.predict.shape import *
 from dpipe.itertools import pmap
-from functools import partial
 
 assert_eq = np.testing.assert_array_almost_equal
 
