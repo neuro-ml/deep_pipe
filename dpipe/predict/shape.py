@@ -1,11 +1,12 @@
 from functools import wraps
-from typing import Union, Callable, Type
+from typing import Union, Callable, Type, Iterable
+from warnings import warn
 
 import numpy as np
 
 from ..im.axes import broadcast_to_axis, AxesLike, AxesParams, axis_from_dim, resolve_deprecation
 from ..im.grid import divide, combine, get_boxes, PatchCombiner, Average
-from ..itertools import extract, pmap
+from ..itertools import extract, pmap, AsyncPmap
 from ..im.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
 from ..im.shape_utils import prepend_dims, extract_dims
 
@@ -82,7 +83,7 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
                  combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, stream: bool = False,
-                 **imops_kwargs):
+                 use_torch: bool = True, async_predict: bool = True, **imops_kwargs):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     the predicted patches by aggregating the overlapping regions using the ``combiner`` - Average by default.
@@ -96,6 +97,9 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
     `grid.divide`, `grid.combine`, `pad_to_shape`
     """
     valid = padding_values is not None
+
+    if stream and async_predict:
+        warn('async_predict=True has no effect when stream=True. Please specify async_predict=False explicitly', stacklevel=2)
 
     def decorator(predict):
         @wraps(predict)
@@ -113,6 +117,13 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
 
             if stream:
                 patches = predict(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), *args, **kwargs)
+            elif async_predict:
+                patches = AsyncPmap(
+                    predict,
+                    divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes),
+                    *args, **kwargs
+                )
+                patches.start()
             else:
                 patches = pmap(
                     predict,
@@ -122,7 +133,7 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
 
             prediction = combine(
                 patches, extract(x.shape, input_axis), local_stride, axis,
-                combiner=combiner, get_boxes=get_boxes,
+                combiner=combiner, get_boxes=get_boxes, use_torch=use_torch
             )
 
             if valid:

@@ -2,7 +2,9 @@ from contextlib import suppress
 from functools import wraps
 from itertools import chain
 from operator import itemgetter
+from threading import Thread
 from typing import Iterable, Sized, Union, Callable, Sequence, Any, Tuple
+from queue import Queue
 
 import numpy as np
 
@@ -109,6 +111,41 @@ def pmap(func: Callable, iterable: Iterable, *args, **kwargs) -> Iterable:
     """
     for value in iterable:
         yield func(value, *args, **kwargs)
+
+
+class FinishToken:
+    pass
+
+
+class AsyncPmap:
+    def __init__(self, func: Callable, iterable: Iterable, *args, **kwargs) -> None:
+        self.__func = func
+        self.__iterable = iterable
+        self.__args = args
+        self.__kwargs = kwargs
+
+        self.__result_queue = Queue()
+        
+        self.__working_thread = Thread(
+            target = self._prediction_func
+        )
+
+    def start(self) -> None:
+        self.__working_thread.start()
+
+    def _prediction_func(self) -> None:
+        for value in self.__iterable:
+            self.__result_queue.put(self.__func(value, *self.__args, **self.__kwargs))
+        self.__result_queue.put(FinishToken)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> Any:
+        obj = self.__result_queue.get()
+        if obj is FinishToken:
+            raise StopIteration
+        return obj
 
 
 def dmap(func: Callable, dictionary: dict, *args, **kwargs):

@@ -20,9 +20,20 @@ def stream(request):
     return request.param
 
 
-def test_patches_grid(stream):
+@pytest.fixture(params=[False, True])
+def use_torch(request):
+    return request.param
+
+
+@pytest.fixture(params=[False, True])
+def async_predict(request):
+    return request.param
+
+
+def test_patches_grid(stream, use_torch, async_predict):
     def check_equal(**kwargs):
-        assert_eq(x, patches_grid(**kwargs, stream=stream, axis=-1)(identity)(x))
+        predict = patches_grid(**kwargs, stream=stream, use_torch=use_torch, async_predict=async_predict, axis=-1)(identity)
+        assert_eq(x, predict(x))
 
     x = np.random.randn(3, 23, 20, 27) * 10
     check_equal(patch_size=10, stride=1, padding_values=0)
