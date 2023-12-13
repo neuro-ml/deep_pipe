@@ -1,5 +1,6 @@
 from functools import wraps
 from typing import Union, Callable, Type, Iterable
+from warnings import warn
 
 import numpy as np
 
@@ -98,7 +99,7 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
     valid = padding_values is not None
 
     if stream and async_predict:
-        raise ValueError('Unable to use async_predict when using stream. Please specify async_predict=False explicitly')
+        warn('async_predict=True has no effect when stream=True. Please specify async_predict=False explicitly', stacklevel=2)
 
     def decorator(predict):
         @wraps(predict)
