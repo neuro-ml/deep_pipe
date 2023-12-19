@@ -10,7 +10,7 @@ from ..itertools import extract, pmap, AsyncPmap
 from ..im.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
 from ..im.shape_utils import prepend_dims, extract_dims
 
-__all__ = 'add_extract_dims', 'divisible_shape', 'patches_grid', 'patches_grid_pipeline'
+__all__ = 'add_extract_dims', 'divisible_shape', 'patches_grid'
 
 
 def add_extract_dims(n_add: int = 1, n_extract: int = None, sequence: bool = False):
@@ -82,7 +82,7 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
 
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
-                 combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, stream: bool = False,
+                 combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes,
                  use_torch: bool = True, async_predict: bool = True, batch_size: int = 1, **imops_kwargs):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
@@ -98,9 +98,6 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
     """
     valid = padding_values is not None
 
-    if stream and async_predict:
-        warn('async_predict=True has no effect when stream=True. Please specify async_predict=False explicitly', stacklevel=2)
-
     def decorator(predict):
         @wraps(predict)
         def wrapper(x, *args, **kwargs):
@@ -115,9 +112,7 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
             elif ((shape - local_size) < 0).any() or ((local_stride - shape + local_size) % local_stride).any():
                 raise ValueError('Input cannot be patched without remainder.')
 
-            if stream:
-                patches = predict(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), *args, **kwargs)
-            elif async_predict:
+            if async_predict:
                 patches = AsyncPmap(
                     predict,
                     make_batch(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size=batch_size),

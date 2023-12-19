@@ -15,7 +15,7 @@ from dpipe.itertools import zip_equal, peek
 from .shape_utils import shape_after_convolution
 from .utils import build_slices
 
-__all__ = 'get_boxes', 'divide', 'combine', 'PatchCombiner', 'Average'
+__all__ = 'get_boxes', 'make_batch', 'break_batch', 'divide', 'combine', 'PatchCombiner', 'Average'
 
 
 def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
@@ -50,7 +50,7 @@ def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesL
         yield make_box_([start, np.minimum(start + box_size, shape)])
 
 
-def make_batch(divide_iterator, batch_size: int = 1):
+def make_batch(divide_iterator: Iterable, batch_size: int = 1):
     patches_to_batch = []
     n = 0
     for patch in divide_iterator:
@@ -65,7 +65,7 @@ def make_batch(divide_iterator, batch_size: int = 1):
         yield torch.cat(patches_to_batch).numpy()
 
 
-def break_batch(result_iterator):
+def break_batch(result_iterator: Iterable):
     for result_batched in result_iterator:
         for result in result_batched:
             yield result[None, ]
