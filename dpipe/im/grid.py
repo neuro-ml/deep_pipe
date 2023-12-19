@@ -50,6 +50,27 @@ def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesL
         yield make_box_([start, np.minimum(start + box_size, shape)])
 
 
+def make_batch(divide_iterator, batch_size: int = 1):
+    patches_to_batch = []
+    n = 0
+    for patch in divide_iterator:
+        patches_to_batch.append(torch.from_numpy(patch))
+        n += 1
+        
+        if n == batch_size:
+            n = 0
+            yield torch.cat(patches_to_batch).numpy()
+            patches_to_batch = []
+    if len(patches_to_batch) != 0:
+        yield torch.cat(patches_to_batch).numpy()
+
+
+def break_batch(result_iterator):
+    for result_batched in result_iterator:
+        for result in result_batched:
+            yield result[None, ]
+
+
 def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
            valid: bool = False, get_boxes: Callable = get_boxes) -> Iterable[np.ndarray]:
     """

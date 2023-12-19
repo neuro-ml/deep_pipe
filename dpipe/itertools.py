@@ -124,7 +124,7 @@ class AsyncPmap:
         self.__args = args
         self.__kwargs = kwargs
 
-        self.__result_queue = Queue()
+        self.__result_queue = Queue(1)
         
         self.__working_thread = Thread(
             target = self._prediction_func
