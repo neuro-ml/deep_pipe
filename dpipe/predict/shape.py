@@ -83,7 +83,7 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
                  combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes,
-                 use_torch: bool = True, async_predict: bool = True, batch_size: int = 1, **imops_kwargs):
+                 use_torch: bool = True, async_predict: bool = True, batch_size: int = None, **imops_kwargs):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     the predicted patches by aggregating the overlapping regions using the ``combiner`` - Average by default.
@@ -113,13 +113,16 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                 raise ValueError('Input cannot be patched without remainder.')
 
             if async_predict:
+                divide_wrapper = make_batch if batch_size is not None else lambda x, batch_size: x
+                patches_wrapper = break_batch if batch_size is not None else lambda x: x
+
                 patches = AsyncPmap(
                     predict,
-                    make_batch(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size=batch_size),
+                    divide_wrapper(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size=batch_size),
                     *args, **kwargs
                 )
                 patches.start()
-                patches = break_batch(patches)
+                patches = patches_wrapper(patches)
             else:
                 patches = pmap(
                     predict,

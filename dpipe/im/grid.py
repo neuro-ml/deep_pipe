@@ -65,10 +65,10 @@ def make_batch(divide_iterator: Iterable, batch_size: int = 1):
         yield torch.cat(patches_to_batch).numpy()
 
 
-def break_batch(result_iterator: Iterable):
-    for result_batched in result_iterator:
-        for result in result_batched:
-            yield result[None, ]
+def break_batch(prediction_iterator: Iterable):
+    for prediction in prediction_iterator:
+        for single_prediction in prediction:
+            yield single_prediction[None, ]
 
 
 def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
