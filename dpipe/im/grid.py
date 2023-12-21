@@ -65,11 +65,6 @@ def make_batch(divide_iterator, batch_size: int = 1):
         yield torch.cat(patches_to_batch).numpy()
 
 
-def make_batch(divide_iterator: Iterable, batch_size: int = 1):
-    for batch in batched(divide_iterator, batch_size):
-        yield torch.cat(list(map(lambda x: torch.from_numpy(x), batch))).numpy()
-
-
 def break_batch(prediction_iterator: Iterable):
     for prediction in prediction_iterator:
         for single_prediction in prediction:
