@@ -7,7 +7,6 @@ from typing import Iterable, Type, Tuple, Callable
 import numpy as np
 import torch
 from imops.numeric import pointwise_add
-from more_itertools import batched
 
 from .shape_ops import crop_to_box
 from .axes import fill_by_indices, AxesLike, resolve_deprecation, axis_from_dim, broadcast_to_axis
@@ -49,6 +48,21 @@ def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesL
     for start in np.ndindex(*final_shape):
         start = np.asarray(start) * stride
         yield make_box_([start, np.minimum(start + box_size, shape)])
+
+
+def make_batch(divide_iterator, batch_size: int = 1):
+    patches_to_batch = []
+    n = 0
+    for patch in divide_iterator:
+        patches_to_batch.append(torch.from_numpy(patch))
+        n += 1
+        
+        if n == batch_size:
+            n = 0
+            yield torch.cat(patches_to_batch).numpy()
+            patches_to_batch = []
+    if len(patches_to_batch) != 0:
+        yield torch.cat(patches_to_batch).numpy()
 
 
 def make_batch(divide_iterator: Iterable, batch_size: int = 1):

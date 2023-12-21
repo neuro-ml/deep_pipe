@@ -14,4 +14,3 @@ wandb; python_version >= '3.7'
 nibabel
 torch
 imops>=0.8.4,<1.0.0
-more-itertools
