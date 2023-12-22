@@ -5,7 +5,7 @@ from warnings import warn
 import numpy as np
 
 from ..im.axes import broadcast_to_axis, AxesLike, AxesParams, axis_from_dim, resolve_deprecation
-from ..im.grid import divide, combine, get_boxes, PatchCombiner, Average
+from ..im.grid import divide, combine, get_boxes, PatchCombiner, Average, make_batch, break_batch
 from ..itertools import extract, pmap, AsyncPmap
 from ..im.shape_ops import pad_to_shape, crop_to_shape, pad_to_divisible
 from ..im.shape_utils import prepend_dims, extract_dims
@@ -82,8 +82,8 @@ def divisible_shape(divisor: AxesLike, axis: AxesLike = None, padding_values: Un
 
 def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
                  padding_values: Union[AxesParams, Callable] = 0, ratio: AxesParams = 0.5,
-                 combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes, stream: bool = False,
-                 use_torch: bool = True, async_predict: bool = True, **imops_kwargs):
+                 combiner: Type[PatchCombiner] = Average, get_boxes: Callable = get_boxes,
+                 use_torch: bool = True, async_predict: bool = True, batch_size: int = None, **imops_kwargs):
     """
     Divide an incoming array into patches of corresponding ``patch_size`` and ``stride`` and then combine
     the predicted patches by aggregating the overlapping regions using the ``combiner`` - Average by default.
@@ -97,9 +97,6 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
     `grid.divide`, `grid.combine`, `pad_to_shape`
     """
     valid = padding_values is not None
-
-    if stream and async_predict:
-        warn('async_predict=True has no effect when stream=True. Please specify async_predict=False explicitly', stacklevel=2)
 
     def decorator(predict):
         @wraps(predict)
@@ -115,15 +112,17 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
             elif ((shape - local_size) < 0).any() or ((local_stride - shape + local_size) % local_stride).any():
                 raise ValueError('Input cannot be patched without remainder.')
 
-            if stream:
-                patches = predict(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), *args, **kwargs)
-            elif async_predict:
+            if async_predict:
+                divide_wrapper = make_batch if batch_size is not None else lambda x, batch_size: x
+                patches_wrapper = break_batch if batch_size is not None else lambda x: x
+
                 patches = AsyncPmap(
                     predict,
-                    divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes),
+                    divide_wrapper(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size=batch_size),
                     *args, **kwargs
                 )
                 patches.start()
+                patches = patches_wrapper(patches)
             else:
                 patches = pmap(
                     predict,

@@ -15,7 +15,7 @@ from dpipe.itertools import zip_equal, peek
 from .shape_utils import shape_after_convolution
 from .utils import build_slices
 
-__all__ = 'get_boxes', 'divide', 'combine', 'PatchCombiner', 'Average'
+__all__ = 'get_boxes', 'make_batch', 'break_batch', 'divide', 'combine', 'PatchCombiner', 'Average'
 
 
 def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
@@ -48,6 +48,27 @@ def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesL
     for start in np.ndindex(*final_shape):
         start = np.asarray(start) * stride
         yield make_box_([start, np.minimum(start + box_size, shape)])
+
+
+def make_batch(divide_iterator, batch_size: int = 1):
+    patches_to_batch = []
+    n = 0
+    for patch in divide_iterator:
+        patches_to_batch.append(torch.from_numpy(patch))
+        n += 1
+        
+        if n == batch_size:
+            n = 0
+            yield torch.cat(patches_to_batch).numpy()
+            patches_to_batch = []
+    if len(patches_to_batch) != 0:
+        yield torch.cat(patches_to_batch).numpy()
+
+
+def break_batch(prediction_iterator: Iterable):
+    for prediction in prediction_iterator:
+        for single_prediction in prediction:
+            yield single_prediction[None, ]
 
 
 def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,

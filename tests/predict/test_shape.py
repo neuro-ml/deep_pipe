@@ -16,11 +16,6 @@ def batch_size(request):
 
 
 @pytest.fixture(params=[False, True])
-def stream(request):
-    return request.param
-
-
-@pytest.fixture(params=[False, True])
 def use_torch(request):
     return request.param
 
@@ -30,9 +25,9 @@ def async_predict(request):
     return request.param
 
 
-def test_patches_grid(stream, use_torch, async_predict):
+def test_patches_grid(use_torch, async_predict):
     def check_equal(**kwargs):
-        predict = patches_grid(**kwargs, stream=stream, use_torch=use_torch, async_predict=async_predict, axis=-1)(identity)
+        predict = patches_grid(**kwargs, use_torch=use_torch, async_predict=async_predict, axis=-1)(identity)
         assert_eq(x, predict(x))
 
     x = np.random.randn(3, 23, 20, 27) * 10
@@ -51,9 +46,9 @@ def test_patches_grid(stream, use_torch, async_predict):
     check_equal(patch_size=15, stride=12, padding_values=None)
 
 
-def test_divisible_patches(stream):
+def test_divisible_patches():
     def check_equal(**kwargs):
-        assert_eq(x, divisible_shape(divisible)(patches_grid(**kwargs, stream=stream)(identity))(x))
+        assert_eq(x, divisible_shape(divisible)(patches_grid(**kwargs)(identity))(x))
 
     size = [80] * 3
     stride = [20] * 3
@@ -65,15 +60,10 @@ def test_divisible_patches(stream):
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason='Requires python3.7 or higher.')
 def test_batched_patches_grid(batch_size):
-    from more_itertools import batched
-    from itertools import chain
+    x = np.random.randn(23, 20, 27) * 10
 
-    def patch_predict(patch):
-        return patch + 1
+    predict = lambda x: x + 1
+    predict = patches_grid(patch_size=(6, 8, 9), stride=(4, 3, 2), axis=(-1, -2, -3), batch_size=batch_size)(predict)
+    predict = add_extract_dims(2)(predict)
 
-    def stream_predict(patches_generator):
-        return chain.from_iterable(pmap(patch_predict, map(np.array, batched(patches_generator, batch_size))))
-
-    x = np.random.randn(3, 23, 20, 27) * 10
-
-    assert_eq(x + 1, patches_grid(patch_size=(6, 8, 9), stride=(4, 3, 2), stream=True, axis=(-1, -2, -3))(stream_predict)(x))
+    assert_eq(x + 1, predict(x))
