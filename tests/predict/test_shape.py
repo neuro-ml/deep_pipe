@@ -16,13 +16,20 @@ def batch_size(request):
 
 
 @pytest.fixture(params=[False, True])
-def stream(request):
+def use_torch(request):
     return request.param
 
 
-def test_patches_grid(stream):
+@pytest.fixture(params=[False, True])
+def async_predict(request):
+    return request.param
+
+
+def test_patches_grid(use_torch, async_predict, batch_size):
     def check_equal(**kwargs):
-        assert_eq(x, patches_grid(**kwargs, stream=stream, axis=-1)(identity)(x))
+        predict = patches_grid(**kwargs, use_torch=use_torch, async_predict=async_predict, axis=-1, batch_size=batch_size)(lambda x: x + 1)
+        predict = add_extract_dims(1)(predict)
+        assert_eq(x + 1, predict(x))
 
     x = np.random.randn(3, 23, 20, 27) * 10
     check_equal(patch_size=10, stride=1, padding_values=0)
@@ -40,9 +47,9 @@ def test_patches_grid(stream):
     check_equal(patch_size=15, stride=12, padding_values=None)
 
 
-def test_divisible_patches(stream):
+def test_divisible_patches():
     def check_equal(**kwargs):
-        assert_eq(x, divisible_shape(divisible)(patches_grid(**kwargs, stream=stream)(identity))(x))
+        assert_eq(x, divisible_shape(divisible)(patches_grid(**kwargs)(identity))(x))
 
     size = [80] * 3
     stride = [20] * 3
@@ -50,19 +57,3 @@ def test_divisible_patches(stream):
     for shape in [(373, 302, 55), (330, 252, 67)]:
         x = np.random.randn(*shape)
         check_equal(patch_size=size, stride=stride)
-
-
-@pytest.mark.skipif(sys.version_info < (3, 7), reason='Requires python3.7 or higher.')
-def test_batched_patches_grid(batch_size):
-    from more_itertools import batched
-    from itertools import chain
-
-    def patch_predict(patch):
-        return patch + 1
-
-    def stream_predict(patches_generator):
-        return chain.from_iterable(pmap(patch_predict, map(np.array, batched(patches_generator, batch_size))))
-
-    x = np.random.randn(3, 23, 20, 27) * 10
-
-    assert_eq(x + 1, patches_grid(patch_size=(6, 8, 9), stride=(4, 3, 2), stream=True, axis=(-1, -2, -3))(stream_predict)(x))

@@ -5,6 +5,7 @@ See the :doc:`tutorials/patches` tutorial for more details.
 from typing import Iterable, Type, Tuple, Callable
 
 import numpy as np
+import torch
 from imops.numeric import pointwise_add
 
 from .shape_ops import crop_to_box
@@ -14,7 +15,7 @@ from dpipe.itertools import zip_equal, peek
 from .shape_utils import shape_after_convolution
 from .utils import build_slices
 
-__all__ = 'get_boxes', 'divide', 'combine', 'PatchCombiner', 'Average'
+__all__ = 'get_boxes', 'make_batch', 'break_batch', 'divide', 'combine', 'PatchCombiner', 'Average'
 
 
 def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
@@ -47,6 +48,27 @@ def get_boxes(shape: AxesLike, box_size: AxesLike, stride: AxesLike, axis: AxesL
     for start in np.ndindex(*final_shape):
         start = np.asarray(start) * stride
         yield make_box_([start, np.minimum(start + box_size, shape)])
+
+
+def make_batch(divide_iterator, batch_size: int = 1):
+    patches_to_batch = []
+    n = 0
+    for patch in divide_iterator:
+        patches_to_batch.append(torch.from_numpy(patch))
+        n += 1
+        
+        if n == batch_size:
+            n = 0
+            yield torch.cat(patches_to_batch).numpy()
+            patches_to_batch = []
+    if len(patches_to_batch) != 0:
+        yield torch.cat(patches_to_batch).numpy()
+
+
+def break_batch(prediction_iterator: Iterable):
+    for prediction in prediction_iterator:
+        for single_prediction in prediction:
+            yield single_prediction[None, ]
 
 
 def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
@@ -88,23 +110,41 @@ class PatchCombiner:
 
 
 class Average(PatchCombiner):
-    def __init__(self, shape: Tuple[int, ...], dtype: np.dtype, **imops_kwargs: dict):
+    def __init__(self, shape: Tuple[int, ...], dtype: np.dtype, use_torch: bool = True, **imops_kwargs: dict):
         super().__init__(shape, dtype)
         self._result = np.zeros(shape, dtype)
-        self._counts = np.zeros(shape, int)
+        self._counts = np.zeros(shape, np.uint8 if use_torch else int)
         self._imops_kwargs = imops_kwargs
+
+        self._use_torch = use_torch
 
     def update(self, box: Box, patch: np.ndarray):
         slc = build_slices(*box)
 
         result_slc = self._result[slc]
-        pointwise_add(result_slc, patch.astype(result_slc.dtype, copy=False), result_slc, **self._imops_kwargs)
+        if self._use_torch:
+            result_slc_torch = torch.from_numpy(result_slc)
+            patch_torch = torch.from_numpy(patch.astype(result_slc.dtype, copy=False))
+            result_slc_torch += patch_torch
+        else:
+            pointwise_add(result_slc, patch.astype(result_slc.dtype, copy=False), result_slc, **self._imops_kwargs)
 
         counts_slc = self._counts[slc]
-        pointwise_add(counts_slc, 1, counts_slc, **self._imops_kwargs)
+        if self._use_torch:
+            counts_slc_torch = torch.from_numpy(counts_slc)
+            counts_slc_torch += 1
+        else:
+            pointwise_add(counts_slc, 1, counts_slc, **self._imops_kwargs)
 
     def build(self):
-        np.true_divide(self._result, self._counts, out=self._result, where=self._counts > 0)
+        if self._use_torch:
+            result_torch = torch.from_numpy(self._result)
+            counts_torch = torch.from_numpy(self._counts)
+
+            counts_torch[counts_torch == 0] = 1
+            torch.div(result_torch, counts_torch, out=result_torch)
+        else:
+            np.true_divide(self._result, self._counts, out=self._result, where=self._counts > 0)
         return self._result
 
 
