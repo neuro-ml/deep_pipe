@@ -115,24 +115,16 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
             divide_wrapper = make_batch if batch_size is not None else lambda x, batch_size: x
             patches_wrapper = break_batch if batch_size is not None else lambda x: x
 
+            input_patches = divide_wrapper(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size=batch_size)
+
             if async_predict:
-                patches = AsyncPmap(
-                    predict,
-                    divide_wrapper(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size=batch_size),
-                    *args, **kwargs
-                )
+                patches = AsyncPmap(predict, input_patches, *args, **kwargs)
                 patches.start()
-                patches = patches_wrapper(patches)
             else:
-                patches = pmap(
-                    predict,
-                    divide_wrapper(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size=batch_size),
-                    *args, **kwargs
-                )
-                patches = patches_wrapper(patches)
+                patches = pmap(predict, input_patches, *args, **kwargs)
 
             prediction = combine(
-                patches, extract(x.shape, input_axis), local_stride, axis,
+                patches_wrapper(patches), extract(x.shape, input_axis), local_stride, axis,
                 combiner=combiner, get_boxes=get_boxes, use_torch=use_torch
             )
 
