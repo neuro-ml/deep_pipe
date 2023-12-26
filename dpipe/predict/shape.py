@@ -112,10 +112,10 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
             elif ((shape - local_size) < 0).any() or ((local_stride - shape + local_size) % local_stride).any():
                 raise ValueError('Input cannot be patched without remainder.')
 
-            if async_predict:
-                divide_wrapper = make_batch if batch_size is not None else lambda x, batch_size: x
-                patches_wrapper = break_batch if batch_size is not None else lambda x: x
+            divide_wrapper = make_batch if batch_size is not None else lambda x, batch_size: x
+            patches_wrapper = break_batch if batch_size is not None else lambda x: x
 
+            if async_predict:
                 patches = AsyncPmap(
                     predict,
                     divide_wrapper(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size=batch_size),
@@ -126,9 +126,10 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
             else:
                 patches = pmap(
                     predict,
-                    divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes),
+                    divide_wrapper(divide(x, local_size, local_stride, input_axis, get_boxes=get_boxes), batch_size=batch_size),
                     *args, **kwargs
                 )
+                patches = patches_wrapper(patches)
 
             prediction = combine(
                 patches, extract(x.shape, input_axis), local_stride, axis,

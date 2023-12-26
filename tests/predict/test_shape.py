@@ -25,10 +25,11 @@ def async_predict(request):
     return request.param
 
 
-def test_patches_grid(use_torch, async_predict):
+def test_patches_grid(use_torch, async_predict, batch_size):
     def check_equal(**kwargs):
-        predict = patches_grid(**kwargs, use_torch=use_torch, async_predict=async_predict, axis=-1)(identity)
-        assert_eq(x, predict(x))
+        predict = patches_grid(**kwargs, use_torch=use_torch, async_predict=async_predict, axis=-1, batch_size=batch_size)(lambda x: x + 1)
+        predict = add_extract_dims(1)(predict)
+        assert_eq(x + 1, predict(x))
 
     x = np.random.randn(3, 23, 20, 27) * 10
     check_equal(patch_size=10, stride=1, padding_values=0)
@@ -56,14 +57,3 @@ def test_divisible_patches():
     for shape in [(373, 302, 55), (330, 252, 67)]:
         x = np.random.randn(*shape)
         check_equal(patch_size=size, stride=stride)
-
-
-@pytest.mark.skipif(sys.version_info < (3, 7), reason='Requires python3.7 or higher.')
-def test_batched_patches_grid(batch_size):
-    x = np.random.randn(23, 20, 27) * 10
-
-    predict = lambda x: x + 1
-    predict = patches_grid(patch_size=(6, 8, 9), stride=(4, 3, 2), axis=(-1, -2, -3), batch_size=batch_size)(predict)
-    predict = add_extract_dims(2)(predict)
-
-    assert_eq(x + 1, predict(x))
