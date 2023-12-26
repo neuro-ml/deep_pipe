@@ -144,6 +144,8 @@ class AsyncPmap:
     def __next__(self) -> Any:
         obj = self.__result_queue.get()
         if obj is FinishToken:
+            self.__working_thread.join()
+            assert not self.__working_thread.is_alive()
             raise StopIteration
         return obj
 
