@@ -134,9 +134,12 @@ class AsyncPmap:
         self.__working_thread.start()
 
     def _prediction_func(self) -> None:
-        for value in self.__iterable:
-            self.__result_queue.put(self.__func(value, *self.__args, **self.__kwargs))
-        self.__result_queue.put(FinishToken)
+        try:
+            for value in self.__iterable:
+                self.__result_queue.put(self.__func(value, *self.__args, **self.__kwargs))
+            self.__result_queue.put(FinishToken)
+        except BaseException as e:
+            self.__result_queue.put(e)
 
     def __iter__(self):
         return self
@@ -147,6 +150,8 @@ class AsyncPmap:
             self.__working_thread.join()
             assert not self.__working_thread.is_alive()
             raise StopIteration
+        elif isinstance(obj, BaseException):
+            raise obj
         return obj
 
 

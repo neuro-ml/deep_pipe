@@ -75,3 +75,12 @@ class TestItertools(unittest.TestCase):
             assert foo(i) == next(async_results)
         with self.assertRaises(StopIteration):
             next(async_results)
+
+    def test_async_pmap_exception(self):
+        def exception_func(x):
+            raise ValueError
+        iterable = range(1)
+        async_results = AsyncPmap(exception_func, iterable)
+        async_results.start()
+        with self.assertRaises(ValueError):
+            out = next(async_results)
