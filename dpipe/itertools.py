@@ -151,6 +151,8 @@ class AsyncPmap:
             assert not self.__working_thread.is_alive()
             raise StopIteration
         elif isinstance(obj, BaseException):
+            self.__working_thread.join()
+            assert not self.__working_thread.is_alive()
             raise obj
         return obj
 
