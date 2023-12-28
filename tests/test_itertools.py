@@ -84,3 +84,14 @@ class TestItertools(unittest.TestCase):
         async_results.start()
         with self.assertRaises(ValueError):
             out = next(async_results)
+
+    def test_async_pmap_stopiteration(self):
+        iterable = range(1)
+        async_results = AsyncPmap(lambda x: x, iterable)
+        async_results.start()
+
+        next(async_results)
+        with self.assertRaises(StopIteration):
+            out = next(async_results)
+        with self.assertRaises(StopIteration):
+            out = next(async_results)
