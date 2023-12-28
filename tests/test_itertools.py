@@ -77,13 +77,24 @@ class TestItertools(unittest.TestCase):
             next(async_results)
 
     def test_async_pmap_exception(self):
-        def exception_func(x):
+        exc = ValueError("I shouldn't be raised")
+        def return_exception_func(x):
+            return exc
+        def raise_exception_func(x):
             raise ValueError
+
         iterable = range(1)
-        async_results = AsyncPmap(exception_func, iterable)
-        async_results.start()
+
+        raised_asyncpmap = AsyncPmap(raise_exception_func, iterable)
+        returned_asyncpmap = AsyncPmap(return_exception_func, iterable)
+
+        raised_asyncpmap.start()
+        returned_asyncpmap.start()
+
         with self.assertRaises(ValueError):
-            out = next(async_results)
+            out = next(raised_asyncpmap)
+
+        assert next(returned_asyncpmap) == exc
 
     def test_async_pmap_stopiteration(self):
         iterable = range(1)

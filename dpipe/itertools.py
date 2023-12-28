@@ -142,10 +142,10 @@ class AsyncPmap:
     def _prediction_func(self) -> None:
         try:
             for value in self.__iterable:
-                self.__result_queue.put(self.__func(value, *self.__args, **self.__kwargs))
-            self.__result_queue.put(FinishToken)
+                self.__result_queue.put((self.__func(value, *self.__args, **self.__kwargs), True))
+            self.__result_queue.put((FinishToken, True))
         except BaseException as e:
-            self.__result_queue.put(e)
+            self.__result_queue.put((e, False))
 
 
     def __iter__(self):
@@ -155,14 +155,15 @@ class AsyncPmap:
         if self.__exhausted:
             raise StopIteration
 
-        obj = self.__result_queue.get()
+        obj, success = self.__result_queue.get()
+
+        if not success:
+            self.stop()
+            raise obj
+
         if obj is FinishToken:
             self.stop()
             raise StopIteration
-
-        elif isinstance(obj, BaseException):
-            self.stop()
-            raise obj
 
         return obj
 
