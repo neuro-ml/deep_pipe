@@ -75,3 +75,34 @@ class TestItertools(unittest.TestCase):
             assert foo(i) == next(async_results)
         with self.assertRaises(StopIteration):
             next(async_results)
+
+    def test_async_pmap_exception(self):
+        exc = ValueError("I shouldn't be raised")
+        def return_exception_func(x):
+            return exc
+        def raise_exception_func(x):
+            raise ValueError
+
+        iterable = range(1)
+
+        raised_asyncpmap = AsyncPmap(raise_exception_func, iterable)
+        returned_asyncpmap = AsyncPmap(return_exception_func, iterable)
+
+        raised_asyncpmap.start()
+        returned_asyncpmap.start()
+
+        with self.assertRaises(ValueError):
+            out = next(raised_asyncpmap)
+
+        assert next(returned_asyncpmap) == exc
+
+    def test_async_pmap_stopiteration(self):
+        iterable = range(1)
+        async_results = AsyncPmap(lambda x: x, iterable)
+        async_results.start()
+
+        next(async_results)
+        with self.assertRaises(StopIteration):
+            out = next(async_results)
+        with self.assertRaises(StopIteration):
+            out = next(async_results)

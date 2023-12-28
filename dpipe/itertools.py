@@ -113,10 +113,6 @@ def pmap(func: Callable, iterable: Iterable, *args, **kwargs) -> Iterable:
         yield func(value, *args, **kwargs)
 
 
-class FinishToken:
-    pass
-
-
 class AsyncPmap:
     def __init__(self, func: Callable, iterable: Iterable, *args, **kwargs) -> None:
         self.__func = func
@@ -129,24 +125,38 @@ class AsyncPmap:
         self.__working_thread = Thread(
             target = self._prediction_func
         )
+        self.__exhausted = False
 
     def start(self) -> None:
         self.__working_thread.start()
 
+    def stop(self) -> None:
+        self.__working_thread.join()
+        assert not self.__working_thread.is_alive()
+        self.__exhausted = True
+
     def _prediction_func(self) -> None:
-        for value in self.__iterable:
-            self.__result_queue.put(self.__func(value, *self.__args, **self.__kwargs))
-        self.__result_queue.put(FinishToken)
+        try:
+            for value in self.__iterable:
+                self.__result_queue.put((self.__func(value, *self.__args, **self.__kwargs), True))
+            raise StopIteration
+        except BaseException as e:
+            self.__result_queue.put((e, False))
+
 
     def __iter__(self):
         return self
 
     def __next__(self) -> Any:
-        obj = self.__result_queue.get()
-        if obj is FinishToken:
-            self.__working_thread.join()
-            assert not self.__working_thread.is_alive()
+        if self.__exhausted:
             raise StopIteration
+
+        obj, success = self.__result_queue.get()
+
+        if not success:
+            self.stop()
+            raise obj
+
         return obj
 
 
