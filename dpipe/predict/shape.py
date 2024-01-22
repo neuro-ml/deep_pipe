@@ -123,9 +123,13 @@ def patches_grid(patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,
             else:
                 patches = pmap(predict, input_patches, *args, **kwargs)
 
+            prediction_kwargs = {'combiner': combiner, 'get_boxes': get_boxes}
+            if not use_torch:
+                prediction_kwargs['use_torch'] = use_torch
+
             prediction = combine(
                 patches_wrapper(patches), extract(x.shape, input_axis), local_stride, axis,
-                combiner=combiner, get_boxes=get_boxes, use_torch=use_torch
+                **prediction_kwargs
             )
 
             if valid:
