@@ -161,7 +161,8 @@ def train_step(
 
 
 def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity,
-                   amp: bool = False, in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
+                   amp: bool = False, amp_cache_enabled: bool = True,
+                   in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -175,7 +176,7 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     amp = amp or torch.is_autocast_enabled()
     in_dtype = in_dtype or (torch.float16 if amp else None)
     with _inference_ctx_manager():
-        with torch.cuda.amp.autocast(amp):
+        with torch.cuda.amp.autocast(amp, cache_enabled=amp_cache_enabled):
             return to_np(
                 activation(architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))),
                 dtype=out_dtype,
@@ -185,7 +186,8 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
 @collect
 def multi_inference_step(*inputs: np.ndarray, architecture: Module,
                          activations: Union[Callable, Sequence[Union[Callable, None]]] = identity,
-                         amp: bool = False, in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
+                         amp: bool = False, amp_cache_enabled: bool = True,
+                         in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -201,7 +203,7 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     amp = amp or torch.is_autocast_enabled()
     in_dtype = in_dtype or (torch.float16 if amp else None)
     with _inference_ctx_manager():
-        with torch.cuda.amp.autocast(amp):
+        with torch.cuda.amp.autocast(amp, cache_enabled=amp_cache_enabled):
             results = architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))
             if callable(activations):
                 activations = [activations] * len(results)

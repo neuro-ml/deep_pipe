@@ -3,7 +3,7 @@ from functools import partial
 import numpy as np
 import torch.nn as nn
 
-from dpipe.layers import PreActivationND
+from dpipe.layers import PreActivationND, PostActivationND, MidActivationND
 from dpipe.im.utils import identity
 from dpipe.im.shape_ops import crop_to_shape
 
@@ -13,10 +13,10 @@ class ResBlock(nn.Module):
     Performs a sequence of two convolutions with residual connection (Residual Block).
 
     ..
-        in ---> (BN --> activation --> Conv) --> (BN --> activation --> Conv) -- + --> out
-            |                                                                    ^
-            |                                                                    |
-             --------------------------------------------------------------------
+        in ---> pre/post/mid-acivation --> pre/post/mid-acivation -- + --> out
+            |                                                        ^
+            |                                                        |
+             --------------------------------------------------------
 
     Parameters
     ----------
@@ -47,16 +47,24 @@ class ResBlock(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, *, kernel_size, stride=1, padding=0, dilation=1, bias=False,
-                 activation_module=nn.ReLU, conv_module, batch_norm_module, **kwargs):
+                 activation_module=nn.ReLU, conv_module, batch_norm_module, path_type='pre',  **kwargs):
         super().__init__()
         # ### Features path ###
-        pre_activation = partial(
-            PreActivationND, kernel_size=kernel_size, padding=padding, dilation=dilation,
+        assert path_type in ('pre', 'post', 'mid'), f'Unknown path type: "{path_type}"'
+
+        if path_type == 'pre':
+            path = PreActivationND
+        elif path_type == 'post':
+            path = PostActivationND
+        else:
+            path = MidActivationND
+
+        path = partial(
+            path, kernel_size=kernel_size, padding=padding, dilation=dilation,
             activation_module=activation_module, conv_module=conv_module, batch_norm_module=batch_norm_module, **kwargs
         )
-
-        self.conv_path = nn.Sequential(pre_activation(in_channels, out_channels, stride=stride, bias=False),
-                                       pre_activation(out_channels, out_channels, bias=bias))
+        self.conv_path = nn.Sequential(path(in_channels, out_channels, stride=stride, **{'bias': False} if path_type == 'pre' else {}),
+                                       path(out_channels, out_channels, **{'bias': bias} if path_type == 'pre' else {}))
 
         # ### Shortcut ###
         spatial_difference = np.floor(

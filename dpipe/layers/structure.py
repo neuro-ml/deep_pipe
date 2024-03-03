@@ -126,6 +126,47 @@ class PostActivation(nn.Module):
         return self.activation(self.bn(self.layer(x)))
 
 
+# TODO: Come up with a better name
+class MidActivation(nn.Module):
+    """
+    Performs a sequence of activation, layer and batch_norm:
+
+        in -> (activation -> layer -> BN) -> out
+
+    Parameters
+    ----------
+    in_features: int
+        the number of incoming features/channels.
+    out_features: int
+        the number of the output features/channels.
+    batch_norm_module
+        module to build up batch normalization layer, e.g. ``torch.nn.BatchNorm3d``.
+    activation_module
+        module to build up activation layer. Default is ``torch.nn.ReLU``.
+    layer_module: Callable(in_features, out_features, **kwargs)
+        module to build up the main layer, e.g. ``torch.nn.Conv3d`` or ``torch.nn.Linear``.
+    kwargs
+        additional arguments passed to ``layer_module``.
+
+    Notes
+    -----
+    If ``layer`` supports a bias term, make sure to pass ``bias=False``.
+    """
+
+    def __init__(self, in_features: int, out_features: int, *,
+                 layer_module, batch_norm_module=None, activation_module=nn.ReLU, **kwargs):
+        super().__init__()
+        self.activation = activation_module()
+        self.layer = layer_module(in_features, out_features, **kwargs)
+        if batch_norm_module is not None:
+            self.bn = batch_norm_module(out_features)
+        else:
+            self.bn = identity
+
+    def forward(self, x):
+        return self.bn(self.layer(self.activation(x)))
+
+
 class CenteredCrop(nn.Module):
     def __init__(self, start, stop=None):
         super().__init__()
