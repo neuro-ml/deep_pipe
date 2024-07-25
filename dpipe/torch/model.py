@@ -9,6 +9,7 @@ from torch.optim import Optimizer
 from ..im.utils import identity, dmap, zip_equal, collect
 from .utils import *
 
+
 __all__ = 'optimizer_step', 'train_step', 'inference_step', 'multi_inference_step'
 _inference_ctx_manager = torch.no_grad if torch.__version__[:3] < '1.9' else torch.inference_mode
 
@@ -212,13 +213,3 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
                 if activation is not None:
                     result = activation(result)
                 yield to_np(result, dtype=out_dtype)
-
-
-@np.deprecate
-def do_train_step(*inputs, lr, inputs2logits, optimizer, logits2loss):
-    return train_step(*inputs, lr=lr, architecture=inputs2logits, criterion=logits2loss, optimizer=optimizer)
-
-
-@np.deprecate
-def do_inf_step(*inputs, inputs2logits, logits2pred):
-    return inference_step(*inputs, architecture=inputs2logits, activation=logits2pred)

@@ -4,8 +4,9 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Sequence, Union
 
 import torch
-from dpipe.im.utils import composition
-from dpipe.io import PathLike
+from ..im.utils import composition
+from ..io import PathLike
+
 
 __all__ = 'Checkpoints', 'CheckpointManager'
 

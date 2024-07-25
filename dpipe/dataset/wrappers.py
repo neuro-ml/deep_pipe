@@ -11,10 +11,10 @@ from pathlib import Path
 
 import numpy as np
 
-from dpipe.checks import join
-from dpipe.io import save_numpy, PathLike, load_or_create, load_numpy
-from dpipe.itertools import zdict, collect
-from dpipe.im.preprocessing import normalize
+from ..checks import join
+from ..io import save_numpy, PathLike, load_or_create, load_numpy
+from ..itertools import zdict, collect
+from ..im.preprocessing import normalize
 from .base import Dataset
 
 

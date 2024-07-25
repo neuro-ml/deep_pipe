@@ -1,8 +1,7 @@
 import numpy as np
 
-from dpipe.dataset import CSV
-from dicom_csv import load_series
-from dpipe.io import PathLike
+from .csv import CSV
+from ..io import PathLike
 
 
 class DICOMDataset(CSV):
@@ -28,4 +27,6 @@ class DICOMDataset(CSV):
         super().__init__(path, filename, index_col)
 
     def load_image(self, identifier) -> np.ndarray:
+        from dicom_csv.misc import load_series
+
         return load_series(self.df.loc[identifier], self.path)

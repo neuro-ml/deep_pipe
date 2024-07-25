@@ -1,2 +1,2 @@
-from dpipe.split.base import *
-from dpipe.split.cv import *
+from .base import *
+from .cv import *
