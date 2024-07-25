@@ -11,9 +11,10 @@ from imops.numeric import pointwise_add
 from .shape_ops import crop_to_box
 from .axes import fill_by_indices, AxesLike, resolve_deprecation, axis_from_dim, broadcast_to_axis
 from .box import make_box_, Box
-from dpipe.itertools import zip_equal, peek
+from ..itertools import zip_equal, peek
 from .shape_utils import shape_after_convolution
 from .utils import build_slices
+
 
 __all__ = 'get_boxes', 'make_batch', 'break_batch', 'divide', 'combine', 'PatchCombiner', 'Average'
 
@@ -56,7 +57,7 @@ def make_batch(divide_iterator, batch_size: int = 1):
     for patch in divide_iterator:
         patches_to_batch.append(torch.from_numpy(patch))
         n += 1
-        
+
         if n == batch_size:
             n = 0
             yield torch.cat(patches_to_batch).numpy()
@@ -68,7 +69,7 @@ def make_batch(divide_iterator, batch_size: int = 1):
 def break_batch(prediction_iterator: Iterable):
     for prediction in prediction_iterator:
         for single_prediction in prediction:
-            yield single_prediction[None, ]
+            yield single_prediction[None,]
 
 
 def divide(x: np.ndarray, patch_size: AxesLike, stride: AxesLike, axis: AxesLike = None,

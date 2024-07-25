@@ -2,8 +2,9 @@ from typing import Union, Sequence
 
 import numpy as np
 
-from dpipe.itertools import lmap
+from ..itertools import lmap
 from ..checks import join
+
 
 AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]
@@ -78,10 +79,3 @@ def resolve_deprecation(axis, ndim, *values):
                          'Pass the appropriate `axis` to suppress this error.')
 
     return axis_from_dim(axis, ndim)
-
-
-@np.deprecate
-def expand_axes(axes, values) -> tuple:
-    if axes is None:
-        raise ValueError('`axis` cannot be None')
-    return check_axes(axes)

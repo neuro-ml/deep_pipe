@@ -6,11 +6,20 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 import numpy as np
-import wandb
-from dpipe.commands import load_from_folder
-from dpipe.im.utils import zip_equal
-from dpipe.io import PathLike
-from wandb.sdk.wandb_run import Run as wandbRun
+
+from ..commands import load_from_folder
+from ..im.utils import zip_equal
+from ..io import PathLike
+
+
+try:
+    import wandb
+
+
+    message = None
+
+except ModuleNotFoundError:
+    message = 'Please install wandb to use WANDBLogger. You can do it by running `pip install wandb`.'
 
 __all__ = 'Logger', 'ConsoleLogger', 'TBLogger', 'NamedTBLogger', 'WANDBLogger'
 
@@ -149,21 +158,24 @@ class NamedTBLogger(TBLogger):
 
 class WANDBLogger(Logger):
     def __init__(
-        self,
-        project: Optional[str],
-        run_name: Optional[str] = None,
-        *,
-        group: Optional[str] = None,
-        entity: str = 'neuro-ml',
-        config: Union[Dict, str, None] = None,
-        dir: Optional[str] = None,
-        resume: str = 'auto',
-        **watch_kwargs: Any,
+            self,
+            project: Optional[str],
+            run_name: Optional[str] = None,
+            *,
+            group: Optional[str] = None,
+            entity: str = 'neuro-ml',
+            config: Union[Dict, str, None] = None,
+            dir: Optional[str] = None,
+            resume: str = 'auto',
+            **watch_kwargs: Any,
     ) -> None:
         """A logger that writes to a wandb run.
 
         Call `wandb login` before first usage.
         """
+        if message is not None:
+            raise RuntimeError(message)
+        from wandb.sdk.wandb_run import Run as wandbRun
 
         settings = [None, wandb.Settings(start_method='fork'), wandb.Settings(start_method='thread')]
         exp = None
@@ -185,14 +197,14 @@ class WANDBLogger(Logger):
 
         # find out if the experiment is cut into several folds
         cut_into_folds = (
-            len(
-                [
-                    p
-                    for p in experiment_root.glob('*')
-                    if p.name.startswith('experiment_') and p.is_dir()
-                ]
-            )
-            > 1
+                len(
+                    [
+                        p
+                        for p in experiment_root.glob('*')
+                        if p.name.startswith('experiment_') and p.is_dir()
+                    ]
+                )
+                > 1
         )
 
         current_experiment_number = (
@@ -237,14 +249,14 @@ class WANDBLogger(Logger):
         wandb.finish()
 
     @property
-    def experiment(self) -> wandbRun:
+    def experiment(self):
         return self._experiment
 
     def value(self, name: str, value: Any, step: Optional[int] = None) -> None:
         self._experiment.log({name: value, 'epoch': step})
 
     def train(
-        self, train_losses: Union[Sequence[Dict], Sequence[float], Sequence[tuple], Sequence[np.ndarray]], step: int
+            self, train_losses: Union[Sequence[Dict], Sequence[float], Sequence[tuple], Sequence[np.ndarray]], step: int
     ) -> None:
         if not train_losses:
             return None
@@ -267,7 +279,7 @@ class WANDBLogger(Logger):
         self.experiment.config.update(config_args, allow_val_change=True)
 
     def agg_metrics(
-        self, agg_metrics: Union[dict, str, Path], section: str = ''
+            self, agg_metrics: Union[dict, str, Path], section: str = ''
     ) -> None:
         """Log final metrics calculated in the end of experiment to summary table.
         Idea is to use these values for preparing leaderboard.
@@ -308,12 +320,12 @@ class WANDBLogger(Logger):
         self.experiment.log({name: table})
 
     def image(
-        self,
-        name: str,
-        *values,
-        step: int,
-        section: Optional[str] = None,
-        masks_keys: tuple = ('predictions', 'ground_truth'),
+            self,
+            name: str,
+            *values,
+            step: int,
+            section: Optional[str] = None,
+            masks_keys: tuple = ('predictions', 'ground_truth'),
     ) -> None:
         """Method that logs images (set by values),
         each value is a dict with fields, preds, target and optinally caption defined
@@ -336,6 +348,7 @@ class WANDBLogger(Logger):
             step=step,
         )
 
-    def log_info(self, name: str, wandb_converter, *infos, section: Optional[str] = None, step: Optional[int] = None) -> None:
+    def log_info(self, name: str, wandb_converter, *infos, section: Optional[str] = None,
+                 step: Optional[int] = None) -> None:
         name = name if section is None else f'{section}/{name}'
         self.experiment.log({name: [wandb_converter(info) for info in infos]})

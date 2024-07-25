@@ -9,6 +9,7 @@ from torch.optim import Optimizer
 from ..im.utils import identity, dmap, zip_equal, collect
 from .utils import *
 
+
 __all__ = 'optimizer_step', 'train_step', 'inference_step', 'multi_inference_step'
 _inference_ctx_manager = torch.no_grad if torch.__version__[:3] < '1.9' else torch.inference_mode
 
@@ -161,7 +162,8 @@ def train_step(
 
 
 def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callable = identity,
-                   amp: bool = False, in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
+                   amp: bool = False, amp_cache_enabled: bool = True,
+                   in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -175,7 +177,7 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     amp = amp or torch.is_autocast_enabled()
     in_dtype = in_dtype or (torch.float16 if amp else None)
     with _inference_ctx_manager():
-        with torch.cuda.amp.autocast(amp):
+        with torch.cuda.amp.autocast(amp, cache_enabled=amp_cache_enabled):
             return to_np(
                 activation(architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))),
                 dtype=out_dtype,
@@ -185,7 +187,8 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
 @collect
 def multi_inference_step(*inputs: np.ndarray, architecture: Module,
                          activations: Union[Callable, Sequence[Union[Callable, None]]] = identity,
-                         amp: bool = False, in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
+                         amp: bool = False, amp_cache_enabled: bool = True,
+                         in_dtype: torch.dtype = None, out_dtype: torch.dtype = None) -> np.ndarray:
     """
     Returns the prediction for the given ``inputs``.
 
@@ -201,7 +204,7 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     amp = amp or torch.is_autocast_enabled()
     in_dtype = in_dtype or (torch.float16 if amp else None)
     with _inference_ctx_manager():
-        with torch.cuda.amp.autocast(amp):
+        with torch.cuda.amp.autocast(amp, cache_enabled=amp_cache_enabled):
             results = architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))
             if callable(activations):
                 activations = [activations] * len(results)
@@ -210,13 +213,3 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
                 if activation is not None:
                     result = activation(result)
                 yield to_np(result, dtype=out_dtype)
-
-
-@np.deprecate
-def do_train_step(*inputs, lr, inputs2logits, optimizer, logits2loss):
-    return train_step(*inputs, lr=lr, architecture=inputs2logits, criterion=logits2loss, optimizer=optimizer)
-
-
-@np.deprecate
-def do_inf_step(*inputs, inputs2logits, logits2pred):
-    return inference_step(*inputs, architecture=inputs2logits, activation=logits2pred)

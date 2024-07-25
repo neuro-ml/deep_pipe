@@ -63,13 +63,6 @@ def lock_dir(folder: PathLike = '.', lock: str = '.lock'):
     atexit.register(os.remove, lock)
 
 
-@np.deprecate
-def np_filename2id(filename):
-    *rest, extension = filename.split('.')
-    assert extension == 'npy', f'Expected npy file, got {extension} from {filename}'
-    return '.'.join(rest)
-
-
 def transform(input_path, output_path, transform_fn):
     os.makedirs(output_path)
 

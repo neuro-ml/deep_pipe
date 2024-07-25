@@ -1,13 +1,11 @@
 import os
 import shutil
+import warnings
 from pathlib import Path
 from typing import Callable
 
-import numpy as np
-from dpipe.io import PathLike
-
-from dpipe.checks import join
-from dpipe.commands import lock_dir as _lock
+from ..io import PathLike
+from ..checks import join
 
 
 def _path_based_call(exists, missing, exists_message, missing_message, paths, keyword_paths, verbose):
@@ -37,7 +35,6 @@ def _path_based_call(exists, missing, exists_message, missing_message, paths, ke
     return value
 
 
-@np.deprecate
 def if_missing(func: Callable, *paths: str, verbose: bool = True, **keyword_paths: str):
     """
     Call ``func`` if at least some of the ``paths`` or ``keyword_paths`` do not exist.
@@ -48,6 +45,8 @@ def if_missing(func: Callable, *paths: str, verbose: bool = True, **keyword_path
     # if `values` or `metrics` or `temp_data` do not exist, the following call will be performed:
     >>> save_results('values', 'metrics', misc='temp_data')
     """
+    warnings.warn('`if_missing` is deprecated.', DeprecationWarning)
+
     _path_based_call(
         lambda *x, **y: None, func,
         'Nothing to be done, all outputs already exist', 'Running command to generate outputs',
@@ -60,9 +59,6 @@ def run(*args):
     if not args:
         raise ValueError('Nothing to run.')
     return args[-1]
-
-
-lock_dir = np.deprecate(_lock, message='lock_dir was moved to `dpipe.commands`')
 
 
 class Locker:

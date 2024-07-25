@@ -1,6 +1,3 @@
-import os
-import inspect
-
 from .axes import check_axes, AxesParams
 from ..itertools import *
 from .shape_utils import *
@@ -123,43 +120,3 @@ def get_mask_volume(mask: np.ndarray, *spacing: AxesParams, location: bool = Fal
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
-
-
-# this function is too general, so nobody uses it
-@np.deprecate
-def cache_to_disk(func: Callable, path: str, load: Callable, save: Callable) -> Callable:
-    """
-    Cache a function to disk.
-
-    Parameters
-    ----------
-    func: Callable
-    path: str
-        the root folder where the function will be cached.
-    load: Callable(path, *args, **kwargs)
-        load the value for `func(*args, **kwargs)`.
-    save: Callable(value, path, *args, **kwargs)
-        save the value for `func(*args, **kwargs)`.
-    """
-    signature = inspect.signature(func)
-    os.makedirs(path, exist_ok=True)
-
-    def get_all_args(args, kwargs):
-        bindings = signature.bind(*args, **kwargs)
-        bindings.apply_defaults()
-        return bindings.args, bindings.kwargs
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        args, kwargs = get_all_args(args, kwargs)
-
-        try:
-            return load(path, *args, **kwargs)
-        except FileNotFoundError:
-            pass
-
-        value = func(*args, **kwargs)
-        save(value, path, *args, **kwargs)
-        return value
-
-    return wrapper

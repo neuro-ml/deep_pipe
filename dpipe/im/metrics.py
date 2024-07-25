@@ -1,10 +1,11 @@
 from typing import Dict, Callable, Union, Sequence
 
 import numpy as np
-from scipy.ndimage.morphology import distance_transform_edt, binary_erosion
+from scipy.ndimage import distance_transform_edt, binary_erosion
 
 from ..checks import add_check_bool, add_check_shapes, check_shapes, check_bool
-from dpipe.itertools import zip_equal
+from ..itertools import zip_equal
+
 
 __all__ = [
     'dice_score', 'sensitivity', 'specificity', 'precision', 'recall', 'iou', 'assd', 'hausdorff_distance',
