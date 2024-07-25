@@ -47,7 +47,7 @@ class ResBlock(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, *, kernel_size, stride=1, padding=0, dilation=1, bias=False,
-                 activation_module=nn.ReLU, conv_module, batch_norm_module, path_type='pre',  **kwargs):
+                 activation_module=nn.ReLU, conv_module, batch_norm_module, path_type='pre', **kwargs):
         super().__init__()
         # ### Features path ###
         assert path_type in ('pre', 'post', 'mid'), f'Unknown path type: "{path_type}"'
@@ -63,8 +63,9 @@ class ResBlock(nn.Module):
             path, kernel_size=kernel_size, padding=padding, dilation=dilation,
             activation_module=activation_module, conv_module=conv_module, batch_norm_module=batch_norm_module, **kwargs
         )
-        self.conv_path = nn.Sequential(path(in_channels, out_channels, stride=stride, **{'bias': False} if path_type == 'pre' else {}),
-                                       path(out_channels, out_channels, **{'bias': bias} if path_type == 'pre' else {}))
+        kwargs = {'bias': False} if path_type == 'pre' else {}
+        self.conv_path = nn.Sequential(path(in_channels, out_channels, stride=stride, **kwargs),
+                                       path(out_channels, out_channels, **kwargs))
 
         # ### Shortcut ###
         spatial_difference = np.floor(
