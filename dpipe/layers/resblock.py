@@ -63,9 +63,10 @@ class ResBlock(nn.Module):
             path, kernel_size=kernel_size, padding=padding, dilation=dilation,
             activation_module=activation_module, conv_module=conv_module, batch_norm_module=batch_norm_module, **kwargs
         )
-        kwargs = {'bias': False} if path_type == 'pre' else {}
-        self.conv_path = nn.Sequential(path(in_channels, out_channels, stride=stride, **kwargs),
-                                       path(out_channels, out_channels, **kwargs))
+        self.conv_path = nn.Sequential(
+            path(in_channels, out_channels, stride=stride, **{'bias': False} if path_type == 'pre' else {}),
+            path(out_channels, out_channels, **{'bias': bias} if path_type == 'pre' else {})
+        )
 
         # ### Shortcut ###
         spatial_difference = np.floor(
