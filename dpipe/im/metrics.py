@@ -83,7 +83,7 @@ def iou(x: np.ndarray, y: np.ndarray) -> float:
 
 
 def get_area(start, stop):
-    return np.product(np.maximum(stop - start, 0))
+    return np.prod(np.maximum(stop - start, 0))
 
 
 def box_iou(a_start_stop, b_start_stop):
