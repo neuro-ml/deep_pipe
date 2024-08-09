@@ -67,10 +67,6 @@ def composition(func: Callable, *args, **kwargs):
     return decorator
 
 
-def name_changed(func: Callable, old_name: str, date: str):
-    return np.deprecate(func, old_name=old_name, new_name=func.__name__)
-
-
 def get_mask_volume(mask: np.ndarray, *spacing: AxesParams, location: bool = False) -> float:
     """
     Calculates the ``mask`` volume given its spatial ``spacing``.
