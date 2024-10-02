@@ -46,7 +46,7 @@ def optimizer_step(
 
     if scaler is not None:
         # autocast is not recommended during backward
-        with torch.cuda.amp.autocast(False):
+        with torch.autocast("cuda", enabled=False):
             scaler.scale(loss).backward()
 
             if not accumulate:
@@ -134,7 +134,7 @@ def train_step(
     inputs = sequence_to_var(*inputs, device=architecture)
     inputs, targets = inputs[:n_inputs], inputs[n_inputs:]
 
-    with torch.cuda.amp.autocast(scaler is not None or torch.is_autocast_enabled()):
+    with torch.autocast("cuda", enabled=scaler is not None or torch.is_autocast_enabled()):
         loss = criterion(architecture(*inputs), *targets)
 
     if loss_key is not None:
@@ -177,7 +177,7 @@ def inference_step(*inputs: np.ndarray, architecture: Module, activation: Callab
     amp = amp or torch.is_autocast_enabled()
     in_dtype = in_dtype or (torch.float16 if amp else None)
     with _inference_ctx_manager():
-        with torch.cuda.amp.autocast(amp, cache_enabled=amp_cache_enabled):
+        with torch.autocast("cuda", enabled=amp, cache_enabled=amp_cache_enabled):
             return to_np(
                 activation(architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))),
                 dtype=out_dtype,
@@ -204,7 +204,7 @@ def multi_inference_step(*inputs: np.ndarray, architecture: Module,
     amp = amp or torch.is_autocast_enabled()
     in_dtype = in_dtype or (torch.float16 if amp else None)
     with _inference_ctx_manager():
-        with torch.cuda.amp.autocast(amp, cache_enabled=amp_cache_enabled):
+        with torch.autocast("cuda", enabled=amp, cache_enabled=amp_cache_enabled):
             results = architecture(*sequence_to_var(*inputs, device=architecture, dtype=in_dtype))
             if callable(activations):
                 activations = [activations] * len(results)
