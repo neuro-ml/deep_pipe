@@ -5,7 +5,6 @@ pandas
 scikit-learn>=0.19
 tqdm
 pdp==0.3.*
-tensorboard-easy
 lazycon>=0.1.0,<1.0.0
 loky>=3.0.0,<4.0.0
 torch
