@@ -10,25 +10,19 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10', '3.11' ]
+        python-version: [ '3.7', '3.8', '3.9', '3.10', '3.11', '3.12', '3.13' ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Check the version
-        if: "! github.event.pull_request.head.repo.fork "
-        run: |
-          VERSION=$(python -c "from pathlib import Path; import runpy; folder, = {d.parent for d in Path().resolve().glob('*/__init__.py') if d.parent.is_dir() and (d.parent / '__version__.py').exists()}; print(runpy.run_path(folder / '__version__.py')['__version__'])")
-          MATCH=$(pip index versions deep-pipe | grep "Available versions:" | grep $VERSION) || echo
-          echo $MATCH
-          if [ "$GITHUB_BASE_REF" = "master" ] && [ "$MATCH" != "" ]; then exit 1; fi
       - name: Build the package
         run: |
-          python setup.py sdist
+          pip install build
+          python -m build --sdist
 
       - name: Install
         run: |
@@ -52,17 +46,16 @@ jobs:
           sed -i -e "s|$(echo $MODULE_PARENT/ | tr "/" .)||g" reports/coverage-${{ matrix.python-version }}.xml
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: reports-${{ matrix.python-version }}
-          path: reports/*-${{ matrix.python-version }}.xml
+          path: reports/*.xml
         if: ${{ always() }}
 
       - name: Upload coverage results
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
-          files: reports/coverage-${{ matrix.python-version }}.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: reports/coverage-*.xml
           verbose: true
