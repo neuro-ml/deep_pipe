@@ -1,11 +1,11 @@
 import warnings
 from typing import Union, Callable
 
-import numpy as np
 import torch
 from torch.nn import functional
 
-from dpipe.im.axes import AxesLike
+from ..im.axes import AxesLike, normalize_axis_tuple
+
 
 __all__ = [
     'focal_loss_with_logits', 'linear_focal_loss_with_logits', 'weighted_cross_entropy_with_logits',
@@ -177,11 +177,12 @@ def tversky_loss(pred: torch.Tensor, target: torch.Tensor, alpha=0.5, epsilon=1e
     sum_dims = list(range(1, target.dim()))
     beta = 1 - alpha
 
-    intersection = pred*target
-    fps, fns = pred*(1-target), (1-pred)*target
+    intersection = pred * target
+    fps, fns = pred * (1 - target), (1 - pred) * target
 
     numerator = torch.sum(intersection, dim=sum_dims)
-    denumenator = torch.sum(intersection, dim=sum_dims) + alpha*torch.sum(fps, dim=sum_dims) + beta*torch.sum(fns, dim=sum_dims)
+    denumenator = torch.sum(intersection, dim=sum_dims) + alpha * torch.sum(fps, dim=sum_dims) + beta * torch.sum(fns,
+                                                                                                                  dim=sum_dims)
     tversky = numerator / (denumenator + epsilon)
     loss = 1 - tversky
 
@@ -190,7 +191,7 @@ def tversky_loss(pred: torch.Tensor, target: torch.Tensor, alpha=0.5, epsilon=1e
     return loss
 
 
-def focal_tversky_loss(pred: torch.Tensor, target: torch.Tensor, gamma=4/3, alpha=0.5, epsilon=1e-7):
+def focal_tversky_loss(pred: torch.Tensor, target: torch.Tensor, gamma=4 / 3, alpha=0.5, epsilon=1e-7):
     """
     References
     ----------
@@ -200,7 +201,7 @@ def focal_tversky_loss(pred: torch.Tensor, target: torch.Tensor, gamma=4/3, alph
         warnings.warn("Gamma is <=1, to focus on less accurate predictions choose gamma > 1.")
     tl = tversky_loss(pred, target, alpha, epsilon, reduce=None)
 
-    return torch.pow(tl, 1/gamma).mean()
+    return torch.pow(tl, 1 / gamma).mean()
 
 
 def loss_with_logits(criterion: Callable, logit: torch.Tensor, target: torch.Tensor, **kwargs):
@@ -243,8 +244,8 @@ def moveaxis(x: torch.Tensor, source: AxesLike, destination: AxesLike):
     Move axes of a torch.Tensor to new positions.
     Other axes remain in their original order.
     """
-    source = np.core.numeric.normalize_axis_tuple(source, x.ndim, 'source')
-    destination = np.core.numeric.normalize_axis_tuple(destination, x.ndim, 'destination')
+    source = normalize_axis_tuple(source, x.ndim, 'source')
+    destination = normalize_axis_tuple(destination, x.ndim, 'destination')
     if len(source) != len(destination):
         raise ValueError('`source` and `destination` arguments must have '
                          'the same number of elements')
@@ -260,7 +261,7 @@ def softmax(x: torch.Tensor, axis: AxesLike):
     """
     A multidimensional version of softmax.
     """
-    source = np.core.numeric.normalize_axis_tuple(axis, x.ndim, 'axis')
+    source = normalize_axis_tuple(axis, x.ndim, 'axis')
     dim = len(source)
     destination = range(-dim, 0)
 
