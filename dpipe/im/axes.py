@@ -2,6 +2,12 @@ from typing import Union, Sequence
 
 import numpy as np
 
+
+try:
+    from numpy.lib.array_utils import normalize_axis_tuple
+except ImportError:
+    from numpy.core.numeric import normalize_axis_tuple
+
 from ..itertools import lmap
 from ..checks import join
 
@@ -46,7 +52,7 @@ def axis_from_dim(axis: Union[AxesLike, None], dim: int) -> tuple:
     if min(axis) < left or max(axis) > right:
         raise ValueError(f'For dim={dim} axis must be within ({left}, {right}): but provided {axis}.')
 
-    return np.core.numeric.normalize_axis_tuple(axis, dim, 'axis')
+    return normalize_axis_tuple(axis, dim, 'axis')
 
 
 def check_axes(axes) -> tuple:

@@ -38,7 +38,7 @@ def load_model_state(module: nn.Module, path: PathLike, modify_state_fn: Callabl
         For example, it could help you to transfer weights from similar but not completely equal architecture.
     strict: bool
     """
-    state_to_load = torch.load(path, map_location=get_device(module))
+    state_to_load = torch.load(path, map_location=get_device(module), weights_only=True)
     if modify_state_fn is not None:
         current_state = module.state_dict()
         state_to_load = modify_state_fn(current_state, state_to_load)

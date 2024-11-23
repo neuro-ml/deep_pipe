@@ -1,0 +1,25 @@
+name: Check Version
+
+on: [ pull_request ]
+
+env:
+  MODULE_NAME: deep-pipe
+
+jobs:
+  check:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Check the version
+        if: "! github.event.pull_request.head.repo.fork "
+        run: |
+          VERSION=$(python -c "from pathlib import Path; import runpy; folder, = {d.parent for d in Path().resolve().glob('*/__init__.py') if d.parent.is_dir() and (d.parent / '__version__.py').exists()}; print(runpy.run_path(folder / '__version__.py')['__version__'])")
+          MATCH=$(pip index versions $MODULE_NAME | grep "Available versions:" | grep $VERSION) || echo
+          echo $MATCH
+          if [ "$GITHUB_BASE_REF" = "master" ] && [ "$MATCH" != "" ]; then exit 1; fi

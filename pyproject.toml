@@ -1,0 +1,41 @@
+[project]
+name = 'deep_pipe'
+dynamic = ['version', 'dependencies']
+description = 'A collection of tools for deep learning experiments'
+readme = 'README.md'
+requires-python = '>=3.7'
+license = { file = 'LICENSE' }
+keywords = []
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3 :: Only',
+]
+
+[project.urls]
+'Homepage' = 'https://github.com/neuro-ml/deep_pipe'
+'Issues' = 'https://github.com/neuro-ml/deep_pipe/issues'
+'Source' = 'https://github.com/neuro-ml/deep_pipe'
+
+[project.scripts]
+dpipe-run = 'dpipe.layout.scripts:run'
+dpipe-build = 'dpipe.layout.scripts:build'
+
+[build-system]
+requires = ['setuptools>=43.0.0', 'wheel']
+build-backend = 'setuptools.build_meta'
+
+[tool.setuptools.packages.find]
+include = ['dpipe']
+
+[tool.setuptools.dynamic]
+version = { attr = 'dpipe.__version__.__version__' }
+dependencies = { file = 'requirements.txt' }
