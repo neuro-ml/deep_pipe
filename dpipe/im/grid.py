@@ -142,7 +142,7 @@ class Average(PatchCombiner):
             result_torch = torch.from_numpy(self._result)
             counts_torch = torch.from_numpy(self._counts)
 
-            counts_torch[counts_torch == 0] = 1
+            counts_torch.clip_(1)
             torch.div(result_torch, counts_torch, out=result_torch)
         else:
             np.true_divide(self._result, self._counts, out=self._result, where=self._counts > 0)
