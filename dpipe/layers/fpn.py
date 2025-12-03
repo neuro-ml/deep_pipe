@@ -4,7 +4,7 @@ from warnings import warn
 
 import torch
 import torch.nn as nn
-from torch.nn import functional
+from torch.nn.functional import interpolate
 import numpy as np
 
 from dpipe.itertools import zip_equal, lmap
@@ -131,18 +131,11 @@ def interpolate_merge(merge: Callable, order: int = 0):
     return lambda left, down: merge(*interpolate_to_left(left, down, order))
 
 
-def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0, *, mode: str = None):
-    if mode is not None:
-        msg = 'Argument `mode` is deprecated. Use `order` instead.'
-        warn(msg, UserWarning)
-        warn(msg, DeprecationWarning)
-        order = mode
-
+def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0):
     if isinstance(order, int):
         order = order_to_mode(order, len(down.shape) - 2)
 
     if np.not_equal(left.shape, down.shape).any():
-        interpolate = functional.interpolate
         if order in ['linear', 'bilinear', ' bicubic', 'trilinear']:
             interpolate = partial(interpolate, align_corners=False)
 
