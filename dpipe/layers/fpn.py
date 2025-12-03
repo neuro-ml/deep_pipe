@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 from typing import Callable, Sequence, Union
 from warnings import warn
 
@@ -130,7 +131,7 @@ def interpolate_merge(merge: Callable, order: int = 0):
     return lambda left, down: merge(*interpolate_to_left(left, down, order))
 
 
-def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0, *, check_shape_equal: bool = False):
+def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0, *, check_shape_equal: bool = False, amp_fix: bool = True):
     if check_shape_equal and np.equal(left.shape, down.shape).all():
         message = 'interpolate_to_left is called with  =True. This may lead to branching.'
         warn(message, UserWarning)
@@ -138,6 +139,18 @@ def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0, 
 
     mode = order_to_mode(order, len(down.shape) - 2) if isinstance(order, int) else order
     align_corners = False if mode in ['linear', 'bilinear', ' bicubic', 'trilinear'] else None
-    down = interpolate(down, size=left.shape[2:], mode=mode, align_corners=align_corners)
+    down = interpolate_amp(down, size=left.shape[2:], mode=mode, align_corners=align_corners, amp_fix=amp_fix)
 
     return left, down
+
+
+def interpolate_amp(*args, amp_fix=True, **kwargs):
+    """
+    interpolate behaves strangely in torch >=2.4 - always returns fp32 regardless of AMP
+    Disabling autocast leads to dtype inheritance from interpolation input
+    """
+    if amp_fix and torch.is_autocast_enabled('cuda'):
+        with torch.amp.autocast('cuda', enabled=False, cache_enabled=True):
+            return interpolate(*args, **kwargs)
+        
+    return interpolate(*args, **kwargs)
