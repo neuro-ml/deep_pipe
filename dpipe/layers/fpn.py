@@ -132,13 +132,10 @@ def interpolate_merge(merge: Callable, order: int = 0):
 
 
 def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0):
-    if isinstance(order, int):
-        order = order_to_mode(order, len(down.shape) - 2)
+    mode = order_to_mode(order, len(down.shape) - 2) if isinstance(order, int) else order
+    align_corners = False if mode in ['linear', 'bilinear', ' bicubic', 'trilinear'] else None
 
     if np.not_equal(left.shape, down.shape).any():
-        if order in ['linear', 'bilinear', ' bicubic', 'trilinear']:
-            interpolate = partial(interpolate, align_corners=False)
-
-        down = interpolate(down, size=left.shape[2:], mode=order)
+        down = interpolate(down, size=left.shape[2:], mode=mode, align_corners=align_corners)
 
     return left, down
