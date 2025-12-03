@@ -133,7 +133,7 @@ def interpolate_merge(merge: Callable, order: int = 0):
 
 def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0, *, check_shape_equal: bool = False, amp_fix: bool = True):
     if check_shape_equal and np.equal(left.shape, down.shape).all():
-        message = 'interpolate_to_left is called with  =True. This may lead to branching.'
+        message = 'interpolate_to_left is called with check_shape_equal=True. This may lead to branching.'
         warn(message, UserWarning)
         return left, down
 
