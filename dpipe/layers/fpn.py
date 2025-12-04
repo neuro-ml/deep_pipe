@@ -1,10 +1,10 @@
-from functools import partial
+from contextlib import nullcontext
 from typing import Callable, Sequence, Union
 from warnings import warn
 
 import torch
 import torch.nn as nn
-from torch.nn import functional
+from torch.nn.functional import interpolate
 import numpy as np
 
 from dpipe.itertools import zip_equal, lmap
@@ -131,21 +131,23 @@ def interpolate_merge(merge: Callable, order: int = 0):
     return lambda left, down: merge(*interpolate_to_left(left, down, order))
 
 
-def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0, *, mode: str = None):
-    if mode is not None:
-        msg = 'Argument `mode` is deprecated. Use `order` instead.'
-        warn(msg, UserWarning)
-        warn(msg, DeprecationWarning)
-        order = mode
+def interpolate_to_left(left: torch.Tensor, down: torch.Tensor, order: int = 0, *, check_shape_equal: bool = False):
+    if check_shape_equal and np.equal(left.shape, down.shape).all():
+        message = 'interpolate_to_left is called with check_shape_equal=True. This may lead to branching.'
+        warn(message, UserWarning)
+        return left, down
 
-    if isinstance(order, int):
-        order = order_to_mode(order, len(down.shape) - 2)
+    mode = order_to_mode(order, len(down.shape) - 2) if isinstance(order, int) else order
+    align_corners = False if mode in ['linear', 'bilinear', 'bicubic', 'trilinear'] else None
 
-    if np.not_equal(left.shape, down.shape).any():
-        interpolate = functional.interpolate
-        if order in ['linear', 'bilinear', ' bicubic', 'trilinear']:
-            interpolate = partial(interpolate, align_corners=False)
+    # interpolate behaves strangely in torch >=2.4 - always returns fp32 regardless of AMP
+    # disabling autocast leads to dtype inheritance from interpolation input
+    amp_manager = (
+        torch.amp.autocast('cuda', enabled=False, cache_enabled=True) if torch.is_autocast_enabled()
+        else nullcontext()
+    )
 
-        down = interpolate(down, size=left.shape[2:], mode=order)
+    with amp_manager:
+        down = interpolate(down, size=left.shape[2:], mode=mode, align_corners=align_corners)
 
     return left, down
