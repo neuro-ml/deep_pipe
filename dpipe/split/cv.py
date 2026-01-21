@@ -89,7 +89,8 @@ def stratified_train_val_test_split(ids: Sequence, labels: Union[Callable, Seque
         train_val_ids = extract(ids, train_val_indices)
         test_ids = extract(ids, test_indices)
         if val_size:
-            train_ids, val_ids = train_test_split(train_val_ids, test_size=val_size, random_state=25 + i)
+            train_val_labels = extract(labels, train_val_indices)
+            train_ids, val_ids = train_test_split(train_val_ids, test_size=val_size, random_state=25 + i, stratify=train_val_labels)
         else:
             train_ids, val_ids = train_val_ids, []
 
